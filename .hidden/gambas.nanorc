@@ -1,0 +1,105 @@
+## Gambas syntax.
+
+syntax "gsh" "\.gsh$" "\.gbs$"
+header "sub" "class" "#!/usr/bin/gsh" "#!/usr/bin/gbs" "(^'.*Gambas)"
+
+comment "'" "#"
+
+# Constants.
+color white "\<[A-Za-z_][0-9A-Za-z_]+\>"
+
+## local variables and global variables
+icolor white "[$][A-fa-f]+\ " "(^[A-Za-z0-9]+\ )" "([ .][A-za-z0-9]+\ )"
+
+# Labels.
+color brightmagenta "^[[:space:]]*[A-Z_a-z]+:[[:space:]]*$"
+
+icolor brightgreen "\b(float|single|boolean|byte|string|integer|short|long|date|variant|object|pointer|enum|constant|struct|union|extern|create\ *private|create\ *static)\b"
+icolor brightgreen "\b(classes|array|system|user|collection|application|args|component|env|file|gb|jit|observer|param|process|stat|stream|task|inherits|is|super|last|export)\b"
+icolor green "\<(class|end\ class|sub|function|procedure|public|private|static|me|parent|use|run|compile|edit|help|lambda|alias|optional|byref|property|library|extern)\>"
+icolor green "\<(unsafe|^dim|^include|fast|as)\>"
+icolor green "\<(^end)\>"
+
+icolor yellow "\<(for|each|in|to|downto|step|next|if|then|else|endif|while|wend|do|loop|repeat|until|break|continue)\>"
+icolor yellow "\<(select|end\ *select|case|default|choose|iif|with|end\ *with|let|swap)\>"
+icolor yellow "\<(try|error|catch|debug|finally|application_error|new|alloc|free|realloc)\>"
+icolor yellow "\<(goto|gosub|exit|return|quit|stop|on\ *gosub|on\ *goto)\>"
+
+##External functions management
+icolor green "\b(mkboolean|mkbyte|mkdate|mkfloat|mkinteger|mklong|mkpointer|mkshort|mksingle)\b[$|(]"
+icolor green "\b(varptr|strptr)\b[(]"
+
+##File directory functions
+icolor green "\b(access|dfree|dir|exist|isdir|rdir|rmdir|stat)\b[(]"
+icolor green "\<(chgrp|chmod|chown|kill|link|mkdir|move)\>"
+
+##event management
+icolor green "\b(event|raise|stop\ *event|wait|object.attach|object.detach)\b"
+
+##random numbers
+icolor green "\b(randomize|)\b"
+icolor green "\b(rand|rnd)\b[(]"
+
+##process management
+icolor green "\b(shell)\b[$|(]"
+icolor green "\b(exec|shell)\b"
+icolor green "\b(eval)\b[(]"
+
+## string functions
+icolor green "\b(left|right|mid|asc|base64|chr|comp|frombase64|fromurl|html|instr|lcase|len|ltrim|quote|replace|bin|oct|hex)\b[$|(]"
+icolor green "\b(rinstr|rtrim|scan|space|split|subst|trim|ucase|unbase64|url|unquote|format|string|str|dconv|sconv|conv|temp)\b[$|(]"
+
+## Arithmetic functions && logs and expo
+icolor green "\b(abs|ceil|fix|floor|int|max|min|round|sgn|cbr|exp|exp2|exp10|expm|log|log2|log10|logp|sqr)\b[(]"
+
+## Trig functions
+icolor green "\b(acos|acosh|ang|asin|atan|atan2|atanh|cos|cosh|deg|hyp|mag|pi|sin|sinh|tan|Tanh|rad)\b[(]"
+
+## io functions
+icolor green "\<(print|line\ *input|input|read|write|close|eof|error\ *to|flush|input\ *from|lock|lof|open|open\ *memory|open\ *pipe|open\ *String|output\ *to|peek|seek|seek[(]|unlock)\>"
+
+## string tests
+icolor green "\b(isascii|isblank|isdigit|ishexa|islcase|isletter|ispunct|isspace|isucase|ismissing)\b[(]"
+
+## Data Type functions
+icolor green "\b(isboolean|isdate|isfloat|isinteger|islong|isnull|isnumber|sizeof|typeof)\b[(]"
+
+## Type conversion
+icolor green "\b(cbool|cbyte|cdate|cfloat|cint|cinteger|clong|cpointer|cshort|csingle|cstr|cstring|cvariant|val)\b[(]"
+
+## operators
+color white "[+*=\^%]" "<" ">" "/" "-" "&/" "<>" "&" "<=" ">=" "&=" "==" "like" "match" "begins" "ends" "div" "mod"
+color brightred "[@\~]" 
+
+## number constants
+icolor brightmagenta "\b(([1-9][0-9]+)|0+)\.[0-9]+j?\b" "\b([1-9][0-9]*[iI]?)\b" "\b([1-9][0-9]*[Lj]?)\b" "\b0o?[0-7]*L?\b" "\b0x[1-9a-f][0-9a-f]*L?\b" "\b0b[01]+\b"
+icolor brightmagenta "[\ ,\(]\#[1-9][0-9]*\b"
+icolor brightmagenta "(&[hH][A-fa-f0-9]+&)" "(&[hH][0-9A-Fa-f]+)" "(&[xX][0-1]+)" "(&[oO][0-7]+)" "(%[0-1]+)" 
+
+## keywords
+icolor brightblue "\<(and|or|not|xor|null|true|false|bclr|bset|btst|bchg|lsl|sr|shl|asl|shr|asr|rol|ror|iv|mod|inc|dec)\>"
+
+## parentheses
+color cyan "[(){}]" "\[" "\]"
+
+
+
+# Strings.  In general you will want your strings and comments to come last,
+# because highlighting rules are applied in the order they are read in.
+color brightyellow ""([^"]|\\")*"" "<[^[:blank:]=]*>"
+# Multiline strings.  This regex is VERY resource intensive,
+# and sometimes colours things that shouldn't be coloured.
+###color brightyellow start=""(\\.|[^"])*\\[[:space:]]*$" end="^(\\.|[^"])*""
+
+# Comments.
+color blue "'.*" "''.*" "'''.*"
+
+#shebang line
+icolor brightwhite,green "^\#\!.*$"
+
+
+# Reminders.
+color brightwhite,yellow "\<['|''|'''](FIXME|TODO|XXX)\>"
+
+# Trailing whitespace.
+color ,green "[[:space:]]+$"
