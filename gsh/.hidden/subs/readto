@@ -1,0 +1,8 @@
+Sub readto(GlobalVar As String) ' redirect next block output to a variable
+''readto(GlocalVar as string) For next command redirect output to variable
+dim c as class
+dim o as object
+c = classes["gsh"]
+o = c.instance()
+o.ReturnOutputTo = GlobalVar
+end

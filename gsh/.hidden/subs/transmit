@@ -1,0 +1,26 @@
+Sub transmit(varname as string) ' Used in service mode to transmit the requested global variable
+''transmit -This is used when the shell in started in service mode
+''          It will transmit via stdout the content of a global variable/class/structure or function
+with sharedmem
+if not .exist(varname) then
+	print #file.err, "Transmit Variable not found:";;varname
+	return
+endif
+
+dim buffer as byte[]
+dim len as integer
+dim mfile as file
+dim sym as SharedMemSymbol
+sym = .symboltable[varname]
+len = sym._serialize(true)
+buffer = new byte[len+100]
+mFile = memory buffer.data for write
+sym._write(mFile,true)
+close mFile
+buffer.write(file.out,0,len)
+flush #file.out
+
+end with
+Catch
+   print #file.err, error.where, error.text
+End

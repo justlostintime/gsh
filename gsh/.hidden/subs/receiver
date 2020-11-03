@@ -1,0 +1,14 @@
+Sub Sink() ' simple example of a data sink receiver
+'' Functions like this can be to sink/receive data from a process stream
+'' Just have to read from stdin
+
+dim buffer as string
+
+while not eof()
+ line input a
+ ' do something with data
+wend
+
+quit 0
+
+End

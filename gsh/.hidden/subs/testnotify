@@ -1,0 +1,27 @@
+private var as string = "a"
+Sub testnotify(optional svar as string = "a") ' test notify on var change functions
+''testnotifychange - Used to test the notify functions
+''
+var = svar
+with sharedmem
+if .exist(var) then .free(var)
+.[var] = "hello"
+
+.notifychange(var,me,-1,"a_changed")
+
+while .[var] <> "bye"
+ wait 1.01
+wend
+
+.notifycancel(var,me)
+
+print "Exit Application test notify"
+catch
+   .notifycancel(var,me)
+   print error.where, error.text
+end with
+End
+
+public sub a_changed(newval as variant, varname as string)
+  print "Got message ";var;"=";newval
+end

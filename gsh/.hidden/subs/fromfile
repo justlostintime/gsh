@@ -1,0 +1,11 @@
+Sub fromfile(filename as string)as string ' return a text file as a string
+'' fromfile <filename> - loads and return a text file as a string
+''          may be used as the source for redirected input
+''          although the shell now supports this function natively
+''          cat < ~/vars/xx may now be used.
+
+dim result as string 
+    result = expandfn(filename)
+	if not exist(result) then error.raise("File not found:"&result)
+	return file.load(result)
+End

@@ -1,0 +1,15 @@
+Sub lenv() As Boolean ' list all environment variables
+''lEnv      prints the current environment for exec
+''          as function env()
+''          as command  env
+''          uses the global $env string[] variable
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+''
+with sharedmem
+
+for each sI as string in env
+print  sI;"=";env[sI]
+next
+end with
+End

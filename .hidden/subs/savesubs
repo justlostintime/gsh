@@ -1,0 +1,29 @@
+Sub savesubs(...) ' save all or a list of subs to files
+''savesubs(...) - saves all the inmemory subs/procedures/functions to 
+''          ~/vars/subs these override any defuls subs
+''          Or Saves the specified subs to same location
+
+if not exist(user.home &/ "vars/subs") then
+	mkdir user.home &/ "vars/subs"
+endif
+
+if param.count > 0 then
+  for each savename as string in param  
+    if sharedmem.exist("sub."&savename) then
+        try file.save(user.home &/ "vars/subs" &/ savename, sharedmem["sub."&savename])
+        if error then print #file.err, "Error writing file ";savename;;error.text
+    else
+        print #file.err, "Sub/Func/Proc ";savename;;"not found"
+    endif
+  next
+  return
+endif
+
+for each  s as SharedMemSymbol in sharedmem.SymbolTable
+  if s.symname like "sub.*" then
+	dim destfile as string = user.home &/ "vars/subs" &/ split(s.symname,".")[1]
+	print "Sub/Function/procedure :" ;;s.symname;;"to";;destfile 
+	varwrite(s.symname,destfile,true)
+  endif
+next 
+end

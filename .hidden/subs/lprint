@@ -1,0 +1,12 @@
+Sub lprint(...) As Boolean ' Print Anything to stdout
+''lPrint    print the content of arrays or collections
+''          or objects/classes with the special _print function
+''          function lprint(...) print the valiables
+''          command  lprint .....  prints the variables
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+dim vParams as variant = param.all
+for each v as variant in vParams
+    fprint(file.out,v)
+    next
+end

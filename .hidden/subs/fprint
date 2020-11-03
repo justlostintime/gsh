@@ -1,0 +1,86 @@
+Sub fprint(filename As Variant, ...) As Boolean ' print anything to a file
+''fPrint    print to a file the content of arrays or collections
+''          or objects/classes with the special _print function
+''          function fprint(filename,...) print the valiables
+''          command  lprint filename .....  prints the variables
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+Dim vParms As Variant[]
+Dim mFile as variant
+With sharedmem
+if typeof(filename) = gb.string then
+    if file.dir(filename) = "" then
+        filename = user.home &/ "vars"&/ filename
+    endif
+    try mFile = open filename for write create
+    if error then
+        .["$result"] = error.text
+        print #file.err, "fprint :";error.text
+        return false
+    endif
+else
+    mFile = filename
+endif
+
+vParms = param.all
+For Each v As Variant In vParms
+    Select Case TypeOf(v)
+        Case gb.object
+            Select Case object.class(v).name
+                Case "String[]"
+                    For Each s as string In v
+                        Print #mFile, s
+                    Next
+                Case "Byte[]"
+                    v.write(mfile)
+                Case "Variant[]"
+                    for each vs as Variant in v
+                        fprint(mfile,vs)
+                    next
+                case "Integer[]"
+                    for each i as variant in v
+                        print #mFile, i;;
+                    next
+                    print #mfile
+                Case "Collection"
+                    For Each vs In v
+                        'Print #mFile, v.key; "="; vs
+                        print #mFile, quote(v.Key);;":";;
+                        fprint(mfile, vs)
+                    next
+                Case "Class"
+                    print #mFile, "Class :"; v.name;; "Refs=";v.count
+                    print "  Symbols :";
+                    for each s as string in v.symbols
+                        print  #mFile,s;;
+                    next
+                    print #mFile
+                Case "String"
+                    print #mFile, v
+                Default
+                    If object.class(v).exist("_print") Then
+                        v._print(mFile)
+                    Else
+                        if object.class(v).exist("_write") Then
+                            v._write(mfile)
+                        else
+                            Print  #mFile,v;;
+                        endif
+                    Endif
+            End Select
+        case gb.class
+            print  #mFile,"Class :"; v.name;; "Refs=";v.count
+            print  #mFile,"  Symbols :";;
+            for each s as string in v.symbols
+                print  #mFile,s;;
+            next
+            print #mFile
+        Default
+            Print  #mFile,v
+        End Select
+Next
+.["$result"] = "OK"
+End With
+if typeof(filename) = gb.string then close mfile
+Return True
+End

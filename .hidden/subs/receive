@@ -1,0 +1,11 @@
+Sub receive(varname as string) ' used in service mode to read remote variable content
+''receive - Used in Service mode to cause the in memory database
+''          to be updated with the content recieved.
+with sharedmem
+
+.ReadVarFrom(varname,"stdin")
+
+
+end with
+
+End

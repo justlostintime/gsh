@@ -1,0 +1,31 @@
+Sub hist(Optional StartingAt As Integer = 0, numberShown As Integer = 0) As Boolean ' List history
+''Hist      print a list input lines to the stdout
+''          as function hist(startingAt,NumberShown)
+''          as command hist StartingAt Number Shown
+''          uses the global collection $history
+''          returns true if read, false otherwise
+''          $result contains the error text or "OK"
+''
+with sharedmem
+dim cH as collection = .["$history"]
+dim s as string
+if StartingAt = 0 then
+StartingAt = cint(ch.first)
+else
+if StartingAt < 0 then
+StartingAt = cint(ch.last) + StartingAt
+if startingat < cint(ch.first) then startingat = ch.first
+else
+if startingat > cint(ch.last) then startingat = cint(ch.last)-10
+if startingat < cint(ch.first) then startingat = cint(ch.first)
+endif
+endif
+if numberShown = 0 then numbershown = ch.count
+if Startingat + numberShown > cint(ch.last) then numberShown = ch.last - startingat
+for i as integer = startingat to startingat+numbershown
+s = ch[str(i)]
+print "[";format(i,"###0");"]";s
+next
+end with
+return true
+end

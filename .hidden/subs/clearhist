@@ -1,0 +1,106 @@
+Sub clearhist(optional Tokeep as integer = 0) As Boolean ' Clear History
+''clearhist(ToKeep)  Clear History, optional keep last number or entries
+''          Function clearhist(<Number to keep)
+''          Command clearhist <number to keep>
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+Extern c9_clear_history() As Pointer In "libreadline:9" Exec "clear_history"
+Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
+Extern c8_clear_history() As Pointer In "libreadline:8" Exec "clear_history"
+Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
+Extern c7_clear_history() As Pointer In "libreadline:7" Exec "clear_history"
+Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
+Extern c6_clear_history() As Pointer In "libreadline:6" Exec "clear_history"
+Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
+Extern c5_clear_history() As Pointer In "libreadline:5" Exec "clear_history"
+Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
+
+With sharedmem
+print #file.err, "Clearing history Keeping ";;tokeep
+if ToKeep = 0 then
+
+    .["$history"] = New Collection
+    .["$historycurrent"] = 1
+    clear_history()
+    .["$result"] = "OK"
+else
+    dim history as collection = .["$history"]
+    dim lastentry as integer = history.last
+    lastentry = lastentry - (ToKeep + 1)
+    
+    if lastentry <= 0 then
+        .["$result"] = "OK"
+    else
+       
+        for i as integer = history.first to lastentry
+            print "remove ";history[i]
+            history.remove(i)
+        next
+        
+        dim histnew as new collection
+        dim j as integer = 1
+        clear_history()
+   
+        for i = i to history.last
+            histnew.add(history[i],j)
+            add_history(histnew[j])
+            inc j
+        next
+        
+        .["$history"] = histnew
+        .["$historycurrent"] = j
+        
+    endif
+endif
+
+End With
+Return True
+End
+private readlineversion as integer  = -1
+private sub clear_history()
+If readlineversion = -1 Then readlineversion = DetectReadlineVersion()
+   Select Case ReadLineVersion
+      Case 0
+        c9_Clear_history()
+      Case 1
+        c8_Clear_history()
+      Case 2
+        c7_Clear_history()
+      Case 3
+        c6_clear_history()
+      Case 4
+        c5_clear_history()
+    End Select
+end
+
+private sub add_history(data as string)
+ If readlineversion = -1 Then readlineversion = DetectReadlineVersion()
+   Select Case ReadLineVersion
+      Case 0
+        c9_add_history(data)
+      Case 1
+        c8_add_history(data)
+      Case 2
+        c7_add_history(data)
+      Case 3
+        c6_add_history(data)
+      Case 4
+        c5_add_history(data)
+    End Select
+end
+
+Private Sub DetectReadlineVersion() As Integer
+  
+  Try c9_add_history("")
+  If Not Error Then Return 0
+  Try c8_add_history("")
+  If Not Error Then Return 1
+  Try c7_add_history("")
+  If Not Error Then Return 2
+  Try c6_add_history("")
+  If Not Error Then Return 3
+  Try c5_add_history("")
+  If Not Error Then Return 4
+  Return 5
+  
+End

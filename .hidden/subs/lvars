@@ -1,0 +1,39 @@
+Sub lvars(Optional varname As String = "",dumpall as boolean = false) As Boolean ' list all variables and content
+''lVars  <$GlobalVarName> - list all varables or specific variable with content
+''          function lvars(<varname>)
+''          command lvars <varname>
+''          list all if no parameter, other wise varname passed
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+with sharedmem
+if varname <> "" and if not instr(varname,"*") then
+	if .exist(varname) then
+		print varname;"=";.[varname]
+		return true
+	else
+		.["$result"] = "Error : Global variable Not found ["&varname&"]"
+		print #file.err, .["$result"]
+		return false
+	endif
+endif 
+
+For Each s As SharedMemSymbol In .SymbolTable
+    if dumpall or if not (s.symname like "sub.*" or s.symname like "class.*") then
+	if varname <> ""  and if not (s.symname like varname) then continue 
+        if s.SymType = gb.string then
+            if .[s.symname].len < 50 then
+                Print left(sharedmem.SymbolTable.key&space(25),25); "="; quote(.[s.symname])
+            else
+                Print left(sharedmem.SymbolTable.key&space(25),25);"="; quote(left(.[s.symname],50));"..."
+            endif
+        else
+            Print left(sharedmem.SymbolTable.key&space(25),25); "=";.[s.symname]
+        endif
+    endif
+    
+Next
+
+.["$result"] = "OK"
+end with
+return true
+End

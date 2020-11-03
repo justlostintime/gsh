@@ -1,0 +1,36 @@
+Sub varwrite(Optional varname As String = "", FileName As String = "",astext as boolean  = false) As Boolean ' write variable to a file
+''VarWrite  $GlobalVarName <"filename"> - write a global variable value to a file, default = ~/var/varname
+''          as function - varwrite("varname <, "filename">)
+''          as command  - varwrite "varname" <"filename>
+''          returns true if write, false otherwise
+''          $result contains the error text or "OK"
+''
+with sharedmem
+.Free("$result")
+if varname = "" or if not .exist(varname) Then
+	.["$result"] = "Error : \""&varname&"\" not found"
+	error  sharedmem["$result"]
+	return false
+endif
+
+if astext then
+	if filename = "" then filename = varname
+	dim ftext as string = str(.[varname])
+	try file.save(filename,ftext)
+	if error then 
+		print #file.err, "Unable to create file:";;filename;;error.text
+		return false
+	endif
+	return true
+else
+	try .writevarto(varname,FileName)
+	if error Then
+		.["$result"] = error.text
+		print #file.err, error.text
+		return false
+	endif
+endif
+
+return true
+end with
+end

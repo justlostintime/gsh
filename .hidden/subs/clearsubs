@@ -1,0 +1,27 @@
+Sub clearsubs(...) ' clear all or some of the subs/func/proc from the image
+''clearsubs(<name of sub >,...) clears subs from memory
+''          if no parameters than clear all
+''          if parameters remove each from memory 
+if param.count <> 0 then
+  for each subname as string in param
+    if sharedmem.exist("sub."&subname) then
+        print #file.err, "Clear Sub/Procedure/Function :" ;;subname
+        sharedmem.free("sub."&subname)
+    else
+        print #file.err, "Sub/function/procedure not found :";;subname
+    endif
+  next
+  return
+endif
+
+for each s as SharedMemSymbol in sharedmem.SymbolTable
+  if s.symname like "sub.*" then
+	print #file.err, "Clear Sub/Procedure/Function :" ;;s.symname 
+	sharedmem.free(s.symname)
+  endif
+next
+
+catch
+ print #file.err, "Error :";;error.text;; error.where
+
+end

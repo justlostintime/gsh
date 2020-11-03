@@ -1,0 +1,5 @@
+Sub onexit() ' executed when gsh  exits interactive sessions
+''onexit()  This Function is executed at the end of an 
+''          interactive session
+print "Exit"
+end

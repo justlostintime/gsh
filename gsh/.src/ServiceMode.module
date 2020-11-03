@@ -1,0 +1,67 @@
+' Gambas module file
+
+Public MyServerSocket As ServerSocket
+Public MySerialSocket As SerialPort
+Public PortID As String = ""
+
+Public Sub InitService(PortNumber As String) As Stream
+  
+   PortID = PortNumber
+  
+  If IsInteger(PortID) Then 
+       SetupTCPPort()
+  Else If Exist("/dev" &/ PortID) Then 
+       Return SetupSerialPort()
+  Endif
+  'Default to a local linux pipe/socket
+  
+  Return SetupUnixSocket()
+
+End
+
+Private WaitingConnection As Boolean = True
+Public NewSocket As Socket 
+
+Public Sub SetupTCPPort() As Stream
+  MyServerSocket = New ServerSocket As "MyTCPSockets"
+  MyServerSocket.type = Net.Internet
+  MyServerSocket.port = PortID
+  Try MyServerSocket.listen()
+  If Error Then
+        Error Error.text;; Error.code;; Error.Where
+        Quit -1
+ Endif
+ 
+ While WaitingConnection
+    Wait 10
+ Wend
+  
+  Error To NewSocket.Handle
+  Output To NewSocket.Handle
+  Input From NewSocket.Handle
+  
+  Return NewSocket
+
+End
+
+Public Sub SetupSerialPort() As Stream
+  
+  MySerialSocket = New SerialPort 
+  MySerialSocket.PortName = "/dev" &/ PortID
+  Try SerialPort.Open
+  If Error Then
+            Error Error.text;; Error.code;; Error.Where
+        Quit -1
+ Endif
+  
+Error To MySerialSocket.Handle
+Output To MySerialSocket.handle
+Input From MySerialSocket.handle
+Return MySerialSocket
+End
+
+Public Sub SetupUnixSocket() As Stream
+  
+  
+  
+End

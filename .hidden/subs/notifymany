@@ -1,0 +1,9 @@
+Sub notifymany(optional list as string[] = ["a"], count as integer = 10000) ' test notify function
+
+for i as integer = 1 to count
+	for each s as string in list
+		sharedmem[s] = "Count=" & i
+	next
+next
+
+End

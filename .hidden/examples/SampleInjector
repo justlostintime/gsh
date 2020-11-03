@@ -1,0 +1,11 @@
+Sub injector(num as integer) ' simple example of a data injector
+'' Functions like this can be to nject data into a process stream
+'' Just have to write to standard output
+
+for i as integer = 0 to num
+ print "Sub here";;i
+next
+
+quit 0
+
+End

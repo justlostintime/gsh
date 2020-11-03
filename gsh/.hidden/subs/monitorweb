@@ -1,0 +1,36 @@
+Private enum hosturl,expected,emailaddr, emailhost,emailport,emailuser,emailpwd
+
+Sub monitorweb(...) ' Monitors in background a list of websites emails user if down
+''monitorweb(HostList as string[],...
+''          parameter format  [hosturl, expecttext, [emailaddr,[emailhost[,Emailport[, emailuser,emailpwd]]]]
+''          Email Field examples emailaddr as string = "",emailhost as string = "",emailuser as string = "",emailpwd as string = "",emailport as string = "465")
+''          port number is specified as a string
+''          This command will monitor a number of websites
+''          Eg. monitorweb ["www.google.com","www.yahoo.com"] ["^<!doc.*","redirect"] jdoe@endofuniverse.com host loginuser password
+''          This function will use regexp to check for valid match if compare is "" then it will match
+''          if it get any response. 
+''          Will send an email to user if it misses 5 times
+''          The monitor will continue to run until the monitorcontrol global
+''          variable turn false. set to true when started
+
+if param.count  = 0 then Return
+
+for each s as string[] in param
+    dim mhost as new monitorwebAgent
+    Print "MonitorWeb Agent Started for";;s[hosturl]
+    if s.max >= hosturl then 
+        mhost.MonitorWebAddr = s[hosturl]
+        mHost.ExpectedReturn = iif(s.count < expected,"",s[expected])
+        if s.max >= emailhost then
+            mHost.MonitorNotifyEmail = s[emailaddr]
+            mHost.MonitorNotifyHost = s[emailhost]
+            if s.max >= emailport then mHost.MonitorNotifyPort = s[emailport]
+            if s.max >= emailuser then mHost.MonitorNotifyuser = s[emailuser]
+            if s.max = emailpwd  then mHost.MonitorNotifypwd = s[emailpwd]
+       endif
+    endif
+    
+next
+
+Print "MonitorWeb Agent Running in background"
+end

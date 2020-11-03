@@ -1,0 +1,25 @@
+' Gambas module file
+
+Public program As String[]
+Public SProgram As String
+
+Public Sub main()
+
+With SharedMem
+.Begin(128000)
+  .["$f"] = "hello"
+  .["$r"] = "Bye"
+  Dim a As String
+  Dim syms As String[]
+  a = "! cat < $f > $r ! cat ! less"
+  While True
+    If a = "quit" Then Break
+    syms = Highlight.Analyze(a)
+    sProgram = CreateCmdProgram.compile(syms)
+    program = Split(sProgram, "\n", "\"\"", True, True)
+    Print sProgram
+    Line Input a
+  Wend
+.end()
+End With
+End

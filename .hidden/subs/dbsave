@@ -1,0 +1,19 @@
+Sub dbsave(Optional FileName As String = ".") As Boolean ' Save InMemory database to file/Image
+''dbSave <"ImageFileName"> - Save the current database image to a file
+''          Images may be saved to a file and loaded as needed
+''          Images may contain any application environment
+''          function dbsave(<"filename">)
+''          Command  dbsave <"filename">
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+With sharedmem
+.Free("$result")
+Try .Sync(".", FileName)
+If Error Then
+.["$result"] = error.text
+Return False
+Endif
+.["$result"] = "OK"
+End With
+Return True
+End

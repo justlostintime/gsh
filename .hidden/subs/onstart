@@ -1,0 +1,9 @@
+Sub onstart() As Boolean ' executed when gsh starts an interactive session
+''onstart()  - Executed at startup of interactive session
+if system.exist("fortune") then
+	shell "fortune" wait
+	print
+endif
+env["EDITOR"] = "/usr/bin/kate"
+return true
+end

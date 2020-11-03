@@ -1,0 +1,14 @@
+Sub runscript(scriptname As String, ...) As Boolean ' execute a script from a program
+''runscript(name as string , ...) as boolean
+'' run a script in a program, 
+'' use run from command line to run script immediately
+''
+dim src as class = classes["gsh"]
+dim plist as new variant[]
+plist.add(scriptname)
+for each g as variant in param
+plist.add(g)
+next
+object.call(src,"runfromextern",[scriptname])
+return true
+end

@@ -1,0 +1,46 @@
+Sub saveclasses(...) ' Save all or a list of classes or structures to files
+''saveclasses() - Save all the in memory Classes and structs
+''          to the ~/vars/class or ~/vars/struct directory
+''          these will over ride any default classes
+if not exist(user.home &/ "vars/class") then
+	mkdir user.home &/ "vars/class"
+endif
+if not exist(user.home &/ "vars/struct") then
+	mkdir user.home &/ "vars/struct"
+endif
+
+if param.count = 0 then
+    for each  s as SharedMemSymbol in sharedmem.SymbolTable
+        if s.symname like "class.*" then
+            dim destfile as string = user.home &/ "vars/class" &/ split(s.symname,".")[1]
+            print "class :" ;;s.symname;;"to";;destfile 
+            varwrite(s.symname,destfile,true)
+        endif
+    next 
+
+    for each  s as SharedMemSymbol in sharedmem.SymbolTable
+        if s.symname like "struct.*" then
+            destfile = user.home &/ "vars/struct" &/ split(s.symname,".")[1]
+            print "struct :" ;;s.symname;;"to";;destfile 
+            varwrite(s.symname,destfile,true)
+        endif
+    next
+
+else
+    dim written as boolean = false
+    for each sp as string in param
+       if sharedmem.exist("class."&sp) then
+            written = true
+            destfile = user.home &/ "vars/class" &/ sp
+            print "class :" ;;sp;;"to";;destfile 
+       endif
+       
+       if sharedmem.exist("struct."&sp) then
+            written = true
+            destfile = user.home &/ "vars/struct" &/ sp
+            print "struct :" ;;sp;;"to";;destfile 
+       endif
+       if not written then print "Entry for ";sp;;"not found"
+    next
+endif
+end

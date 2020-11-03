@@ -1,0 +1,7 @@
+Sub qtest()
+$a=0
+while $a < 5
+echo  (classes["gsh"].symbols[$a])
+inc $a
+wend
+end

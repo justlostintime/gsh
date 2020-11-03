@@ -1,0 +1,59 @@
+Sub varstat(optional symbol As String= "", display As Boolean = True) As Sharedmemsymbol ' displays/returns the type of a varable
+''varstat varname display<true|false - displays info about a variable
+''          varname with display=yes defaults to display info other wise just returns Stat
+''          Displays the var type, class etc
+''
+with sharedmem
+
+dim x as SharedMemSymbol
+dim varlist as new string[]
+
+if symbol <> "" then
+  varlist.add(symbol)
+else
+  for each x in .SymbolTable
+    if not (x.symname like "sub.*" or x.symname like "class.*" or x.symname like "struct.*") then
+     varlist.add(x.symname)
+    endif
+  next
+endif
+
+varlist.sort()
+dim sp as integer = longeststring(varlist)
+
+for each symbols as string in varlist
+  x = .SymbolTable[symbols]
+  if isnull(x) then
+    error "Var Stat Unknown var "&symbol
+    return null
+  endif
+
+  if display then
+    print left(x.symname&space(sp),sp);;"Type[";left(sharedmem.datatypes[x.symtype]&space(8),8);"]";;
+    if x.symtype = gb.object then
+      print "Class[";x.classname;"] \n"&space(sp+16)&"Interface[";;
+      for each s as string in classes[x.classname].symbols
+        print s;;
+      next
+      print "]";
+      print
+    else if x.symtype = gb.string then
+      print "Len[";.[x.symname].len;"]"
+    else
+       print
+   endif
+  endif
+
+next
+
+return x
+end with
+end
+
+private sub longestString(l as string[]) as integer
+dim c as integer = 0
+for i as integer = 0 to l.max
+  if l[i].len > c then c = l[i].len
+next
+return c
+end

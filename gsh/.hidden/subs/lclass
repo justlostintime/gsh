@@ -1,0 +1,74 @@
+Sub lclass(Optional varname As String = "") As Boolean ' List user classes
+''lClass    <GlobalClassname> - prints a list of global classes
+''          prints the content of classif name is provided
+''          function lsub(<subname>)
+''          Command lsub <subname>
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+
+with sharedmem
+
+dim allsubs as collection
+dim allstruct as collection
+
+allsubs = lany("class","class")
+allstruct = lany("struct","struct")
+
+for each s as string[] in allstruct
+    allsubs.add(s,allstruct.key)
+next
+
+if isnull(allsubs) then 
+	print #file.err, "file list error"
+	return false
+endif
+
+if varname <> ""  and if not instr(varname,"*") then 
+	if allsubs.exist(varname) then
+		print varname ;;"in";;allsubs[varname][0]
+		if allsubs[varname][0] <> "Image" then
+            lprint(lsubgetfile(allsubs[varname][1]))
+		else
+			print .["sub."&varname]
+		endif
+		return true
+	else
+		.["$result"] = "Error : Global class/struct Not found ["&varname&"]"
+		print #file.err, .["$result"]
+		return false
+	endif
+endif
+
+For Each s As string[]  In allsubs
+      if varname <> "" and if not (allsubs.key like varname) then continue 
+      print left(s[0]&space(10),10);;lsubgetdef(lsubgetfile(s[1]))
+Next
+
+.["$result"] = "OK"
+
+end with
+return true
+End
+
+sub lsubgetdef(func as string[]) as string
+	for each s as string in func
+		if s like "*[Cc]lass *" or if s like "*[Ss]truct *" then return s
+	next
+   return "*"&func[0]
+end
+
+sub lsubgetfile(path as string) as string[]
+dim func as string[]
+	if  path[0] = "/" then
+		try  func = split(file.load(path),"\n","\"\"",true,true)
+		if error then
+			 print #file.err, "unable to read "&path
+			return null
+		endif
+	else
+		func = split(sharedmem[path],"\n","\"\"",true,true)
+	endif
+return func
+end

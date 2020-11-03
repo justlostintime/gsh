@@ -1,0 +1,15 @@
+Sub compload(...) As boolean ' loads a gambas3 component into memory
+''compload(NameOfComponant as string) as component
+''          Load a component into the current shaell and make it available
+''          to the current shell
+if param.count > 0 then
+    for each compname as string in param
+        'print #file.err, "Loading :";compname
+        try component.load(compname)
+        if error then
+            print #file.err, "Unable to load ";compname;;"Error:";error.text
+        endif
+    next
+endif
+return true
+end

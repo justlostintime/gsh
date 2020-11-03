@@ -1,0 +1,9 @@
+Sub listing(Text as string)
+  use "gb.eval.highlight"
+
+  dim lines as string [] = split(text,"\n","\"\"",true,true)
+  for each s as string in lines
+    highlight.analyze(s)
+  next
+
+End

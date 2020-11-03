@@ -1,0 +1,11 @@
+Sub lcompsub() ' list all compiled and linked subs/procs/func in the image
+'' lcompsub - lists the sub/proc/func that have been compiled and loaded into the image'
+''          These plugins are ececuted in the context of the shell
+dim a as class = classes["SubCls"]
+dim b as collection = object.call(a,"getTable")
+with b
+for each c as variant in b
+print .key
+next
+end with
+end

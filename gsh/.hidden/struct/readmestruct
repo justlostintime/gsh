@@ -1,0 +1,5 @@
+public struct README
+	body as string
+end struct
+
+'' this directory contains all structures defined in you shell

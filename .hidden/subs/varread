@@ -1,0 +1,26 @@
+Sub varread(Optional varname As String = "", Optional FileName As String = "") As Boolean ' load variable from file
+''VarRead  $GlobalVarName <"filename"> - read a global variable value from a file, default = ~/var/varname
+''          as function - varread("varname <, "filename">)
+''          as command  - varread "varname" <"filename
+''          returns true if read, false otherwise
+''          $result contains the error text or "OK"
+''
+with sharedmem
+if varname = "" then
+  .["$result"] = "No Variable Specified"
+  error sharedmem["$result"]
+  return false
+endif
+if not .exist(varname) Then
+.[varname] = ""
+endif
+
+try .readvarfrom(varname,FileName)
+if error Then
+.["$result"] = error.text
+print #file.err, error.text
+return false
+endif
+return true
+end with
+end
