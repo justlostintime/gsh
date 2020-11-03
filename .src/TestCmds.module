@@ -1,0 +1,53 @@
+' Gambas module file
+
+' Gambas module 
+
+
+Public Sub rr_Read()
+   Dim sLine As String
+   Read #Last, sLine, -256
+   SharedMem["r"] &= sLine
+   'Print "Read ="; SharedMem["r"];
+   'If Right(SharedMem["r"], 4) = "quit" Then mmProc.kill
+End
+
+Public Sub rr_Kill()
+  
+  Print "Killed"
+  
+End
+
+Public Sub rr_error(merror As String)
+  
+  Print "Error = "; merror
+  
+End
+
+
+
+Public Sub main()
+Dim mmProc As Process
+With sharedmem
+.BeginNamed("briangsh", 1512000)
+
+.["r"] = ""
+
+mmProc = Exec ["cc", "xcv"] For Write As "rr"
+
+.["f"] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nccccccccccccccccccccccccccccccccccccc\n"
+Write #mmproc, .f
+Write #mmProc, "quit\n"
+Wait 2
+mmProc.kill()
+
+While mmproc.state = process.Running
+  Wait
+Wend
+
+Print "recieved - \n"; .r; "\nEnd Recieve"
+
+.end()
+
+End With 
+End
+

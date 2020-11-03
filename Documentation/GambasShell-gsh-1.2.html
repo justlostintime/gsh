@@ -1,0 +1,3359 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 6.0.7.3 (Linux)"/>
+	<meta name="created" content="2020-05-05T15:28:02.700934000"/>
+	<meta name="changed" content="2020-07-05T09:31:32.529240800"/>
+	<style type="text/css">
+		@page { margin: 0.79in }
+		p { margin-bottom: 0in; direction: ltr; color: #000000; line-height: 100%; orphans: 2; widows: 2 }
+		p.western { font-family: "Liberation Serif", "Times New Roman", serif; font-size: 12pt; so-language: en-US }
+		p.cjk { font-family: "Noto Sans CJK SC"; font-size: 12pt; so-language: zh-CN }
+		p.ctl { font-family: "Lohit Devanagari"; font-size: 12pt; so-language: hi-IN }
+		h1 { margin-bottom: 0.08in; direction: ltr; color: #000000; orphans: 2; widows: 2 }
+		h1.western { font-family: "Liberation Sans", "Arial", sans-serif; font-size: 18pt; so-language: en-US }
+		h1.cjk { font-family: "Noto Sans CJK SC"; font-size: 18pt; so-language: zh-CN }
+		h1.ctl { font-family: "Lohit Devanagari"; font-size: 18pt; so-language: hi-IN }
+		h2 { direction: ltr; color: #000000; orphans: 2; widows: 2 }
+		h2.western { font-family: "Liberation Sans", "Arial", sans-serif; font-size: 16pt; so-language: en-US }
+		h2.cjk { font-family: "Noto Sans CJK SC"; font-size: 16pt; so-language: zh-CN }
+		h2.ctl { font-family: "Lohit Devanagari"; font-size: 16pt; so-language: hi-IN }
+		h3 { direction: ltr; color: #000000; orphans: 2; widows: 2 }
+		h3.western { font-family: "Liberation Sans", "Arial", sans-serif; so-language: en-US }
+		h3.cjk { font-family: "Noto Sans CJK SC"; so-language: zh-CN }
+		h3.ctl { font-family: "Lohit Devanagari"; so-language: hi-IN }
+		h4 { direction: ltr; color: #000000; orphans: 2; widows: 2 }
+		h4.western { font-family: "Liberation Sans", "Arial", sans-serif; font-size: 13pt; so-language: en-US; font-style: italic }
+		h4.cjk { font-family: "Noto Sans CJK SC"; font-size: 13pt; so-language: zh-CN; font-style: italic }
+		h4.ctl { font-family: "Lohit Devanagari"; font-size: 13pt; so-language: hi-IN; font-style: italic }
+		h5 { direction: ltr; color: #000000; orphans: 2; widows: 2 }
+		h5.western { font-family: "Liberation Sans", "Arial", sans-serif; font-size: 12pt; so-language: en-US }
+		h5.cjk { font-family: "Noto Sans CJK SC"; font-size: 12pt; so-language: zh-CN }
+		h5.ctl { font-family: "Lohit Devanagari"; font-size: 12pt; so-language: hi-IN }
+		h6 { direction: ltr; color: #000000; orphans: 2; widows: 2 }
+		h6.western { font-family: "Liberation Sans", "Arial", sans-serif; font-size: 12pt; so-language: en-US; font-style: italic }
+		h6.cjk { font-family: "Noto Sans CJK SC"; font-size: 12pt; so-language: zh-CN; font-style: italic }
+		h6.ctl { font-family: "Lohit Devanagari"; font-size: 12pt; so-language: hi-IN; font-style: italic }
+		a:link { so-language: zxx }
+	</style>
+</head>
+<body lang="en-US" text="#000000" dir="ltr">
+<div title="header">
+	<p align="center" style="margin-bottom: 0.35in; line-height: 100%">Gambas
+	Shell V1.2</p>
+</div>
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-after: avoid">
+<br/>
+<br/>
+
+</p>
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-after: avoid">
+<br/>
+<br/>
+
+</p>
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-after: avoid">
+<br/>
+<br/>
+
+</p>
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-after: avoid">
+<br/>
+<br/>
+
+</p>
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-after: avoid">
+<font face="Liberation Sans, Arial, sans-serif"><font size="4" style="font-size: 16pt"><b>Gambas
+Shell gsh</b></font></font></p>
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-after: avoid">
+<font face="Liberation Sans, Arial, sans-serif"><font size="4" style="font-size: 16pt"><b>Version
+1.2</b></font></font></p>
+<p align="center" style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-after: avoid">
+<font face="Liberation Sans, Arial, sans-serif"><font size="4" style="font-size: 16pt"><b>May
+2020</b></font></font></p>
+<p style="margin-top: 0.17in; margin-bottom: 0.08in; line-height: 115%; page-break-before: always; page-break-after: avoid">
+<font face="Liberation Sans, Arial, sans-serif"><font size="4" style="font-size: 16pt"><b>Gambas
+Shell - gsh - 1.2 - Table of Contents</b></font></font></p>
+<div id="Table of Contents1" dir="ltr">
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc209_2876409098">Introduction	6</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc209_1961539047">Requirements	8</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc125_3216797651">Installation	9</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc354_2876409098">Quick
+	Overview	10</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc215_2876409098">Getting
+	Started	10</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc217_2876409098">Getting
+	Help Interactively for gsh	11</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc220_2876409098">Overview
+	of Interactive and Script Syntax	12</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc222_2876409098">gsh
+	Command Line Parameters	14</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc226_2829647683">Keyboard
+	Input and Configuration	15</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc228_2829647683">Current
+	working directory	15</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc230_2829647683">File
+	and path name expansion for Linux Cli commands	15</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc332_2876409098">First
+	Scripts: Examples	16</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc338_2876409098">Let’s
+	Print “hello world”	16</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc340_2876409098">Let’s
+	Print &quot;hello world&quot; Ten Times	16</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc342_2876409098">Let’s
+	Look at History	17</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc344_2876409098">Let's
+	Define a Function/Sub/Procedure	18</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc346_2876409098">Let's
+	Write a Simple Gambas Short Program Interactively	18</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc348_2876409098">Let's
+	Look at the edit Command	19</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc350_2876409098">Summary
+	of What We Learned So Far	20</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc352_2876409098">Let's
+	Look at the Shell Interface to Linux Commands	21</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc334_2876409098">Let's
+	Look at Aliases and Alias Substitution	22</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc356_2876409098">Let's
+	Look at Global Variables	23</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc336_2876409098">Let's
+	Look at Input and Output Redirection	24</a></p>
+	<p style="margin-left: 0.39in; line-height: 100%"><a href="#__RefHeading___Toc360_2876409098">Let's
+	Look at Pipes	26</a></p>
+	<p style="margin-left: 0.59in; line-height: 100%"><a href="#__RefHeading___Toc22_820234672">Summary
+	of | and |&gt; output messaging	26</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc606_1004977946">Now
+	let's look at using pipes to have multiple input streams to a single
+	task!	26</a></p>
+	<p style="margin-left: 0.59in; line-height: 100%"><a href="#__RefHeading___Toc26_820234672">Summary
+	of Pipes and Pipe Fitting or Tees as They Are Known in Some
+	Shells	27</a></p>
+	<p style="line-height: 100%"><a href="#__RefHeading___Toc29_820234672">Gambas
+	Shell Reference	28</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc232_2829647683">How
+	command classes and structures are handled	28</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc31_820234672">gsh.image	28</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc234_2829647683">profile.gsh
+	contains system wide definitions	28</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc236_2829647683">gsh.rc
+	contains all user specific definitions	28</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc35_820234672">onstartup()
+	executed at start of interactive session	28</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc134_2829647683">onexit()
+	executed at end of interactive session	28</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc37_820234672">Global
+	Variables	29</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc39_820234672">$VarName
+	= &lt;value&gt;	29</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc105_222107296">$0
+	to $n gsh command line parameter	29</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc107_222107296">$#
+	gsh command line parameter count	29</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc41_820234672">$result	29</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc43_820234672">$trace	29</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc45_820234672">$prompt	29</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc47_820234672">$editor	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc49_820234672">$hexeditor	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc51_820234672">$alias	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc190_3705831925">$profile	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc55_820234672">$blockindent	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc57_820234672">$maxhistory	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc59_820234672">$historycurrent	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc61_820234672">$history	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc63_820234672">$pwd	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc65_820234672">$env	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc67_820234672">$helpdisplay	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc608_1004977946">$$	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc610_1004977946">$UID	30</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc612_1004977946">$GID	30</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc45_3411073610">Shell
+	operators	31</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc614_1004977946">
+	! or | Direct the stdout from one task/process/function to
+	another	31</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc156_2829647683">Input
+	Output Redirection targets	32</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc158_2829647683">Files:
+	Files may be the source or destination of redirection. Specified as
+	follows	32</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc160_2829647683">Variables
+	: Output or input may be send/recieved from/to any global
+	variable	32</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc162_2829647683">Functions:
+	Output to any function who's parameter is a string	32</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc164_2829647683">Functions:
+	Input from any function that returns a string	32</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc166_2829647683">Constants:
+	Any string or numeric constant or inline array of such types	32</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc49_3411073610">&lt;
+	Redirect input from file/sub/variable	32</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc51_3411073610">&gt;
+	&gt;&gt; Redirect output to file/sub/variable	32</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc53_3411073610">&amp;&gt;
+	&amp;&gt;&gt; Redirect Error Output to file/sub/variable	32</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc55_3411073610">|&lt;
+	|&gt; Pipe fitting output or input from multiple
+	tasks/processes/functions	33</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc136_2829647683">:&gt;
+	Store the return code from this process to a variable	33</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc57_3411073610">HistoryEntryNumber!	33</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc616_1004977946">[0]findpattern/replacepattern/	33</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc618_1004977946">&quot;#{expression}&quot;	34</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc63_3411073610">?
+	Same as print	34</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc65_3411073610">&amp;
+	Start the command/function as a detached process	34</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc73_3411073610">Global
+	Commands/Functions/Classes	35</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc75_3411073610">get
+	&lt;Command&gt; &lt;Command&gt; … &lt;obsolete&gt;	35</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc77_3411073610">edit
+	class|function|variable	35</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc624_1004977946">run
+	&quot;Scriptname&quot;	36</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc103_2315703034">quit	36</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc296_3411073610">alias
+	text substitution of values before evaluation	37</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc298_3411073610">compile
+	&lt;Output Script Name&gt;	38</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc300_3411073610">@GlobalVariableName(don't
+	include $)	39</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc87_3411073610">
+	Parameters $0-$n and $#	39</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc626_1004977946">Sub/Function/Procedure
+	and Class/Structures	39</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc105_2315703034">{
+	} or Lambda … end	40</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc620_1004977946">Code
+	Blocks Defined/Described	40</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc93_3411073610">Commands
+	– Plugins from subs/class/struct Directories	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc95_3411073610">cd
+	directorypath - change the current working directory	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc97_3411073610">clear
+	Clears the screen	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc238_2829647683">clearclass
+	Clears all classes and structures from the image	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc99_3411073610">clearhist
+	Clears the history of entered commands	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc240_2829647683">clearsubs
+	Clears all subs/functions/procedures from the image	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc242_2829647683">compload
+	Loads a gambas3 component into the image	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc101_3411073610">fprint
+	Print to a file the content of arrays or collections	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc103_3411073610">getfile
+	“FileName” Loads a binary copy of the file into a global
+	variable	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc105_3411073610">hist
+	&lt;start at&gt;&lt;number of entries&gt; Print a list input lines
+	to the stdout	41</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc168_2829647683">hh
+	Lists the last 10 history entries only	42</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc622_1004977946">jobs
+	&lt; pid | ON |OFF &gt; Prints a list of current background jobs	42</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc107_3411073610">lclass
+	&lt;GlobalClassname&gt; - prints a list of global classes	42</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc109_3411073610">lenv
+	prints the current environment for exec	42</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc192_3705831925">dbload
+	&lt;&quot;ImageFileName&quot;&gt; Loads and uses a memory image from
+	a file .	42</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc170_2829647683">dbsave
+	&lt;&quot;ImageFileName&quot;&gt; - Save the current image to a
+	file	42</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc113_3411073610">
+	lprint Print the content of arrays, collections, Object or
+	Classes	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc172_2829647683">fprint
+	Print the content of arrays, collections, Object or Classes to a
+	file	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc174_2829647683">lcompsub
+	List all subs/functions compiled and loaded	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc176_2829647683">lenv
+	list the current environment	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc178_2829647683">lnotify
+	List the variables the current task is waiting to be notified on
+	change	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc115_3411073610">lsclasses
+	List all the classes in the current environment	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc117_3411073610">lsubs
+	&lt;GlobalSubName&gt; - prints a list of global functions, subs,
+	procs	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc119_3411073610">lvars
+	&lt;$GlobalVarName&gt; - list all variables or specific variable
+	with content	43</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc123_3411073610">readto(GlobalVar
+	as string) For next command redirect output to variable	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc125_3411073610">resetdefaults
+	Reset the system variables to their default value	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc127_3411073610">resetenv
+	Reset the current image to default	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc244_2829647683">savesubs
+	save all or some of the subs in memory to the ~/vars/subs
+	directory	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc246_2829647683">saveclasses
+	save all/some of the classes to ~/vars/class or ~/vars/struct
+	directories	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc131_3411073610">traceoff
+	Turns off shell command tracing	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc133_3411073610">traceon
+	Turns on shell command tracing	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc135_3411073610">vardel
+	“$globalvar” - Delete a global variable/Sub/Class/Struct	44</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc107_2315703034">varread
+	$GlobalVarName &lt;&quot;filename&quot;&gt; - read a global variable
+	value from a file	45</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc248_2829647683">varrd
+	read a list of global variables from their default filenames	45</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc109_2315703034">varstat
+	varname display&lt;true|false&gt; - displays info about a
+	variable	45</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc141_3411073610">varwrite
+	$GlobalVarName &lt;&quot;filename&quot;&gt; - write a global
+	variable value to a file	45</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc250_2829647683">varwr
+	Writes a list of global variables to their default files names	45</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc188_2829647683">Job
+	control	46</a></p>
+	<p style="margin-left: 1.57in; line-height: 100%"><a href="#__RefHeading___Toc252_2829647683">jobs
+	on turns on the job control and recording	46</a></p>
+	<p style="margin-left: 1.57in; line-height: 100%"><a href="#__RefHeading___Toc254_2829647683">jobs
+	off turn off the job control and recording	46</a></p>
+	<p style="margin-left: 1.57in; line-height: 100%"><a href="#__RefHeading___Toc256_2829647683">jobs
+	pid Lists the current state of the job with pid(process id)	46</a></p>
+	<p style="margin-left: 1.57in; line-height: 100%"><a href="#__RefHeading___Toc258_2829647683">jobs
+	by its self lists all terminated, running, suspended background
+	jobs.	46</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc148_3673232024">Sample
+	Functions for Pipe Fitting	47</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc306_3411073610">Sub
+	filter() ' this is a simple filter to do upper to lower case	47</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc308_3411073610">Sub
+	injector(num as integer) Simple Example of a Data Injector	47</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc310_3411073610">Sub
+	Sink() ' simple example of a data sink receiver	48</a></p>
+	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc150_3673232024">Sample
+	Functions for Stream Redirection	49</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc152_3673232024">Sub
+	DataSink(Data as string) ‘ example output data redirection sink	49</a></p>
+	<p style="margin-left: 0.98in; line-height: 100%"><a href="#__RefHeading___Toc154_3673232024">Sub
+	DataSource(filename as string) as string ‘ example input
+	redirection source	49</a></p>
+</div>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h1 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc209_2876409098"></a>
+Introduction</h1>
+<p class="western" style="line-height: 115%">	Gambas Shell(<b>gsh</b>)
+is a general purpose shell much like bash or sh which may be used for
+interactive terminal sessions or job control. The major difference is
+the use of complete Gambas3 Basic syntax with a few exceptions that
+were required to be somewhat Posix compliant.  Its real power is the
+ability to share data between running processes and to store the
+state and environment between invocations. <b>gsh</b> really brings
+into line a complete development and support environment based upon
+the single syntax and code base of Gambas.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	Interactively function
+can be created and tested individually, and later compiled into a
+single Gambas script. 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	<b>gsh</b> required
+Gambas 3.14.90-3.15 be installed as its base Gambas release. 
+</p>
+<p class="western" style="line-height: 115%">It only<span style="font-weight: normal">
+uses</span> the GAMBAS3-RUNTIME, <b>gambas3-eval-highlight.</b> No
+graphic classes are used at all.</p>
+<p class="western" style="line-height: 115%">But these can be <span style="font-weight: normal">used</span>
+if wanted or needed.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	Some of the differences
+are that redirection is directed to and from global variable or
+functions. These variable work through an in-memory database. Global
+variables  may be saved to and  loaded from files. The functions may
+open and feed data from a file or to a file, for example.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	The in-memory database
+is utilized throughout the shell to store persistent values and uses
+the dollar sign variable name($varname Case matters) notation
+throughout scripts and interactive sessions. This is important to
+understand as gsh compiles and executes blocks of code as they are
+completed from the command line or read from a script file. Only
+global variables persist between code blocks.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	Code blocks are defined
+as any statement or statements  containing Gambas syntax block as
+examples for-next, if-endif  etc. A single line is also considered a
+complete code block for execution.</p>
+<p class="western" style="line-height: 115%">To allow programs to be
+entered for one time use lambda-end notation has been added to the
+valid syntax.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	The remainder of this
+document attempts to describe the Gambas shell interface and general
+usage.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	The development of this
+shell started as a test program and fun project for the in-memory
+database development and sort of just grew. I enjoy using it now in
+day-to-day operations at work and home. Enjoy!</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Gambas shell 1.2
+currently only supports a subset of Gambas syntax, outside of
+functions.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">You can find Gambas
+syntax at:</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><font color="#000080"><span lang="zxx"><u><a href="http://gambaswiki.org/wiki">http://gambaswiki.org/wiki</a></u></span></font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">The shell extends this
+syntax with command extensions and interactive compilations.</p>
+<h1 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc209_1961539047"></a>
+Requirements</h1>
+<p class="western" style="line-height: 115%">Gsh has a few important
+requirements.</p>
+<p class="western" style="line-height: 115%">Gambas3 version 3.14.90
+or greater</p>
+<p class="western" style="line-height: 115%">Gambas3 and C libraries</p>
+<p class="western" style="line-height: 115%">Gambas3 libs: 
+</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">-
+gambas3-runtime &gt;= 3.14.90 
+</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">-
+gambas3-scripter &gt;= 3.14.90</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">-
+gambas3-dev &gt;= 3.14.90</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">-
+gambas3-gb-signal &gt;= 3.14.90</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">-
+gambas3-gb-pcre &gt;= 3.14.90</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">-
+gambas3-gb-eval-highlight &gt;= 3.14.90</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">-
+gambas3-gb-args &gt;= 3.14.90</p>
+<p class="western" style="line-height: 115%">C Libs</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">libreadline7
+or greater version depending on your OS 
+</p>
+<p class="western" style="margin-left: 2.33in; line-height: 115%">GNU
+readline and history libraries</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">Libc6
+or greater</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">Libpthread-2.27
+or greater</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">sharedmem Component,
+included in the data section of gsh project files 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">An installable version
+of gsh and sharedmem are included the data section of project file</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Optionally the fortune
+app can be installed as the onstart() default startup will try to run
+it…. 
+</p>
+<h1 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc125_3216797651"></a>
+Installation</h1>
+<p class="western" style="line-height: 115%">Sharedmem and gsh may be
+downloaded from</p>
+<p class="western" style="line-height: 115%"><font color="#000080"><span lang="zxx"><u><a href="https://github.com/justlostintime/GambasShell"><span style="font-variant: normal"><font face="Ubuntu"><font size="2" style="font-size: 10pt"><span style="letter-spacing: normal"><span style="font-style: normal"><b>https://github.com/justlostintime/GambasShell</b></span></span></font></font></span></a></u></span></font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><font color="#000080"><span lang="zxx"><font color="#000000"><span style="text-decoration: none">The
+Gambas Shell wiki can be found at</span></font></span></font></p>
+<p class="western" style="line-height: 115%"><font color="#000080"><span lang="zxx"><u><a href="https://github.com/justlostintime/GambasShell/wiki"><span style="font-variant: normal"><font color="#5565af"><font face="Ubuntu"><font size="2" style="font-size: 10pt"><span style="letter-spacing: normal"><span style="font-style: normal"><b>https://github.com/justlostintime/GambasShell/wiki</b></span></span></font></font></font></span></a></u></span></font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Add repositories.</p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; line-height: 115%">
+<font face="Ubuntu"><font size="2" style="font-size: 10pt"><b>sudo
+add-apt-repository -y ppa:gambas-team/gambas-daily &amp;&amp; sudo
+apt-get update</b></font></font></p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; line-height: 115%">
+<br/>
+
+</p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; font-weight: normal; line-height: 115%">
+<font face="Ubuntu"><font size="2" style="font-size: 10pt">Install
+Gambas.</font></font></p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; line-height: 115%">
+<font face="Ubuntu"><font size="2" style="font-size: 10pt"><b>sudo
+apt install gambas3</b></font></font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Install shared memory
+library.</p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; line-height: 115%">
+<font face="Ubuntu"><font size="2" style="font-size: 10pt"><b>gambas3-westwood-sharedmem_3.14.87-0ubuntu1_all.deb</b></font></font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Install Gambas shell
+gsh.</p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; line-height: 115%">
+<font face="Ubuntu"><font size="2" style="font-size: 10pt"><b>gsh_1.2.30-0ubuntu1_all.deb</b></font></font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Make shell available as
+a login shell.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>Add
+an entry to the /</b><i><b>etc/</b></i><span style="font-style: normal"><b>shells</b></span></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">You
+must add the line</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>/usr/bin/gsh</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">to
+the end of the etc/shells file to enable gsh as a login shell</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><span style="font-weight: normal">Then
+you may change the user’s default shell in the </span><b>passwd</b><span style="font-weight: normal">
+file or through the tool provided by your distro. Most distros
+include the  'chsh' command so the following command line should work</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" align="center" style="line-height: 115%"><span style="font-weight: normal">sudo
+chsh  -s  /</span><i><span style="font-weight: normal">usr/</span></i><span style="font-style: normal"><span style="font-weight: normal">bin/gsh
+UserName</span></span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h1 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc354_2876409098"></a>
+Quick Overview</h1>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc215_2876409098"></a>
+Getting Started</h3>
+<p class="western" style="line-height: 115%">Download and install
+gsh. The project is available from the Gambas farm. The data section
+of the contains an install .deb and .rpm file to install both the gsh
+shell and sharedmem lib required to run the Gambas shell. Each should
+install the other requirements as dependencies.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Once installed you may
+change your default shell in your login configuration file. After you
+play with gsh for a while and are happy with it.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Gsh uses two
+directories, ~/vars where all the files are stored, and ~/bin where
+created scripts are stored by default. On first startup of the gsh it
+will create these directories if the don’t exist.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">A copy of the default
+profile called profile.gsh will be copied into the ~/vars directory
+and loaded into and executed by gsh. This file defines most of the
+shell builtin commands. These commands are loaded as plugins after
+being compiled.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Three files will be
+created by the startup.  These are:</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>~/vars/gsh.image
+</b>– this is the default image used by the shell and will be
+updated as variables , functions and classes are added, as well as
+when gsh exits. This is the environment used by gsh on all future
+startups. The state of all global objects are stored here.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><span style="font-style: normal"><b>/dev/shm/UserNamegsh</b></span><span style="font-style: normal">
+– this is the storage are for the in memory database  strings,
+arrays and objects</span></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><span style="font-style: normal"><b>/dev/shm/UserNamegshCol
+</b></span><span style="font-style: normal">– this is the
+Index/Storage area used to store simple variables and storage
+pointers.</span></p>
+<p class="western" style="margin-left: 0.29in; font-style: normal; line-height: 115%">
+<br/>
+
+</p>
+<p class="western" style="font-style: normal; line-height: 115%">These
+files are shared by all instances of the gsh shell for a single user,
+and may be used to communicate between tasks. It is possible to
+specify different shared memory databases at gsh start.</p>
+<p class="western" style="font-style: normal; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><span style="font-style: normal">When
+the gsh shell enters interactive mode, the onstart() function is
+executed. Commands and variables may be set here that are required by
+interactive sessions. The default startup tries to run </span><span style="font-style: normal"><b>fortune</b></span><span style="font-style: normal">...lol</span></p>
+<p class="western" style="font-style: normal; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><span style="font-style: normal">The
+default onstart() function is defined in the profile.gsh script.
+Almost all editable functions and variables may be edited with the
+built in </span><span style="font-style: normal"><b>edit</b></span><span style="font-style: normal">
+command.</span></p>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc217_2876409098"></a>
+Getting Help Interactively for gsh</h3>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">  <b>help</b> –
+basically this document and functions defined in <b>profile.gsh</b>
+command summary</p>
+<p class="western" style="line-height: 115%">		or</p>
+<p class="western" style="line-height: 115%">  <b>help</b> &lt;command
+name&gt; - command name will print a more detailed description</p>
+<p class="western" style="line-height: 115%">                      of
+the external commands loaded from the <b>profile.gsh</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h3>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc220_2876409098"></a>
+Overview of Interactive and Script Syntax</h3>
+<p class="western" style="line-height: 115%">You may use most Gambas
+language and variables definitions.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Regular Gambas variables
+will not persist between command blocks. Only global variables will
+denoted with a starting $. Global variables are created and type set
+on first use and may not change type  during their lifetime. Global
+variables may be removed using 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	vardel $variablename</b>
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">then reassigned if data
+type changes.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>gsh</b> compiles and
+runs code blocks as a Gambas scripts unless the function or command
+has been compiled and loaded as a plugin. This happens automatically
+the first time a function compiles without error.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>USE</b>, <b>INCLUDE</b>
+and <b>EXTERN</b> may be used in each function definition. Unlike
+Gambas programs where they must be at the beginning of the file.</p>
+<p class="western" style="line-height: 115%">All Subs and Classes are
+automatically <b>PUBLIC</b> and defined as global.</p>
+<p class="western" style="line-height: 115%">  
+</p>
+<p class="western" style="line-height: 115%">  Example   Sub or
+Command definition</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">         <font size="2" style="font-size: 10pt"><b>sub
+ex(parm1 as variant) as variant</b></font></p>
+<p class="western" style="line-height: 115%">              <font size="2" style="font-size: 10pt"><b>USE
+gb.gui,mybiz.comp </b></font>
+</p>
+<p class="western" style="line-height: 115%">              <font size="2" style="font-size: 10pt"><b>extern
+malloc(size as integer, count as integer) as pointer in &quot;libc:6&quot;</b></font></p>
+<p class="western" style="line-height: 115%">              <font size="2" style="font-size: 10pt"><b>Include
+xxx  </b></font>
+</p>
+<p class="western" style="line-height: 115%">              <font size="2" style="font-size: 10pt"><b>while
+x=yy</b></font></p>
+<p class="western" style="line-height: 115%">                 <font size="2" style="font-size: 10pt"><b>......</b></font></p>
+<p class="western" style="line-height: 115%">                 <font size="2" style="font-size: 10pt"><b>......</b></font></p>
+<p class="western" style="line-height: 115%">                 <font size="2" style="font-size: 10pt"><b>wend</b></font></p>
+<p class="western" style="line-height: 115%">             <font size="2" style="font-size: 10pt"><b>end</b></font></p>
+<p class="western" style="line-height: 115%">     
+</p>
+<p class="western" style="line-height: 115%"><b>gsh</b> takes care of
+creating and compiling the Gambas script correctly.</p>
+<p class="western" style="line-height: 115%">When a function or class
+compiles correctly, it is loaded into the shell as a plugin and may
+be directly executed from the command line in the context of the
+shell with access to all classes, etc. If changes are made to the
+function after the plugin is loaded then the plugin is ignored and
+the new version is executed as a script. Gambas can not unload a
+plugin so the changes are not internal to the shell until the next
+start of gsh.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">You may use a lambda
+expression as the syntax of a single simple inline function. This
+allows the definition of local variables, etc within a script
+section. More on lambda later. Remember that script lines or blocks
+i.e. (such as <b>for-next</b><span style="font-weight: normal"> or
+</span><b>while</b><span style="font-weight: normal">-</span><b>wend</b>
+structure or any Gambas language component with a <b>begin</b> –
+<b>end</b> structure) are executed as they are encountered in a
+script. They are each essentially treated as a separate module with a
+main function in Gambas terms.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">For example</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>lambda</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> 
+<font size="2" style="font-size: 10pt"><b>dim a as string</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">  <font size="2" style="font-size: 10pt"><b>a
+= “hello world”</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> 
+<font size="2" style="font-size: 10pt"><b>print a</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>end</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">	Gambas variable are not
+accessible outside of a block. The above lamda function may also be
+expressed using global variables as follows. But remember that global
+variables are just that, available to every copy of gsh running for
+the current user upon creation.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>$a
+= &quot;Hello World&quot;</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>?
+$a</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This may not seem clear
+but writing a script full of individual lines is not the most
+efficient thing in the world. 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">For example, writing the
+following is quite inefficient because it executes each line as an
+individual block. &quot;[&quot; &amp; editnum &amp; &quot;]&quot; &amp;</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>$a
+= 24</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>print
+$a</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>$b
+= $a</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>print
+$b</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><font size="3" style="font-size: 12pt">This
+is better written as one block of code as follows, since it is
+executed as a single block of code.</font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>lambda</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> 
+<font size="2" style="font-size: 10pt"><b>$a = 24</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> 
+<font size="2" style="font-size: 10pt"><b>print $a</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> <font size="2" style="font-size: 10pt"><b>$b
+= $a</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">
+<font size="2" style="font-size: 10pt"><b>print $b</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>end</b></font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc222_2876409098"></a>
+gsh Command Line Parameters</h3>
+<p class="western" style="line-height: 115%">--help Display the help
+pages</p>
+<p class="western" style="line-height: 115%"> 	-a --about   		Display
+information about gsh</p>
+<p class="western" style="line-height: 115%">	-C --cleanup 	Force the
+close of the in-memory database then reopen.</p>
+<p class="western" style="line-height: 115%">	-c --command 	Used by
+the remote ssh or other access for Posix compliance, not used in
+other<br/>
+					cases.</p>
+<p class="western" style="line-height: 115%">	-d	--service	Run Shell
+as a service point</p>
+<p class="western" style="line-height: 115%">	-D --dictsize        
+Define the size of the space reserved for the in memory database
+dictionary.</p>
+<p class="western" style="line-height: 115%">					The default size is
+1.5m.</p>
+<p class="western" style="line-height: 115%">	-f --from    		Execute
+the content of a global variable. The global variable may contain any
+<b>gsh</b><br/>
+					script</p>
+<p class="western" style="line-height: 115%">	-h --help    		Get this
+information 
+</p>
+<p class="western" style="line-height: 115%">	-i --image		Load a
+specific image from an image file upon start. The Image can be viewed</p>
+<p class="western" style="line-height: 115%">					as the total
+environment. It is possible to have many project environments saved.</p>
+<p class="western" style="line-height: 115%">	-M --memsize     
+Defines the starting allocated variable memory size for in memory
+database.</p>
+<p class="western" style="line-height: 115%">					Defaults to 4.5m.</p>
+<p class="western" style="line-height: 115%">	-m --manual  	Print the
+detailed extended help information.</p>
+<p class="western" style="line-height: 115%">	-n --noload  		Do Not
+load the image, Its already loaded. This is used mainly if 
+</p>
+<p class="western" style="line-height: 115%">					you are not using
+the default image. Mostly gsh will detect if the</p>
+<p class="western" style="line-height: 115%">					image is already
+loaded.</p>
+<p class="western" style="line-height: 115%">	-r --runline 		Execute
+the following command line 
+</p>
+<p class="western" style="line-height: 115%">	-s --shmname 	The name
+of the in memory database to use. Defaults to username</p>
+<p class="western" style="line-height: 115%">					Two in memory files
+are created, data segment and Index/Collection segment</p>
+<p class="western" style="line-height: 115%">	-S	--single		Do Not Use
+Shared Memory, Only Shared with tasks/threads</p>
+<p class="western" style="line-height: 115%">	-t	--trace		Turn on
+tracing in scripts</p>
+<p class="western" style="line-height: 115%">	-V --version 		Display
+the version number</p>
+<p class="western" style="line-height: 115%">	-v --version 		Display
+the version information as gsh starts</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h1 class="western" style="page-break-before: always"><a name="__RefHeading___Toc226_2829647683"></a>
+Keyboard Input and Configuration</h1>
+<p class="western" align="left" style="line-height: 115%"><span style="font-style: normal"><span style="font-weight: normal">gsh</span></span>
+uses the C readline function, and it is very configurable.  For
+details on keyboard support and configuration, please see</p>
+<p class="western" align="left" style="line-height: 115%"><br/>
+			<font color="#000080"><span lang="zxx"><u><a href="http://man7.org/linux/man-pages/man3/readline.3.html">http://man7.org/linux/man-pages/man3/readline.3.html</a></u></span></font></p>
+<p class="western" align="left" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" align="left" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" align="left" style="line-height: 115%">The
+readline7 or greater package must be installed for gsh to work
+correctly.</p>
+<p class="western" align="left" style="line-height: 115%">The shell
+will run with readline 5 library but it does not pass the signals to
+the shell program. This causes the about ctrl-c to fail and other
+control seq to fail as well.</p>
+<h1 class="western"><a name="__RefHeading___Toc228_2829647683"></a>Current
+working directory</h1>
+<p class="western">gsh  manages the current working directory for the
+shell environment. The processes current working directory is set
+after each command execution. The env variable PWD and the global
+variable $pwd are set after each function to the current processes
+working directory.</p>
+<p class="western">Some cli functions use the env variable PWD others
+use the process cwd current working directory. The shell attempts to
+keep both in sync.</p>
+<p class="western"><br/>
+
+</p>
+<p class="western">Linux process table contains an inode reference to
+the current working directory. The shell keeps this in sync with the
+PWD environment variable.  
+</p>
+<h1 class="western"><a name="__RefHeading___Toc230_2829647683"></a>File
+and path name expansion for Linux Cli commands</h1>
+<p class="western">The shell uses the glob library call to create all
+file expansion lists. It then takes the paths returned and turns them
+into absolute paths before passing them to and CLI or internal
+function running as a task.</p>
+<p class="western">For example : ls /*/*/gsh/subs would be expanded
+by the shell to <i>'/usr/share/gsh/subs' before being passed to ls.  </i>
+</p>
+<p class="western"><i>Another example would be to echo /*. this would
+echo a directory listing of the root directory</i></p>
+<p class="western"> <i>		echo /*</i></p>
+<p class="western"><i>outputs:</i></p>
+<p class="western"><i>/bin/ /boot/ /cdrom/ /core /dev/ /etc/ /home/
+/initrd.img /initrd.img.old /lib/ /lib32/ /lib64/ /libx32/
+/lost+found/ /media/ /mnt/ /oldhome/ /oldSrvToo/ /opt/ /proc/ /root/
+/run/ /sbin/ /srv/ /srvToo/ /sys/ /tmp/ /usr/ /var/ /vmlinuz
+/vmlinuz.old</i></p>
+<h1 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc332_2876409098"></a>
+First Scripts: Examples</h1>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">The following is a
+simple example script. It attempts to include most of the syntax
+elements and may be entered from the interactive terminal. Follow the
+examples by entering them into the interactive shell. As you
+progress, it is hoped you will get a reasonably good feel for the gsh
+scripts and implementation.</p>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc338_2876409098"></a>
+Let’s Print “hello world”</h3>
+<p class="western" style="line-height: 115%"><b>? &quot;hello
+world&quot;			'</b>Gambas3 supports the use of ? to print a value.
+“Hello world” is displayed</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">We may also do the same
+thing using the Linux <b>echo</b> command. 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Try the following as
+well.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>echo &quot;hello
+world&quot;</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">gsh
+allows the embedding of Linux commands into your script.</p>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc340_2876409098"></a>
+Let’s Print &quot;hello world&quot; Ten Times</h3>
+<p class="western" style="line-height: 115%"><b>for I as integer = 0
+to 5</b></p>
+<p class="western" style="line-height: 115%">  <b>? &quot;print hello
+world&quot;			' internal Gambas print</b></p>
+<p class="western" style="line-height: 115%">  <b>echo &quot;echo
+Hello World&quot;		' print with shell command</b></p>
+<p class="western" style="line-height: 115%">  <b>next</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This will display “hello
+world” ten times, 5 times from each command. If you made a mistake
+you need to start again! No editing here! We will talk about editing
+in the next section.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Right now you can use
+the up and down arrow to move back and forth through the history and
+correct the error.</p>
+<p class="western" style="line-height: 115%"> 
+</p>
+<p class="western" style="line-height: 115%">You may have noticed
+that the shell auto indents the code at the beginning of each block.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">You will notice the
+ability to use both Linux commands and Gambas3 commands in the same
+script.</p>
+<p class="western" style="line-height: 115%">This is one of the most
+important additions to the Gambas syntax.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">It should be noted that,
+if you’re using a Linux command, it must be the first thing on the
+line.</p>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc342_2876409098"></a>
+Let’s Look at History</h3>
+<p class="western" style="line-height: 115%">You may recall lines and
+execute them from history by using the &lt;HistoryLinenumber!&gt;
+expression.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Enter:</p>
+<p class="western" style="line-height: 115%"> <b>hist</b>     ‘
+which displays the entire history</p>
+<p class="western" style="line-height: 115%">    or 
+</p>
+<p class="western" style="line-height: 115%"> <b>hh </b>      ‘an
+alias which displays the last 10 entries</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This will display a list
+of everything we have entered so far</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Look at the listing and
+find the line containing the start of the <b>for</b> loop. The output
+should look something like this:</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>[  2]for I as integer
+= 0 to 10</b></p>
+<p class="western" style="line-height: 115%"><b>[  3] ? &quot;hello
+world&quot;</b></p>
+<p class="western" style="line-height: 115%"><b>[  4] echo &quot;echo
+hello world&quot;</b></p>
+<p class="western" style="line-height: 115%"><b>[  5] next</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><span style="font-weight: normal">Now
+enter the history number containing the </span><b>for</b><span style="font-weight: normal">
+keyword followed by an !</span></p>
+<p class="western" style="line-height: 115%"><b>2!</b></p>
+<p class="western" style="font-weight: normal; line-height: 115%">You
+should see &quot;hello world&quot; ten more times.</p>
+<p class="western" style="font-weight: normal; line-height: 115%">If
+you made an error when entering you can use the edit history
+expression to change and rerun it.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let’s
+change &quot;hello world&quot; to &quot;goodbye world.&quot;</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>[3]hello/goodbye/</b><span style="font-weight: normal">
+  ‘This will change the “hello” to “goodbye”, using regular
+expressions and syntax</span></p>
+<p class="western" style="line-height: 115%"><b>hh                   
+       </b><span style="font-weight: normal"> ‘We can see the
+change.</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let’s
+run it again. 
+</p>
+<p class="western" style="line-height: 115%"><b>2!</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><span style="font-weight: normal">It
+</span><span style="font-weight: normal">prints &quot;goodbye world&quot;
+5 times and &quot;hello world&quot; 5 times.</span></p>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc344_2876409098"></a>
+Let's Define a Function/Sub/Procedure</h3>
+<p class="western" style="line-height: 115%">All
+functions/sub/procedures are public so don’t use public keyword. 
+</p>
+<p class="western" style="line-height: 115%">Type the following:</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>Sub mytest(msg as
+string) as string</b></p>
+<p class="western" style="line-height: 115%">  <b>return upper(msg) &amp;
+“ one more”</b></p>
+<p class="western" style="line-height: 115%">  <b>end</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Again you will notice
+that the shell auto indents as you’re typing the function.</p>
+<p class="western" style="line-height: 115%">Don’t forget the end!</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's run our new
+function.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>? mytest(&quot;this
+is a message&quot;) </b>‘This will print the message in upper case
+to the console</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc346_2876409098"></a>
+Let's Write a Simple Gambas Short Program Interactively</h3>
+<p class="western" style="line-height: 115%">Improper script code:</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>dim a as string =
+&quot;this&quot;		</b>‘This will run but variable ’a’ goes away
+as soon as the line executes.<br/>
+							‘The line was executed
+immediately after the &lt;Enter&gt; was pressed.</p>
+<p class="western" style="line-height: 115%"><b>? a							</b>‘This
+will print an error. It dumps the compiled script with an unknown
+							  variable error.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">To clear the screen,
+enter 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>clear</b>						‘This
+will clear the screen.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">or</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>cls </b>							‘This
+is an alias to for “clear” to clear the screen</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><br/>
+<br/>
+
+</p>
+<p class="western" style="line-height: 115%; page-break-before: always">
+Lets use a lambda expression. You may use { and } rather than lambda
+but they are the same. It is possible to pass parameters into a
+lambda expression. Have a look at the lambda section of this
+document.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><u><b>Using
+Lambda						Using Braces     </b></u><b><br/>
+lambda								{</b></p>
+<p class="western" style="line-height: 115%">   <b>dim a as string =
+&quot;this&quot;				dim a as string = &quot;this&quot;</b></p>
+<p class="western" style="line-height: 115%">   <b>? a							</b><b> 
+		</b><b>? a</b></p>
+<p class="western" style="line-height: 115%"><b>end		</b>							}	</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This will print the
+value of ‘a’ correctly.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">We can add a call to our
+mytest in the lambda function by editing it.</p>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc348_2876409098"></a>
+Let's Look at the edit Command</h3>
+<p class="western" style="line-height: 115%"><b>? $editor </b>       
+        		‘This prints the editor defined as the default text
+editor.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">You can change it now
+changing by setting  the global variable $editor to your favorite
+editor.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>$editor =
+&quot;/bin/nano&quot;	</b>‘ I am just setting it to the default
+again.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>edit lambda </b>     
+     		‘ This opens the editor, defaults to nano.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">We can change the <b>? a</b>
+line to read <b>? mytest(a)</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Save the file and it
+will execute as soon as you save it. You may only edit the most
+recent lambda expression. 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's change our mytest
+function to do something else.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>edit mytest</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Change the return line
+to ‘return upper(msg) &amp; “one more”.’</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Save it. It will compile
+but not run the function.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Enter:</p>
+<p class="western" style="line-height: 115%"><b>? mytest(&quot;this&quot;)			</b>‘
+You should see ‘<b>THIS one more</b>’ printed to the console.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc350_2876409098"></a>
+Summary of What We Learned So Far</h3>
+<p class="western" style="line-height: 115%">So far we have learned
+that subroutines, functions and procedures become global as soon as
+they are created and persist in the environment. These sub routines
+become immediately available to all other running gsh sessions upon
+creation.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">You can see what’s
+loaded by executing the “lsubs” command .</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">We have also learned
+that each script line is executed as soon as the section of code is
+completed. And we learned that the lambda expression allows us to
+group Gambas code into related block for execution.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h3>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc352_2876409098"></a>
+Let's Look at the Shell Interface to Linux Commands</h3>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">To run a Linux CLI
+command just enter it on the command line. 
+</p>
+<p class="western" style="line-height: 115%">For example:</p>
+<p class="western" style="line-height: 115%"><b>	ls -l </b>
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This will produce the
+usual directory listing.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>gsh</b> looks for
+executable in the following order:</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Gambas
+keywords  				Execute the line as a Gambas program</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Shell
+global functions                     Execute the sub as a Gambas
+function.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Linux
+Command Line programs     Execute the external program.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">If there is a keyword or
+function with the same name as a linux cli command then you can force
+the command to be evaluated as a linux cli  by adding a ! to the
+beginning of the line.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">For example:</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">chmode &quot;filename&quot;
+to &quot;rw-rw-rw&quot;</p>
+<p class="western" style="line-height: 115%">chmod 777 filename</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Both have the same name
+but executing the second line will give you an error regarding ‘to’
+being missing. So to execute the cli use ! As follows</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">!chmod 777 filename 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This will execute as
+expected.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">In most cases the <b>gsh
+</b>shell will make the correct choice. Passing parameters from
+Gambas variables to Linux commands is a little more complicated than
+just putting them onto the command line.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h3>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc334_2876409098"></a>
+Let's Look at Aliases and Alias Substitution</h3>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Alias substitution is
+performed on the line before being passed to the shell parser. “ls”
+has an alias defined in the profile.gsh file.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let’s look at the
+aliases currently defined as default aliases in the profile.gsh file.</p>
+<p class="western" style="line-height: 115%">Enter the following
+command:</p>
+<p class="western" style="line-height: 115%"><b>	alias</b></p>
+<p class="western" style="line-height: 115%">‘You should see a list
+of current aliases. You may create or delete aliases using the <b>alias</b>
+command.</p>
+<p class="western" style="line-height: 115%">For example:</p>
+<p class="western" style="line-height: 115%"><b>	alias hello='?
+&quot;hello world&quot;'</b></p>
+<p class="western" style="line-height: 115%">Notice the single quote
+around the definition. This is required.</p>
+<p class="western" style="line-height: 115%">Enter:</p>
+<p class="western" style="line-height: 115%"><b>	alias</b></p>
+<p class="western" style="line-height: 115%">You should see our new
+alias listed. Now enter:</p>
+<p class="western" style="line-height: 115%"><b>	hello</b></p>
+<p class="western" style="line-height: 115%">We should see &quot;hello
+world&quot; printed. Now let's delete our alias.</p>
+<p class="western" style="line-height: 115%"><b>	alias hello=</b></p>
+<p class="western" style="line-height: 115%">This deleted the
+definition, we can list them again and see its gone.</p>
+<p class="western" style="line-height: 115%"><b>	alias</b></p>
+<p class="western" style="line-height: 115%">Changing an alias is
+simple process of redefining it.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h3>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc356_2876409098"></a>
+Let's Look at Global Variables</h3>
+<p class="western" style="line-height: 115%">Global variables persist
+across command blocks, Restarting <b>gsh</b>, and are available to
+tasks and processes using the same in memory database. By default all
+invocation of <b>gsh</b> by a user accesses the same in memory
+database.</p>
+<p class="western" style="line-height: 115%">By convention a $ starts
+a global variable and is seen by the pre-processor and converted to a
+database access.  So be careful how you use the $. Global data types
+are defined at creation according to the type of data assigned to
+them. This can not be changed after creation. 
+</p>
+<p class="western" style="line-height: 115%">Enter:</p>
+<p class="western" style="line-height: 115%"><b>$a = &quot;this is a
+string&quot;		'</b> This will work well.</p>
+<p class="western" style="line-height: 115%"><b>? $a						'</b> This
+will print $a.</p>
+<p class="western" style="line-height: 115%"><b>$a = 2</b> 						'
+This will print and error about change type.</p>
+<p class="western" style="line-height: 115%"><b>vardel $a					'</b>
+This will delete the variable.</p>
+<p class="western" style="line-height: 115%"><b>$a = 2</b> 						'
+This works.</p>
+<p class="western" style="line-height: 115%"><b>? $a						'</b>
+Prints 2.</p>
+<p class="western" style="line-height: 115%"><b>vardel $a</b> 					'
+Remove it again.</p>
+<p class="western" style="line-height: 115%"><b>$a = &quot;This
+string&quot;			'</b> Define it as a string.</p>
+<p class="western" style="line-height: 115%"><b>? mytest($a)				'</b>
+Prints the string in upper case and ‘one more.’</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">And of course we can use</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">env[&quot;myvalue&quot;]
+= &quot;this&quot;          ' This stores Linux environment values.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%"><br/>
+<br/>
+
+</h3>
+<h3 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc336_2876409098"></a>
+Let's Look at Input and Output Redirection</h3>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">There are several forms
+of output redirection.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This is how you direct
+the output of a linux cli command to a global variable.(stdout)</p>
+<p class="western" style="line-height: 115%">Enter:</p>
+<p class="western" style="line-height: 115%"><b>	ls &gt; $a</b></p>
+<p class="western" style="line-height: 115%"><b>	? $a</b>						‘
+Displays the listing.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This is how you add the
+output from a cli command to the end of a global variable 
+</p>
+<p class="western" style="line-height: 115%">value (concatenated from
+stdout)</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	ls &gt;&gt; $a</b></p>
+<p class="western" style="line-height: 115%"><b>	? $a</b>						‘
+Displays the listing twice.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This is how to pass data
+from a global variable into a linux cli command(stdin from $a).</p>
+<p class="western" style="line-height: 115%"><b>	cat &lt; $a</b>     
+  				‘ Displays the listing again.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This is how you capture
+the error output from a linux cli command into a global
+variable(stderr).</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	ls nnnnvvvv &amp;&gt;
+$b </b>			‘ $b now contains the error file not found.</p>
+<p class="western" style="line-height: 115%"><b>	? $b </b>						‘
+Prints the error message.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">This is how to redirect
+output from stderr to a variable(concatenated).</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	ls nnnnvvvv &amp;&gt;&gt;
+$b</b> 		‘ $b now contains the error file not found.</p>
+<p class="western" style="line-height: 115%"><b>	? $b	</b>					‘
+Will display both errors.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Now let's define a data
+sink function to receive data.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>sub
+echodata(data as string) </b>
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> 
+<b>print data;</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> 
+<b>flush</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> 
+<b>end</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's use this to
+display the output from ls …, just a simple example.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	ls &gt; echodata</b>
+  				‘ You should see the listing output like normal.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's define a null
+output function.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>sub
+devnull(data as string)</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> <b>'
+</b><b>do nothing</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">
+<b>end</b></p>
+<p class="western" style="line-height: 115%"><b>ls &gt; devnull</b>  
+' this will do nothing and throw away the data</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's define a data
+source function.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>sub
+datasource() as string</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">  
+<b>return</b><b> &quot;this is the data
+to\noutput\nto\nthe\nterminal\n&quot;</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">  
+<b>end</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	cat &lt; datasource 
+  			'</b><span style="font-weight: normal"> This will print the
+datasource data to the terminal</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let's
+use our functions to send and receive data thru cat.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	cat &lt; datasource
+&gt; echodata</b><span style="font-weight: normal">  ' this should
+display the source data to the terminal</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let's
+define a filter function that changes data as it is passed through.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>sub
+filterdata(data as string) as string</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">   
+ <b>print upper(data)</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">   
+ <b>end</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>ls
+&gt; filterdata         ' this should display everything in upper
+case</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let's
+save the output to multiple variables.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>ls
+&gt; $a &gt; $b &gt;&gt; $c    '</b><span style="font-weight: normal">
+this will place the data into all of the variables and add it to the
+last</span></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>?
+$a, $b, $c              </b><span style="font-weight: normal"> ' this
+should display the data three times</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let's
+send multiple data sources to the command.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>	cat &lt; $a &lt;$b &lt;
+$c  &lt; datasource    '</b><span style="font-weight: normal"> again
+it should display the data three times, and our source</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%"><br/>
+<br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%; page-break-before: always">
+Let's define a fileread function to source filedata.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>sub
+filesource(filename as string) as string</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">  
+<b>dim data as string</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">  
+<b>data =  file.load(filename)</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">  
+<b>return </b><b> data</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">  
+<b>end</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>cat
+&gt; filterdata &lt; filesource(user.home &amp;/ &quot;/vars/profile.gsh&quot;)
+'</b><span style="font-weight: normal">displays file in uppercase</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h3 class="western" style="line-height: 115%"><a name="__RefHeading___Toc360_2876409098"></a>
+Let's Look at Pipes</h3>
+<p class="western" style="font-weight: normal; line-height: 115%">Pipes
+allow data to be sent from process to process or many processes</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let's
+do a simple pipe USING | OR ! BOTH WORK HERE</p>
+<p class="western" style="font-weight: normal; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>ls | less </b><span style="font-weight: normal">
+ 					‘ We should see a list of files in less.</span></p>
+<p class="western" style="font-weight: normal; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Now
+let's send the data to a number of process for examples output to 
+cat and less at the same time</p>
+<p class="western" style="line-height: 115%"><b>ls  |&gt; cat &gt; $b
+| less			</b><span style="font-weight: normal">‘ We can look at
+data with less.</span></p>
+<p class="western" style="line-height: 115%"><b>? $b        					</b><span style="font-weight: normal">‘
+</span><b>cat</b><span style="font-weight: normal"> outputs to $b
+this should print listing again.</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%">Let's
+add one more process and add our filter function we defined earlier.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>ls |&gt; cat &gt; $b
+|&gt; cat &gt; filterdata | less </b><span style="font-weight: normal">‘
+You will notice that the listing in uppercase was displayed</span></p>
+<p class="western" style="line-height: 115%">‘<span style="font-weight: normal">if
+you press the up arrow in less the uppercase data will disappear</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h4 class="western" style="line-height: 115%"><a name="__RefHeading___Toc22_820234672"></a>
+Summary of | and |&gt; output messaging</h4>
+<p class="western" style="line-height: 115%">We see here that we can
+send data to the next task using a | or !. We have also seen that we
+can send the same data to multiple tasks at the same time for
+processing.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc606_1004977946"></a>
+Now let's look at using pipes to have multiple input streams to a
+single task!</h5>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's do a simple multi
+input stream</p>
+<p class="western" style="line-height: 115%"><b>cat |&lt; ls |&lt; ls
+-l  | sort</b>                    ‘ This should put out a sorted
+list of both <b>ls</b> commands.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">We have seen how we can
+do pipe fitting with |&gt; and  |&lt; to pipe multiple processes into
+a single process or pipe the output from to many process.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's try something more
+complex.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>ls -1 |&gt; sort -r &gt;
+$a | sort &gt; $b	'</b> This will create two sorted lists.</p>
+<p class="western" style="line-height: 115%"><b>? $a;&quot;\n&quot;;$b					'</b><span style="font-weight: normal">
+We should see the two list one reverse order.</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's define a gambas
+function as a filter, we will call it dog and make it bark!</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>Sub dog()</b></p>
+<p class="western" style="line-height: 115%"><b>	dim buffer as string</b></p>
+<p class="western" style="line-height: 115%"><b>	while not eof()</b></p>
+<p class="western" style="line-height: 115%"><b>		try line input
+buffer</b></p>
+<p class="western" style="line-height: 115%"><b>		if error then 
+break</b></p>
+<p class="western" style="line-height: 115%"><b>		print
+&quot;bark..&quot;;buffer</b></p>
+<p class="western" style="line-height: 115%"><b>		wend</b></p>
+<p class="western" style="line-height: 115%"><b>	print &quot;Ruff
+Ruff!!&quot;</b></p>
+<p class="western" style="line-height: 115%"><b>	end</b></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Don’t forget you can
+just edit it if there is an error with ‘edit dog.’</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">Let's try it out.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><b>ls -1 | dog  |&gt;
+sort -r  &gt; $a | sort &gt; $b</b></p>
+<p class="western" style="line-height: 115%"><b>? $a;&quot;\n&quot;;$b					'</b><span style="font-weight: normal">We
+should see the two lists, one in reverse order.</span></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">‘Let's try to bark
+twice</p>
+<p class="western" style="line-height: 115%"> ls -1 | dog  |&gt; sort
+-r  &gt; $a | sort | dog &gt; $b 
+</p>
+<p class="western" style="line-height: 115%"><b>? $a;&quot;\n&quot;;$b					'</b><span style="font-weight: normal">We
+should see the two list one reverse order</span></p>
+<p class="western" style="line-height: 115%">								'the second list
+will be bark bark</p>
+<p class="western" style="line-height: 115%"> 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h4 class="western" style="line-height: 115%"><a name="__RefHeading___Toc26_820234672"></a>
+Summary of Pipes and Pipe Fitting or Tees as They Are Known in Some
+Shells</h4>
+<p class="western" style="line-height: 115%">So we have looked at
+creating pipes with filters and tees. 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">It is very simple to
+write Gambas functions and mix them with existing Linux commands.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">The |&gt; and |&lt; are
+unique to gsh and replace the tee used in other shells.</p>
+<h1 class="western" style="line-height: 115%"><a name="__RefHeading___Toc29_820234672"></a>
+Gambas Shell Reference</h1>
+<h2 class="western" style="line-height: 115%"><a name="__RefHeading___Toc232_2829647683"></a>
+How command  classes and structures are handled</h2>
+<p class="western" style="line-height: 115%">In gsh each system
+command, user function, classes and structures are stored in the
+~/vars/subs or ~/vars/class or ~/vars/struct in the users directory,
+these will hold the users functions etc. If the user wishes to modify
+one of the system commands then a copy saved here will override the
+default system version. The system versions of sub/class/struct
+reside in the <i>'/usr/share/gsh/subs', '/usr/share/gsh/subs',
+'/usr/share/gsh/subs'directories</i></p>
+<p class="western" style="line-height: 115%"><i>Upon first use or
+reference the subs/classes/struct are loaded and compiled into the
+shell name space.</i></p>
+<h2 class="western" style="line-height: 115%"><a name="__RefHeading___Toc31_820234672"></a>
+gsh.image</h2>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">At
+startup <b>gsh</b> loads the environment from the default image
+~/vars/gsh.image if it is exists.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+any image may be loaded explicitly with the --image startup
+parameter.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+gsh.image  file is created when ever the gsh shell exits or save is
+called with no parameters.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+gsh.image and ~/vars directory will be created if they do not exist
+upon first startup of <b>gsh</b>.</p>
+<h2 class="western"><a name="__RefHeading___Toc234_2829647683"></a>profile.gsh
+ contains system wide definitions</h2>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+script is checked at each startiup and if it has changed then it is
+executed upon startup and may be edited.  This file is the system
+wide default profile. A copy is made in ~/vars and you may change it
+at your own risk.</p>
+<h2 class="western"><a name="__RefHeading___Toc236_2829647683"></a>gsh.rc
+ contains all user specific definitions</h2>
+<p class="western" style="margin-left: 0.58in">This is run at every
+startup and is the place to put anything needed by your private image
+during runtime. It will be loaded into the image when ever it
+changes. This file is found in the ~/vars directory</p>
+<h2 class="western" style="line-height: 115%"><a name="__RefHeading___Toc35_820234672"></a>
+onstartup() executed at start of interactive session</h2>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+function is executed at the beginning of every interactive session.
+It is defined in the onstartup file found in the ~/vars/subs
+directory</p>
+<h2 class="western" style="line-height: 115%"><a name="__RefHeading___Toc134_2829647683"></a>
+onexit() executed at end of interactive session</h2>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+function is executed at the end of every interactive session. It is
+defined in the onexit file found in the ~/vars/subs directory</p>
+<h2 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h2>
+<h2 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc37_820234672"></a>
+Global Variables</h2>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Global
+variables start with $ for example $history. Case matters 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">These
+variables are not dim'd. Data type is assigned at first. 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Use
+And the type may not change after the first assignment.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Global
+variables persist and are saved at the time of closing the <b>gsh</b>
+shell.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Global
+variables may be used the same way regular variables are used except
+for iteration</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">not
+allowed: for $i = 0 to 100 .....</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Global
+variables can be referenced in any process or sub process of <b>gsh</b>.
+They are system wide.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Remember
+to vardel(&quot;varname&quot;) at the end of a session if you don't
+want it to appear when you next start <b>gsh</b>.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc39_820234672"></a>
+$VarName = &lt;value&gt; 
+</h5>
+<p class="western" style="line-height: 115%">            Global
+Variables Definition, value defines the type and must not change
+after first use.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc105_222107296"></a>
+$0 to $n	gsh command line parameter</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Parameters
+passed on the command line of a <b>gsh</b> script.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc107_222107296"></a>
+$#			gsh command line parameter count</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+is the number of parameters passed to a script, including the script
+name.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc41_820234672"></a>
+$result 
+</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+reserved variable will have the returned value after each builtin
+function is called.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+may be used by your functions to return values.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Note,
+you must VarDel &quot;$result&quot; if you change the type away from
+string type.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc43_820234672"></a>
+$trace  
+</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Turn
+on or off shell script tracing. Writes line to stderr as they are
+executed.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+Is Global And will affect system wide scripts On the fly</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$trace
+= true ' turns on tracing</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$trace
+= false ' turn off tracing this is the default</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc45_820234672"></a>
+$prompt 
+</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+prompt, it is displays as 'print eval($prompt);;' so can be edited
+with any valid eval statement to change the prompt just 'edit
+$prompt'. The change is apparent when the editor closes. 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Be
+warned if the expression fails the prompt will be reset to the
+default.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+default prompt is - 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt">&quot;\x1b[31m&quot;&amp;user.name&amp;&quot;@&quot;&amp;system.host&amp;&quot;:\x1b[32m]&quot;&amp;env[&quot;PWD&quot;]&amp;&quot;$\x1b[0m]&quot;&amp;gsh.blockindent</font></p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc47_820234672"></a>
+$editor 
+</h5>
+<p class="western" style="line-height: 115%">          This variable
+contains the name of the default text editor.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc49_820234672"></a>
+$hexeditor</h5>
+<p class="western" style="line-height: 115%">          This variable
+contains the default binary editor for binary information.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc51_820234672"></a>
+$alias</h5>
+<p class="western" style="line-height: 115%">           The
+collection of aliases.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc190_3705831925"></a>
+$profile</h5>
+<ol>
+	<ol>
+		<ol>
+			<ol>
+				<ol>
+					<ol>
+						<ol>
+							<ol>
+								<ol>
+									<li/>
+<p style="margin-top: 0.04in; margin-bottom: 0.04in; line-height: 115%; page-break-after: avoid">
+									            <font color="#000000"> </font><font face="Liberation Sans, Arial, sans-serif"><font size="2" style="font-size: 10pt"><font color="#000000"><font face="Liberation Serif, Times New Roman, serif"><font size="3" style="font-size: 12pt"><span lang="en-US"><span style="font-weight: normal">Set
+									to true or false . Indicates if profile should be reloaded
+									on next start.</span></span></font></font></font></font></font></p>
+								</ol>
+							</ol>
+						</ol>
+					</ol>
+				</ol>
+			</ol>
+		</ol>
+	</ol>
+</ol>
+<p class="western" style="line-height: 115%">            “True”
+means is loaded. “False” means to load/reload profile.gsh.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc55_820234672"></a>
+$blockindent</h5>
+<p class="western" style="line-height: 115%">           This is the
+characters used when indenting block levels during interactive
+sessions.</p>
+<p class="western" style="line-height: 115%">            set to “ 
+“ 2 spaces by default</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc57_820234672"></a>
+$maxhistory</h5>
+<p class="western" style="line-height: 115%">            Maximum line
+entries to be kept as history</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc59_820234672"></a>
+$historycurrent 
+</h5>
+<p class="western" style="line-height: 115%">             The current
+history entry, never roles over. Use clearhist to reset history</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc61_820234672"></a>
+$history 
+</h5>
+<p class="western" style="line-height: 115%">             This is the
+collection of lines entered.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc63_820234672"></a>
+$pwd 
+</h5>
+<p class="western" style="line-height: 115%">             Current
+working directory.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc65_820234672"></a>
+$env</h5>
+<p class="western" style="line-height: 115%">             The
+environment that is passed to the Tasks and processes</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc67_820234672"></a>
+$helpdisplay 
+</h5>
+<p class="western" style="line-height: 115%">         This is the
+command used to display the help text information</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc608_1004977946"></a>
+$$</h5>
+<p class="western" style="line-height: 115%">	This will substitute
+the current pid onto a command line</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc610_1004977946"></a>
+$UID</h5>
+<p class="western" style="line-height: 115%"> 	This will substitute
+the user id onto the command line</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc612_1004977946"></a>
+$GID</h5>
+<p class="western" style="line-height: 115%">	This will substitute
+the Group id onto the command line</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%; page-break-before: always">
+<br/>
+
+</p>
+<h2 class="western" style="line-height: 115%"><a name="__RefHeading___Toc45_3411073610"></a>
+Shell operators</h2>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc614_1004977946"></a>
+ ! or |			Direct the stdout from one task/process/function  to
+another</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Is
+used at the beginning of a line to define an external command or
+force a function to be executed as a process.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">In
+nany cases the shell will detect an external command but using !
+forces it to execute as a command or functions as a command | may
+only be used between commands not at the beginning of a line.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">For
+example '!ls or 'ls' to list a directory.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>!ls
+&gt; $a </b></font>
+</p>
+<p class="western" style="margin-left: 0.58in; font-weight: normal; line-height: 115%">
+<font size="2" style="font-size: 10pt">or just </font>
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>ls
+-1 &gt; $a</b></font><font size="2" style="font-size: 10pt">  </font>
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Will
+store the returned value into the global value $a, if a local
+variable is used it needs to be dim'd first and will only persist
+during the command execution.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">This
+may also be used to pipe stdout to stdin of next command.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>!cat
+&lt; $f ! cat ! cat ! cat &gt; $r</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"> <font size="2" style="font-size: 10pt"><span style="font-weight: normal">or
+</span></font>
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>!cat
+&lt; $f | cat | cat | cat &gt; $r</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">This
+will send output from first to second command and so on. The ! is not
+needed for the first command as gsh checks the first symbol to see if
+its external so from 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>cat
+&lt; $f | cat | cat | cat &gt; $r			' will also work.</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Any
+function that reads or writes to stdin stderr or std out may be used
+in the pipe string</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">   
+                  
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Examples
+see sample finction at end of help</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>cat
+&lt; $f | SampleFilter() &lt; $f | tr [a-z] [A-Z] | SampleReciever()</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">In
+the above case SampleFilter get input from $f and cat at the same
+time</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">   
+                     
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>!SampleInjector
+| cat &gt; $r | tr [a-z][A-Z] | SampleReciever()</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">The
+! before the function is required to force the line to be treated as
+a pipe fitting without it the shell will pass this line to the Gambas
+compiler directly. This causes the shell to create a task with this
+function as the source. Ant function n the pipe wil cause the
+creation of a process with the function as the main process.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">   
+    <font size="2" style="font-size: 10pt"><b>cat &lt; DataSource() |
+less</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">
+Functions may be used as an input to a command/function as long as it
+returns a string</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+<font size="2" style="font-size: 10pt"><b>sub Datasource() as string</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"> 
+<font size="2" style="font-size: 10pt"><b>	</b></font><font size="2" style="font-size: 10pt"><b>return
+&quot;MsgHeader&quot;&amp;application.name</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+<font size="2" style="font-size: 10pt"><b>end</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+<font size="2" style="font-size: 10pt"><b>cat &lt; &quot;hello&quot;
+&gt; datasink | less</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">The
+datasink function will be called each time data is available from cat</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">The
+function must recieve a string as it only input parameter</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+<font size="2" style="font-size: 10pt"><b>sub datasink(data as
+string)</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"> 
+<font size="2" style="font-size: 10pt"><b>...... ' process data</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"> 
+<font size="2" style="font-size: 10pt"><b>end</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<h5 class="western"><a name="__RefHeading___Toc156_2829647683"></a>Input
+Output Redirection targets</h5>
+<p class="western">There are four types of targets or sources for
+input and output redirection.</p>
+<h6 class="western"><a name="__RefHeading___Toc158_2829647683"></a>Files:
+Files may be the source or destination of redirection. Specified as
+follows</h6>
+<p class="western" style="margin-left: 0.58in; line-height: 100%">may
+start with ./ ~/ / followed by  path and filename. Or just a filename
+from the current working directory. If the file name conflicts with a
+command or keywork then a @ may be placed in front of the filename.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 100%">Examples:
+./thisfile or ~/thisfile or  <i>/usr… or @filename or filename</i></p>
+<p class="western" style="margin-left: 0.58in; line-height: 100%">Shell
+substitution such as ~/*/filename will be expanded as required</p>
+<h6 class="western"><a name="__RefHeading___Toc160_2829647683"></a>Variables
+: 	Output or input may be send/recieved from/to any global variable 
+</h6>
+<h6 class="western"><a name="__RefHeading___Toc162_2829647683"></a>Functions:	Output
+to any function who's parameter is a string</h6>
+<h6 class="western"><a name="__RefHeading___Toc164_2829647683"></a>Functions:	Input
+from any function that returns a string</h6>
+<h6 class="western"><a name="__RefHeading___Toc166_2829647683"></a>Constants:	Any
+string or numeric constant or inline array of such types</h6>
+<p class="western" style="line-height: 100%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc49_3411073610"></a>
+&lt;			Redirect input from file/sub/variable</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Direct
+content of global variable or source function  into external command.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">It
+is allowed to send multiple Variable contents to a command</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">You
+may also send variable input to a command in a pipe sequence</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>cat
+&lt; $f &lt;$t | cat &lt; $r | cat &gt; $b | cat &gt; $s</b></p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc51_3411073610"></a>
+&gt;  &gt;&gt;		Redirect output to file/sub/variable</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Direct
+Output from an external command to a global variable or sink function</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">It
+is allowed to write the output to multiple variables and also pipe to
+next external command</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>cat
+&lt; $f &lt; $t &gt; $g &gt; $d | cat &lt; $u &gt; $s | cat | cat &gt;
+$z</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>&gt;&gt;</b>
+	appends to variable content or calls a sink function</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>&gt;
+</b>	clears variable first then sets content, or calls sink function</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc53_3411073610"></a>
+&amp;&gt;  &amp;&gt;&gt;	Redirect Error Output to file/sub/variable</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Direct
+stderr to a global variable. It is allowed to send it to many
+variables as needed</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>cc
+&quot;myprog.c&quot;  &gt; $g &amp;&gt; MyFunc() &amp;&gt; $cerr &amp;&gt;&gt;
+$cerrhist | cat | cat | cat &gt; $z</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>&amp;&gt;&gt;</b>
+	appends to Variable content, Also may send data to a sink function</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>&amp;&gt;</b>
+		clears variable first then sets value. Also may send data to a sink
+function</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc55_3411073610"></a>
+|&lt; |&gt;		Pipe fitting output or input from multiple
+tasks/processes/functions</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">These
+allow more that one input/output function.task to feed a command or
+one command to feed many tasks like a tee in pipe fitting. 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>NetMonitor
+|&lt; NetConnect1() |&lt; NetConnect2() |&gt; netforward() | cat &gt;&gt;
+$logger</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">In
+this example network traffic is received by NetMonitor from
+NetConnect 1 and 2,  NetMonitor output goes to netforward and Cat and
+finally appended into $logger database entry.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">   
+ 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>|&lt;</b>
+	send data to a process from a source function or another process</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>|&gt;
+</b>	send data from a process to a sink function or another process.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<h5 class="western"><a name="__RefHeading___Toc136_2829647683"></a>:&gt;			Store
+the return code from this process to a variable</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Assign
+the result code from the command or process to a variable</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>ls
+xvxdfdr :&gt; $s</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">ls
+outputs the message : directory xvxdfdr not found</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><b>print
+$s </b>  outputs 2  which is from <b>ls</b>. It means not found. 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">The
+2 is the <b>ls</b> commands exit code equivalent to the Gambas 
+quit(2)</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc57_3411073610"></a>
+HistoryEntryNumber!</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Will
+re-execute the command from history for example : 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>3!</b></p>
+<p class="western" style="line-height: 115%"> 
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc616_1004977946"></a>
+[0]findpattern/replacepattern/</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Edit
+the content of history lines using regular expression regex.replace()</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">[historyEntryNumber]
+	is the history entry number enclosed in []</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">findpattern
+				is a regular expression to locate in the history entry.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">replacepatern
+			is the text to use to replace the matching entry.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h5>
+<h5 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc618_1004977946"></a>
+&quot;#{expression}&quot;</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Evaluate
+the expression immediately and replace text with evaluated expression</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">example:</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%"><b>&quot;#{'print'}&quot;
+application.name;   User.name</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+translates to and executes this line</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">
+<b>print application.name; user.name</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Inside
+expressions use single quote ' instead of double quote &quot;.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">This
+example will be evaluated to 'print application.name; &quot;stuff&quot;..'
+ 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">After
+the evaluation the line will be executed 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example
+using the  default prompt:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>print
+&quot;#{quote(Sharedmem['$pwd']&amp;' $'&amp;sharedmem['$blockindent'])}&quot;</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Remember
+the evaluation is executed in this context, the line is executed in
+its own context.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">This
+allows to pass values from this context to the next.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+<b>print &quot;#{quote(application.name)}&quot; </b>   		‘this will
+print &quot;gsh&quot;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+<b>print application.name   </b>               			‘this will print
+&quot;execgbs&quot; 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">
+They happen in different contexts, global variables span contexts</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc63_3411073610"></a>
+?			Same as print</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">At
+the beginning of a line will print what ever follows this is a
+standard Gambas notation.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">For
+example ? $a;$b,c,d -- will print the content of these variables</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc65_3411073610"></a>
+&amp;			Start the command/function as a detached process</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Place
+this after the last line of your command to execute the command as an
+independent process.</p>
+<p class="western" style="line-height: 115%"> 
+</p>
+<h5 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h5>
+<h2 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc73_3411073610"></a>
+Global Commands/Functions/Classes</h2>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc75_3411073610"></a>
+get &lt;Command&gt; &lt;Command&gt; … &lt;obsolete&gt;</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+List of additional commands  to be loaded these are complete modules
+having many functions only the provided command name may be called
+from the command line.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Command
+may be a file name or filename and path as a file
+&quot;/usr/bin/mycommand&quot; or CommandName which is loaded from
+~/vars.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+interface entry point is the function with the same name as command</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>Commands
+and subroutines/classes and structures are loaded as they are
+referenced</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>in
+a command line or script. Location  ~/vars/subs,
+~/vars/class,~/vars/struct</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"> 
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc77_3411073610"></a>
+edit class|function|variable</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Edit
+or create a class,function,string or string[] variable for your
+environment                                       starts the editor
+defined in the $editor global variable classes and functions become
+part of the image and are linked to commands as needed.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$editor
+   - holds the name of the text editor to be used for texted based
+editing.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$hexeditor
+- holds the name of the editor to be used for binary type variables.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Examples:</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">
+sub test() is defined then 'edit test' will allow you to change this
+function</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">class
+test2 is defined then 'edit test2' will allow you to change this</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">$h
+= [&quot;ddd&quot;,&quot;dddd&quot;] then edit this like 'edit $h'</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">$h
+= &quot;djjdjdjddj&quot;  then edit this like 'edit $h' the shell
+knows the base type and                                              
+               will save it in the same form.</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">$h
+= new byte[]    when you edit $h then the hex editor will open with
+content</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">Edit
+a collection of string values in the same way eg edit $history.</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">Edit
+the system prompt edit $prompt.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">You
+can create a new variable, class, or function</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">enter
+edit newname</p>
+<p class="western" style="margin-left: 0.88in; line-height: 115%">You
+will be prompted to create a variable,class or function</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">In
+summary you can edit just about everything!</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc624_1004977946"></a>
+run &quot;Scriptname&quot;</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Execute
+an external gsh script immediately. Scripts should return information
+in global variables. This is a Gambas shell script not a Gambas
+script.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc103_2315703034"></a>
+quit 
+</h5>
+<p class="western" style="line-height: 115%">End of execution or
+close gsh session.  Gsh shells/scripts return values in global
+variables.</p>
+<h5 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h5>
+<h5 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc296_3411073610"></a>
+alias      text substitution of values before evaluation</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Alias
+replace a command at run time with the alias and are defined much the
+same as posix shell. The input is scanned and matching entries are
+replaced by the alias. The process is repeated after each
+substitution until all aliases have been checked ensuring that each
+is only applied once to the line. Currently aliases don’t support
+parameter substitution(functions).</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Alias
+function are created by creating a sub of the name of the command its
+replacing.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Examples
+of aliases from the profile.gsh defaults directly imported from 
+.profile</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+fgrep='fgrep --color=auto'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+grep='grep --color=auto'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+l='ls -CF'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+la='ls -A'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+ll='ls -alF'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+ls='ls --color=auto'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+cls='clear'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+home='cd ~'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+pkill='!kill'   ← need to use this as KILL is a Gambas language
+keyword</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+ps='ps -u'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+update='run &quot;profile.gsh&quot;'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+hh='hist -10'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+path='? env[&quot;PATH&quot;]'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><font size="2" style="font-size: 10pt">alias
+exit='quit'</font></p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+Aliases must be enclosed in ' single quotes and are applied only to
+command lines not 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">
+program code.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Adding
+an alias: 
+</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">The
+alias keyword followed by the alias name an equal sign and then a
+single quote substitution string.</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">alias
+ xxx='this'</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Remove
+an alias:</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"> 
+Simply assign with no content</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"> 
+Example</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"> 
+alias home				' this will remove the home alias</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">List
+all aliases:</p>
+<p class="western" style="margin-left: 1.17in; line-height: 115%">
+Just type the alias command by itself.</p>
+<h5 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc298_3411073610"></a>
+compile &lt;Output Script Name&gt;</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+will not execute the script entered but will produce an executable
+Gambas script.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+script is standalone and may be executed directly.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+default program name if not specified is ~/bin/script.out 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+mode is changed to executable as well.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">In
+terms of functional programming. 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">You
+may compile and test each function and then after the final test.
+Create a function which is the master function and compile it.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Example
+Session</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><b>sub
+asub1(printString as string) as string</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">  
+<b>return upper(printstring) &amp; “ Not much spoken!”</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">  
+<b>end</b></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">now
+let's test our new sub enter:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><i>?
+asub1(&quot;this&quot;)</i></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">it
+works!</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Let's
+test it in a silly usage case</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>cat
+&lt; asub1(&quot;This message to all\nNot Done\nJoy and life job\nNot
+hello&quot;) | tr [A-Z][a-z] | grep Not</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; font-weight: normal; line-height: 115%">
+<font size="3" style="font-size: 12pt">It now works how we want. So
+now let's produce a standalone Gambas script.</font></p>
+<p class="western" style="margin-left: 0.58in; font-weight: normal; line-height: 115%">
+<br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="3" style="font-size: 12pt"><b>Compile
+nntest</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">  
+<font size="3" style="font-size: 12pt"><b>for i as integer = 0 to 10</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">  
+<font size="3" style="font-size: 12pt"><b>	</b></font><font size="2" style="font-size: 10pt"><b>cat
+&lt; asub1(&quot;This message to all\nNot Done\nJoy and life
+job\nhello&quot;) | tr [A-Z][a-z] | grep Not</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>	next</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">   
+<font size="2" style="font-size: 10pt"><b>end compile</b></font></p>
+<p class="western" style="margin-left: 0.58in; font-weight: normal; line-height: 115%">
+<br/>
+
+</p>
+<p class="western" style="margin-left: 0.58in; font-weight: normal; line-height: 115%">
+<font size="3" style="font-size: 12pt">Let's run our standalone
+script:</font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>nntest</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">   
+                                  
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+script produced will be a ready to execute stand alone Gambas Script
+gbs type.</p>
+<h5 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc300_3411073610"></a>
+@GlobalVariableName(don't include $)</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">This
+will execute the content of the variable as a program and place the
+text output into the current program line. Sort of self modifying
+code. It must return a string.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">eg.
+$j = &quot;Print quote(\&quot;hello\&quot;)&quot;		‘this stores
+program&quot;</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">?
+@j     							‘this prints   hello</p>
+<p class="western" style="line-height: 115%">                        
+                 
+</p>
+<h6 class="western" style="margin-left: 0.29in; line-height: 115%"><a name="__RefHeading___Toc87_3411073610"></a>
+       Parameters $0-$n and $#         	</h6>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+will contain all the parameters passed to the @variable(parm0...)
+call 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">eg
+$j = &quot;Print quote($0)&quot;				‘ this sets the code</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">?
+@j(&quot;hello&quot;) 						‘ prints hello that was passed as a
+parameter</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc626_1004977946"></a>
+Sub/Function/Procedure and Class/Structures 
+</h5>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Each
+are compiled immediately after creation. If there are errors they are
+listed with the line number. Use ‘edit’ command to make changes
+to the code they are recompiled as soon as the editor exits. The
+syntax and definitions follow Gambas rules with the exception that
+USE for defining gambas components and shared libraries, Extern for
+defining external c,c++ libraries,  may be defined inside the sub or
+function for which it is required. Public and private variables may
+be defined before the sub definition. 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">If
+function is used as a command then they are executed in the context
+of the current shell</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Example:</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">cd
+/  ‘ changes the current working directory to the root directory</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">cd(&quot;/&quot;)
+    ‘ this will cause the function cd to be linked to whatever
+script its called from.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">When
+compiled without error the function, class etc will be loaded as a
+memory resident plugin and executed withing context of the shell. It
+will also be linked to any function or class that calls it</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">If
+used as functions then they execute in the context of the block or
+app executed that is running at the time.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Functions
+,classes and structures may be edited with the ‘edit’ command.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc105_2315703034"></a>
+{ } or Lambda … end 
+</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Are
+used to create a block of executable code. Gsh will execute code as
+it is read.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Also
+any other  block type command will start a block eg for .... next,
+while...do etc . 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">example:</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt">{
+                  		 		lambda(&quot;this\nthat&quot;) parm1 parm2 ...
+</font>
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt">	Dim
+i As String			Dim i As String     ‘as a use one time function</font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt">	i
+= &quot;this\nthat&quot;				i = param[0]</font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt">	dim
+j as string[]		 	dim j as string[]</font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt">	j
+= split(j,&quot;\n&quot;)			 	j = split(j,&quot;\n&quot;)</font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt">	$e
+= j					$e = j</font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><font size="2" style="font-size: 10pt">	}
+&lt;&amp;&gt; 				end &lt;&amp;&gt;</font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">You
+may edit and execute the last lambda expression by using edit lambda.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Parameters
+may be passed to a lambda expression using the param for Gambas ‘...’
+functions</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">This
+is basically a syntactic trick to let the editor know your entering
+code that should be executed                        as one block. By
+default gsh executes each line as it is entered.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">If
+used in gsh scripts variable declarations are only local to the
+lambda expression.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Parameters
+are useful if the expression is executed within script called many
+times with changing values.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc620_1004977946"></a>
+Code Blocks  Defined/Described 
+</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Will
+execute independently in the order they appear in the script.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"> eg
+if – endif, while - wend , lambda- end</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
+
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">In
+this document a code block is a single logically related section of
+code that is encased by any valid Gambas language construct. 
+</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">A
+single line such as:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">	<b>a
+= 24</b></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">Would
+be considered a singular block of code. And is executed as soon as
+it’s read by gsh.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">The
+value of a is lost immediately after it executes.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>For
+I as integer = 0 to 100</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>	dim
+j as integer = i+1</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>	print
+I,j,i*j</b></font></p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><font size="2" style="font-size: 10pt"><b>	next</b></font></p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">This
+is an example of a multi line block of code. And would execute after
+the next keyword is read.</p>
+<p class="western" style="margin-left: 0.29in; line-height: 115%">And
+again all variables defined within this block disappear after the
+block executes. 
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h2 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc93_3411073610"></a>
+Commands – Plugins from subs/class/struct Directories</h2>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc95_3411073610"></a>
+cd	directorypath - change the current working directory</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">uses
+the global $pwd variable</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">updates
+the global $env variable PWD entry</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Function
+cd(&quot;directory&quot;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Command
+ cd &quot;directory&quot;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc97_3411073610"></a>
+clear		Clears the screen</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if cleared, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western"><a name="__RefHeading___Toc238_2829647683"></a>clearclass		Clears
+all classes and structures from the image</h5>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc99_3411073610"></a>
+clearhist 	Clears the history of entered commands</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Function
+clearhist()</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Command
+clearhist()</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western"><a name="__RefHeading___Toc240_2829647683"></a>clearsubs		Clears
+all subs/functions/procedures from the image</h5>
+<h5 class="western"><a name="__RefHeading___Toc242_2829647683"></a>compload	Loads
+a gambas3 component into the image</h5>
+<p class="western" style="margin-left: 0.58in">Compload
+&quot;componentname&quot; …</p>
+<p class="western" style="margin-left: 0.58in">loads the list of
+components into the shell</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc101_3411073610"></a>
+fprint		Print to a file the content of arrays or collections</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">or
+objects/classes with the special _print function</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+fprint(filename,...) print the valiables</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">command
+ lprint filename .....  prints the variables</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc103_3411073610"></a>
+getfile	“FileName”	Loads a binary copy of the file into a global
+variable</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Defaults
+to ~/vars/filename</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">loaded
+file may be dumped using fprint</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">used
+a byte[] as the medium edit will hex edit this type</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc105_3411073610"></a>
+hist   &lt;start at&gt;&lt;number of  entries&gt;   Print a list
+input lines to the stdout</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+function hist(optional StartAt, NumberOfEntriesToDisplay)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+command hist startAt NumberOfEntriesToDisplay</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">uses
+the global collection $history 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Start
+at can be negative meaning from most recent  History back</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if read, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc168_2829647683"></a>
+hh		Lists the last 10 history entries only</h5>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc622_1004977946"></a>
+jobs &lt; pid | ON |OFF &gt; 	Prints a list of current background
+jobs</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Turns
+Job Control ON or OFF Default is OFF</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+lists all the jobs currently running for a user or requested PID</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">That
+is every instance of a task started by all gsh sessions for a user</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc107_3411073610"></a>
+lclass	&lt;GlobalClassname&gt; - prints a list of global classes</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">prints
+the content of specific class if name is provided</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+lsub(&lt;subname&gt;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Command
+lsub &lt;subname&gt;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc109_3411073610"></a>
+lenv	prints the current environment for exec</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+function env()</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+command  env</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">uses
+the global $env string[] variable</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc192_3705831925"></a>
+dbload	&lt;&quot;ImageFileName&quot;&gt;  Loads and uses a memory
+image from a file .</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 100%">Images
+may be saved to a file and loaded as needed</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Images
+may contain any application environment</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Function
+load(&lt;&quot;filename&quot;&gt;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Command
+ load &lt;&quot;filename&quot;&gt;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">the
+default path is ~/vars/filename</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">The
+default filename is gsh.image</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc170_2829647683"></a>
+dbsave &lt;&quot;ImageFileName&quot;&gt; - Save the current image to
+a file</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Images
+may be saved to a file and loaded as needed.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Images
+may contain any application environment.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+save(&lt;&quot;filename&quot;&gt;) 
+</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Command
+save &lt;&quot;filename&quot;&gt;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Returns
+true if found, false otherwise.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc113_3411073610"></a>
+<br/>
+lprint	Print the content of arrays, collections, Object or
+Classes</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Having
+a  special _print or write function</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+lprint(...) print the variables</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">command
+ lprint .....  prints the variables</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western"><a name="__RefHeading___Toc172_2829647683"></a>fprint	Print
+the content of arrays, collections, Object or Classes to a file</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Having
+a  special _print or write function</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+fprint(filename,...) print the variables</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">command
+ fprint  filename .....  prints the variables</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<h5 class="western"><a name="__RefHeading___Toc174_2829647683"></a>lcompsub	List
+all subs/functions compiled and loaded</h5>
+<h5 class="western"><a name="__RefHeading___Toc176_2829647683"></a>lenv		list
+the current environment</h5>
+<h5 class="western"><a name="__RefHeading___Toc178_2829647683"></a>lnotify		List
+the variables the current task is waiting to be notified on change</h5>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc115_3411073610"></a>
+lsclasses  List all the classes in the current environment</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+is the Gambas classes collection for the current application</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc117_3411073610"></a>
+lsubs &lt;GlobalSubName&gt; - prints a list of global functions,
+subs, procs</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Prints
+the content of function if name is provided.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+lsub(&lt;subname&gt;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Command
+lsub &lt;subname&gt;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Returns
+true if found, false otherwise.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc119_3411073610"></a>
+lvars  &lt;$GlobalVarName&gt; - list all variables or specific
+variable with content</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+lvars(&lt;varname&gt;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">command
+lvars &lt;varname&gt;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">list
+all if no parameter, other wise varname passed</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc123_3411073610"></a>
+readto(GlobalVar as string) For next command redirect output to
+variable</h5>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc125_3411073610"></a>
+resetdefaults  Reset the system variables to their default value</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">This
+is not destructive and will change all gsh system variables to</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">their
+default values.</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc127_3411073610"></a>
+resetenv  Reset the current image to default</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">You
+must call save or quit to save this image to disk.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">function
+resetenv()</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">command
+resetenv</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK.&quot;</p>
+<h5 class="western"><a name="__RefHeading___Toc244_2829647683"></a>savesubs
+save all or some of the subs in memory to the ~/vars/subs directory</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">savesubs
+suba suba .. or just savesubs which with save them all</p>
+<h5 class="western"><a name="__RefHeading___Toc246_2829647683"></a>saveclasses
+save all/some of the classes to  ~/vars/class or ~/vars/struct
+directories</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">saveclasses
+class1 struct1 … or just saveclasses to save them all</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc131_3411073610"></a>
+traceoff	Turns off shell command tracing</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Will
+cause the printing of each input line with time stamp and required
+terminator.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">terminator
+is the current block termination string.</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">command
+traceoff</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc133_3411073610"></a>
+traceon	Turns on shell command tracing</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Will
+cause the printing of each input line with time stamp and required
+terminator</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">terminator
+is the current block termination string</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">command
+traceon</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc135_3411073610"></a>
+vardel “$globalvar” - Delete a global variable/Sub/Class/Struct</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+function vardel(&quot;varname&quot;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+command vardel &quot;varname&quot;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">global
+functions have format &quot;sub.subname&quot;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">global
+classes have format &quot;class.classname&quot;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">structures
+have format “struct.structname”</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if found, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc107_2315703034"></a>
+varread  $GlobalVarName &lt;&quot;filename&quot;&gt; - read a global
+variable value from a file 
+</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Default
+File name = ~/var/varname</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+function - varread(&quot;varname &lt;, &quot;filename&quot;&gt;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+command  - varread &quot;varname&quot; &lt;&quot;filename”&gt;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if read, false otherwise ,$result contains the error text or
+&quot;OK&quot;</p>
+<h5 class="western"><a name="__RefHeading___Toc248_2829647683"></a>varrd
+	read a list of global variables from their default filenames</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">varrd
+$a $b ...</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc109_2315703034"></a>
+varstat varname display&lt;true|false&gt; - displays info about a
+variable</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">varname
+with display=yes defaults to display info other wise just returns
+Stat</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">Displays
+the var type, class etc</p>
+<h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc141_3411073610"></a>
+varwrite  $GlobalVarName &lt;&quot;filename&quot;&gt; - write a
+global variable value to a file</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">default
+file name = ~/var/varname</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+function - varwrite(&quot;varname &lt;, &quot;filename&quot;&gt;)</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">as
+command  - varwrite &quot;varname&quot; &lt;&quot;filename&gt;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">returns
+true if write, false otherwise</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">$result
+contains the error text or &quot;OK&quot;</p>
+<p class="western" style="margin-left: 0.58in; line-height: 115%"><br/>
+
+</p>
+<h5 class="western"><a name="__RefHeading___Toc250_2829647683"></a>varwr	Writes
+a list of global variables to their default files names</h5>
+<p class="western" style="margin-left: 0.58in; line-height: 115%">varwr
+$a $b ….</p>
+<h2 class="western" style="orphans: 2; widows: 2"><br/>
+<br/>
+
+</h2>
+<h2 class="western" style="page-break-before: always"><a name="__RefHeading___Toc188_2829647683"></a>
+Job control</h2>
+<p class="western">Job control allows the user to keep track of jobs
+executing in background and collect statistics about the jobs
+execution time.</p>
+<p class="western"><br/>
+
+</p>
+<p style="margin-top: 0.04in; margin-bottom: 0.04in; line-height: 100%; page-break-after: avoid"><a name="__RefHeading___Toc252_2829647683"></a>
+<font face="Liberation Sans, Arial, sans-serif"><font size="2" style="font-size: 10pt"><b>jobs
+on		 turns on the job control and recording</b></font></font></p>
+<p style="margin-top: 0.04in; margin-bottom: 0.04in; line-height: 100%; page-break-after: avoid"><a name="__RefHeading___Toc254_2829647683"></a>
+<font face="Liberation Sans, Arial, sans-serif"><font size="2" style="font-size: 10pt"><b>jobs
+off		turn off the job control and recording</b></font></font></p>
+<p style="margin-top: 0.04in; margin-bottom: 0.04in; line-height: 100%; page-break-after: avoid"><a name="__RefHeading___Toc256_2829647683"></a>
+<font face="Liberation Sans, Arial, sans-serif"><font size="2" style="font-size: 10pt"><b>jobs
+pid		Lists the current state of the job with pid(process id) </b></font></font>
+</p>
+<p style="margin-top: 0.04in; margin-bottom: 0.04in; line-height: 100%; page-break-after: avoid"><a name="__RefHeading___Toc258_2829647683"></a>
+<font face="Liberation Sans, Arial, sans-serif"><font size="2" style="font-size: 10pt"><b>jobs		by
+its self lists all terminated, running, suspended background jobs.</b></font></font></p>
+<p class="western"><br/>
+
+</p>
+<p class="western">Output looks like this after a job completes in
+forground</p>
+<p class="western"><br/>
+
+</p>
+<p class="western"><font size="2" style="font-size: 9pt">Complete
+pid=10382 State=0 Value=0</font></p>
+<p class="western"><font size="2" style="font-size: 9pt">Start=06/18/2020
+22:08:52.509	End=06/18/2020 22:08:52.545	Duration=0.041630119085312</font></p>
+<p class="western"><br/>
+
+</p>
+<p class="western">When background jobs complete an entry is made
+into list by entering the jobs command it returns a list  of and
+status of all jobs. For example:</p>
+<p class="western">jobs</p>
+<p class="western"><br/>
+
+</p>
+<p class="western"><font size="2" style="font-size: 9pt">18591
+06/18/2020 19:20:03.468 06/18/2020 19:20:03.476 [Complete] result=0
+Duration=0.009266659617424 &quot;time&quot; , &quot;-v&quot; , &quot;ls&quot;</font></p>
+<p class="western"><font size="2" style="font-size: 9pt">18829
+06/18/2020 19:22:03.923 06/18/2020 19:22:03.926 [Complete] result=0
+Duration=0.003492459654808 &quot;time&quot; , &quot;--help&quot;</font></p>
+<p class="western"><font size="2" style="font-size: 9pt">18915
+06/18/2020 19:22:45.385 06/18/2020 19:22:45.388 [Complete] result=0
+Duration=0.003445893526077 &quot;ls&quot; , &quot;--color=auto&quot;</font></p>
+<p class="western"><font size="2" style="font-size: 9pt">10388
+06/18/2020 22:08:52.535 06/18/2020 22:08:52.542 [Complete] result=0
+Duration=0.008102506399155 &quot;ls&quot; , &quot;--color=auto&quot;
+, &quot;-l&quot;</font></p>
+<p class="western"><font size="2" style="font-size: 9pt">10661
+06/18/2020 22:11:11.243 06/18/2020 22:11:11.248 [Complete] result=0
+Duration=0.005774199962616 &quot;ls&quot; , &quot;--color=auto&quot;
+, &quot;-l&quot;</font></p>
+<p class="western"><font size="2" style="font-size: 9pt">10672
+06/18/2020 22:11:12.697 06/18/2020 22:11:12.703 [Complete] result=0
+Duration=0.006938353180885 &quot;ls&quot; , &quot;--color=auto&quot;
+, &quot;-l&quot;</font></p>
+<p class="western"><br/>
+
+</p>
+<p class="western"><font size="3" style="font-size: 12pt">After the
+jobs are listed any completed ones are removed from the list</font></p>
+<h2 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc148_3673232024"></a>
+Sample Functions for Pipe Fitting</h2>
+<p class="western" style="line-height: 100%">These are simple
+templates for using Gambas functions as pipe elements</p>
+<p class="western" style="line-height: 100%">they can open network
+connections or a file anything you want to manipulate data.</p>
+<p class="western" style="line-height: 100%">An example might be 
+</p>
+<p class="western" style="line-height: 100%"><br/>
+
+</p>
+<p class="western" style="font-weight: normal; line-height: 115%"><font size="2" style="font-size: 10pt">DataAnalizer
+|&lt; ExternThermometer1 |&lt; ExternThermometer2 |&lt;
+WindSpeedMonitor  | &gt; DataReporter | DataRecorder </font>
+</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">This
+will feed  ExternThermometer1,  ExternThermometer2 and
+WindSpeedMonitor  to DataAnalizer</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">The
+Output from DataAnalyzer is sent to both DataReporter, and
+Datarecorder.</font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 100%">Each function is run as
+an independent process. When used with the Compile command a
+standalone Gambas scripts can be created.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h6 class="western" style="line-height: 115%"><a name="__RefHeading___Toc306_3411073610"></a>
+Sub filter() ' this is a simple filter to do upper to lower case</h6>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">''
+these functions just have to read from std input and write to</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">''
+standard output until the std input is closed</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	dim
+buffer as string</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	while
+not eof()</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">			try
+line input buffer</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">			if
+error then break</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">			print
+upper(buffer)</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	wend</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">print
+&quot;done&quot;</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">End</font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h6 class="western" style="line-height: 115%"><a name="__RefHeading___Toc308_3411073610"></a>
+Sub injector(num as integer) Simple Example of a Data Injector</h6>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">Brian
+Functions like this can be to inject data into a process stream. You
+just have to write to standard output.</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	for
+i as integer = 0 to num</font></p>
+<p class="western" style="line-height: 115%"> <font size="2" style="font-size: 10pt">		</font><font size="2" style="font-size: 10pt">print
+&quot;Sub here&quot;;;i</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	next</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	quit
+0</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">End</font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h6 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h6>
+<h6 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc310_3411073610"></a>
+Sub Sink() ' simple example of a data sink receiver</h6>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">''
+Functions like this can be to sink/receive data from a process stream</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">''
+Just have to read from stdin</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">dim
+buffer as string</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	while
+not eof()</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">		</font><font size="2" style="font-size: 10pt">line
+input a</font></p>
+<p class="western" style="line-height: 115%"> <font size="2" style="font-size: 10pt">		</font><font size="2" style="font-size: 10pt">'
+do something with data</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	wend</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	quit
+0</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">End</font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h2 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
+<br/>
+
+</h2>
+<h2 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc150_3673232024"></a>
+Sample Functions for Stream Redirection</h2>
+<p class="western" style="line-height: 115%">Filter or Data Sink
+function both use the same interface. Filename is passed as a global
+variable.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h6 class="western" style="line-height: 115%"><a name="__RefHeading___Toc152_3673232024"></a>
+Sub DataSink(Data as string)   ‘ example output data redirection
+sink</h6>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	extern
+mopen(FileName as string, mode as integer) as integer in “libc:6”
+ exec “open”</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	extern
+mwrite(filenum as integer,value as pointer, length as integer) as
+integer in “libc:6” exec “write”</font></p>
+<p class="western" style="line-height: 115%"> <font size="2" style="font-size: 10pt">	If
+ $OpenFileNum = -1 then</font></p>
+<p class="western" style="line-height: 115%">     <font size="2" style="font-size: 10pt">		$OpenFileNum
+= mopen($filename,&amp;x400 or 1 or  &amp;x0100)</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	endif</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	write($OpenFileNum,data,data.len)</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">end</font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<p class="western" style="line-height: 115%">The function parameter
+is not required. The function must return a string as the data to be
+written to the process.</p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<h6 class="western" style="line-height: 115%"><a name="__RefHeading___Toc154_3673232024"></a>
+Sub DataSource(filename as string)  as string ‘ example input
+redirection source 
+</h6>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	dim
+a as string</font></p>
+<p class="western" style="line-height: 115%"> <font size="2" style="font-size: 10pt">	a
+= file.load(filename)</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">	return
+a</font></p>
+<p class="western" style="line-height: 115%"><font size="2" style="font-size: 10pt">end</font></p>
+<p class="western" style="line-height: 115%"><br/>
+
+</p>
+<div title="footer">
+	<p style="margin-top: 0.35in; line-height: 100%">May 2020	<sdfield type=PAGE subtype=RANDOM format=PAGE>49</sdfield>
+	of <sdfield type=DOCSTAT subtype=PAGE format=ARABIC>49</sdfield></p>
+</div>
+</body>
+</html>

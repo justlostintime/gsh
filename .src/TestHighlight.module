@@ -1,0 +1,13 @@
+' Gambas module file
+
+Public Sub main()
+Dim x As New ConsoleHighlight
+
+Dim teststring As String = "\"This string\" , upper(a)\n \"more string\"\na=14\n"
+Dim outstring As String = X.ToConsole(teststring)
+Print outstring
+
+TestString = "'This is a comment\n'' Comment descrition\n'' another thing\n''' this too\na = 27\n'' Description of Function\n'' More details about function\n'' Even more  and more details\nb = 56 ' a comment"
+outstring = X.ToConsole(teststring)
+Print outstring
+End

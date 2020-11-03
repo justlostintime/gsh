@@ -1,0 +1,347 @@
+' Gambas module file
+
+Export
+
+Public Struct subload
+  iIsSub As Boolean               ' true as sub, false as class
+  iClass As Class
+  iObject As Object
+  iChanged As Boolean
+  iFirstDef As Boolean
+  iMd5 As String
+End Struct
+
+Public SubsAndClasses As New Collection(gb.ignorecase)
+Private $sPluginPath As String
+Private DotProject As String = "# Gambas Project File 3.0\nTitle=$NAME\nStartup=$NAME\nVersion=1.1.2\n$COMPLIST\n"
+Private ProjectDot As String = ""
+Private OverloadCount As Integer = 0
+
+Public Sub _init()
+  $sPluginPath = Temp$(User.name & "plugins")
+  Mkdir $sPluginPath
+  ProjectDot = File.Load(".project")
+End
+
+'' Take simple Gambas source code and create a component project from it. Load
+'' that component and return the class object of the given source file's code.
+Public Function CompileIt(sname As String, SourceFile As String, Optional CompileOnly As Boolean = False, MyClasses As Collection = Null, ExecuteProject As Boolean = False) As Variant
+  Dim sPath, sArchive As String
+  Dim aComp As New String[]
+  Dim sTempl, sRes As String
+  Dim iInd As Integer
+  Dim cobject As Subload
+  Dim IsClass As Boolean = False
+  Dim NameIn As String[] = Split(sname, ".")
+  Dim cname As String = If(NameIn.count > 1, NameIn[1], NameIn[0])
+  Dim sUse As String
+  
+  If Not Executeproject Then
+    If SubsAndClasses.Exist(cname) Then 
+       ''Debug "Compile already have compiled "; sname;;
+       cObject = SubsAndClasses[cname]
+      If SourceFile <> cObject.iMd5 Then
+          ''Debug "md5 does not match build new one"
+          sName = NameIn[1] & Str(Overloadcount)
+          Inc OverloadCount
+          cObject.iChanged = True
+       Else
+         ''Debug "MD5 Matches, return object"
+         Return If(cObject.iIsSub, cObject.iObject, cObject.iClass)
+       Endif
+    Else
+     cObject = New Subload
+     cObject.iMd5 = Sourcefile
+     cObject.iFirstDef = True
+     cObject.iChanged = False
+     If Not CompileOnly Then SubsAndClasses.Add(cObject, cname)
+     sName = NameIn[1]
+    Endif
+  Else
+    sName = cName
+  Endif
+  
+  
+  If NameIn[0] = "sub" Then
+   SourceFile = RegExp.Replace(SourceFile, "(^|\n) *SUB " & cname & " *[(]", "\nPublic Sub " & cname & "(", gb.IgnoreCase)
+   SourceFile = "Export\n" & SourceFile
+  Else
+   sourcefile = Replace(sourcefile, "\nend class", "\n", gb.IgnoreCase)
+   Sourcefile = Replace(sourcefile, "Export\n", "", gb.Ignorecase)
+   SourceFile = "Export\n" & SourceFile
+   isClass = True
+  Endif
+  
+  ' Create component
+  sPath = $sPluginPath &/ sName
+  If Exist(sPath) Then Shell "rm -r " & spath Wait
+  Mkdir sPath
+  Mkdir sPath &/ ".src"
+  
+  sTempl = DotProject   'File.Load(".../Templates/dotproject")
+  sTempl = Replace$(sTempl, "$NAME", sName)
+  ' Add all dependencies of this project to not have compilations problems
+  ' when classes like Button from gb.qt4 are used in the plugin.
+  With Split(ProjectDot, "\n")
+    For iInd = 0 To .Max
+      If .[iInd] Begins "Component=" Then aComp.Add(.[iInd])
+      If .[iInd] Begins "Library=" Then aComp.Add(.[iInd])
+    Next
+  End With
+  
+  ' Now add all "Use" lines from the source code
+  For Each sUse As String In gsh.usetable
+      sUse = UnQuote(sUse)
+      
+      If InStr(sUse, ":") Then
+         sUse = "Library=" & ProcessLibrary(sUse)
+         If aComp.Exist(sUse) Then Continue
+         aComp.Add(sUse)
+      Else
+        sUse = "Component=" & sUse
+        If aComp.Exist(sUse) Then Continue
+        aComp.Add(sUse)
+      Endif
+  Next
+  
+  With Split(SourceFile, "\n", "", True)
+    For iInd = 0 To .Max
+      If .[iInd] Begins "Use \"" Then 
+           Dim uselist As String[] = Split(.[iInd], " ", "\"\"", True, False)
+           Replace(.[iInd], "Use", "'Use")
+           For cnt As Integer = 1 To uselist.max
+              If InStr(uselist[cnt], ":") Then
+                  aComp.Add("Library=" & ProcessLibrary(uselist[cnt]))
+              Else
+                  aComp.Add("Component=" & uselist[cnt])
+              Endif
+           Next
+      Endif
+    Next
+  End With
+  
+  sTempl = Replace(sTempl, "$COMPLIST", aComp.Join("\n"))
+  
+  File.Save(sPath &/ ".project", sTempl)
+  ' XXX: This may override classes in the global symbol table when loaded
+  If ExecuteProject Then 
+      File.Save(sPath &/ ".src" &/ sName & ".module", SourceFile)
+  Else
+      File.Save(sPath &/ ".src" &/ sName & ".class", SourceFile)
+  Endif
+  
+  If Not IsNull(MyClasses) Then
+    For Each DoClass As String In MyClasses
+      Dim qname As String = MyClasses.Key
+      If qname = sname Then Continue
+      Dim cfile As String = Replace(DoClass, "\nend class", "\n", gb.IgnoreCase)
+      File.Save(sPath &/ ".src" &/ qName & ".class", cfile)
+    Next
+  Endif
+  
+  If Exist($sPluginPath &/ sName & ".gambas") Then Kill $sPluginPath &/ sName & ".gambas"
+  
+  ' Compile, archive, load and finally get the plugin class
+    Dim scmd As String = "gbc3 -a  " & sPath & " 2>&1"
+    Shell scmd To sRes ' include the -g flag to have Debug enabled
+    If Process.LastValue Then
+        'Error "Compile error sPath=[" & sPath & "]"
+        'Error.Raise(Subst$(("Compiler error:{\n&1\n}"), sRes))
+        Error.Raise(sRes)
+    Endif
+    
+  If ExecuteProject Then
+    
+       Return sPath ' return the path to the executable
+    
+  Else
+   
+    sArchive = $sPluginPath &/ sName & ".gambas"
+  
+    Shell Subst$("gba3 &1 -o &2 2>&&1", sPath, sArchive) To sRes
+    If Process.LastValue Then Error.Raise(Subst$(("Archiver error:\n&1"), sRes))
+    
+  
+    If Not CompileOnly Then 
+       Component.Load(sArchive)
+       cobject.iClass = Class.Load(sname)
+       cobject.iObject = cobject.iClass.New()
+       'cObject.iChanged = False
+       cObject.iIsSub = IsClass
+       
+       ' If Not SubsAndClasses.Exist(cName) Then 
+       '     SubsAndClasses.Add(cObject, cname)
+       ' Else
+       '     SubsAndClasses[cname] = cObject
+       ' Endif
+      
+      Return If(cObject.iIsSub, cObject.iObject, cObject.iClass)
+    Else
+      Return Null
+    Endif
+  Endif 
+  
+  Catch 
+     Dim s As String[] = Split(Error.text, ":", "", True)
+     Error "\n\x1b[33mCompiler Error -";; Error.Text;; "\x1b[0m";; If(s.count < 3, Error.where, "")
+     If Not compileonly And cObject.iFirstDef Then SubsAndClasses.Remove(cname)
+     If s.count > 2 Then 
+        DoListing(SourceFile, s[1], s[2])
+        Print
+     Endif
+     Error.Raise("Compile completed with errors")
+End ' Gambas module file
+
+Public Sub _get(index As String) As Object
+
+   index = Split(index, ".")[1]
+   If Not SubsAndClasses.exist(index) Then Return Null
+   Return SubsAndClasses[index].iObject
+  
+End
+
+Public Sub Exist(index As String) As Boolean
+
+  index = Split(index, ".")[1]
+  Return SubsAndClasses.exist(index)
+  
+End
+
+Public Sub NewInstance(index As String) As Object
+
+  index = Split(index, ".")[1]
+  If Not SubsAndClasses.exist(index) Then Return Null
+  Return SubsAndClasses[index].iClass.New()
+  
+End
+
+Public Sub GetClass(index As String) As Class
+  
+  index = Split(index, ".")[1]
+  If Not SubsAndClasses.exist(index) Then Return Null
+  Return SubsAndClasses[index].iClass
+  
+End
+Public Sub GetFunc(index As String) As Object
+  
+  If Not SubsAndClasses.exist(index) Then Return Null
+   Return SubsAndClasses[index].iObject
+  
+End
+
+
+Public Sub changed(index As String) As Boolean
+  
+  index = Split(index, ".")[1]
+  If Not SubsAndClasses.exist(index) Then Return Null
+  Return SubsAndClasses[index].iChanged
+  
+End
+
+Public Sub DoListing(thefile As Variant, Optional errorline As Integer = 0, errorposition As Integer = 0)
+  Dim list As String[]
+  Print TypeOf(thefile)
+  If TypeOf(thefile) = gb.string Then
+    list = Split(thefile, "\n", "\"\"", True, True)
+  Else If TypeOf(thefile) = gb.object And Object.Class(thefile).name = "String[]" Then
+    list = thefile
+  Else
+    Return
+  Endif
+  
+  Dim i As Integer = 1
+  For Each s As String In List
+    Error "[" & Format(i, "###0") & "]:"; 
+    If errorline > 0 And If errorline = i Then
+      Print "\x1b[32m"; s; "\x1b[0m"
+      Print Space(errorposition + 6); "\x1b[31m^\x1b[0m"
+    Else
+      Print s
+    Endif
+    Inc i
+  Next
+End
+
+Public Sub remove(index As String) As Boolean
+  index = Split(index, ".")[1]
+  If Exist(index) Then
+    SubsAndClasses.Remove(index)
+  Else
+    Return False
+  Endif
+End
+ 
+Public Sub clear() As Boolean
+  SubsAndClasses.Clear()
+  Return True
+End
+
+Public Sub getTable() As Collection
+  
+  Return SubsAndClasses
+  
+End
+
+Private Sub ProcessLibrary(LibName As String) As String
+  Dim sSplitLine As String[] = Split(LibName, ":", "", True)
+  Dim LibEntry As String
+  If sSplitLine.count <> 2 Then 
+    Error.Raise("Invalid Library name [" & LibName & "] Should look like \"vendor.libname:version\"")
+  Endif
+  sSplitLine[0] = Replace(sSplitLine[0], ".", "/")
+  LibEntry = sSplitLine[0]
+  'We will allow major version numbers to be used of major.minor numbers
+  If LibEntry[0] = "/" Then
+     If Exist(LibEntry & ":" & sSplitLine[1] & ".gambas") Then   ' we have a whole path
+       LibEntry = LibEntry & ":" & sSplitLine[1] & ".gambas"
+     Else If Exist(LibEntry & ":" & sSplitLine[1]) Then   ' we have a whole path
+       LibEntry = LibEntry & ":" & sSplitLine[1]
+     Else
+       LibEntry = CheckLibVersions(LibEntry, sSplitLine[1])
+     Endif
+  Else
+      libEntry = User.home &/ ".local/share/gambas" & System.version &/ "lib" &/ LibEntry
+      If Exist(LibEntry & ":" & sSplitLine[1] & ".gambas") Then
+          LibEntry = LibEntry & ":" & sSplitLine[1] & ".gambas"
+      Else If Exist(LibEntry & ":" & sSplitLine[1]) Then
+          LibEntry = LibEntry & ":" & sSplitLine[1]
+      Else
+        LibEntry = CheckLibVersions(LibEntry, sSplitLine[1])
+        If LibEntry = "" Then
+           LibEntry = "/usr/lib/gambas" & System.version &/ sSplitLine[0]
+           If Exist(LibEntry & ":" & sSplitLine[1] & ".gambas") Then
+             LibEntry = LibEntry & ":" & sSplitLine[1] & ".gambas"
+           Else If Exist(LibEntry & ":" & sSplitLine[1]) Then
+             LibEntry = LibEntry & ":" & sSplitLine[1]
+           Else
+             LibEntry = CheckLibVersions(LibEntry, sSplitLine[1])
+           Endif
+        Endif
+      Endif
+        
+  Endif 
+  
+  If LibEntry = "" Then 
+      error.raise("Library: [&1] not found", LibName)
+  Endif
+  Return LibEntry
+End
+
+Private Sub CheckLibVersions(sPath As String, Version As String) As String
+  
+  Dim sVersion As String[] = Split(version, ".")
+  If sVersion.count > 0 Then
+    Dim sDir As String = File.Dir(sPath)
+    Dim sName As String = File.Name(sPath) & ":" & sVersion[0] & ".*" & ".gambas"
+    Dim sEntries As String[] = Dir(sDir, sName, gb.file).Sort()
+    If sEntries.count > 0 Then
+      Return sDir &/ sEntries[sEntries.max]   ' return the highest level library
+    Else
+       Return ""
+    Endif
+  Else
+    Return ""
+  Endif
+  
+End
+

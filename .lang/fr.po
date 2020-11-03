@@ -1,0 +1,508 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: gsh 3.14.90\n"
+"POT-Creation-Date: 2020-07-21 23:26 UTC\n"
+"PO-Revision-Date: 2020-07-07 04:36 UTC\n"
+"Last-Translator: brian <brian@westwoodsvcs.com>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: .project:1
+msgid "Gambas Shell"
+msgstr "Gambas Shell"
+
+#: .project:2
+msgid "Gambas interactive shell"
+msgstr "Coque interactive Gambas"
+
+#: SubCls.module:162
+msgid ""
+"Archiver error:\n"
+"&1"
+msgstr ""
+"Erreur de l'archiveur:\n"
+"&1"
+
+#: gsh.module:141
+msgid " Window was Resized to "
+msgstr "La fenêtre a été redimensionnée pour"
+
+#: gsh.module:209
+msgid "Run shell as a service point"
+msgstr "Exécuter le shell en tant que point de service"
+
+#: gsh.module:210
+msgid "Display About "
+msgstr "Afficher à propos"
+
+#: gsh.module:211
+msgid "Display version number"
+msgstr "Afficher le numéro de version"
+
+#: gsh.module:212
+msgid "Turn on tracing"
+msgstr "Activer le traçage"
+
+#: gsh.module:213
+msgid "Shared Memory Name for application"
+msgstr "Nom de mémoire partagée pour l'application"
+
+#: gsh.module:214
+msgid "Do not use shared memory"
+msgstr "N'utilisez pas de mémoire partagée"
+
+#: gsh.module:215
+msgid "Do Not Load gsh Image - already loaded by another process"
+msgstr "Ne pas charger l'image gsh - déjà chargée par un autre processus"
+
+#: gsh.module:216
+msgid "Use this specific image when starting"
+msgstr "Utilisez cette image spécifique au démarrage"
+
+#: gsh.module:217
+msgid "Print the extended help infomation"
+msgstr "Imprimer les informations d'aide étendues"
+
+#: gsh.module:218
+msgid "Defines the ammount of storage needed for the In Memory Database(default 4.5m)"
+msgstr "Définit la quantité de stockage nécessaire pour la base de données en mémoire (4,5 m par défaut)"
+
+#: gsh.module:219
+msgid "Size of in memory Database Dictionary and index(Default 1.5m)"
+msgstr "Taille du dictionnaire et de l'index de la base de données en mémoire (1,5 m par défaut)"
+
+#: gsh.module:220
+msgid "Cleanup and delete the old Shm file if it is closed and left around"
+msgstr "Nettoyer et supprimer l'ancien fichier Shm s'il est fermé et laissé autour"
+
+#: gsh.module:221
+msgid "Command to be executed"
+msgstr "Commande à exécuter"
+
+#: gsh.module:222
+msgid "Execute the content of a global variable"
+msgstr "Exécuter le contenu d'une variable globale"
+
+#: gsh.module:223
+msgid "Execute the following command line"
+msgstr "Exécutez la ligne de commande suivante"
+
+#: gsh.module:227
+msgid ""
+"\n"
+"\n"
+"Gambas Shell"
+msgstr ""
+"\n"
+"\n"
+"Gambas Shell"
+
+#: gsh.module:228
+msgid "Interactive console for using gambas as your day to day shell"
+msgstr "Console interactive pour utiliser les gambas comme coquille au jour le jour"
+
+#: gsh.module:229
+msgid "It Is Also usefull For learning To program"
+msgstr "Il est également utile pour apprendre à programmer"
+
+#: gsh.module:230
+msgid "Try simple things interactively"
+msgstr "Essayez des choses simples de manière interactive"
+
+#: gsh.module:231
+msgid "It is also a powerful shell for writing appliction that must share variables between tasks"
+msgstr "C'est également un shell puissant pour écrire des applications qui doivent partager des variables entre les tâches"
+
+#: gsh.module:232
+msgid "You may extend the image by creating built in commands as gambas functions and classes"
+msgstr "Vous pouvez étendre l'image en créant des commandes intégrées en tant que fonctions et classes gambas"
+
+#: gsh.module:233
+msgid "  that will be shared by every running instance of the shell in real time"
+msgstr "Qui sera partagé par chaque instance en cours d'exécution du shell en temps réel"
+
+#: gsh.module:234
+msgid ""
+"westwood : https://github.com/justlostintime/GambasShell/wiki\n"
+"\n"
+msgstr ""
+"Westwood: https://github.com/justlostintime/GambasShell/wiki\n"
+"\n"
+
+#: gsh.module:239
+msgid "Rev:"
+msgstr "REV:"
+
+#: gsh.module:245
+msgid "GSH in service mode"
+msgstr "GSH en mode service"
+
+#: gsh.module:268
+msgid " extern run "
+msgstr "Course externe"
+
+#: gsh.module:295
+msgid "Error : Gsh script: "
+msgstr "Erreur: script Gsh:"
+
+#: gsh.module:329
+msgid "Get Error: Command not found "
+msgstr ""
+
+#: gsh.module:425
+msgid "Compile On Start of Class"
+msgstr "Compiler au début de la classe"
+
+#: gsh.module:425
+msgid "Failed :"
+msgstr ""
+
+#: gsh.module:441
+msgid "Compile On Start of Sub/Func/Proc"
+msgstr "Compiler au début de Sub / Func / Proc"
+
+#: gsh.module:696
+msgid "Loading updated gsh.rc"
+msgstr ""
+
+#: gsh.module:699
+msgid "Unable to run updated gsh.rc :"
+msgstr ""
+
+#: gsh.module:709
+msgid "Compile Classes and Funtions in image at startup"
+msgstr "Compiler les classes et les fonctions dans l'image au démarrage"
+
+#: gsh.module:712
+msgid "Compile Classes and Funtions in image at startup complete"
+msgstr "Compilation des classes et des fonctions dans l'image au démarrage terminée"
+
+#: gsh.module:736
+msgid " Execute a function in image "
+msgstr "Exécuter une fonction dans l'image"
+
+#: gsh.module:751
+msgid "Execute The Content of a variable from shared memory "
+msgstr ""
+
+#: gsh.module:765
+msgid "\" Not Found"
+msgstr "\" Pas trouvé"
+
+#: gsh.module:765
+msgid "Execute from Global Variable : Variable \""
+msgstr "Exécuter à partir de la variable globale: Variable  \""
+
+#: gsh.module:775
+msgid "-c Command recieved :["
+msgstr ""
+
+#: gsh.module:784
+msgid "Command line scripts to execute cnt="
+msgstr "Scripts de ligne de commande pour exécuter cnt u003d"
+
+#: gsh.module:789
+msgid "Execite gsh script file"
+msgstr "Exécuter le fichier de script sh"
+
+#: gsh.module:818
+msgid "Unable to load onstart ;"
+msgstr ""
+
+#: gsh.module:829
+msgid "Unable to load onexit :"
+msgstr ""
+
+#: gsh.module:852
+msgid ""
+"New base Profile revision profile.gsh\n"
+"Run update to use new base profile\n"
+"\n"
+msgstr ""
+
+#: gsh.module:860
+msgid "Enter interactive mode!"
+msgstr "Entrez en mode interactif!"
+
+#: gsh.module:994
+msgid "Exec local Sub/func/proc"
+msgstr "Exec local Sub / func / proc"
+
+#: gsh.module:1005
+msgid "Local Execute error in :"
+msgstr ""
+
+#: gsh.module:1009
+msgid "[Terminated]"
+msgstr "[Terminé]"
+
+#: gsh.module:1023
+msgid "GSH Call to Unknown function"
+msgstr ""
+
+#: gsh.module:1178
+msgid "Execute External "
+msgstr "Exécuter externe"
+
+#: gsh.module:1280
+msgid "|[Crashed]\n"
+msgstr ""
+
+#: gsh.module:1281
+msgid "Crashed"
+msgstr "Écrasé"
+
+#: gsh.module:1281
+msgid "Job pid="
+msgstr ""
+
+#: gsh.module:1288
+msgid "|[Signaled]\n"
+msgstr ""
+
+#: gsh.module:1289
+msgid "Signaled"
+msgstr ""
+
+#: gsh.module:1293
+msgid "|[Stopped]\n"
+msgstr ""
+
+#: gsh.module:1294
+msgid "Complete"
+msgstr "Achevée"
+
+#: gsh.module:1298
+msgid "New State"
+msgstr ""
+
+#: gsh.module:1322
+msgid "System Read Error:"
+msgstr ""
+
+#: gsh.module:1397
+msgid "Begin readline"
+msgstr ""
+
+#: gsh.module:1400
+#, fuzzy
+msgid "Begin server mode reads"
+msgstr "GSH en mode service"
+
+#: gsh.module:1414
+msgid "Trying to read from terminal"
+msgstr ""
+
+#: gsh.module:1416
+msgid "Unable to evaluate any prompt type"
+msgstr ""
+
+#: gsh.module:1427
+msgid "Reading From Readline Version"
+msgstr ""
+
+#: gsh.module:1455
+#, fuzzy
+msgid "Readline Complete"
+msgstr "Achevée"
+
+#: gsh.module:1486
+msgid "Error reading File UNEXPECTED EOF , Wanted "
+msgstr "Erreur de lecture du fichier EOF INATTENDU, recherché"
+
+#: gsh.module:1500
+msgid "Read History '"
+msgstr ""
+
+#: gsh.module:1574
+msgid "UnKnown command or function , Can Not Be executed "
+msgstr ""
+
+#: gsh.module:1583
+msgid "[32mDefined Public to Extern table"
+msgstr ""
+
+#: gsh.module:1603
+msgid " requires a function name !"
+msgstr ""
+
+#: gsh.module:1608
+msgid "Error: Reserved Word "
+msgstr "Erreur: mot réservé"
+
+#: gsh.module:1619
+msgid "Error in sub definition "
+msgstr "Erreur dans la sous-définition"
+
+#: gsh.module:1652
+msgid " ... Already Defined\n"
+msgstr "... Déjà défini\n"
+
+#: gsh.module:1652
+msgid "Use Edit to change :"
+msgstr ""
+
+#: gsh.module:1673
+msgid "sub compile "
+msgstr ""
+
+#: gsh.module:1681
+msgid " requires a class name !"
+msgstr ""
+
+#: gsh.module:1690
+msgid " Aready Defined"
+msgstr "Déjà défini"
+
+#: gsh.module:1696
+msgid "Use edit to change :"
+msgstr ""
+
+#: gsh.module:1795
+msgid "Unable to create "
+msgstr ""
+
+#: gsh.module:1809
+msgid "Error running script"
+msgstr "Erreur lors de l'exécution du script"
+
+#: gsh.module:1817
+msgid "Error : No Script named"
+msgstr "Erreur: aucun script nommé"
+
+#: gsh.module:1818
+msgid "file not found.. Did you forget quotes"
+msgstr ""
+
+#: gsh.module:1875
+msgid "Error Keywords can not be redefined :"
+msgstr "Les mots-clés d'erreur ne peuvent pas être redéfinis:"
+
+#: gsh.module:1876
+msgid "Error : Keywords can not be redefined :"
+msgstr "Erreur: les mots clés ne peuvent pas être redéfinis:"
+
+#: gsh.module:1898
+msgid " not found! Create {Class |Sub | Var | [No]} now ? "
+msgstr ""
+
+#: gsh.module:2079
+msgid "Error : May not edit objects of type "
+msgstr "Erreur: ne peut pas modifier les objets de type"
+
+#: gsh.module:2083
+msgid "Error : May only edit strings and some objects"
+msgstr "Erreur: ne peut modifier que les chaînes et certains objets"
+
+#: gsh.module:2196
+msgid "History index out of bounds ["
+msgstr ""
+
+#: gsh.module:2393
+msgid "Error : Too many parameters :"
+msgstr "Erreur: trop de paramètres:"
+
+#: gsh.module:2437
+msgid "No Preprocess "
+msgstr ""
+
+#: gsh.module:2440
+msgid "Before Preprocess "
+msgstr "Avant le prétraitement"
+
+#: gsh.module:2506
+msgid "PreProcess Cmd Compiled "
+msgstr ""
+
+#: gsh.module:2519
+msgid "Preprocess Expand # "
+msgstr ""
+
+#: gsh.module:2525
+msgid "Preprocess After Expand #"
+msgstr ""
+
+#: gsh.module:2598
+msgid "@ Improper parameter definition"
+msgstr "@ Mauvaise définition des paramètres"
+
+#: gsh.module:2603
+msgid "Preprocess before @"
+msgstr ""
+
+#: gsh.module:2605
+msgid "Preprocess After @"
+msgstr ""
+
+#: gsh.module:2657
+msgid "After Preprocess "
+msgstr "Après le prétraitement"
+
+#: gsh.module:2665
+msgid "Preprocess outputs"
+msgstr ""
+
+#: gsh.module:2706
+msgid "Directory Not Found :["
+msgstr "Répertoire introuvable: ["
+
+#: gsh.module:2729
+msgid "Execvar prosess ended"
+msgstr ""
+
+#: gsh.module:2747
+msgid "@ Unknown global variable\""
+msgstr "@ Variable globale inconnue  \""
+
+#: gsh.module:2751
+msgid "Exec variable complete output: Start"
+msgstr ""
+
+#: gsh.module:2753
+msgid "Exec variable complete output: End"
+msgstr ""
+
+#: gsh.module:2780
+msgid "UNKNOWN Highlight Type-"
+msgstr ""
+
+#: gsh.module:2786
+msgid "UNKNOWN Data Type-"
+msgstr ""
+
+#: gsh.module:2822
+msgid ""
+"\n"
+"Useful included Functions and Classes these may be edited to your taste\n"
+"Functions Can be found in /usr/share/gsh/subs for Default versions or in ~/vars/subs for personal versions"
+msgstr ""
+"\n"
+"Fonctions et classes incluses utiles, celles-ci peuvent être modifiées à votre goût\n"
+"Les fonctions peuvent être trouvées dans / usr / share / gsh / subs pour les versions par défaut ou dans ~ / vars / subs pour les versions personnelles"
+
+#: gsh.module:2838
+msgid "Help Display failed!"
+msgstr ""
+
+#: gsh.module:2877
+msgid "Defaut"
+msgstr "Defaut"
+
+#: gsh.module:2881
+msgid "Personal"
+msgstr ""
+
+#: gsh.module:2885
+msgid "In Mem"
+msgstr ""
+
+#: gsh.module:2902
+msgid "unable to read "
+msgstr ""
+
+#: gsh.module:2935
+msgid "List: Unable to find "
+msgstr ""

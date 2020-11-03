@@ -1,0 +1,7 @@
+VARIA;IndexTreeView1=3
+VARIA;IndexNumeroBranche=1
+VARIA;IndexNumeroNouveauFichier=2
+VARIA;PATHOPENDIR=~/Projet
+TREE1;0;Projet;picDir1
+TREE1;2;nouveau1.md;picTextFail;0
+TABL1;~/Projet/nouveau1.md;2
