@@ -1,9 +1,0 @@
-Sub clear() As Boolean ' clear the screen see the alias cls as well
-''clear     clear the screen
-''          returns true if cleared, false otherwise
-''          $result contains the error text or "OK"
-print "\x1bc";
-flush
-sharedmem["$result"] = "OK"
-return true
-end

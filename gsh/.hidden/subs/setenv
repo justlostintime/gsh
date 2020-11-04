@@ -1,3 +1,0 @@
-Sub setenv(var As String, value As String)
-env[var] = value
-end

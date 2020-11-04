@@ -1,4 +1,0 @@
-Sub tellmewhen()
-public xxxx as string = "hello"
-print xxxx
-end
