@@ -2,7 +2,7 @@
 
 ' test commit too
 ' Gambas module 
-
+' change
 
 Public Sub rr_Read()
    Dim sLine As String
