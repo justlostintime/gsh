@@ -30,10 +30,10 @@ Public LocalFunRun As String = ""
 Public cmdLineParameters As String[]
 '\\033[2K - Clear Line"
 '\\033[K Erase to end of line"
-Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & user.name & \"@\" & system.host & \":\\x1b[32m\" & env[\"PWD\"] & \"\\x1b[0m\\x1b[K$\" & gsh.blockindent &\"\\x1b[0K\\x00\""
+Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & user.name & \"@\" & system.host & \":\\x1b[32m\" & env[\"PWD\"] & \"\\x1b[0m\\x1b[K$\" &\"\\x1b[0K\\x00\""
 Public DefaultHelp As String[] = [System.find("less"), "-c"]
 
-Public BlockLevel As Integer = 1
+Public BlockLevel As Integer = 0
 Public InBufParse As String[]
 Public SymbolTable As New Collection
 Public ContainsGlobal As Boolean = False
@@ -52,16 +52,16 @@ Public ExternTable As New String[]
 Public StructTable As New String[]
 Public CompilerDirectiveTable As New String[]
 
-Public BlockIndent As String = "  "
+Public BlockIndent As String = ""
 
 Public bCleanup As Boolean = False
 Public bN As Boolean = False 
 Public bSingleUse As Boolean = False 
 Public bH As Boolean = False                                 'display the manual
-Public bDbaseServer As Boolean = False           'Run as a service
-Public bInteractive As Boolean = False               'Force the interface to be interactive
-Public bLogon As Boolean = False                        'Force to act as logon shell
-Public sPortNumber As String = ""                       'Port number/name to read and write to in service mode
+Public bDbaseServer As Boolean = False                       'Run as a service
+Public bInteractive As Boolean = False                       'Force the interface to be interactive
+Public bLogon As Boolean = False                             'Force to act as logon shell
+Public sPortNumber As String = ""                            'Port number/name to read and write to in service mode
 
 Public Source As String = "STDIN"
 Public DefaultSharedMem As String = user.name & "gsh"
@@ -1460,17 +1460,17 @@ Public Sub readline() As String
       If DoTrace Then Error ("Reading From Readline Version");; readlineversion 
       Select Case ReadLineVersion
         Case 9
-              pinput = c9_readline(Prompt)
+              pinput = c9_readline(Prompt & BlockIndent)
         Case 8
-              pinput = c8_readline(Prompt)
+              pinput = c8_readline(Prompt & BlockIndent)
         Case 7
-              pinput = c7_readline(prompt)
+              pinput = c7_readline(prompt & BlockIndent)
         Case 6
-              pinput = c6_readline(prompt)
+              pinput = c6_readline(prompt & BlockIndent)
         Case 5
-              pinput = c5_readline(prompt)
+              pinput = c5_readline(prompt & BlockIndent)
         Default 
-              Error Prompt; "%";
+              Error Prompt; "%"; BlockIndent;
               Line Input sInput
               sInput = Trim(sInput)
       End Select
