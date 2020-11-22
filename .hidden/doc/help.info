@@ -4,9 +4,12 @@
                       of the external commands found in the ~/vars/subs directory
  
  You may use most Gambas language and variables definitions
- Regular Gambas variables will not persist between commands
+ Regular Gambas variables will not persist between command blocks as each block of code is executed as
+ a single Gambas script. Blocks being any code that requires a begin and end type directive.
+ Examples: for ... next if..endif etc, also Lambda .. end can used to define an unnamed block of code.
+
  Gambas Shell compiles and runs code blocks as a Gambas scripts. 
- So you can use 'USE', 'INCLUDE', 'extern' inside each function definition. 
+ So you can use 'USE', 'INCLUDE', 'extern' inside each Block/function definition. 
  All Subs/functions/procedures and Classes are automatically PUBLIC.
   
  Example    sub ex()
@@ -20,19 +23,23 @@
              end
              
  When a function compiles correctly. It is loaded into the shell as a plugin. 
- and may be directly executed from the command line.
+ and may be directly executed from the command line. If the compile ..end directive or
+ called from inside a block then the function is included as part of the compiled 
+ block script.
 
  Global Variables start with a '$' and are translated into a memory database call. 
  Global variable data types are determined by the type of data stored there. The Data type
- may change according to what is stored there unless a request for notification of change
+ may change during assignment unless a request for notification of change
  has been set. See later for notification requests. 
   
- SUB, Procedures and functions and class may be defined within the shell and will
- Persist across commands and restart of the shell. GSH scripts are executed one block
- or line at a time. Global variables are the only variable which are carried from block to block.
+ Defined Subs, Procedures, Functions, Classes, Structures and Global variables are 
+ carried from block to block and saved as part of the gsh environment and reloaded each time
+ gsh is started.
   
- Gambas Shell is an in memory shell all global variables are kept in an in memory database image. This image is saved
-            when a new variable is created. or when the shell exits. It is reloaded when the shell is started.
+ Gambas Shell Overview
+            gsh  is an in memory shell all global variables are kept in an in memory database image. 
+            Functions, Subs, Procudures, Functions, Classes, Structures are considered as global variables.
+            This image is saved when a new variable is created. or when the shell exits. It is reloaded when the shell is started.
             This in memory data base is shared by all GSH shells started by a single user. That is to say that a variable
             created by one instance is accessible by every other instance of the GSH running for that user.
             Objects, Functions and classes are part of this database. One task can update an object and have it

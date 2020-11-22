@@ -43,8 +43,8 @@ Public HCurrentRead As Integer = -1
 Private ReadLineVersion As Integer = -1
 
 Public PreOutBuf As New Collection
-Public BlockSize As Integer = 1512000
-Public CollectMemLen As Integer = 512000
+Public BlockSize As Integer = 4512000
+Public CollectMemLen As Integer = 1512000
 Public AppSource As File = File.in
 Public LinkTable As New Collection
 Public UseTable As New String[]

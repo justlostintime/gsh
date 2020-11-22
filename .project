@@ -1,7 +1,6 @@
 # Gambas Project File 3.0
 Title=Gambas Shell
 Startup=gsh
-UseTerminal=1
 Version=1.2.81
 Component=gb.args
 Component=gb.compress

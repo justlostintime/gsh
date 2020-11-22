@@ -6,7 +6,7 @@ Public SProgram As String
 Public Sub main()
 
 With SharedMem
-.Begin(128000)
+.BeginNamed()
   .["$f"] = "hello"
   .["$r"] = "Bye"
   Dim a As String
@@ -14,8 +14,8 @@ With SharedMem
   a = "! cat < $f > $r ! cat ! less"
   While True
     If a = "quit" Then Break
-    syms = Highlight.Analyze(a)
-    sProgram = CreateCmdProgram.compile(syms)
+    'syms = Highlight.Analyze(a)
+    sProgram = CreateCmdProgram.compile(a)
     program = Split(sProgram, "\n", "\"\"", True, True)
     Print sProgram
     Line Input a
