@@ -30,7 +30,7 @@ Public LocalFunRun As String = ""
 Public cmdLineParameters As String[]
 '\\033[2K - Clear Line"
 '\\033[K Erase to end of line"
-Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & user.name & \"@\" & system.host & \":\\x1b[32m\" & env[\"PWD\"] & \"\\x1b[0m\\x1b[K$\" &\"\\x1b[0K\\x00\""
+Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & user.name & \"@\" & system.host & \":\\x1b[32m\" & env[\"PWD\"] & \"\\x1b[0m\\x1b[K$\" &\"\\x1b[0K\\\"" 
 Public DefaultHelp As String[] = [System.find("less"), "-c"]
 
 Public BlockLevel As Integer = 0
@@ -52,7 +52,7 @@ Public ExternTable As New String[]
 Public StructTable As New String[]
 Public CompilerDirectiveTable As New String[]
 
-Public BlockIndent As String = ""
+Public BlockIndent As String = "\x00"
 
 Public bCleanup As Boolean = False
 Public bN As Boolean = False 
@@ -359,7 +359,7 @@ With sharedmem
   
  If Not .exist("$profile") Then .["$profile"] = False
  If Not .exist("$alias") Then .["$alias"] = New Collection
- If Not .exist("$blockindent") Then .["$blockindent"] = "  "                             ' this is the block indent characters for entering blocks of code
+ If Not .exist("$blockindent") Or If .["$blockindent"] = "" Then .["$blockindent"] = "  "   ' this is the block indent characters for entering blocks of code
  If Not .exist("$execprog") Then .["$execprog"] = "print \"Gambas Shell \""
  If Not .exist("$prompt") Then .["$prompt"] = DefaultPrompt
  If Not .exist("$result") Then .["$result"] = "OK"
@@ -1416,6 +1416,12 @@ Public Sub ReadFile() As String
      Error.Propagate()
 End
 
+Sub SetBlockIndent()
+  With sharedmem
+  blockindent = String(blocklevel, .["$blockindent"]) & "\x00"
+  End With
+End
+
 Public Sub readline() As String
 
   Dim pInput As Pointer
@@ -1483,7 +1489,7 @@ Public Sub readline() As String
           sInput = String(1, String@(pInput))
           rFree(pInput)
           sInput = Trim(sInput)
-          If sInput <> "" Then add_history(sInput)
+          If sInput <> "" Then add_history(sInput & "\x00")
       Endif
       If DoTrace Then Error ("Readline Complete")
     Endif
@@ -2024,8 +2030,8 @@ StartAgain:
       
       Catch
         NoPreProcess = False
-        BlockLevel = 1
-        If SOURCE = "STDIN" Then blockindent = String(blocklevel, sharedmem["$blockindent"])
+        BlockLevel = 0
+        If SOURCE = "STDIN" Then SetBlockIndent()
         ''debug "Exit DOBLK"
         Error.Propagate()
         'Error.Raise(Error.text)
@@ -2270,14 +2276,14 @@ Public Sub DoBlock(EndBlk As String[])
 With sharedmem
   Inc blockLevel
   ''debug "Enter DOBLK"
-  If SOURCE = "STDIN" Then blockindent = String(blocklevel, .["$blockindent"])
+  If SOURCE = "STDIN" Then SetBlockIndent()
     
   While IfReader(endBlk)
     Wait
   Wend
   Dec BlockLevel
   
-  If SOURCE = "STDIN" Then blockindent = String(blocklevel, .["$blockindent"])
+  If SOURCE = "STDIN" Then SetBlockIndent()
   ''debug "Exit DOBLK"
 
 End With
