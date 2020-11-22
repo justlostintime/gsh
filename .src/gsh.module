@@ -18,6 +18,8 @@ Public ReadQueue As New Queue     ' Used to push items to be read first
 
 Public ExecBuffer As String = ""
 Public LambdaBuffer As String = ""
+Public InLambda As Boolean = False
+Public LambdaLevel As Integer = 0
 Public CompileScript As String = ""
 Public CompileOnly As Boolean = False
 Public InBuffer As String
@@ -1642,6 +1644,11 @@ StartAgain:
                   
                  Case "SUB", "FUNCTION", "PROCUDURE"
                    
+                  If InLambda Then
+                    lambdaSubFuncClass(["END"])
+                    Return True
+                  Endif
+                   
                   If autocompile Then
                       Dim Saveexec As String = execbuffer
                       execbuffer = getlastline(execbuffer)
@@ -1842,8 +1849,14 @@ StartAgain:
                     Return True
                   
                   Case "LAMBDA"
+                    If Lambdalevel = 0 Then lambdabuffer = ""
+                    Inc LambdaLevel
+                    InLambda = True
                     lambdaExpression(["END"])
-                   
+                    Dec LambdaLevel
+                    If LambdaLevel = 0 Then InLambda = False
+                    
+                    
                  Case "RUN"
                     If inBufParse.count = 2 Then
                         execbuffer = ""
@@ -2042,12 +2055,13 @@ Sub lambdaExpression(eblk As String[])
   Dim variables As String = GetLastLine(execbuffer)
   execbuffer = removeLastLine(execbuffer)
   Dim savebuf2 As String = execbuffer
+
   NoPreProcess = True
   DoBlock(eblk)
   NoPreProcess = False
   execbuffer = removeLastLine(execbuffer)
   Dim lambdaname As String = "lambda" & Str(linktable.count)
-  lambdabuffer = "sub " & lambdaname & "(...) as variant\n" & execbuffer & "\nend\n"
+  lambdabuffer &= "sub " & lambdaname & "(...) as variant\n" & execbuffer & "\nend\n"
   If True Then
       linktable.Add(lambdabuffer, lambdaname)
       execbuffer = savebuf2 & lambdaname & "("
@@ -2064,6 +2078,27 @@ Sub lambdaExpression(eblk As String[])
       execbuffer = ""
       Error.Raise("Bad Lambda expression")
   Endif
+  
+  Catch
+    NoPreProcess = False
+    inLambda = False
+    Error.Propagate()
+End
+
+Sub lambdaSubFuncClass(eblk As String[])
+  Dim slambdabuffer As String = ""
+  Dim sName As String = GetLastLine(execbuffer)
+  execbuffer = removeLastLine(execbuffer)
+  Dim savebuf2 As String = execbuffer
+  NoPreProcess = True
+  DoBlock(eblk)
+  NoPreProcess = False
+  execbuffer = removeLastLine(execbuffer)
+
+  slambdabuffer = sName & "\n" & execbuffer & "\nend\n"
+  
+  LambdaBuffer = sLambdaBuffer & "\n" & lambdabuffer
+  execbuffer = savebuf2
   
   Catch
     NoPreProcess = False
