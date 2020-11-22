@@ -853,7 +853,7 @@ If Not bDbaseServer Then ' dont do this if in service mode
   SetTitle()
   
   For Each sh As String In history
-        add_history(sh)
+        add_history(sh & "\x00")
   Next
   
   execlocal(["onstart()"])                                                  ' only if we are not a service
