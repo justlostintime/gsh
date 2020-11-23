@@ -1,7 +1,7 @@
 ' Gambas module file
 
 Export
-'Fast unsafe
+'Fast Unsafe
 Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String", 
                                        "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "", 
                                        "", "", "", "", ""]
@@ -1202,7 +1202,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
   		Program &= "end with\nSharedMem.end()\nend\n"
   		'SharedMem["$execprog"] = ExecBuffer
   		If Not CompileOnly Then 
-        Try MyProg = Open user.home & "/vars/ExecProg.gbs" For Write Create
+        Dim ScriptName As String = Temp("gsh_") & ".gsh"
+        If DoTrace Then
+          Error "(Trace "; Now; ") "; ("Execute External "); ": "; ScriptName
+        Endif
+        Try MyProg = Open ScriptName For Write Create
         If Not Error Then
             'Try rWrite(MyProg.handle, CPointer(program), Len(program))
             Try Write #MyProg, program, program.len
@@ -1214,14 +1218,14 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                     Next
               Endif
               'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
-              eCmd = ["/usr/bin/gbs3", user.home & "/vars/ExecProg.gbs"]
+              eCmd = ["/usr/bin/gbs3", ScriptName]
               'If DoTrace Then ecmd.Add("-t", 1)
               eCmd.Insert(cmdLineParameters)
               If nowait Then
                 'Try MyProcess = Exec ecmd With getenv() As "SysProc"
                 Try MyProcess = Exec ecmd As "SysProc"
                 If Error Then 
-                    Error Error.text
+                    Error "Generated Script ="; ScriptName;; ":";; Error.text
                     ExecBuffer = ""
                     ReturnOutputTo = ""
                     LinkTable.clear()
