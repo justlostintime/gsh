@@ -10,7 +10,6 @@ With SharedMem
   .["$f"] = "hello"
   .["$r"] = "Bye"
   Dim a As String
-  Dim syms As String[]
   a = "! cat < $f > $r ! cat ! less"
   While True
     If a = "quit" Then Break
