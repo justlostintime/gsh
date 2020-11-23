@@ -20,6 +20,7 @@ Public ExecBuffer As String = ""
 Public LambdaBuffer As String = ""
 Public InLambda As Boolean = False
 Public LambdaLevel As Integer = 0
+Public FunctionLevel As Integer = 0
 Public CompileScript As String = ""
 Public CompileOnly As Boolean = False
 Public InBuffer As String
@@ -32,7 +33,7 @@ Public LocalFunRun As String = ""
 Public cmdLineParameters As String[]
 '\\033[2K - Clear Line"
 '\\033[K Erase to end of line"
-Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & user.name & \"@\" & system.host & \":\\x1b[32m\" & env[\"PWD\"] & \"\\x1b[0m\\x1b[K$\" &\"\\x1b[0K\\\"" 
+Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & user.name & \"@\" & system.host & \":\\[\\x1b[32m\\]\" & env[\"PWD\"] & \"\\[\\x1b[0m\\x1b[K\\]$\" &\"\\[\\x1b[0K\\]\\\"" 
 Public DefaultHelp As String[] = [System.find("less"), "-c"]
 
 Public BlockLevel As Integer = 0
