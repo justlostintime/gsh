@@ -9,8 +9,8 @@ Public TypeToText As String[] = ["BackGround", "Normal", "KeyWord", "Function", 
                                  "Symbol", "Number", "String", "Comment", "BreakPoint", "CurrentLine",
                                  "DataType", "", "HighLight", "", "Error", "Help", "PreProcessor", "Escape", "Label", 
                                   "Constant", "Alternate", "Custom1", "", "", "", "", "", "", "", ""]
-                                  
-'' Why are repeat and do in this list..?
+
+''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "get"]
 
 Public ConsoleHighlight As New ConsoleHighlight
@@ -429,7 +429,6 @@ End
 
 
 Public Sub compileClassOnStart()
-  
   Dim Syms As String[] = SharedMem.Variables("class.*")
   
   For Each sym As String In syms
@@ -951,7 +950,7 @@ Private Sub CleanUpError()
     ExecBuffer = ""
     ReturnOutputTo = ""
     BlockIndent = "  "
-    BlockLevel = 1
+    BlockLevel = 0
     
     LinkTable.clear()
     ExternTable.Clear()
@@ -1421,7 +1420,11 @@ End
 
 Sub SetBlockIndent()
   With sharedmem
-  blockindent = String(blocklevel, .["$blockindent"]) & "\x00"
+  If blocklevel = 0 Then
+   blockindent = "\x00"
+  Else
+   blockindent = String(blocklevel, .["$blockindent"]) & "\x00"
+  Endif
   End With
 End
 
@@ -1467,6 +1470,7 @@ Public Sub readline() As String
       Endif
       
       If DoTrace Then Error ("Reading From Readline Version");; readlineversion 
+      SetBlockIndent()
       Select Case ReadLineVersion
         Case 9
               pinput = c9_readline(Prompt & BlockIndent)
@@ -2045,7 +2049,6 @@ StartAgain:
       Catch
         NoPreProcess = False
         BlockLevel = 0
-        If SOURCE = "STDIN" Then SetBlockIndent()
         ''debug "Exit DOBLK"
         Error.Propagate()
         'Error.Raise(Error.text)
@@ -2312,14 +2315,10 @@ Public Sub DoBlock(EndBlk As String[])
 With sharedmem
   Inc blockLevel
   ''debug "Enter DOBLK"
-  If SOURCE = "STDIN" Then SetBlockIndent()
-    
   While IfReader(endBlk)
     Wait
   Wend
   Dec BlockLevel
-  
-  If SOURCE = "STDIN" Then SetBlockIndent()
   ''debug "Exit DOBLK"
 
 End With
