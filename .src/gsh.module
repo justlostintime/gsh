@@ -37,6 +37,8 @@ Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & 
 Public DefaultHelp As String[] = [System.find("less"), "-c"]
 
 Public BlockLevel As Integer = 0
+Public BlockIndent As String = "\x00"
+
 Public InBufParse As String[]
 Public SymbolTable As New Collection
 Public ContainsGlobal As Boolean = False
@@ -54,8 +56,6 @@ Public UseTable As New String[]
 Public ExternTable As New String[]
 Public StructTable As New String[]
 Public CompilerDirectiveTable As New String[]
-
-Public BlockIndent As String = "\x00"
 
 Public bCleanup As Boolean = False
 Public bN As Boolean = False 
