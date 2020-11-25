@@ -1168,7 +1168,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
          linktable.Remove(linktable.first)
       Wend
       
-      ProgPart1 = "#!/usr/bin/gbs3\nUSE \"westwood.sharedmem\""
+      ProgPart1 = "#!/usr/bin/gbs3\nExtern chdir(Dest As String) As Integer In \"libc:6\"\nUSE \"westwood.sharedmem\""
   		For Each sinsert In UseTable
         ProgPart1 &= "," & sinsert
       Next
@@ -1194,9 +1194,9 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       Program = ProgPart1 & Program
       
   		If bSingleUse Then
-         Program &= "Public Sub Main()\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
+         Program &= "Public Sub Main()\nchdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
       Else
-  		   Program &= "Public Sub Main()\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+  		   Program &= "Public Sub Main()\nchdir(env[\"PWD\"])\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
       Endif
   		Program &= ExecBuffer 
   		Program &= "end with\nSharedMem.end()\nend\n"
