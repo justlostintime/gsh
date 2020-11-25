@@ -1,0 +1,7 @@
+'' EExport export environment variable to current context
+'' This is the same function as Bash's export command
+'' Unfortunatly GAMBAS3 reserves that keyword for exporting 
+'' entry points in Classes...
+Sub EExport(Variable As String, Value As String) ' export environment variable to current context
+env[Variable] = Value
+end
