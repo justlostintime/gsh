@@ -11,7 +11,7 @@ Public TypeToText As String[] = ["BackGround", "Normal", "KeyWord", "Function", 
                                   "Constant", "Alternate", "Custom1", "", "", "", "", "", "", "", ""]
 
 ''Why are repeat and do in this list..?
-Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "get"]
+Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "get"]
 
 Public ConsoleHighlight As New ConsoleHighlight
 Public ReadQueue As New Queue     ' Used to push items to be read first
@@ -1194,9 +1194,9 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       Program = ProgPart1 & Program
       
   		If bSingleUse Then
-         Program &= "Public Sub Main()\nchdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
+         Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
       Else
-  		   Program &= "Public Sub Main()\nchdir(env[\"PWD\"])\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+  		   Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
       Endif
   		Program &= ExecBuffer 
   		Program &= "end with\nSharedMem.end()\nend\n"
@@ -1382,7 +1382,7 @@ Private ReadFromBuffer_readPtr As Integer = 0
 Public Sub OpenBuffer(data As String)
   
   Source = "BUFFER"
-  ReadFromBuffer_buffer = Split(data, "\n:", "\"\"", True, True)
+  ReadFromBuffer_buffer = Split(data, "\n", "\"\"", True, True)
   ReadFromBuffer_readptr = 0
   
 End
@@ -1857,7 +1857,7 @@ StartAgain:
                     Chmod filename To "rwxr-x--x"
                     Return True
                   
-                  Case "LAMBDA"
+                  Case "LAMBDA", "BEGIN"
                     If Lambdalevel = 0 Then lambdabuffer = ""
                     Inc LambdaLevel
                     InLambda = True
@@ -1937,7 +1937,7 @@ StartAgain:
                              If funclass = "" Then
                            			    Dim iQuery As String = ""
                                    If System.Keywords.Exist(inBufParse[1]) Or If LocalKeyWords.Exist(inBufParse[1]) Then
-                                     If Upper(inBufParse[1]) <> "LAMBDA" Then
+                                     If Upper(inBufParse[1]) <> "LAMBDA" And If Upper(inBufParse[1]) <> "BEGIN" Then
                                         Error.Raise(("Error Keywords can not be redefined :") & inBufParse[1])
                                         SharedMem["$result"] = ("Error : Keywords can not be redefined :") & inBufParse[1]
                                         execbuffer = ""
@@ -2040,10 +2040,13 @@ StartAgain:
                 Select Case InBufParse[0]
                  Case "{" ' begin compile block
                       
-                       If inbufParse.count = 1 Then
-                          lambdaExpression(["}"])
+                    If Lambdalevel = 0 Then lambdabuffer = ""
+                    Inc LambdaLevel
+                    InLambda = True
+                    lambdaExpression(["}"])
+                    Dec LambdaLevel
+                    If LambdaLevel = 0 Then InLambda = False
                           
-                       Endif
                        
                  End Select      
       End Select
@@ -2834,7 +2837,7 @@ End
 
 Public Sub execvar_kill()
   
-  If DoTrace Then Error ("Execvar prosess ended")
+  If DoTrace Then Error ("Execvar process ended")
   
 End
 
