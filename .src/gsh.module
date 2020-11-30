@@ -722,12 +722,12 @@ Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
   Try chdir(Env["PWD"])
   CreateCmdProgram.InitAlias()
   
-  If VarCommandSource = "" Then
+  'If VarCommandSource = "" Then
     If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup")
     compileClassOnStart()
     compileFunctionsOnStart()
     If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup complete")
-  Endif
+  'Endif
   
   If bH Then 
       Try PrintHelp()
