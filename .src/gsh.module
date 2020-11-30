@@ -209,7 +209,8 @@ End
 
 Public Sub ProcessOptions() As String[]
 
-   Dim bA, bR, bT As Boolean
+   Dim bA, bR As Boolean
+   Dim iT As Integer
    Dim sC As String[] 
    Dim sS, sI As String
    
@@ -218,7 +219,7 @@ Public Sub ProcessOptions() As String[]
    sPortNumber = Args.Get("p", "port", ("I/O Port number/name to use else  Defaults to stdin/stdout/stderr"))
    bA = Args.Has("a", "about", ("Display About ") & Application.Name)
    bR = Args.Has("v", "version", ("Display version number"))
-   bT = Args.Has("t", "trace", ("Turn on tracing"))
+   iT = Args.GetInteger("t", "trace", ("Turn on tracing Parm s 0, off, 1 = user, 3 = -r and -f -4 = all"))
    sS = Args.Get("s", "shmname", ("Shared Memory Name for application"))
    bSingleUse = Args.has("S", "Single", ("Do not use shared memory"))
    bN = Args.Has("n", "noload", ("Do Not Load gsh Image - already loaded by another process"))
@@ -251,7 +252,9 @@ Public Sub ProcessOptions() As String[]
        Quit 0
    Endif
    
-   If bT Then DoTrace = True
+   TraceLevel = iT
+   
+   If TraceLevel > 3 Then DoTrace = True
    
    If bDbaseServer Then Error ("GSH in service mode");; Now;; Application.Version
    
@@ -669,6 +672,8 @@ End
 
 Public Sub Main()
 Dim DontExit As Boolean
+Dim i As Integer
+
 'System.Language = "fr_FR"
 'System.Language = "en_US"
 cmdLineParameters = ProcessOptions()
@@ -717,12 +722,12 @@ Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
   Try chdir(Env["PWD"])
   CreateCmdProgram.InitAlias()
   
-  'If VarCommandSource = "" Then
+  If VarCommandSource = "" Then
     If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup")
     compileClassOnStart()
     compileFunctionsOnStart()
     If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup complete")
-  'Endif
+  Endif
   
   If bH Then 
       Try PrintHelp()
@@ -741,12 +746,17 @@ Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
   ' Check if we have a one line command
   ' Posix says we must execute this command then exit
   ' we provide the environment for this execution in our shell
-  
+   If TraceLevel > 2 Then DoTrace = True
+    
   'Check if we have request to execute a local function
+
   If LocalFunRun <> "" Then
     
     If DoTrace Then Error "(Trace "; Now; ") "; (" Execute a function in image "); LocalFunRun
     execBuffer = LocalFunRun
+    For i As Integer = 0 To cmdLineParameters.Max
+      cmdLineParameters[i] = Quote(cmdLineParameters[i])
+    Next
     execBuffer &= " " & cmdLineParameters.Join(" ")
     ExecBuffer = preprocesses(execbuffer) & "\n"
     Try ProcessProg()
@@ -763,7 +773,22 @@ Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
     If DoTrace Then Error "(Trace "; Now; ") ";; ("Execute The Content of a variable from shared memory ");; VarCommandSource
     
     If SharedMem.exist(VarCommandSource) Then
-         Dim codebuffer As String = "Lambda \n" & SharedMem[VarCommandSource] & "\nend\n"
+        Dim codebuffer As String = "Lambda"
+        
+        If cmdLineParameters.count > 0 Then
+          For i As Integer = 0 To cmdLineParameters.Max
+              cmdLineParameters[i] = Quote(cmdLineParameters[i])
+          Next
+          codebuffer &= "("
+          For i = 0 To cmdLineParameters.max
+             codebuffer &= cmdLineParameters[i]
+             If i < cmdLineParameters.max Then codebuffer &= ","
+          Next
+          codebuffer &= ")"
+        Endif
+        
+         codebuffer &= "\n" & SharedMem[VarCommandSource] & "\nend\n"
+         If DoTrace Then Print "(Trace "; Now; ") ";; ("***********************************\nVariable program call defined as \n ");; codebuffer;; "\n*********************\n"
          OpenBuffer(codebuffer)
          While IfReader(["QUIT"])
                 Try ProcessProg()
@@ -817,7 +842,7 @@ Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
       Close AppSource
       ExitProgram()
   Endif
-
+If TraceLevel > 0 Then DoTrace = True
 ' Then assume it is an interactive session
 If Not bDbaseServer Then ' dont do this if in service mode
 
@@ -2076,12 +2101,11 @@ Sub lambdaExpression(eblk As String[])
   If True Then
       linktable.Add(lambdabuffer, lambdaname)
       execbuffer = savebuf2 & lambdaname & "("
-      Dim parms As String[] = Split(Variables, " \t,", "\"\"", True, True)
-      Dim bNotFirst As Boolean = False
+      Dim parms As String[] = Split(Variables, " \t,()", "\"\"", True, True)
       If parms.count > 1 Then
           For i As Integer = 1 To parms.max
-            If bNotFirst Then execbuffer &= ","
             execbuffer &= parms[i]
+            If i < parms.max Then execbuffer &= ","
           Next
       Endif
       Execbuffer &= ")\n"
@@ -3046,7 +3070,8 @@ Private Sub doListing(Command As String)
         If Error Then Error.Raise(("List: Unable to find ") & InBufParse[1])
     Endif
   Else
-    ListProg = SharedMem["$execprog"]
+    ListProg = LambdaBuffer & "\n"
+    ListProg &= SharedMem["$execprog"]
   Endif
   
   Print ConsoleHighlight.ToConsole(ListProg)

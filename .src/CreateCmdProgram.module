@@ -164,6 +164,7 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
          FinalProgram &= "Endif\n"
          Dec BraceLevel
          AndOrLevel = AndOrLevelStack.Pop()
+         
        Default
          FinalProgram &= DoProcess(lines[i])
          If AndOrLevel Then 
@@ -196,6 +197,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
   Dim CmdReadFrom As New Integer[]  ' This is the proc the command reads from
   Dim CmdWriters As New Integer[][]    ' the list of writers to each command
   Dim WaitCompletion As Boolean = True ' wait for command to finish
+  Dim InBlock As Boolean = False
   Dim i As Integer
   Dim NoOutRedirect As Boolean = True
   Dim NeedsSTDIOWrite As Boolean = False
@@ -441,7 +443,6 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         CmdKill[CurrentCmd] &= gsh.PreProcesses(CmdList[CurrentCmd][i]) & " = mProc" & BaseName & Str(CurrentCmd) & ".value\n"
         
       Default
-        If Not bFirst Then CmdExec[CurrentCmd] &= " , "
         If bFirst Then
             Select Case CmdTypes[CurrentCmd][i]
               Case Highlight.function    ' remember we used this to mean local function
@@ -461,15 +462,24 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             End Select
             bFirst = False
         Else
-           
+           If Not InBlock Then CmdExec[CurrentCmd] &= " , "
            If Left(sym, 2) = "--" Then                          ' take care of options
             CmdExec[CurrentCmd] &= Quote("--" & UnQuote(preprocess(Mid(sym, 3))))
             
            Else If sym[0] = "-" Then
             CmdExec[CurrentCmd] &= Quote("-" & UnQuote(preprocess(Mid(sym, 2))))
             
-          Else                                                  ' not an option
-            CmdExec[CurrentCmd] &= If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym))
+          Else                                                      ' not an option
+            Dim Preprocstuff As String
+           
+             PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
+             
+            If Preprocstuff = "(" Then 
+               InBlock = True
+            Else If PreprocStuff = ")" Then 
+               InBlock = False
+            Endif
+            CmdExec[CurrentCmd] &= PreProcStuff
             
           Endif
            
@@ -581,7 +591,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
 
 End
 
-Private Sub preprocess(val As String) As String
+Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As String
   Select Case val[0]
     Case "\""
       Return Quote(UnQuote(gsh.PreProcesses(val)))
@@ -593,10 +603,14 @@ Private Sub preprocess(val As String) As String
       Endif
     Case "("
           Return gsh.PreProcesses(val)
+    Case "{"
+          Return "("
+    Case "}"
+          Return ")"
     Case "@"
       Return Quote(UnQuote(Eval(gsh.PreProcesses(val))))
   End Select
-  Return Quote(val)
+  Return IIf(NoQuote, UnQuote(gsh.PreProcesses(val)), Quote(val))
   
   Catch
     Error.Propagate()
@@ -779,7 +793,7 @@ Private Sub parseline(InLine As String)
     If types[i] = Highlight.Symbol Then
        If .Exist("sub." & syms[i]) Then 
          types[i] = Highlight.Function      ' if it is a function it must be defined to at minimum output a string or to input a string or both
-       Else If i = 0 And If .exist(syms[i]) And If RegExp.Match(.[sym[i]], "^Public *Sub ", 0, RegExp.CaseLess) Then
+       Else If i = 0 And If .exist(syms[i]) Then
              types[i] = Highlight.Label         ' well we need to make it fit in label = system command
        Endif
     Endif
