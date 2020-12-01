@@ -2536,7 +2536,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
 End
 
 
-Public Sub PreProcesses(InVar As String) As String
+Public Sub PreProcesses(InVar As String, Optional MaxGlobSize As Integer = 0) As String ' MaxGlobSize As 0 mean unlimited
   Dim OutBuf As String = ""
   Dim Syms As String[]
   Dim types As Integer[]

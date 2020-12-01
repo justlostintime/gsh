@@ -1,4 +1,7 @@
 * Sun Nov 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Cleen up code
+
+* Sun Nov 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - Fixed passing args to cli commands using {} around evaluated gambas values
 
 * Sun Nov 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92

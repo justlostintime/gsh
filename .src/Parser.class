@@ -8,7 +8,7 @@ Static Private types As Integer[]
 Static Private seperators As String[] = [" ", "\n"]
 Static Private operators As String[] = ["::", "&&", "||", "(", ")"]
 Static Private quotes As String[] = ["\"", "\"", "{", "}"]
-Static Private QuoteReplace As String[] = ["\"", "\"", "(", ")"]
+
 
 Static Private Sub SymsInsert(sym As String, type As Integer)
   sym = Trim(sym)

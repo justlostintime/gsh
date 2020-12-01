@@ -179,6 +179,28 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    Return FinalProgram
 End
 
+Private Sub IsGlob(Exp As String) As Boolean
+  
+  Select Case exp[0]
+        Case "@", "/", "~"
+          Return True
+          
+        Case "."
+          If exp[1] = "/" Then Return True
+          If exp.length = 1 Then Return True
+          Return False
+          
+        Case "*"
+          Return True
+          
+  End Select
+  
+  Return False
+  
+End
+
+
+
 Private Sub DoProcess(source As String) As String ' returns the processed segment of the command line
 
   Dim CmdExec As New String[]       ' this will contain the exec line for each command
@@ -198,6 +220,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
   Dim CmdWriters As New Integer[][]    ' the list of writers to each command
   Dim WaitCompletion As Boolean = True ' wait for command to finish
   Dim InBlock As Boolean = False
+  Dim BuildBlock As String             ' used to construct block a exec parameters
   Dim i As Integer
   Dim NoOutRedirect As Boolean = True
   Dim NeedsSTDIOWrite As Boolean = False
@@ -289,6 +312,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
       
     End Select
     Inc i
+    gsh.LinkTable.Add("Private cmdBuild as string[]\n", "cmdBuild")
   Loop Until i > syms.max
   
   For CurrentCmd = 0 To CmdList.Max
@@ -297,7 +321,8 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     
     If CmdKill[CurrentCmd] = "" Then CmdKill[CurrentCmd] = SetKillSub(CurrentCmd, basename)
     
-    CmdExec[CurrentCmd] = "mProc" & BaseName & Str(CurrentCmd) & " = Exec ["
+    CmdExec[CurrentCmd] = "cmdBuild = new string[]\n" 
+    BuildBlock = ""
     For i = 0 To CmdList[CurrentCmd].max
       Sym = CmdList[CurrentCmd][i]
       If i = 0 And CurrentCmd > 0 Then ' verify that this is a valid command
@@ -328,7 +353,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         If CmdErr[CurrentCmd] = "" Then CmdErr[CurrentCmd] = SetErrSub(CurrentCmd, basename)
         If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
         
-        If CmdList[CurrentCmd][i][0] = "@" Or If CmdList[CurrentCmd][i][0] = "*" Or If CmdList[CurrentCmd][i][0] = "/" Or If CmdList[CurrentCmd][i][0] = "~" Or If (CmdList[CurrentCmd][i][0] = "." And CmdList[CurrentCmd][i][1] = "/") Then
+        If IsGlob(CmdList[CurrentCmd][i]) Then
           Dim notfile As Boolean = False
           Dim fullname As String 
           If CmdList[CurrentCmd][i][1] = "(" Then
@@ -372,7 +397,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         
         If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
         
-        If CmdList[CurrentCmd][i][0] = "@" Or If CmdList[CurrentCmd][i][0] = "*" Or If CmdList[CurrentCmd][i][0] = "/" Or If CmdList[CurrentCmd][i][0] = "~" Or If (CmdList[CurrentCmd][i][0] = "." And CmdList[CurrentCmd][i][1] = "/") Then 
+        If IsGlob(CmdList[CurrentCmd][i]) Then 
           notfile = False
           If CmdList[CurrentCmd][i][1] = "(" Then
               sline = Split(CmdList[CurrentCmd][i], "()", "\"\"", True, True)
@@ -426,7 +451,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         'CmdWrite[CurrentCmd] &= "Write #mProc" & Str(CurrentCmd) & " , " & gsh.PreProcesses(CmdList[CurrentCmd][i]) & "\n"
         If Not gsh.LinkTable.Exist("sub.fprint") Then gsh.LinkTable.add(SharedMem["sub.fprint"], "sub.fprint")
         
-        If CmdList[CurrentCmd][i][0] = "@" Or If CmdList[CurrentCmd][i][0] = "*" Or If CmdList[CurrentCmd][i][0] = "/" Or If CmdList[CurrentCmd][i][0] = "~" Or If (CmdList[CurrentCmd][i][0] = "." And CmdList[CurrentCmd][i][1] = "/") Then
+        If IsGlob(CmdList[CurrentCmd][i]) Then
           Dim filename As String = getfullpath(If(CmdList[CurrentCmd][i][0] = "@", Mid(CmdList[CurrentCmd][i], 2), CmdList[CurrentCmd][i]))
           If Exist(filename) And If Stat(filename).Type = gb.file Then
              CmdWrite[CurrentCmd] &= "fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Quote(filename) & "))\n"
@@ -446,40 +471,52 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         If bFirst Then
             Select Case CmdTypes[CurrentCmd][i]
               Case Highlight.function    ' remember we used this to mean local function
-                CmdExec[CurrentCmd] &= Quote("/usr/bin/gsh") & "," & Quote("-r") & "," & Quote(sym)
+                CmdExec[CurrentCmd] &= "CmdBuild.add(\"/usr/bin/gsh\")\nCmdBuild.add(\"-r\")\nCmdBuild.add(" & Quote(sym) & ")\n"
                 
               Case Highlight.label
-                CmdExec[CurrentCmd] &= Quote("/usr/bin/gsh") & "," & Quote("-f") & "," & Quote(sym)
+                CmdExec[CurrentCmd] &= "CmdBuild.add(\"/usr/bin/gsh\")\nCmdBuild.add(\"-f\")\nCmdBuild.add(" & Quote(sym) & ")\n"
                 
               Default
                 sym = MakeAbs(sym)
                 If Not System.Exist(sym) Then 
-                  Error.Raise("Unknow Command " & sym)
+                  Error.Raise("Unknown Command " & sym)
                 Endif
                 
-                CmdExec[CurrentCmd] &= Quote(System.Find(sym))
+                CmdExec[CurrentCmd] &= "CmdBuild.add(System.Find(" & Quote(sym) & "))\n"
               
             End Select
             bFirst = False
         Else
-           If Not InBlock Then CmdExec[CurrentCmd] &= " , "
+           'If Not InBlock Then CmdExec[CurrentCmd] &= "\n"
            If Left(sym, 2) = "--" Then                          ' take care of options
-            CmdExec[CurrentCmd] &= Quote("--" & UnQuote(preprocess(Mid(sym, 3))))
+            CmdExec[CurrentCmd] &= "CmdBuild.add(" & Quote("--" & UnQuote(preprocess(Mid(sym, 3)))) & ")\n"
             
            Else If sym[0] = "-" Then
-            CmdExec[CurrentCmd] &= Quote("-" & UnQuote(preprocess(Mid(sym, 2))))
+            CmdExec[CurrentCmd] &= "CmdBuild.add(" & Quote("-" & UnQuote(preprocess(Mid(sym, 2)))) & ")\n"
             
           Else                                                      ' not an option
             Dim Preprocstuff As String
            
-             PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
+            PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
              
             If Preprocstuff = "(" Then 
+               CmdExec[CurrentCmd] &= "CmdBuild." 
                InBlock = True
             Else If PreprocStuff = ")" Then 
+               CmdExec[CurrentCmd] &= ")\n"
                InBlock = False
+            Else
+               If InBlock Then 
+                  If CmdTypes[CurrentCmd][i] = Highlight.Custom Then 
+                    CmdExec[CurrentCmd] &= "Insert("
+                  Else 
+                    CmdExec[CurrentCmd] &= "Add("
+                  Endif
+                  CmdExec[CurrentCmd] &= PreProcStuff
+               Else
+                    If PreprocStuff <> "" Then CmdExec[CurrentCmd] &= "CmdBuild.add(" & PreProcStuff & ")\n"
+               Endif
             Endif
-            CmdExec[CurrentCmd] &= PreProcStuff
             
           Endif
            
@@ -489,8 +526,9 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
       
     Next
     
-    CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"$env\"] "
-
+    'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"$env\"] "
+    CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild "
+    
      If CmdWriteTo[CurrentCmd] >= 0 Then   ' we need to do the write to the next command in pipe
        If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
        CmdIo[CurrentCmd] &= "write #mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ", sInput\n"
@@ -610,6 +648,7 @@ Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As St
     Case "@"
       Return Quote(UnQuote(Eval(gsh.PreProcesses(val))))
   End Select
+  
   Return IIf(NoQuote, UnQuote(gsh.PreProcesses(val)), Quote(val))
   
   Catch
@@ -806,7 +845,7 @@ Private Sub parseline(InLine As String)
     
 End
 
-Private Sub FileExpandInsert(var As String, type As Integer)
+Private Sub FileExpandInsert(var As String, type As Integer) As Boolean ' return true if we expanded the value
 
   If type = Highlight.string Or If var Not Like "*[\\~\\*\\./]*" Then
     Select Case var 
@@ -820,17 +859,36 @@ Private Sub FileExpandInsert(var As String, type As Integer)
     
     syms.Add(var)
     types.Add(type)
-    Return
+    
+    Return True
   Endif
   
-  Dim files As String[]
- 
-  files = DoGlob(var)
- 
-  For Each s As String In files
-     syms.Add(s)
-     types.Add(Highlight.added)
-  Next
+  If Not IsGlob(var) Then 
+     Return False
+  Endif
+  
+  
+  ' Dim files As String[]
+  ' 
+  ' files = DoGlob(var)
+  ' If File.count = 1 And If files[0] = var Then
+  '   syms.Add(Files[0])
+  '   types.Add(Highlight.added)
+  '   Return False
+  ' Else
+  '   For Each s As String In files
+  '     syms.Add(s)
+  '     types.Add(Highlight.added)
+  '   Next
+  ' Endif
+  syms.add("(")
+  types.Add(Highlight.Operator)
+  syms.Add("fileexpand(" & Quote(var) & ")")
+  types.Add(Highlight.custom)
+   syms.add(")")
+  types.Add(Highlight.Operator)
+  
+  Return True
   
   Catch
     Error.Propagate()
