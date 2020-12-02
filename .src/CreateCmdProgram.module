@@ -479,7 +479,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
               Default
                 sym = MakeAbs(sym)
                 If Not System.Exist(sym) Then 
-                  Error.Raise("Unknown Command " & sym)
+                  Error.Raise("Unknown Linux cli Command " & sym)
                 Endif
                 
                 CmdExec[CurrentCmd] &= "CmdBuild.add(System.Find(" & Quote(sym) & "))\n"
