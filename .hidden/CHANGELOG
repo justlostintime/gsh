@@ -1,3 +1,6 @@
+* Tue Dec 01 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Cleaned up shared memory dump and display functions, and usage in this program
+
 * Sun Nov 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - Cleen up code
 

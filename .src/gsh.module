@@ -33,7 +33,9 @@ Public LocalFunRun As String = ""
 Public cmdLineParameters As String[]
 '\\033[2K - Clear Line"
 '\\033[K Erase to end of line"
-Public Const DefaultPrompt As String = "\"\\x1b[31m\" &application.id & \".\" & user.name & \"@\" & system.host & \":\\[\\x1b[32m\\]\" & env[\"PWD\"] & \"\\[\\x1b[0m\\x1b[K\\]$\" &\"\\[\\x1b[0K\\]\\\"" 
+'use \x01  to start escapes that will not be counted as part of the length of the prompt
+'use \x02  to end the  uncounted charaters
+Public Const DefaultPrompt As String = "\"\\x01\\x1b[31m\\x02\" & application.id & \".\" & user.name & \"@\" & system.host & \":\\x01\\x1b[32m\\x02\" & env[\"PWD\"] & \"\\x01\\x1b[0m\\x1b[0K\\x02 > \"" 
 Public DefaultHelp As String[] = [System.find("less"), "-c"]
 
 Public BlockLevel As Integer = 0
@@ -1482,7 +1484,7 @@ Public Sub readline() As String
       sInput = Trim(sInput)
       If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput 
     Else
-     Dim retryloop As Integer = 1
+     Dim retryloop As Integer = 2
      retryprompt: 
      Wait
       If DoTrace Then Error ("Trying to read from terminal")
