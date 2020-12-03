@@ -1245,6 +1245,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                     Next
               Endif
               'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
+              SharedMem["$execprog"] = program
               eCmd = ["/usr/bin/gbs3", ScriptName]
               'If DoTrace Then ecmd.Add("-t", 1)
               eCmd.Insert(cmdLineParameters)
@@ -2637,7 +2638,7 @@ Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlim
           Endif
           
         Case Highlight.string
-          If Syms[tCount][1] And Syms[tCount].len >= 5 And syms[tcount][2] = "{" Then
+          If Syms[tCount][1] = "#" And Syms[tCount].len >= 5 And syms[tcount][2] = "{" Then
             Dim sLtemp As String[] = Split(Mid(Syms[tcount], 2, Syms[tcount].len - 2), "#", "{}", True, False)
               sLtemp[0] = Replace(sLtemp[0], "'", "\"")
               Dim sx As String = PreProcesses(sLtemp[0])

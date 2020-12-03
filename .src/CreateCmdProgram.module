@@ -483,6 +483,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
                 Endif
                 
                 CmdExec[CurrentCmd] &= "CmdBuild.add(System.Find(" & Quote(sym) & "))\n"
+                gsh.PreProcesses("tostringarray()")
               
             End Select
             bFirst = False
@@ -500,19 +501,17 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
              
             If Preprocstuff = "(" Then 
-               CmdExec[CurrentCmd] &= "CmdBuild." 
+               Dim addcomma As Boolean = False
+               CmdExec[CurrentCmd] &= "CmdBuild.insert(tostringarray(" 
                InBlock = True
             Else If PreprocStuff = ")" Then 
-               CmdExec[CurrentCmd] &= ")\n"
+               CmdExec[CurrentCmd] &= "))\n"
                InBlock = False
             Else
                If InBlock Then 
-                  If CmdTypes[CurrentCmd][i] = Highlight.Custom Then 
-                    CmdExec[CurrentCmd] &= "Insert("
-                  Else 
-                    CmdExec[CurrentCmd] &= "Add("
-                  Endif
-                  CmdExec[CurrentCmd] &= PreProcStuff
+                  If addcomma Then CmdExec[CurrentCmd] &= ","
+                  If preProcStuff <> "" Then CmdExec[CurrentCmd] &= PreProcStuff
+                  addcomma = True
                Else
                     If PreprocStuff <> "" Then CmdExec[CurrentCmd] &= "CmdBuild.add(" & PreProcStuff & ")\n"
                Endif

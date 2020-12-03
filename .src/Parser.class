@@ -103,7 +103,9 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
       CurrentType = Highlight.string
       
       Dim currentquote As String = InLine[StreamPos]
+      Dim openquote As String = InLine[StreamPos]
       Dim inquote As Integer = quotes.Find(currentquote)
+      Dim QuoteLevel As Integer = 1
       Inc inquote
       If inquote > quotes.max Or If inquote Mod 2 <> 1 Then
           Error.Raise("Invalid quote character \"" & currentquote & "\"\n" & Quote(inLine) & "\n")
@@ -121,7 +123,9 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
         Endif
         Inc StreamPos
         If streampos = InLine.len Then Break
-      Loop Until InLine[StreamPos] = currentquote
+        If InLine[StreamPos] = OpenQuote Then Inc QuoteLevel
+        If InLine[StreamPos] = currentquote Then Dec Quotelevel
+      Loop Until InLine[StreamPos] = currentquote And QuoteLevel = 0
       
       sym &= currentquote
       SymsInsert(sym, CurrentType)
