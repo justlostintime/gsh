@@ -1,0 +1,5 @@
+Sub lshm(optional shortreport as boolean = true)
+with sharedmem
+._print(shortreport)
+end with
+end

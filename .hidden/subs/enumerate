@@ -1,0 +1,80 @@
+Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant ' process a text value with enumeration
+ '' Will return an enumerated text vale as an array of string values
+ '' much like the bash braced enumeration
+
+ If value Not Like "*\\{*\\}*" Then 
+     Return IIf(CheckOnly = True, False, Null)
+ Endif
+ If checkonly = True Then Return True
+ Dim finalresult As New String[]
+ 
+ Dim leftbrace, rightbrace As Integer
+ leftbrace = InStr(value, "{")
+ rightbrace = matchbrace(value, leftbrace)
+ Dim sLeft As String = Left(value, leftbrace - 1)
+ Dim sRight As String = Right(value, -rightbrace)
+
+ Dim sEnum As String = Mid(value, leftbrace + 1, rightbrace - leftbrace - 1)
+ Dim result As String[]
+ result = getenum(sEnum)
+ For i As Integer = 0 To result.Max
+   Dim newvalue As String = sleft & result[i] & sright
+   If InStr(newvalue, "{") Then
+     finalresult.Insert(enumerate(newvalue))
+   Else 
+     if not isnull(newvalue) then finalresult.Add(newvalue)
+   Endif
+ Next
+ Return finalresult
+End
+
+Sub matchbrace(src As String, start As Integer) As Integer
+  Dim level As Integer = 1
+  Inc start
+  For i As Integer = start To src.len - 1
+    If src[i] = "{" Then Inc level
+    If src[i] = "}" Then Dec level
+    If level = 0 Then Return i + 1  ' we are working with strings
+  Next
+  
+  Return 0
+  
+End
+
+Sub getenum(enumdef As String) As String[]
+  Dim toEnum As String[] = Split(enumdef, ", ", "{}\"\"", True, True)
+  Dim result As New String[]
+  For Each s As String In toEnum
+  If InStr(s, "{") Then
+    result.Insert(enumerate(s))
+  Else If InStr(s, "..") Then
+  Dim enumset As String[] = Split(s, ".", "", True)
+  Dim enumStart As String = enumset[0]
+  Dim enumend As String = enumset[1]
+  
+  If IsNumber(EnumStart) Then 
+   
+    Dim nStart As Integer = EnumStart
+    Dim nEnd As Integer = EnumEnd
+    Dim nStep As Integer = IIf(nStart < nEnd, 1, -1)
+    For i As Integer = nStart To nEnd Step nStep
+      result.Add(i)
+    Next
+   
+  Else
+    
+    Dim bStart As Byte = CByte(Asc(EnumStart, 1))
+    Dim bEnd As Byte = CByte(Asc(EnumEnd, 1))
+    Dim bStep As Integer = IIf(bStart < bEnd, 1, -1)
+    For b As Byte = bStart To bEnd Step bStep
+      result.Add(Chr(b))
+    Next
+    
+  Endif
+  Else
+    result.Add(s)
+  Endif
+  Next
+  Return result
+  
+End
