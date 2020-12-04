@@ -2588,12 +2588,12 @@ Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlim
         Return Syms.Join(" ")
   Endif
   
-  If (invar[0] = "." And invar[1] = "/") Or If (invar[0] = "~" And invar[1] = "/") Or If invar[0] = "/" Then 
+  If (invar[0] = "." And invar[1] = "/") Or If (invar[0] = "~" And invar[1] = "/") Or If invar[0] = "/" Or If invar[0] = "*" Then 
      syms.Add("!", 0)
      types.Add(Highlight.operator, 0)
      
   Else If types[0] = Highlight.symbol Then                 ' check the type of symbol, look for function local override
-    bLookup = System.Exist(syms[0])
+     bLookup = System.Exist(syms[0])
     
     If bLookup And Not isLocalFunc(syms[0], True) And Not isKeyword(syms[0]) And Not isLocalClass(syms[0], True, True) And Not isLocalStruct(syms[0], False) Then
      syms.Add("!", 0)

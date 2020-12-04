@@ -1,3 +1,9 @@
+* Thu Dec 03 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Many fixes arounf enumeration and file name expansion
+
+* Thu Dec 03 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Added bashlike file expansion
+
 * Tue Dec 01 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - Fixed prompt handling
 

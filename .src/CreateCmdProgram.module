@@ -44,11 +44,12 @@ Public Sub MakeAbs(newdir As String) As String
    Dim sPathSplit As String[] = Split(newdir, "/", "", True)
    Dim pwds As New String[]
    
-   If sPathSplit.count = 0 Then Return newdir
-   If sPathSplit.count = 1 Then
+  If sPathSplit.count = 0 Then 
      Return newdir
-   Else
-    For Each Sdir As String In sPathSplit
+  Else If sPathSplit.count = 1 Then
+     Return newdir
+  Else
+     For Each Sdir As String In sPathSplit
       Select Case SDir
        Case "~"
           If pwds.count = 0 Then pwds.insert(Split(user.home, "/", "", True))
@@ -62,24 +63,27 @@ Public Sub MakeAbs(newdir As String) As String
        Default 
           pwds.add(sdir)
                         
-    End Select
+      End Select
   
-    Dim truth As Boolean = Exist("/" & pwds.join("/"))
-    If Not truth Then 
-       Error "Command Not Found :["; "/" & pwds.join("/"); "]"
-    Endif
+      Dim RealPath As String = "/" & pwds.join("/")
+      Dim StatInfo As Integer = Stat(RealPath).mode
+      If Not Exist(RealPath) Then 
+        Error.Raise("Command Not Found :[" & RealPath & "]")
+      Else If (StatInfo And &h49) = 0
+        Error.Raise("Command file : [" & RealPath & "] Not executable")
+      Endif
    
     Next
-   Endif
+  Endif
    
    If pwds.count > 0 Then
-   			 Return "/" & pwds.join("/")
+   			 Return RealPath
    Else
        Return "/"
    Endif
 End
 
-Private Sub getfullpath(filename As String) As String
+Public Sub getfullpath(filename As String) As String
   
   Dim expandedList As String[]
   Dim pwds As New String[]
@@ -172,10 +176,11 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
            Dec AndOrLevel
          Endif
      End Select
-
    Next
+   
    If BraceLevel > 0 Or BraceLevel < 0 Then Error.raise("Incorrect(unbalanced)  usage of '()' Braces in CLI")
    If AndOrLevel Then Finalprogram &= "Endif\n"
+   FinalProgram &= "Catch\nError \"gsh error:\" & error.text \n"
    Return FinalProgram
 End
 
@@ -479,9 +484,6 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
                 
               Default
                 sym = MakeAbs(sym)
-                If Not System.Exist(sym) Then 
-                  Error.Raise("Unknown Linux cli Command " & sym)
-                Endif
                 sTemp = Quote(sym)
                 If Not IsNull(sTemp) Then 
                    CmdExec[CurrentCmd] &= "CmdBuild.add(System.Find(" & sTemp & "))\n"
@@ -836,7 +838,7 @@ Private Sub parseline(InLine As String)
   For i As Integer = 0 To syms.Max
     If types[i] = Highlight.Symbol Then
        If .Exist("sub." & syms[i]) Then 
-         types[i] = Highlight.Function      ' if it is a function it must be defined to at minimum output a string or to input a string or both
+         types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
        Else If i = 0 And If .exist(syms[i]) Then
              types[i] = Highlight.Label         ' well we need to make it fit in label = system command
        Endif
@@ -872,27 +874,28 @@ Private Sub FileExpandInsert(var As String, type As Integer) As Boolean ' return
      Return False
   Endif
   
-  
-  ' Dim files As String[]
-  ' 
-  ' files = DoGlob(var)
-  ' If File.count = 1 And If files[0] = var Then
-  '   syms.Add(Files[0])
-  '   types.Add(Highlight.added)
-  '   Return False
-  ' Else
-  '   For Each s As String In files
-  '     syms.Add(s)
-  '     types.Add(Highlight.added)
-  '   Next
-  ' Endif
-  syms.add("(")
-  types.Add(Highlight.Operator)
-  syms.Add("fileexpand(" & Quote(var) & ")")
-  types.Add(Highlight.custom)
-   syms.add(")")
-  types.Add(Highlight.Operator)
-  
+  If syms.count = 0 Then                                 'this is the command to execute
+    Dim files As String[]
+    files = DoGlob(var)
+    If Files.count = 1 And If files[0] = var Then
+      syms.Add(Files[0])
+      types.Add(Highlight.added)
+      Return False
+    Else If Files.count > 1 Then
+      Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
+      Return False
+    Else
+        syms.Add(Files[0])
+        types.Add(Highlight.symbol)
+    Endif
+  Else
+    syms.add("(")
+    types.Add(Highlight.Operator)
+    syms.Add("fileexpand(" & Quote(var) & ")")
+    types.Add(Highlight.custom)
+    syms.add(")")
+    types.Add(Highlight.Operator)
+  Endif
   Return True
   
   Catch
