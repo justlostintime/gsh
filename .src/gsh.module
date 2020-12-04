@@ -217,7 +217,7 @@ Public Sub ProcessOptions() As String[]
    Dim sS, sI As String
    
    Args.Begin(Application.Name & " <option> <Command.gsh>")
-   bDbaseServer = Args.Has("d", "service", ("Run shell as a service point"))
+   bDbaseServer = Args.Has("d", "service", ("Run shell as a service point Daemon"))
    sPortNumber = Args.Get("p", "port", ("I/O Port number/name to use else  Defaults to stdin/stdout/stderr"))
    bA = Args.Has("a", "about", ("Display About ") & Application.Name)
    bR = Args.Has("v", "version", ("Display version number"))
