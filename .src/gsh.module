@@ -370,6 +370,8 @@ With sharedmem
  If Not .exist("$alias") Then .["$alias"] = New Collection
  If Not .exist("$blockindent") Or If .["$blockindent"] = "" Then .["$blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
  If Not .exist("$execprog") Then .["$execprog"] = "print \"Gambas Shell \""
+ If Not .exist("lastexecutedblock") Then .lastexecutedblock = "print \"hello world\""
+ If Not .exist("executedblock") Then .lastexecutedblock = "print \"hello world\""
  If Not .exist("$prompt") Then .["$prompt"] = DefaultPrompt
  If Not .exist("$result") Then .["$result"] = "OK"
  If Not .exist("$maxhistory") Then .["$maxhistory"] = 300                                                             ' define the max history length
@@ -1409,16 +1411,23 @@ End
 
 Private ReadFromBuffer_buffer As New String[] 
 Private ReadFromBuffer_readPtr As Integer = 0
+Private savedSourcebuffer As String
+
 Public Sub OpenBuffer(data As String)
-  
+  savedsourcebuffer = Source
   Source = "BUFFER"
   ReadFromBuffer_buffer = Split(data, "\n", "\"\"", True, True)
   ReadFromBuffer_readptr = 0
   
 End
 
+
 Public Sub ReadBuffer() As String
-  If ReadFromBuffer_ReadPtr > ReadFromBuffer_buffer.max Then Return "QUIT"
+  If ReadFromBuffer_ReadPtr > ReadFromBuffer_buffer.max Then 
+       Source = savedsourcebuffer 
+       Return "QUIT"
+  Endif
+  
   Inc ReadFromBuffer_ReadPtr
   Return ReadFromBuffer_buffer[ReadFromBuffer_ReadPtr - 1]
 End
@@ -1551,6 +1560,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       Dim HTypes As Integer[]
       Dim hStart As Integer = 0
       Dim filename As String
+      
+      With sharedmem
+        
       If DoTrace Then Error "(Trace "; Now; ") ";; "Source input="; source
       If ReadQueue.IsEmpty Then
         Select Case source
@@ -1572,6 +1584,15 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       			Do
       					inbuffer = readline()
       					If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; inbuffer; "'"
+      					If Upper(inbuffer) <> "EDIT" Then 
+      					   If BlockLevel = 0 Then 
+                                             .executedblock = .lastexecutedblock
+      					        .lastexecutedblock = inbuffer & "\n"
+                                         Else
+                                            .lastexecutedblock &= inbuffer & "\n"
+                                         Endif
+                                    Endif
+
       			Loop Until InBuffer <> ""
       			
       	 Case "HISTORY"
@@ -1660,96 +1681,91 @@ StartAgain:
             Case Highlight.Keyword
                Select Case Upper(InBufParse[parsepos])
                  Case "PUBLIC", "PRIVATE"
-                  If HTypes.count > 3 And If hstart = 0 And If HTypes[hstart + 1] = Highlight.Symbol And If HTypes[hstart + 2] = Highlight.Keyword And If Upper(InBufParse[parsepos + 2]) = "AS" Then
-                    ' If DoTrace Then Error "(Trace "; Now; ") "; ("\x1b[32mDefined Public to Extern table");; ExecBuffer;; "\x1b[0m"
-                    ' Dim publicdef As String = getlastline(execbuffer)
-                    ' execbuffer = removeLastLine(execbuffer)
-                    ' ExternTable.Add(Publicdef)
-                    ' 'execbuffer = ""
-                    Return True
-                    
-                  Else
-                    
-                   Inc hstart
-                   Inc ParsePos
-                   Goto StartAgain
-                   
-                  Endif
-                  
-                 Case "STATIC"
-                  Inc hstart
-                  Inc ParsePos
-                  Goto StartAgain
-                  
-                 Case "SUB", "FUNCTION", "PROCUDURE"
-                   
-                  If InLambda Then
-                    lambdaSubFuncClass(["END"])
-                    Return True
-                  Endif
-                   
-                  If autocompile Then
-                      Dim Saveexec As String = execbuffer
-                      execbuffer = getlastline(execbuffer)
-                      Saveexec = removeLastLine(Saveexec)
-                  Endif
-                  
-                  If InBufParse.count < parsepos + 2 Then 
-                     Error.Raise(InBufParse[parsepos] & (" requires a function name !"))
-                     If AutoCompile Then execbuffer = ""
-                     Return True
-                  Else
-                      If System.Keywords.Exist(inBufParse[parsepos + 1]) Then
-                        Error.Raise(("Error: Reserved Word ") & inBufParse[parsepos + 1])
-                        ExecBuffer = ""
-                        Return True
+                      If HTypes.count > 3 And If hstart = 0 And If HTypes[hstart + 1] = Highlight.Symbol And If HTypes[hstart + 2] = Highlight.Keyword And If Upper(InBufParse[parsepos + 2]) = "AS" Then
+                            ' If DoTrace Then Error "(Trace "; Now; ") "; ("\x1b[32mDefined Public to Extern table");; ExecBuffer;; "\x1b[0m"
+                           ' Dim publicdef As String = getlastline(execbuffer)
+                           ' execbuffer = removeLastLine(execbuffer)
+                           ' ExternTable.Add(Publicdef)
+                           ' 'execbuffer = ""
+                             Return True
+                      Else
+                          Inc hstart
+                          Inc ParsePos
+                          Goto StartAgain
                       Endif
-                      If execbuffer[execbuffer.len - 1] = "\n" Then execbuffer = Left(execbuffer, execbuffer.len - 1)
-                      If inbufparse.count < parsepos + 3 Then 
+                      
+                 Case "STATIC"
+                      Inc hstart
+                      Inc ParsePos
+                      Goto StartAgain
+                      
+                 Case "SUB", "FUNCTION", "PROCUDURE"
+                     If InLambda Then
+                          lambdaSubFuncClass(["END"])
+                          Return True
+                     Endif
+                   
+                    If autocompile Then
+                          Dim Saveexec As String = execbuffer
+                          execbuffer = getlastline(execbuffer)
+                          Saveexec = removeLastLine(Saveexec)
+                    Endif
+                    
+                    If InBufParse.count < parsepos + 2 Then 
+                         Error.Raise(InBufParse[parsepos] & (" requires a function name !"))
+                         If AutoCompile Then execbuffer = ""
+                              Return True
+                        Else
+                              If System.Keywords.Exist(inBufParse[parsepos + 1]) Then
+                              Error.Raise(("Error: Reserved Word ") & inBufParse[parsepos + 1])
+                              ExecBuffer = ""
+                             Return True
+                         Endif
+                         If execbuffer[execbuffer.len - 1] = "\n" Then execbuffer = Left(execbuffer, execbuffer.len - 1)
+                         If inbufparse.count < parsepos + 3 Then 
                             execbuffer &= "()"
                             'inbufparse[parsepos + 1] = inbufparse[parsepos + 1] & "()"
-                      Else 
+                        Else 
                             If inbufparse.count < parsepos + 4 Then
-                              If inbufparse[parsepos + 2] <> "(" Then 
-                                 Error.raise(("Error in sub definition ") & inBuffer)
-                                execbuffer = ""
-                                Return True
-                             Endif
+                                 If inbufparse[parsepos + 2] <> "(" Then 
+                                       Error.raise(("Error in sub definition ") & inBuffer)
+                                      execbuffer = ""
+                                     Return True
+                                Endif
                             Endif
                       Endif
                       execbuffer &= "\n"
                           
                       If autocompile Then 
-                        If Not sharedmem.exist("sub." & Lower(InBufParse[parsepos + 1])) Then
-                      
-                         LastElement = "sub." & Lower(InBufParse[parsepos + 1])
-                          ' If inbufparse.count < parsepos + 3 Then 
-                          '   execbuffer &= "()"
-                          '   'inbufparse[parsepos + 1] = inbufparse[parsepos + 1] & "()"
-                          ' Else 
-                          '   If inbufparse.count < parsepos + 4 Then
-                          '     If inbufparse[parsepos + 2] <> "(" Then 
-                          '        Error.raise("Error in sub definition " & inBuffer)
-                          '       execbuffer = ""
-                          '       Return True
-                          '    Endif
-                          '   Endif
-                          ' Endif
-                          ' execbuffer &= "\n"
-                          'SharedMem[lastelement] = "Sub " & Lower(InBufParse[parsepos + 1]) & "()\nEnd\n"
-                        Else
-                          If CommandMode Then
-                            Error.Raise("Error :" & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & " Aready Defined")
-                            NoPreProcess = True
-                            DoBlock(["END"])
-                            NoPreProcess = False
-                          Else
-                            Error.Raise(("Use Edit to change :") & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & (" ... Already Defined\n") & SharedMem["sub." & Lower(InBufParse[parsepos + 1])])
-                          Endif
+                              If Not sharedmem.exist("sub." & Lower(InBufParse[parsepos + 1])) Then
+                                 LastElement = "sub." & Lower(InBufParse[parsepos + 1])
+                                  ' If inbufparse.count < parsepos + 3 Then 
+                                  '   execbuffer &= "()"
+                                  '   'inbufparse[parsepos + 1] = inbufparse[parsepos + 1] & "()"
+                                  ' Else 
+                                  '   If inbufparse.count < parsepos + 4 Then
+                                  '     If inbufparse[parsepos + 2] <> "(" Then 
+                                  '        Error.raise("Error in sub definition " & inBuffer)
+                                  '       execbuffer = ""
+                                  '       Return True
+                                 '    Endif
+                                 '   Endif
+                                 ' Endif
+                                 ' execbuffer &= "\n"
+                                'SharedMem[lastelement] = "Sub " & Lower(InBufParse[parsepos + 1]) & "()\nEnd\n"
+                              Else
+                                    If CommandMode Then
+                                            Error.Raise("Error :" & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & " Aready Defined")
+                                            NoPreProcess = True
+                                             DoBlock(["END"])
+                                             NoPreProcess = False
+                                    Else
+                                              Error.Raise(("Use Edit to change :") & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & (" ... Already Defined\n") & SharedMem["sub." & Lower(InBufParse[parsepos + 1])])
+                                    Endif
                           
-                          ExecBuffer = ""
-                          Return True
-                        Endif
+                                    ExecBuffer = ""
+                                    Return True
+                              Endif
                       Endif
                    
                       NoPreProcess = True
@@ -1808,7 +1824,6 @@ StartAgain:
                   Debug "class compile "; lastelement
                   compile(lastelement)
 
-                  
                  Case "STRUCT"
                    Dim data As String = getlastline(execbuffer) & "\n"
                    Dim StructName As String = InBufParse[parsepos + 1]
@@ -1951,86 +1966,89 @@ StartAgain:
                     execbuffer = ""
 
                  Case "EDIT"    ' edit a class or Procedure
+
                      LinkTable.Clear()
                      SharedMem.Free("$result")
                      Dim funclass As String
-                     If inbufParse.count >= 2 Then
-                        If HTypes[1] = highlight.symbol Then
-                       				funclass = "class." & inBufParse[1]
-                       				If Not sharedmem.exist(funclass) Then
-                       				   funclass = "sub." & inbufparse[1]
-                       				   If Not Sharedmem.exist(funclass)
-                                    funclass = inbufparse[1]
-                                    If Not SharedMem.exist(funclass) Then funclass = ""
-                       		  	   Endif
-                             Endif
-                             If funclass = "" Then
-                           			    Dim iQuery As String = ""
+                     If InBufParse.count = 1 Then
+                           .lastexecutedblock = editbuffer(.executedblock)
+                           OpenBuffer(.lastexecutedblock)
+                           execbuffer = ""
+                           Return True
+                      Else If inbufParse.count >= 2 Then
+                            If HTypes[1] = highlight.symbol Then
+                       		funclass = "class." & inBufParse[1]
+                       		If Not sharedmem.exist(funclass) Then
+                       		       funclass = "sub." & inbufparse[1]
+                       		       If Not Sharedmem.exist(funclass) Then
+                                               funclass = "struct." & inbufparse[1]
+                                                   If Not SharedMem.exist(funclass) Then 
+                                                        funclass = inbufparse[1]
+                                                        If Not SharedMem.exist(funclass) Then funclass = ""
+                                                  Endif
+                       		  	 Endif
+                                      Endif
+                            Endif
+                            If funclass = "" Then
+                           	     Dim iQuery As String = ""
                                    If System.Keywords.Exist(inBufParse[1]) Or If LocalKeyWords.Exist(inBufParse[1]) Then
-                                     If Upper(inBufParse[1]) <> "LAMBDA" And If Upper(inBufParse[1]) <> "BEGIN" Then
-                                        Error.Raise(("Error Keywords can not be redefined :") & inBufParse[1])
-                                        SharedMem["$result"] = ("Error : Keywords can not be redefined :") & inBufParse[1]
-                                        execbuffer = ""
-                                        Return True
-                                        
-                                     Else
-                                       If lambdabuffer = "" Then
-                                         lambdabuffer = "sub.lambda(...)\n\nend\n"
-                                       Endif
-                                       lambdabuffer = editbuffer(lambdabuffer)
-                                       Dim lambdaname As String = "lambda" & Str(linktable.count)
-                                       LambdaBuffer = RegExp.Replace(LambdaBuffer, "^sub.*\\(", "sub " & lambdaname & "(")
-                                       'If compilebuffer(lambdaname, lambdabuffer, True) Then ' it compiled ok
-                                         linktable.Add(lambdabuffer, lambdaname)
-                                         execbuffer = lambdaname & "()\n"
-                                       'Else
-                                         'Error.Raise("Bad Lambda expression")
-                                         'execbuffer = ""
-                                       'Endif
-                                       Return True
-                                     Endif
-                                   Endif
-                                   
-                           			    Error Eval(SharedMem["$prompt"]) & inbufparse[1] & (" not found! Create {Class |Sub | Var | [No]} now ? ");
+                                        If Upper(inBufParse[1]) <> "LAMBDA" And If Upper(inBufParse[1]) <> "BEGIN" Then
+                                               Error.Raise(("Error Keywords can not be redefined :") & inBufParse[1])
+                                               SharedMem["$result"] = ("Error : Keywords can not be redefined :") & inBufParse[1]
+                                               execbuffer = ""
+                                               Return True
+                                       Else 
+                                               If lambdabuffer = "" Then
+                                                     lambdabuffer = "sub.lambda(...)\n\nend\n"
+                                               Endif
+                                               lambdabuffer = editbuffer(lambdabuffer)
+                                               Dim lambdaname As String = "lambda" & Str(linktable.count)
+                                               LambdaBuffer = RegExp.Replace(LambdaBuffer, "^sub.*\\(", "sub " & lambdaname & "(")
+                                               linktable.Add(lambdabuffer, lambdaname)
+                                               execbuffer = lambdaname & "()\n"
+                                               Return True
+                                        Endif
+                                    Endif
+                                  Endif
+
+                           	     Error Eval(SharedMem["$prompt"]) & inbufparse[1] & (" not found! Create {Class |Sub | Var | [No]} now ? ");
                                    Flush
-    																Line Input iQuery
-    																Select Case Upper(IQuery)
-    																  Case "Class", "C"
-                                        funclass = "class." & inBufParse[1]
-                                        sharedMem[funclass] = "Class " & inbufParse[1] & "\nExport\nInherits SharedClass\nPublic Sub Dummy()\nprint \"Class here\"\nEnd\n"
+    				      Line Input iQuery
+    				      Select Case Upper(IQuery)
+    					  Case "Class", "C"
+                                            funclass = "class." & inBufParse[1]
+                                            sharedMem[funclass] = "Class " & inbufParse[1] & "\nExport\nInherits SharedClass\nPublic Sub Dummy()\nprint \"Class here\"\nEnd\n"
                                         
-                                     Case "SUB", "FUNCTION", "PROCEDURE", "S"
-                                        funclass = "sub." & inBufParse[1]
-                                        sharedmem[funclass] = "Sub " & inbufParse[1] & "()\nprint \"Sub here\"\nEnd\n"
+                                      Case "SUB", "FUNCTION", "PROCEDURE", "S"
+                                            funclass = "sub." & inBufParse[1]
+                                            sharedmem[funclass] = "Sub " & inbufParse[1] & "()\nprint \"Sub here\"\nEnd\n"
                                         
-                                     Case "VAR", "VARIABLE", "V"
-                                        funclass = inBufParse[1]
-                                        sharedmem[funclass] = ""
+                                      Case "VAR", "VARIABLE", "V"
+                                            funclass = inBufParse[1]
+                                           sharedmem[funclass] = ""
                                         
-                                     Case "NO", "", "N"
+                                       Case "NO", "", "N"
                                       
-                           			    End Select 
-                           	Endif
+                           	     End Select 
+                      Endif
                            		
-                            If Not editanything(funclass) Then
+                      If Not editanything(funclass) Then
                                execbuffer = ""
                                Return True
-                            Else 
+                      Else 
                                If funclass Like "class.*" Or funclass Like "sub.*" Then
                                    compile(funclass)
                                Endif
-                            Endif
-                           		
-                        Endif
-                     Endif
+                       Endif
+                
+
                      SharedMem["$result"] = "OK"
                      execbuffer = ""
                      SharedMem.Sync(".", DefaultImageName)
                      
-                End Select
-
+                  
             Case Highlight.Function
-            
+              
             Case Highlight.Number
                 If inBufParse.count = 2 Then 
                   If inBufParse[1] = "!" Then
@@ -2044,45 +2062,41 @@ StartAgain:
             Case highlight.operator
                 Select Case inBufParse[0]
                    Case "-"
-                 				If inBufParse.count = 3 Then 
-                 				 If HTypes[1] = highlight.number And inBufParse[2] = "!" Then
-                 				   Dec sharedMem["$historycurrent"]
- 													 History.remove(sharedMem["$historycurrent"])
- 													 sharedmem["$history"] = history
-                   				 Return ExecFromHistory(-CInteger(inBufParse[1]))
-                         Endif
-                 				Endif
+                 	If inBufParse.count = 3 Then 
+                 		 If HTypes[1] = highlight.number And inBufParse[2] = "!" Then
+                 		      Dec sharedMem["$historycurrent"]
+ 				      History.remove(sharedMem["$historycurrent"])
+ 		                     sharedmem["$history"] = history
+                   		      Return ExecFromHistory(-CInteger(inBufParse[1]))
+                               Endif
+                 	Endif
                  				
-                 	 Case "["    ' use this to recall a history and change its content
+                 Case "["    ' use this to recall a history and change its content
                           If inBufParse.count >= 3 Then
- 												    If HTypes[1] = highlight.number And inBufParse[2] = "]" Then
-     														Dec sharedMem["$historycurrent"]
+ 				 If HTypes[1] = highlight.number And inBufParse[2] = "]" Then
+     				     Dec sharedMem["$historycurrent"]
                                   History.remove(sharedMem["$historycurrent"])
                                   sharedmem["$history"] = history
                                   editHistory(inBufParse[1])
                                   execbuffer = ""
                               Endif
                           Endif
-                   '                                                
                 End Select
                 
              Case Highlight.Error
                 Select Case InBufParse[0]
-                 Case "{" ' begin compile block
-                      
-                    If Lambdalevel = 0 Then lambdabuffer = ""
-                    Inc LambdaLevel
-                    InLambda = True
-                    lambdaExpression(["}"])
-                    Dec LambdaLevel
-                    If LambdaLevel = 0 Then InLambda = False
-                          
-                       
-                 End Select      
+                     Case "{" ' begin compile block
+                          If Lambdalevel = 0 Then lambdabuffer = ""
+                         Inc LambdaLevel
+                          InLambda = True
+                          lambdaExpression(["}"])
+                          Dec LambdaLevel
+                          If LambdaLevel = 0 Then InLambda = False
+                End Select
       End Select
-      
+  End Select
       Return True
-      
+  End With
       Catch
         NoPreProcess = False
         BlockLevel = 0

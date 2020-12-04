@@ -1,4 +1,7 @@
 * Thu Dec 03 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Fix job control for new exec methods
+
+* Thu Dec 03 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - More fixes to glob, removed default ** decent have to set globstar global to use this
 - dangerous keeps blowing the stack up
 
