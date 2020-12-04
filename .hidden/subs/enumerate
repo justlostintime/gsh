@@ -2,27 +2,58 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
  '' Will return an enumerated text vale as an array of string values
  '' much like the bash braced enumeration
 
- If value Not Like "*\\{*\\}*" Then 
-     Return IIf(CheckOnly = True, False, Null)
- Endif
- If checkonly = True Then Return True
+ ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
+ '     Return IIf(CheckOnly = True, False, Null)
+ ' Endif
+ 
+'If checkonly = True Then Return True
+ Dim expandsets As String[] = Split(value, " ", " ''", True, True)
+ Dim FirstSet As String[]
+ Dim intermresults As New String[]
+ For Each eitem As String In expandsets
+   FirstSet = enumerateloop(eitem)
+   If FirstSet.count = 0 Then Continue
+   Dim TestValue As String = FirstSet[0]
+   If TestValue Not Like "*[\\*~\\/]*" And TestValue Not Like "*{./}*" And TestValue <> "." Then
+      IntermResults.Insert(firstset)
+   Else
+    For Each sGlob As String In FirstSet
+       IntermResults.Insert(fileexpand(sGlob))
+    Next
+   Endif
+ Next
+ Return IntermResults
+ End
+ 
+ 
+ Sub enumerateloop(value As String) As String[] ' loop here until completed
+ 
  Dim finalresult As New String[]
  
  Dim leftbrace, rightbrace As Integer
  leftbrace = InStr(value, "{")
  rightbrace = matchbrace(value, leftbrace)
- Dim sLeft As String = Left(value, leftbrace - 1)
- Dim sRight As String = Right(value, -rightbrace)
+ If leftbrace > 0 Then 
+   If rightbrace = 0 Then
+     Error.Raise("Enumeration missing right } " & Quote(value))
+   Endif
+   Dim sLeft As String = Left(value, leftbrace - 1)
+   Dim sRight As String = Right(value, -rightbrace)
+   Dim sEnum As String = Mid(value, leftbrace + 1, rightbrace - leftbrace - 1)
+ Else
+   sLeft = ""
+   sRight = ""
+   sEnum = value
+ Endif
 
- Dim sEnum As String = Mid(value, leftbrace + 1, rightbrace - leftbrace - 1)
  Dim result As String[]
  result = getenum(sEnum)
  For i As Integer = 0 To result.Max
    Dim newvalue As String = sleft & result[i] & sright
    If InStr(newvalue, "{") Then
-     finalresult.Insert(enumerate(newvalue))
+     finalresult.Insert(enumerateloop(newvalue))
    Else 
-     if not isnull(newvalue) then finalresult.Add(newvalue)
+     If Not IsNull(newvalue) Then finalresult.Add(newvalue)
    Endif
  Next
  Return finalresult

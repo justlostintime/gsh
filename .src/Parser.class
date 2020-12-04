@@ -125,9 +125,9 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
         If streampos = InLine.len Then Break
         If InLine[StreamPos] = OpenQuote Then Inc QuoteLevel
         If InLine[StreamPos] = currentquote Then Dec Quotelevel
-      Loop Until InLine[StreamPos] = currentquote And QuoteLevel = 0
+      Loop Until QuoteLevel = 0
       
-      sym &= currentquote
+      'sym &= currentquote
       SymsInsert(sym, CurrentType)
       sym = ""
       CurrentType = Highlight.symbol

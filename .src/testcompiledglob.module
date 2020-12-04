@@ -1,0 +1,283 @@
+' Gambas module file
+
+Extern chdir(Dest As String) As Integer In "libc:6"
+Use "westwood.sharedmem"
+Public Struct glob_t   'The structure definition used by the glob system function
+''          Some size_t functions are implemented as prointer as size_t
+''          follows the size of the address pointer in most systems
+gl_pathc As Pointer                                      'Count Of paths matched by the pattern. *size_t use ptr as it follows address width and absolute vaue,like size_t
+gl_pathv As Pointer                                      'List Of matched pathnames.  char * * gl_pathv; * /
+gl_offs As Pointer                                          'Slots To reserve In `gl_pathv'.   __size_t gl_offs; */
+gl_flags As Integer                                      'Set To FLAGS, maybe | GLOB_MAGCHAR.  */
+gl_closedir As Pointer                                   'If the GLOB_ALTDIRFUNC flag Is Set, the following functions are used instead Of the normal file access functions.void( * gl_closedir)(void * )
+gl_readdir As Pointer                                    'Struct dirent * ( * gl_readdir)(void * );
+gl_opendir As Pointer                                    'void * ( * gl_opendir)(const char * );
+gl_lstat As Pointer                                      'Int( * gl_lstat)(const char * __restrict, struct stat * __restrict);
+gl_stat As Pointer                                       'Int( * gl_stat)(const char * __restrict, struct stat * __restrict);
+End Struct
+
+ Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
+ Extern globfree(glob_def As Glob_t) In "libc:6"
+Sub lprint(...) As Boolean  ' Print Anything to stdout
+''lPrint    print the content of arrays or collections
+''          or objects/classes with the special _print function
+''          function lprint(...) print the valiables
+''          command  lprint .....  prints the variables
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+Dim vParams As Variant = param.all
+For Each v As Variant In vParams
+fprint(file.out, v)
+Next
+End
+Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant  ' process a text value with enumeration
+ '' Will return an enumerated text vale as an array of string values
+ '' much like the bash braced enumeration
+ ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
+ '     Return IIf(CheckOnly = True, False, Null)
+ ' Endif
+ 
+'If checkonly = True Then Return True
+Dim expandsets As String[] = Split(value, " ", " ''", True, True)
+Dim FirstSet As String[]
+Dim intermresults As New String[]
+For Each eitem As String In expandsets
+FirstSet = enumerateloop(eitem)
+If FirstSet.count = 0 Then Continue
+Dim TestValue As String = FirstSet[0]
+If TestValue Not Like "*[\\*~\\/]*" And TestValue Not Like "*{./}*" And TestValue <> "." Then
+IntermResults.Insert(firstset)
+Else
+For Each sGlob As String In FirstSet
+IntermResults.Insert(fileexpand(sGlob))
+Next
+Endif
+Next
+Return IntermResults
+End
+ 
+ 
+Sub enumerateloop(value As String) As String[]  ' loop here until completed
+ 
+Dim finalresult As New String[]
+ 
+Dim leftbrace, rightbrace As Integer
+leftbrace = InStr(value, "{")
+rightbrace = matchbrace(value, leftbrace)
+If leftbrace > 0 Then
+If rightbrace = 0 Then
+Error.Raise("Enumeration missing right } " & Quote(value))
+Endif
+Dim sLeft As String = Left(value, leftbrace - 1)
+Dim sRight As String = Right(value, -rightbrace)
+Dim sEnum As String = Mid(value, leftbrace + 1, rightbrace - leftbrace - 1)
+Else
+sLeft = ""
+sRight = ""
+sEnum = value
+Endif
+Dim result As String[]
+result = getenum(sEnum)
+For i As Integer = 0 To result.Max
+Dim newvalue As String = sleft & result[i] & sright
+If InStr(newvalue, "{") Then
+finalresult.Insert(enumerateloop(newvalue))
+Else
+If Not IsNull(newvalue) Then finalresult.Add(newvalue)
+Endif
+Next
+Return finalresult
+End
+Sub matchbrace(src As String, start As Integer) As Integer
+Dim level As Integer = 1
+Inc start
+For i As Integer = start To src.len - 1
+If src[i] = "{" Then Inc level
+If src[i] = "}" Then Dec level
+If level = 0 Then Return i + 1   ' we are working with strings
+Next
+ 
+Return 0
+ 
+End
+Sub getenum(enumdef As String) As String[]
+Dim toEnum As String[] = Split(enumdef, ", ", "{}\"\"", True, True)
+Dim result As New String[]
+For Each s As String In toEnum
+If InStr(s, "{") Then
+result.Insert(enumerate(s))
+Else If InStr(s, "..") Then
+Dim enumset As String[] = Split(s, ".", "", True)
+Dim enumStart As String = enumset[0]
+Dim enumend As String = enumset[1]
+ 
+If IsNumber(EnumStart) Then
+ 
+Dim nStart As Integer = EnumStart
+Dim nEnd As Integer = EnumEnd
+Dim nStep As Integer = IIf(nStart < nEnd, 1, -1)
+For i As Integer = nStart To nEnd Step nStep
+result.Add(i)
+Next
+ 
+Else
+ 
+Dim bStart As Byte = CByte(Asc(EnumStart, 1))
+Dim bEnd As Byte = CByte(Asc(EnumEnd, 1))
+Dim bStep As Integer = IIf(bStart < bEnd, 1, -1)
+For b As Byte = bStart To bEnd Step bStep
+result.Add(Chr(b))
+Next
+ 
+Endif
+Else
+result.Add(s)
+Endif
+Next
+Return result
+ 
+End
+Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
+''fPrint    print to a file the content of arrays or collections
+''          or objects/classes with the special _print function
+''          function fprint(filename,...) print the valiables
+''          command  lprint filename .....  prints the variables
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+Dim vParms As Variant[]
+Dim mFile As Variant
+With sharedmem
+If TypeOf(filename) = gb.string Then
+If file.dir(filename) = "" Then
+filename = user.home &/ "vars" &/ filename
+Endif
+Try mFile = Open filename For Write Create
+If Error Then
+.["$result"] = error.text
+Print #file.err, "fprint :"; error.text
+Return False
+Endif
+Else
+mFile = filename
+Endif
+vParms = param.all
+For Each v As Variant In vParms
+Select Case TypeOf(v)
+Case gb.object
+Select Case object.class(v).name
+Case "String[]"
+For Each s As String In v
+Print #mFile, s
+Next
+Case "Byte[]"
+v.write(mfile)
+Case "Variant[]"
+For Each vs As Variant In v
+fprint(mfile, vs)
+Next
+Case "Integer[]"
+For Each i As Variant In v
+Print #mFile, i;;
+Next
+Print #mfile
+Case "Collection"
+For Each vs In v
+                        'Print #mFile, v.key; "="; vs
+Print #mFile, Quote(v.Key);; ":";;
+fprint(mfile, vs)
+Next
+Case "Class"
+Print #mFile, "Class :"; v.name;; "Refs="; v.count
+Print "  Symbols :";
+For Each s As String In v.symbols
+Print #mFile, s;;
+Next
+Print #mFile
+Case "String"
+Print #mFile, v
+Default
+If object.class(v).exist("_print") Then
+v._print(mFile)
+Else
+If object.class(v).exist("_write") Then
+v._write(mfile)
+Else
+Print #mFile, v;;
+Endif
+Endif
+End Select
+Case gb.class
+Print #mFile, "Class :"; v.name;; "Refs="; v.count
+Print #mFile, "  Symbols :";;
+For Each s As String In v.symbols
+Print #mFile, s;;
+Next
+Print #mFile
+Default
+Print #mFile, v
+End Select
+Next
+.["$result"] = "OK"
+End With
+If TypeOf(filename) = gb.string Then Close mfile
+Return True
+End
+Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[]  ' Calls Glob to get list of file
+'' fileexpand(Path as string, optional DirOnly as boolean) as string()
+''   Returns a list of files as expanded by the shells
+'EXTERN glob ( Pattern AS STRING , flags AS INTEGER , ErrorCallback AS POINTER , glob_def AS Glob_t ) AS INTEGER IN "libc:6"
+'EXTERN globfree ( glob_def AS Glob_t ) IN "libc:6"
+Dim GLOB_ERR As Integer = Shl(1, 0)                      ' Return On Read errors. * /
+Dim GLOB_MARK As Integer = Shl(1, 1)                     ' Append a slash To Each name. * /
+Dim GLOB_NOSORT As Integer = Shl(1, 2)                   ' Don 't sort the names.  */
+Dim GLOB_DOOFFS As Integer = Shl(1, 3)                   ' Insert PGLOB - > gl_offs NULLs. * /
+Dim GLOB_NOCHECK As Integer = Shl(1, 4)                  ' If nothing matches, Return the pattern. * /
+Dim GLOB_APPEND As Integer = Shl(1, 5)                   ' Append To results Of a previous call. * /
+Dim GLOB_NOESCAPE As Integer = Shl(1, 6)                 ' Backslashes don 't quote metacharacters.  */
+Dim GLOB_PERIOD As Integer = Shl(1, 7)                   ' Leading `.' can be matched by metachars.  */
+Dim GLOB_MAGCHAR As Integer = Shl(1, 8)                  ' Set In gl_flags If any metachars seen. * /
+Dim GLOB_ALTDIRFUNC As Integer = Shl(1, 9)               ' Use gl_opendir et al functions. * /
+Dim GLOB_BRACE As Integer = Shl(1, 10)                   ' Expand "{a,b}" To "a" "b". * /
+Dim GLOB_NOMAGIC As Integer = Shl(1, 11)                 ' If no magic chars, Return the pattern. * /
+Dim GLOB_TILDE As Integer = Shl(1, 12)                   ' Expand ~user and ~ to home directories. */
+Dim GLOB_ONLYDIR As Integer = Shl(1, 13)                 ' Match only directories. * /
+Dim GLOB_TILDE_CHECK As Integer = Shl(1, 14)
+Dim globerrors As String[] = ["No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
+Dim Paths As New String[]
+Dim sret As New Glob_t
+Dim ReturnSet As Pointer
+Dim CallResult As Integer
+Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
+Dim GlobStar As Boolean = path Like "*\\*\\**"
+If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
+CallResult = glob(path, flags, Null, sret)
+ 
+If Callresult <> 0 Then
+Error.Raise("File Expansion Error :" & globerrors[CallResult])
+Endif
+ 
+ReturnSet = sret.gl_pathv
+ 
+For i As Integer = 0 To sret.gl_pathc - 1
+Paths.Add(String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i))))
+If GlobStar = True And If Paths.Last[Paths.Last.len - 1] = "/" Then
+paths.Insert(paths.last & "*")
+Endif
+Next
+ 
+globfree(sret)
+ 
+Return paths
+ 
+Catch
+Error.Propagate()
+ 
+End  ' Gambas module file
+Public Sub Main()
+Try chdir(env["PWD"])
+SharedMem.BeginNamed("briangsh", 4512000)
+With Sharedmem
+lprint(enumerate("**"))
+End With
+SharedMem.end()
+End

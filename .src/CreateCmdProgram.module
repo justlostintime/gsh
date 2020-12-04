@@ -468,6 +468,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         CmdKill[CurrentCmd] &= gsh.PreProcesses(CmdList[CurrentCmd][i]) & " = mProc" & BaseName & Str(CurrentCmd) & ".value\n"
         
       Default
+        Dim sTemp As String = ""
         If bFirst Then
             Select Case CmdTypes[CurrentCmd][i]
               Case Highlight.function    ' remember we used this to mean local function
@@ -481,8 +482,10 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
                 If Not System.Exist(sym) Then 
                   Error.Raise("Unknown Linux cli Command " & sym)
                 Endif
-                
-                CmdExec[CurrentCmd] &= "CmdBuild.add(System.Find(" & Quote(sym) & "))\n"
+                sTemp = Quote(sym)
+                If Not IsNull(sTemp) Then 
+                   CmdExec[CurrentCmd] &= "CmdBuild.add(System.Find(" & sTemp & "))\n"
+                Endif
                 gsh.PreProcesses("tostringarray()")
               
             End Select
@@ -497,9 +500,12 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             
           Else                                                      ' not an option
             Dim Preprocstuff As String
-           
-            PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
-             
+            If sym = "$" And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then ' handle all special shell functions
+              CmdExec[CurrentCmd] &= "CmdBuild.insert(" & gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1]) & ")\n"
+              Inc i
+            Else
+                PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
+            Endif 
             If Preprocstuff = "(" Then 
                Dim addcomma As Boolean = False
                CmdExec[CurrentCmd] &= "CmdBuild.insert(tostringarray(" 
@@ -513,7 +519,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
                   If preProcStuff <> "" Then CmdExec[CurrentCmd] &= PreProcStuff
                   addcomma = True
                Else
-                    If PreprocStuff <> "" Then CmdExec[CurrentCmd] &= "CmdBuild.add(" & PreProcStuff & ")\n"
+                    If Not IsNull(PreprocStuff) Then CmdExec[CurrentCmd] &= "CmdBuild.add(" & PreProcStuff & ")\n"
                Endif
             Endif
             

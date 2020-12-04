@@ -2629,7 +2629,8 @@ Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlim
     ContainsGlobal = True
     
   Else
-  		For tCount = 0 To Syms.Max
+      tcount = 0
+  		While tCount < Syms.count
         Select Case Types[tCount]
           
         Case Highlight.Error
@@ -2660,7 +2661,15 @@ Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlim
 
      		Case Highlight.symbol
          
-       		If Syms[tCount][0] = "$" Then
+          If Syms[Tcount] = "$" And If (tcount + 1) < types.count And If types[tcount + 1] = Highlight.String Then
+            syms[tcount] = "enumerate"
+            types[tcount] = Highlight.symbol
+            syms.add(")", tcount + 2)
+            types.Add(Highlight.operator, tcount + 2)
+            syms.Add("(", tcount + 1)
+            types.Add(Highlight.Operator, tcount + 1)
+            
+       		Else If Syms[tCount][0] = "$" Then
             Dim convit As Integer
             Try convit = CInteger(Mid(Syms[tCount], 2))
             If Not Error Then 
@@ -2734,7 +2743,8 @@ Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlim
           Endif
        	 Endif
      		End Select
-  		Next
+  		Inc tcount
+  		Wend
   		
   		' scan if we need to include a class, structure or function
   
