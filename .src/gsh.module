@@ -1411,25 +1411,38 @@ End
 
 Private ReadFromBuffer_buffer As New String[] 
 Private ReadFromBuffer_readPtr As Integer = 0
-Private savedSourcebuffer As String
+Private savedSourcebuffer As String = ""
+Private saveSource As Boolean = False
 
-Public Sub OpenBuffer(data As String)
-  savedsourcebuffer = Source
-  Source = "BUFFER"
+Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
+  
+  savesource = inSaveSource
+  
+  If saveSource Then
+    savedsourcebuffer = Source
+    Source = "BUFFER"
+  Endif
+  
   ReadFromBuffer_buffer = Split(data, "\n", "\"\"", True, True)
   ReadFromBuffer_readptr = 0
-  
 End
 
 
 Public Sub ReadBuffer() As String
+ Dim nextline As String
   If ReadFromBuffer_ReadPtr > ReadFromBuffer_buffer.max Then 
        Source = savedsourcebuffer 
        Return "QUIT"
   Endif
   
+  nextline = ReadFromBuffer_buffer[ReadFromBuffer_ReadPtr]
   Inc ReadFromBuffer_ReadPtr
-  Return ReadFromBuffer_buffer[ReadFromBuffer_ReadPtr - 1]
+  
+  If ReadFromBuffer_ReadPtr > ReadFromBuffer_buffer.max Then 
+     Source = savedsourcebuffer 
+  Endif
+  
+  Return nextline
 End
 
 Public Sub ReadHistory() As String
@@ -1552,7 +1565,8 @@ Public Sub readline() As String
      Error.Propagate()
 End
 
-
+Private executedblock As String = ""
+Private lastexecutedblock As String = ""
 Public Sub IfReader(EndBlk As String[]) As Boolean
       Dim lastElement As String = ""
       Dim i As Integer
@@ -1575,7 +1589,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
            If DoTrace Then Error "(Trace "; Now; ") ";; "Read Buffer '"; inbuffer; "'"
            
            If InBuffer = "QUIT" And inBuffer <> endblk.Join("") Then
-                 Print File.err, ("Error reading File UNEXPECTED EOF , Wanted "); endblk.Join(" ")
+                 Error ("Error reading File UNEXPECTED EOF , Wanted "); endblk.Join(" ")
                  execbuff = ""
                  Return False
            Endif
@@ -1584,14 +1598,12 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       			Do
       					inbuffer = readline()
       					If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; inbuffer; "'"
-      					If Upper(inbuffer) <> "EDIT" Then 
-      					   If BlockLevel = 0 Then 
-                                             .executedblock = .lastexecutedblock
-      					        .lastexecutedblock = inbuffer & "\n"
-                                         Else
-                                            .lastexecutedblock &= inbuffer & "\n"
-                                         Endif
-                                    Endif
+      					If Upper(inbuffer) <> "EDIT" And If BlockLevel = 0 Then 
+                                             executedblock = lastexecutedblock
+      					        lastexecutedblock = inbuffer & "\n"
+                                     Else If Upper(inbuffer) <> "EDIT" And If blocklevel > 0 Then
+                                            lastexecutedblock &= inbuffer & "\n"
+                                     Endif
 
       			Loop Until InBuffer <> ""
       			
@@ -1971,8 +1983,8 @@ StartAgain:
                      SharedMem.Free("$result")
                      Dim funclass As String
                      If InBufParse.count = 1 Then
-                           .lastexecutedblock = editbuffer(.executedblock)
-                           OpenBuffer(.lastexecutedblock)
+                           lastexecutedblock = editbuffer(lastexecutedblock)
+                           OpenBuffer(lastexecutedblock, True)
                            execbuffer = ""
                            Return True
                       Else If inbufParse.count >= 2 Then
@@ -2045,7 +2057,7 @@ StartAgain:
                      SharedMem["$result"] = "OK"
                      execbuffer = ""
                      SharedMem.Sync(".", DefaultImageName)
-                     
+                 End Select   
                   
             Case Highlight.Function
               
@@ -2094,7 +2106,7 @@ StartAgain:
                           If LambdaLevel = 0 Then InLambda = False
                 End Select
       End Select
-  End Select
+
       Return True
   End With
       Catch
