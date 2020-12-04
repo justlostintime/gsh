@@ -192,7 +192,7 @@ Private Sub IsGlob(Exp As String) As Boolean
           
         Case "."
           If exp[1] = "/" Then Return True
-          If exp.length = 1 Then Return True
+          If exp.len = 1 Then Return True
           Return False
           
         Case "*"
@@ -534,6 +534,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     Next
     
     'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"$env\"] "
+    CmdExec[CurrentCmd] &= "\n''#" & CmdList[currentcmd].Join(" ") & "#''\n"
     CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild "
     
      If CmdWriteTo[CurrentCmd] >= 0 Then   ' we need to do the write to the next command in pipe
@@ -603,10 +604,11 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     Endif
     
     CmdExec[i] &= "as \"mRead" & BaseName & Str(i) & "\"\n"
+    
     If gsh.jobctl Then
-         Dim StartCopy As Integer = InStr(CmdExec[i], "EXEC [", 0, gb.IgnoreCase)
-         If StartCopy > 0 Then Startcopy += 6 ' len of search string
-         Dim EndCopy As Integer = InStr(CmdExec[i], "] with", 0, gb.ignorecase)
+         Dim StartCopy As Integer = InStr(CmdExec[i], "''#", 0, gb.IgnoreCase)
+         If StartCopy > 0 Then Startcopy += 3 ' len of search string
+         Dim EndCopy As Integer = InStr(CmdExec[i], "#''", 0, gb.ignorecase)
          Dim cmdjobsinfo As String = Quote(Mid(CmdExec[i], StartCopy, endcopy - startcopy))
          CmdExec[i] &= "sharedmem[\"pid.p\" & mProc" & BaseName & Str(i) & ".id]= str(mProc" & BaseName & Str(i) & ".id)&\"|\"& format(now,\"mm/dd/yyyy hh:nn:ss.uu\")& \"|\" & " & cmdjobsinfo & "\n"
     Endif
@@ -871,19 +873,21 @@ Private Sub FileExpandInsert(var As String, type As Integer) As Boolean ' return
   Endif
   
   If Not IsGlob(var) Then 
+    syms.Add(var)
+    types.Add(type)
      Return False
   Endif
   
   If syms.count = 0 Then                                 'this is the command to execute
-    Dim files As String[]
-    files = DoGlob(var)
-    If Files.count = 1 And If files[0] = var Then
-      syms.Add(Files[0])
-      types.Add(Highlight.added)
-      Return False
+      Dim files As String[]
+     files = DoGlob(var)
+      If Files.count = 1 And If files[0] = var Then
+          syms.Add(Files[0])
+          types.Add(Highlight.added)
+         Return False
     Else If Files.count > 1 Then
-      Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
-      Return False
+        Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
+        Return False
     Else
         syms.Add(Files[0])
         types.Add(Highlight.symbol)

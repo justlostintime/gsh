@@ -1,4 +1,4 @@
-Sub fileexpand(path As String, Optional dironly As Boolean = False, GlobStarForce As Boolean = False) As String[] ' Calls Glob to get list of file
+Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[] ' Calls Glob to get list of file
 '' fileexpand(Path as string, optional DirOnly as boolean) as string()
 ''   Returns a list of files as expanded by the shells
 Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
@@ -25,7 +25,7 @@ Dim sret As New Glob_t
 Dim ReturnSet As Pointer
 Dim CallResult As Integer
 Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
-Dim GlobStar As Boolean = (path Like "*\\*\\**" Or GlobStarForce)
+Dim GlobStar As Boolean = sharedmem["globstar"] 'false by default '(path Like "*\\*\\**" Or GlobStarForce or hared)
   If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
   CallResult = glob(path, flags, Null, sret)
   
@@ -43,7 +43,7 @@ Dim GlobStar As Boolean = (path Like "*\\*\\**" Or GlobStarForce)
        Paths.Add(rpath)
      Endif
      If GlobStar = True And If rpath[rpath.len - 1] = "/" Then
-       paths.Insert(fileexpand(rpath & "*", False, True))
+       paths.Insert(fileexpand(rpath & "*", False))
      Endif
   Next
   
