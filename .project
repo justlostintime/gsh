@@ -2,7 +2,6 @@
 Title=Gambas Shell
 Startup=gsh
 UseTerminal=1
-Profiling=1
 Version=1.2.92
 Component=gb.args
 Component=gb.compress

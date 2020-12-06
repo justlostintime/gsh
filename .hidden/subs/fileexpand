@@ -25,8 +25,12 @@ Dim sret As New Glob_t
 Dim ReturnSet As Pointer
 Dim CallResult As Integer
 Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
-Dim GlobStar As Boolean = sharedmem["globstar"] 'false by default '(path Like "*\\*\\**" Or GlobStarForce or hared)
+Dim GlobStar As Boolean = sharedmem["globstar"] 'false by default set .globstar to activate recursion
   If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
+  if globstar = true and path[path.len-1] = "/" Then
+     flags = (flags Or GLOB_ONLYDIR)
+  Endif
+  
   CallResult = glob(path, flags, Null, sret)
   
   If Callresult <> 0 Then
