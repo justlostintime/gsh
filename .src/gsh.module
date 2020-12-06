@@ -1223,13 +1223,13 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       
       Program = ProgPart1 & Program
       
-  		If bSingleUse Then
+  	If bSingleUse Then
          Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
       Else
-  		   Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+  	 Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
       Endif
   		Program &= ExecBuffer 
-  		Program &= "end with\nSharedMem.end()\nend\n"
+  		Program &= "end with\nSharedMem.end()\n Catch\nError \"gsh error:\" & error.text \nend\n"
   		'SharedMem["$execprog"] = ExecBuffer
   		If Not CompileOnly Then 
         Dim ScriptName As String = Temp("gsh_") & ".gsh"
@@ -1248,7 +1248,6 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                     Next
               Endif
               'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
-              program &= "Catch\nError \"gsh error:\" & error.text \n"
               SharedMem["$execprog"] = program
               eCmd = ["/usr/bin/gbs3", ScriptName]
               'If DoTrace Then ecmd.Add("-t", 1)

@@ -4,10 +4,11 @@
 
 Static Private syms As String[]
 Static Private types As Integer[]
-
 Static Private seperators As String[] = [" ", "\n"]
 Static Private operators As String[] = ["::", "&&", "||", "(", ")"]
-Static Private quotes As String[] = ["\"", "\"", "{", "}"]
+Static Private SpecialSymbols As String[] = ["{", "}"]
+Static Private quotes As String[] = ["\"", "\""]
+Static Private braces As String[] = ["{", "}"]
 
 
 Static Private Sub SymsInsert(sym As String, type As Integer)
@@ -28,8 +29,7 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
   Dim streamPos As Integer = 0
   Dim sym As String = ""
   Dim OutputList As New String[]
-  
-  
+
   InLine = Trim(InLine)
   
   syms = New String[]
@@ -44,6 +44,17 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
         CurrentType = Highlight.Symbol
       Endif
       Inc streampos
+      Continue
+    Endif
+    
+    If SpecialSymbols.Exist(InLine[streampos]) Then
+      If CurrentType <> Highlight.added And If sym.len > 0 Then
+          SymsInsert(sym, CurrentType)
+      Endif
+      SymsInsert(InLine[streampos], Highlight.added)
+      sym = ""
+      CurrentType = Highlight.Symbol
+      Inc StreamPos
       Continue
     Endif
     
@@ -103,35 +114,50 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
       CurrentType = Highlight.string
       
       Dim currentquote As String = InLine[StreamPos]
-      Dim openquote As String = InLine[StreamPos]
       Dim inquote As Integer = quotes.Find(currentquote)
-      Dim QuoteLevel As Integer = 1
+      
       Inc inquote
+      
       If inquote > quotes.max Or If inquote Mod 2 <> 1 Then
           Error.Raise("Invalid quote character \"" & currentquote & "\"\n" & Quote(inLine) & "\n")
       Endif
       
       currentquote = quotes[inquote]
-      Do
+      sym &= InLine[StreamPos] 
+      Inc Streampos
+      While StreamPos < InLine.len
+        
         If InLine[StreamPos] = "\n" Then      ' end of line is as good as a close quote"
-          Break 
+               Error.raise("Unmatched Quote  [" & currentquote & " ] in :" & Quote(inline))
         Endif
+        
         sym &= InLine[StreamPos]
+        
+        If InLine[StreamPos] = currentquote Then
+          Inc StreamPos
+          Break
+        Endif
+        
         If InLine[StreamPos] = "\\" Then
           Inc StreamPos
-          sym &= InLine[StreamPos]
+          If streampos < inline.len Then 
+             sym &= InLine[StreamPos]
+          Else
+             Error.raise("Unmatched Quote  [" & currentquote & "]  in :" & Quote(inline))
+          Endif
         Endif
+        
         Inc StreamPos
-        If streampos = InLine.len Then Break
-        If InLine[StreamPos] = OpenQuote Then Inc QuoteLevel
-        If InLine[StreamPos] = currentquote Then Dec Quotelevel
-      Loop Until QuoteLevel = 0
+        
+        If streampos = InLine.len Then 
+               Error.raise("Unmatched Quote  [" & currentquote & "]  in :" & Quote(inline))
+        Endif
+        
+      Wend
       
-      'sym &= currentquote
       SymsInsert(sym, CurrentType)
       sym = ""
       CurrentType = Highlight.symbol
-      Inc StreamPos
       Continue
     Endif
     
@@ -154,20 +180,33 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
     SymsInsert(sym, CurrentType)
   Endif
   
+  CheckBraces(syms)
+  'find a way to make {} a special set
+  
+  'Divide the sets into single command lines
   Dim CurrentLine As Integer = 0
   Dim LastSegmentStart As Integer = 0
+  Dim InSpecialSet As Integer = 0
 
   For i As Integer = 0 To syms.Max
-    
-    If types[i] = Highlight.operator Then
-      OutputList.Add(syms.Copy(lastSegmentStart, i - lastSegmentStart).Join(" "))
-      LastSegmentStart = i + 1
-      Inc CurrentLine
+    If types[i] = Highlight.added And braces.Find(syms[i]) % 2 = 1 Then
+       Inc InSpecialSet
+    Else 
+      Dec InSpecialSet
     Endif
-    
-    If IncludeBreak Then
+    If inSpecialSet = 0 Then 
       If types[i] = Highlight.operator Then
-        OutputList.Add(syms[i])
+        If lastSegmentStart < i Then 
+          OutputList.Add(syms.Copy(lastSegmentStart, i - lastSegmentStart).Join(" "))
+        Endif
+        LastSegmentStart = i + 1
+       Inc CurrentLine
+      Endif
+    
+      If IncludeBreak Then
+        If types[i] = Highlight.operator Then
+          OutputList.Add(syms[i])
+        Endif
       Endif
     Endif
     
@@ -177,11 +216,44 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
      OutputList.Add(syms.copy(lastSegmentStart, i - LastSegmentStart).Join(" "))
   Endif
   
+  
+  
   Return OutputList
   
   Catch
    Error.Propagate()
     
-End ' Gambas module file
+End 
+
+Static Public Sub CheckBraces(symlist As String[], Optional start As Integer = 0, matching As String = "") As Integer
+  Dim index As Integer = start
+  Dim braceindex As Integer 
+  
+  If symlist.count = 0 Then Return 0
+  
+  While index < symlist.count
+    If symlist[index].len > 1 Or If symlist[index] = "" Then 
+       Inc index
+       Continue
+    Endif
+    braceindex = braces.Find(symlist[index])
+    If braceindex > -1 Then
+               If braceindex % 2 = 0 Then ' have an opening brace
+                   Inc index
+                   index = CheckBraces(symlist, index, braces[braceindex + 1])
+              Else If braceindex % 2 = 1 And If matching <> braces[braceindex] Then
+                   Error.Raise("Missing/mismatched Bracket/brace [ " & Quote(IIf(matching <> "", matching, braces[braces.Find(symlist[index]) - 1])) & " ] in " & symlist.Join(" "))
+              Else
+                  Return index
+              Endif
+    Endif
+    Inc index
+  Wend
+  If matching = "" Then
+        Return 0
+  Else
+    Error.Raise("Missing closing Bracket/brace [ " & Quote(matching) & "  ] in " & symlist.Join(" "))
+  Endif
+End
 
 ' Gambas class file

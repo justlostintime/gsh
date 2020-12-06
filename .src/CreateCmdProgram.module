@@ -142,6 +142,7 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    Dim BraceLevel As Integer = 0
    Dim AndOrLevel As Integer = 0
    Dim AndOrLevelStack As New Integer[]
+   Dim i As Integer
    
    lines = Parser(Source, True)
    For i As Integer = 0 To lines.max
@@ -167,8 +168,8 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
        Case ")"
          FinalProgram &= "Endif\n"
          Dec BraceLevel
-         AndOrLevel = AndOrLevelStack.Pop()
-         
+         AndOrLevel = AndOrLevelStack.Pop()       
+          
        Default
          FinalProgram &= DoProcess(lines[i])
          If AndOrLevel Then 
@@ -180,7 +181,7 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    
    If BraceLevel > 0 Or BraceLevel < 0 Then Error.raise("Incorrect(unbalanced)  usage of '()' Braces in CLI")
    If AndOrLevel Then Finalprogram &= "Endif\n"
-   FinalProgram &= "Catch\nError \"gsh error:\" & error.text \n"
+'   FinalProgram &= "Catch\nError \"gsh error:\" & error.text \n"
    Return FinalProgram
 End
 
@@ -231,6 +232,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
   Dim NeedsSTDIOWrite As Boolean = False
   Dim j As Integer
   Dim BaseName As String = "r" & Str(Rand(9999))
+
   'Dim NextedFinals As String[]        ' this is where the generated && and || will be statcked until added to final final
   
   parseline(Source)                   ' Parse the line and set the syms and types 
@@ -317,7 +319,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
       
     End Select
     Inc i
-    gsh.LinkTable.Add("Private cmdBuild as string[]\n", "cmdBuild")
+    gsh.LinkTable.Add("Private cmdBuild as new string[]\n", "cmdBuild")
   Loop Until i > syms.max
   
   For CurrentCmd = 0 To CmdList.Max
@@ -326,7 +328,8 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     
     If CmdKill[CurrentCmd] = "" Then CmdKill[CurrentCmd] = SetKillSub(CurrentCmd, basename)
     
-    CmdExec[CurrentCmd] = "cmdBuild = new string[]\n" 
+    CmdExec[CurrentCmd] = "cmdBuild.clear()\n" 
+    
     BuildBlock = ""
     For i = 0 To CmdList[CurrentCmd].max
       Sym = CmdList[CurrentCmd][i]
@@ -483,45 +486,51 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
                 CmdExec[CurrentCmd] &= "CmdBuild.add(\"/usr/bin/gsh\")\nCmdBuild.add(\"-f\")\nCmdBuild.add(" & Quote(sym) & ")\n"
                 
               Default
-                sym = MakeAbs(sym)
-                sTemp = Quote(sym)
-                If Not IsNull(sTemp) Then 
-                   CmdExec[CurrentCmd] &= "CmdBuild.add(System.Find(" & sTemp & "))\n"
-                Endif
+                Dim rTemp, rrTemp As String 
                 gsh.PreProcesses("tostringarray()")
-              
+                sym = MakeAbs(sym)
+                If Not IsNull(sym) Then 
+                   Dim currentcmdname As String = "Cmd" & BaseName 
+                   gsh.LinkTable.add("Const " & currentcmdname & " As String = " & Quote(System.Find(sym)), currentcmdname)
+                   CmdExec[CurrentCmd] &= "tostringarray(CmdBuild," & currentcmdname
+                Endif
+                
             End Select
             bFirst = False
         Else
            'If Not InBlock Then CmdExec[CurrentCmd] &= "\n"
            If Left(sym, 2) = "--" Then                          ' take care of options
-            CmdExec[CurrentCmd] &= "CmdBuild.add(" & Quote("--" & UnQuote(preprocess(Mid(sym, 3)))) & ")\n"
+             rtemp = UnQuote(preprocess(Right(sym, -2)))
+             rrtemp = "--"
+             rtemp = rrtemp & Rtemp
+             CmdExec[CurrentCmd] &= "," & Quote(rTemp)
             
            Else If sym[0] = "-" Then
-            CmdExec[CurrentCmd] &= "CmdBuild.add(" & Quote("-" & UnQuote(preprocess(Mid(sym, 2)))) & ")\n"
+             rtemp = " - " & UnQuote(preprocess(Mid(sym, 2)))
+            CmdExec[CurrentCmd] &= "," & Quote(rTemp)
             
           Else                                                      ' not an option
             Dim Preprocstuff As String
-            If sym = "$" And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then ' handle all special shell functions
-              CmdExec[CurrentCmd] &= "CmdBuild.insert(" & gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1]) & ")\n"
+            If sym = "$" And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then                           ' handle all special shell functions
+              CmdExec[CurrentCmd] &= "," & gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1])
               Inc i
             Else
                 PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
             Endif 
             If Preprocstuff = "(" Then 
-               Dim addcomma As Boolean = False
-               CmdExec[CurrentCmd] &= "CmdBuild.insert(tostringarray(" 
+               'Dim addcomma As Boolean = False
+               'CmdExec[CurrentCmd] &= "tostringarray(CmdBuild," 
                InBlock = True
             Else If PreprocStuff = ")" Then 
-               CmdExec[CurrentCmd] &= "))\n"
+               'CmdExec[CurrentCmd] &= ")\n"
                InBlock = False
             Else
                If InBlock Then 
-                  If addcomma Then CmdExec[CurrentCmd] &= ","
-                  If preProcStuff <> "" Then CmdExec[CurrentCmd] &= PreProcStuff
-                  addcomma = True
+                  'If addcomma Then CmdExec[CurrentCmd] &= ","
+                  If preProcStuff <> "" Then CmdExec[CurrentCmd] &= "," & PreProcStuff
+                  'addcomma = True
                Else
-                    If Not IsNull(PreprocStuff) Then CmdExec[CurrentCmd] &= "CmdBuild.add(" & PreProcStuff & ")\n"
+                    If Not IsNull(PreprocStuff) Then CmdExec[CurrentCmd] &= "," & PreProcStuff 
                Endif
             Endif
             
@@ -534,6 +543,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     Next
     
     'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"$env\"] "
+    CmdExec[CurrentCmd] &= ")\n"
     CmdExec[CurrentCmd] &= "\n''#" & CmdList[currentcmd].Join(" ") & "#''\n"
     CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild "
     
