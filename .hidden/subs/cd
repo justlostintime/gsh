@@ -12,11 +12,8 @@ dim a as new glob_t
 Dim sPath As String
 Dim sPathSplit As String[]
 dim pwds as new string[]
-dim remGlobstar as boolean = .globstar
 
-if remGlobstar then .globstar = false
-dim aglob as string[] = fileexpand(newdir,true)
-if remGlobstar then .globstar = true
+dim aglob as string[] = fileexpand(newdir,true, false, false)
 
 if aglob.count > 1 then
   error "cd: ambiguious directory found";;aglob.count;;"matches\n";aglob.join("\n")
