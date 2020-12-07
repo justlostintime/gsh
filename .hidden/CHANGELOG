@@ -1,3 +1,6 @@
+* Sun Dec 06 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- More Bug fixes and optimization of code generated for cli functions
+
 * Fri Dec 04 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - Bug Fixes caused by editor
 

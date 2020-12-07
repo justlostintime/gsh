@@ -1,4 +1,4 @@
-Sub cd(Optional newdir As String = ".") As Boolean ' change directory
+Sub cd(Optional newdir As String = "~") As Boolean ' change directory
 ''cd   directorypath - change the current working directory
 ''          uses the env["PWD"] variable
 ''          updates the global $env,$pwd variables
@@ -12,7 +12,12 @@ dim a as new glob_t
 Dim sPath As String
 Dim sPathSplit As String[]
 dim pwds as new string[]
+dim remGlobstar as boolean = .globstar
+
+if remGlobstar then .globstar = false
 dim aglob as string[] = fileexpand(newdir,true)
+if remGlobstar then .globstar = true
+
 if aglob.count > 1 then
   error "cd: ambiguious directory found";;aglob.count;;"matches\n";aglob.join("\n")
   return

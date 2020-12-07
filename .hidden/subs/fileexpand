@@ -1,4 +1,4 @@
-Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[] ' Calls Glob to get list of file
+Sub fileexpand(path As String, Optional dironly As Boolean = False, globstar as boolean = sharedmem["globstar"] ) As String[] ' Calls Glob to get list of file
 '' fileexpand(Path as string, optional DirOnly as boolean) as string()
 ''   Returns a list of files as expanded by the shells
 Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
@@ -25,12 +25,13 @@ Dim sret As New Glob_t
 Dim ReturnSet As Pointer
 Dim CallResult As Integer
 Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
-Dim GlobStar As Boolean = sharedmem["globstar"] 'false by default set .globstar to activate recursion
+Dim Recurse as boolean = (path like "*\\*\\**")
+'Dim GlobStar As Boolean = sharedmem["globstar"] 'false by default set .globstar to activate recursion
   If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
-  if globstar = true and path[path.len-1] = "/" Then
+  if globstar = true and if path[path.len-1] = "/" Then
      flags = (flags Or GLOB_ONLYDIR)
   Endif
-  
+
   CallResult = glob(path, flags, Null, sret)
   
   If Callresult <> 0 Then
@@ -40,15 +41,17 @@ Dim GlobStar As Boolean = sharedmem["globstar"] 'false by default set .globstar 
   ReturnSet = sret.gl_pathv
   
   For i As Integer = 0 To sret.gl_pathc - 1
-     Dim rpath As String = String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i)))
-     If rpath[rpath.len - 1] = "*" And If GlobStar = True Then
-       Continue
-     Else
-       Paths.Add(rpath)
-     Endif
-     If GlobStar = True And If rpath[rpath.len - 1] = "/" Then
-       paths.Insert(fileexpand(rpath & "*", False))
-     Endif
+    Dim rpath As String = String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i)))
+    if globstar and  Recurse then 
+      If rpath[rpath.len - 1] = "*" Then
+        Continue
+      Endif
+      If rpath[rpath.len - 1] = "/" Then
+        paths.Insert(fileexpand(rpath & "*", dironly, globstar))
+      Endif
+    Else
+         Paths.Add(rpath)
+    endif
   Next
   
   globfree(sret)
