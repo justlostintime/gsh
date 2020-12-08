@@ -1,3 +1,6 @@
+* Mon Dec 07 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Fic GLOB usage and globstar usage
+
 * Sun Dec 06 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - More Bug fixes and optimization of code generated for cli functions
 
