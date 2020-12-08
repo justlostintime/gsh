@@ -1,5 +1,3 @@
-'Gambas Module file
-
 Sub cd(Optional CDToDir As String = "~") As Boolean ' change directory
 ''cd   directorypath - change the current working directory
 ''          uses the env["PWD"] variable
