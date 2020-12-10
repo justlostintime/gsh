@@ -196,8 +196,8 @@ Private Sub IsGlob(Exp As String) As Boolean
           If exp.len = 1 Then Return True
           Return False
           
-        Case "*"
-          Return True
+        Default
+          If InStr(exp, "*") Then Return True
           
   End Select
   
@@ -710,7 +710,7 @@ End
 Private syms As String[]
 Private types As Integer[]
 Private seperators As String[] = [" ", "\t", "\n"]
-Private operators As String[] = ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>"]
+Private operators As String[] = ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"]
 Private braces As String[] = ["(", ")"]
 Private quotes As String[] = ["\"", "\"", "(", ")", "`", "`"]
 
@@ -821,11 +821,13 @@ Private Sub parseline(InLine As String)
           Error.Propagate()
         Endif
       Endif
+      
       FileExpandInsert(sym, CurrentType)
       sym = ""
       CurrentType = Highlight.symbol
       Inc StreamPos
       Continue
+      
     Endif
     
     If InLine[StreamPos] = "\n" Or If InLine[StreamPos] = "'" Then Break
@@ -866,7 +868,13 @@ End
 
 Private Sub FileExpandInsert(var As String, type As Integer) As Boolean ' return true if we expanded the value
 
-  If type = Highlight.string Or If var Not Like "*[\\~\\*\\./]*" Then
+  If type = Highlight.string Then 
+    syms.Add(var)
+    types.Add(type)
+    Return True
+  Endif
+  
+  If var[0] = "$" And If InStr(var, "*") = 0 Then
     Select Case var 
        Case "$$"  ' insert the curent pid
             var = Application.id
