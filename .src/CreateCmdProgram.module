@@ -506,7 +506,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
              CmdExec[CurrentCmd] &= "," & Quote(rTemp)
             
            Else If sym[0] = "-" Then
-             rtemp = " - " & UnQuote(preprocess(Mid(sym, 2)))
+             rtemp = "-" & UnQuote(preprocess(Mid(sym, 2)))
             CmdExec[CurrentCmd] &= "," & Quote(rTemp)
             
           Else                                                      ' not an option

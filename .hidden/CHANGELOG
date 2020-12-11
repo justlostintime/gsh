@@ -1,3 +1,11 @@
+* Fri Dec 11 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Fixed error in parsing parameters for functions
+
+* Thu Dec 10 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+
+* Thu Dec 10 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Updated parser ro handle backticks and fixed quote handeling
+
 * Mon Dec 07 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - Fic GLOB usage and globstar usage
 
