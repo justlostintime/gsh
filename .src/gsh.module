@@ -1119,7 +1119,7 @@ Public Sub _unknown(...)
   
 End
 
-
+Private CompileResult As String = ""
 Public Sub ProcessProg(Optional NoWait As Boolean = False)
   'Dim ProgramCommand, Result As String
 
@@ -1280,11 +1280,26 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
           Endif
           'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
           SharedMem["$execprog"] = program
-          eCmd = ["/usr/bin/gbs3", ScriptName]
+          CompileResult = ""
+          eCmd = ["/usr/bin/gbs3", "-b", ScriptName]
+          Try Exec ecmd Wait For Read As "compileread"
+          If Error Or CompileResult <> "" Then
+            If Error Then 
+               Error "Generated Script ="; ScriptName;; ":";; Error.text
+            Else
+               Dim errtemp As String[] = Split(CompileResult, ":\n", "\"\"", True, True)
+               Error "Script Error :";; errtemp[4]; ":"; errtemp[5];; ":("; errtemp[1] - 1; "/"; errtemp[2]; ")"
+            Endif
+              ExecBuffer = ""
+              ReturnOutputTo = ""
+              LinkTable.clear()
+              ContainsGlobal = False
+              Return 
+          Endif
           'If DoTrace Then ecmd.Add("-t", 1)
+          eCmd = ["/usr/bin/gbs3", ScriptName]
           eCmd.Insert(cmdLineParameters)
           If nowait Then
-            'Try MyProcess = Exec ecmd With getenv() As "SysProc"
             Try MyProcess = Exec ecmd As "SysProc"
             If Error Then 
               Error "Generated Script ="; ScriptName;; ":";; Error.text
@@ -1366,6 +1381,14 @@ Catch
   ContainsGlobal = False
   Error.Propagate()
   
+End
+
+Public Sub compileread_read()
+Dim sLine As String
+  Read #Last, sLine, -256
+End
+Public Sub compileread_error(Err As String)
+  CompileResult &= err
 End
 
 Public Sub SysProc_kill()
