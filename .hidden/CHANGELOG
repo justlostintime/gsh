@@ -1,3 +1,10 @@
+* Mon Dec 14 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+
+* Sat Dec 12 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+
+* Sat Dec 12 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
+- Cleanup Error reporting on bad scripts
+
 * Fri Dec 11 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.92
 - Fixed error in parsing parameters for functions
 

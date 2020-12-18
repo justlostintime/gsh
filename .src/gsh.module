@@ -89,14 +89,19 @@ Private onexitrcdate As Date = Now
 
 Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
 Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
+Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "add_history"
 Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
 Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
+Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "add_history"
 Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
 Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
+Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "add_history"
 Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
 Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
+Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "add_history"
 Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
 Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
+Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "add_history"
 
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
@@ -3052,6 +3057,93 @@ Private Sub execvar(Varname As String, parm As String[]) As String
 End
 
 Public helptxt As String
+Public helpfromhtml As String
+Public Sub HexPrint(Val As String)
+  Dim bstr As New Byte[]
+  bstr = bstr.FromString(val)
+  For i As Integer = 0 To bstr.max
+    Print Hex(bstr[i]); ":"; Chr(bstr[i]);;
+  Next
+  Print
+End
+
+Private Sub PrintHtmlPage(Source As String, Optional DoPrint As Boolean = True) As String
+ Dim mproc As Process
+ Dim ch As New ConsoleHighlight
+ Dim PrintFile As String[]
+ helpfromhtml = ""
+ mproc = Exec ["html2text", "-ascii", "-width", "200"] For Read Write As "mProcget"
+ Write #mproc, Source
+ ' Flush #mproc
+ mproc.closeinput
+ mproc.wait
+ ' While mproc.state = Process.Running
+ '   Wait
+ ' Wend
+ Dim Sections As New Collection(gb.ignorecase)
+ Dim SectionLength As Integer = 0
+ Dim atmps As String[]
+ Dim tmps As String
+ Dim secBuf As String = ""
+ Dim secName As String = ""
+ Dim Command As String
+ Dim GotCmd As Boolean = False
+ tmps = Replace(helpfromhtml, "&#x27;", "'")
+ atmps = Split(Replace(tmps, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
+ For Each s As String In aTmps
+   If Left(s, 4) = "****" Then
+     If secName <> "" Then
+       Sections.Add(secBuf, secName)
+       If GotCmd = False Then
+         Command = secName
+         Gotcmd = True
+       Endif
+       SecBuf = ""
+     Endif
+     SecName = Replace(Replace(s, "*", ""), " ", "")
+   Else 
+     If secname <> "" Then secBuf &= s & "\n"
+   Endif
+ Next
+ If secName <> "" Then
+   Sections.Add(SecBuf, secName)
+ Endif
+ 
+ If DoPrint Then
+   
+  Print "\nNAME"
+  tmps = Sections[Command]
+  Print tmps
+  
+  If Sections.Exist("errors") Or Sections.Exist("error") Then
+    Print "\nErrors"
+    tmps = IIf(Sections.Exist("error"), Sections["error"], Sections["errors"])
+    Print tmps
+  Endif
+  
+  If Sections.Exist("example") Or Sections.Exist("examples") Then
+    Print "\nExample"
+    tmps = IIf(Sections.Exist("example"), Sections["example"], Sections["examples"])
+    tmps = ch.ToConsole(tmps)
+    Print tmps
+  Endif
+  
+  If Sections.Exist("seealso") Then
+    Print "\nSee Also"
+    Print Sections["seealso"]
+  Endif
+  
+ Endif
+ Return helpfromhtml
+End
+
+Public Sub mProcget_read()
+Dim buffer As String
+  buffer = Read #Last, -256
+  helpfromhtml &= buffer
+  
+End
+
 
 Private Sub PrintLiveHelp(symbol As String[], Optional Summary As Boolean = False)
 
@@ -3105,6 +3197,25 @@ Public Sub GetAllThings() As Collection
 
 End
 
+Public Sub GetGambasHelp(Helpurl As String) As String
+  
+  Dim source As New HttpClient As "hclient"
+  Dim buffer As String
+  source.url = Helpurl
+  source.async = False
+  source.timeout = 5
+  source.Get
+  If source.status < 0 Then Return ""
+  If Lof(source) Then 
+     buffer = Read #source, Lof(source)
+  Else
+    buffer = ""
+  Endif
+  
+  Return buffer
+
+End
+
 
 Public Sub printHelp(Optional command As String = "")
 
@@ -3121,6 +3232,18 @@ Public Sub printHelp(Optional command As String = "")
       If helpCollection.exist(command) Then
         HelpTxt = ""
         PrintLiveHelp(helpgetfile(helpCollection[command][1]))
+      Else
+        Dim Helpurl As String = "http://gambaswiki.org/wiki/lang" &/ Lower(command)
+        Dim HelpResult As String
+        HelpTxt = ""
+        HelpResult = GetGambasHelp(Helpurl)
+        
+        If HelpResult <> "" And If Not (HelpResult Like "*This page does not exist*") Then
+           PrintHtmlPage(HelpResult)
+        Else
+           Exec ["man", command] Wait
+        Endif
+        Return 
       Endif
     Else
       HelpTxt = File.Load("/usr/share/gsh/doc/help.info")
@@ -3139,6 +3262,7 @@ Public Sub printHelp(Optional command As String = "")
     Endif
     
     Dim helpretryCount As Integer = 0
+    
   helpRetry:
     If helpRetryCount = 2 Then Error.Raise(("Help Display failed!"))
     Try mproc = Exec .["$helpdisplay"] For Write
