@@ -3094,13 +3094,13 @@ Private Sub PrintHtmlPage(Source As String, Optional DoPrint As Boolean = True) 
    If Left(s, 4) = "****" Then
      If secName <> "" Then
        Sections.Add(secBuf, secName)
-       If GotCmd = False Then
-         Command = secName
-         Gotcmd = True
-       Endif
        SecBuf = ""
      Endif
      SecName = Replace(Replace(s, "*", ""), " ", "")
+     If GotCmd = False Then
+         Command = secName
+         Gotcmd = True
+     Endif
    Else 
      If secname <> "" Then secBuf &= s & "\n"
    Endif
@@ -3108,31 +3108,33 @@ Private Sub PrintHtmlPage(Source As String, Optional DoPrint As Boolean = True) 
  If secName <> "" Then
    Sections.Add(SecBuf, secName)
  Endif
- 
- If DoPrint Then
+ helpfromhtml = ""
+
    
-  Print "\nNAME"
+  HelpFromHtml = "NAME\n\n"
   tmps = Sections[Command]
-  Print tmps
+  HelpFromHtml &= tmps & "\n"
   
   If Sections.Exist("errors") Or Sections.Exist("error") Then
-    Print "\nErrors"
+    HelpFromHtml &= "\nERRORS\n"
     tmps = IIf(Sections.Exist("error"), Sections["error"], Sections["errors"])
-    Print tmps
+    HelpFromHtml &= tmps
   Endif
   
   If Sections.Exist("example") Or Sections.Exist("examples") Then
-    Print "\nExample"
+    HelpFromHtml &= "\nEXAMPLE\n\n"
     tmps = IIf(Sections.Exist("example"), Sections["example"], Sections["examples"])
     tmps = ch.ToConsole(tmps)
-    Print tmps
+    HelpFromHtml &= tmps & "\n"
   Endif
   
   If Sections.Exist("seealso") Then
-    Print "\nSee Also"
-    Print Sections["seealso"]
+    HelpFromHtml &= "\nSEE ALSO\n\n"
+    HelpFromHtml &= Sections["seealso"]
   Endif
   
+ If DoPrint Then
+   Print helpfromhtml
  Endif
  Return helpfromhtml
 End
@@ -3239,11 +3241,11 @@ Public Sub printHelp(Optional command As String = "")
         HelpResult = GetGambasHelp(Helpurl)
         
         If HelpResult <> "" And If Not (HelpResult Like "*This page does not exist*") Then
-           PrintHtmlPage(HelpResult)
+           HelpTxt = PrintHtmlPage(HelpResult, False)
         Else
            Exec ["man", command] Wait
+           Return 
         Endif
-        Return 
       Endif
     Else
       HelpTxt = File.Load("/usr/share/gsh/doc/help.info")
@@ -3264,8 +3266,11 @@ Public Sub printHelp(Optional command As String = "")
     Dim helpretryCount As Integer = 0
     
   helpRetry:
+    
     If helpRetryCount = 2 Then Error.Raise(("Help Display failed!"))
-    Try mproc = Exec .["$helpdisplay"] For Write
+    'Try mproc = Exec ["/usr/bin/less", "-R", "/tmp/jummp"] Wait
+    'Try Exec ["clear"] Wait
+    Try mproc = Exec ["/usr/bin/less", "-R", "-C", "-"] For Write
     If Error Then 
       .["$helpdisplay"] = DefaultHelp
       Inc helpRetryCount
@@ -3273,7 +3278,8 @@ Public Sub printHelp(Optional command As String = "")
     Endif
     
     Wait
-    Write #mproc, Tr(Helptxt)
+    
+    Write #mproc, Helptxt
     mproc.CloseInput()
     mproc.Wait()
     
