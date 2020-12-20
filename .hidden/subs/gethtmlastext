@@ -1,0 +1,37 @@
+Public Sub GetHtmlAsText(TheUrl as string) as string[]
+  Dim mproc As Process
+  Dim sSource As New HttpClient As "hclient"
+  Dim buffer As String
+  dim aTmps as string[]
+  
+  sSource.url = Helpurl
+  sSource.async = False
+  sSource.timeout = 5
+  sSource.Get
+  If sSource.status < 0 Then Return ""
+  If Lof(sSource) Then 
+     buffer = Read #sSource, Lof(sSource)
+  Else
+    buffer = ""
+  Endif
+  
+  If buffer <> "" And If Not (buffer Like "*This page does not exist*") Then
+      ReadBuffer = ""
+      mproc = Exec ["html2text", "-ascii", "-width", "200"] For Read Write As "mProcget"
+      Write #mproc, buffer
+      mproc.closeinput
+      mproc.wait
+      atmps = Split(Replace(ReadBuffer, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
+  Endif
+           
+  Return sTemps
+
+end
+
+Public ReadBuffer as string = ""
+
+Public Sub mProcget_read()
+Dim buffer As String
+  buffer = Read #Last, -256
+  ReadBuffer &= buffer
+End

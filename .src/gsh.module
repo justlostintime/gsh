@@ -741,6 +741,7 @@ Public Sub Main()
   Class.Load("CreateCmdProgram")
   Class.Load("Parser")
   Class.Load("ServiceMode")
+  Class.Load("HelpSystem")
   
   gshrcdate = Stat(User.home &/ "vars/gsh.rc").lastmodified
   If Not SharedMem.exist("gshrcdate") Then SharedMem["gshrcdate"] = ""
@@ -2017,8 +2018,8 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             execbuffer = ""
             
           Case "HELP"
-            If InBufParse.count = 2 Then
-              PrintHelp(InBufParse[1])
+            If InBufParse.count >= 2 Then
+              PrintHelp(InBuffer)
             Else
               PrintHelp()
             Endif
@@ -3067,101 +3068,13 @@ Public Sub HexPrint(Val As String)
   Print
 End
 
-Private Sub PrintHtmlPage(Source As String, Optional DoPrint As Boolean = True) As String
- Dim mproc As Process
- Dim ch As New ConsoleHighlight
- Dim PrintFile As String[]
- helpfromhtml = ""
- mproc = Exec ["html2text", "-ascii", "-width", "200"] For Read Write As "mProcget"
- Write #mproc, Source
- ' Flush #mproc
- mproc.closeinput
- mproc.wait
- ' While mproc.state = Process.Running
- '   Wait
- ' Wend
- Dim Sections As New Collection(gb.ignorecase)
- Dim SectionLength As Integer = 0
- Dim atmps As String[]
- Dim tmps As String
- Dim secBuf As String = ""
- Dim secName As String = ""
- Dim Command As String
- Dim GotCmd As Boolean = False
- tmps = Replace(helpfromhtml, "&#x27;", "'")
- atmps = Split(Replace(tmps, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
- For Each s As String In aTmps
-   If Left(s, 4) = "****" Then
-     If secName <> "" Then
-       Sections.Add(secBuf, secName)
-       SecBuf = ""
-     Endif
-     SecName = Replace(Replace(s, "*", ""), " ", "")
-     If GotCmd = False Then
-         Command = secName
-         Gotcmd = True
-     Endif
-   Else 
-     If secname <> "" Then secBuf &= s & "\n"
-   Endif
- Next
- If secName <> "" Then
-   Sections.Add(SecBuf, secName)
- Endif
- helpfromhtml = ""
 
-   
-  HelpFromHtml = "NAME\n\n"
-  tmps = Sections[Command]
-  HelpFromHtml &= tmps & "\n"
-  
-  If Sections.Exist("errors") Or Sections.Exist("error") Then
-    HelpFromHtml &= "\nERRORS\n"
-    tmps = IIf(Sections.Exist("error"), Sections["error"], Sections["errors"])
-    HelpFromHtml &= tmps
-  Endif
-  
-  If Sections.Exist("example") Or Sections.Exist("examples") Then
-    HelpFromHtml &= "\nEXAMPLE\n\n"
-    tmps = IIf(Sections.Exist("example"), Sections["example"], Sections["examples"])
-    tmps = ch.ToConsole(tmps)
-    HelpFromHtml &= tmps & "\n"
-  Endif
-  
-  If Sections.Exist("seealso") Then
-    HelpFromHtml &= "\nSEE ALSO\n\n"
-    HelpFromHtml &= Sections["seealso"]
-  Endif
-  
- If DoPrint Then
-   Print helpfromhtml
- Endif
- Return helpfromhtml
-End
 
 Public Sub mProcget_read()
 Dim buffer As String
   buffer = Read #Last, -256
   helpfromhtml &= buffer
   
-End
-
-
-Private Sub PrintLiveHelp(symbol As String[], Optional Summary As Boolean = False)
-
-  With sharedmem
-    Dim s As String
-    
-    For Each s In symbol
-      If s Like "''*" Then
-        HelpTxt &= Replace(s, "''", "") & "\n"
-        If summary Then Break
-      Endif
-    Next
-  End With
-Catch 
-  Error.Propagate()
-
 End
 
 Public Sub GetHighlightTypeAsText(intype As Integer) As String
@@ -3199,68 +3112,57 @@ Public Sub GetAllThings() As Collection
 
 End
 
-Public Sub GetGambasHelp(Helpurl As String) As String
-  
-  Dim source As New HttpClient As "hclient"
-  Dim buffer As String
-  source.url = Helpurl
-  source.async = False
-  source.timeout = 5
-  source.Get
-  If source.status < 0 Then Return ""
-  If Lof(source) Then 
-     buffer = Read #source, Lof(source)
-  Else
-    buffer = ""
-  Endif
-  
-  Return buffer
 
-End
-
+' Public Sub SortedInCol(AList As String[]) As String
+' 
+'   Dim colcount As Integer = 0
+'   Dim colwidth As Integer = 0
+'   Dim colperiod As Integer = 0
+'   Dim CurrentElement As Integer = 0
+'   Dim allIndex As String[] = aList
+'   Dim Result As String = ""
+'   
+'   allindex.Sort()
+'   
+'   For Each ss As String In allindex
+'     If ss.len > colwidth Then colwidth = ss.len
+'   Next
+'   
+'   colwidth += 2
+'   
+'   colcount = CInteger(env["COLUMNS"]) / colwidth
+'   colperiod = allindex.count / colcount
+'   colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
+'   For i As Integer = 0 To colperiod - 1
+'      For j As Integer = 0 To colcount - 1
+'        CurrentElement = i + (j * colperiod)
+'        If currentelement < allindex.count Then
+'             Result &= Left(allindex[CurrentElement] & Space(colwidth), colwidth)
+'        Endif
+'      Next
+'      Result &= "\n"
+'   Next
+'   
+'   Return Result
+' End
 
 Public Sub printHelp(Optional command As String = "")
 
   Dim mproc As Process
+  HelpSystem.LoadHelp() ' only loads help if not already loaded
   
-  Dim helpCollection As Collection
-  
-  With sharedmem
-    Dim helplist As New String[]
-    
-    helpcollection = GetAllThings()
-    
     If command <> "" Then
-      If helpCollection.exist(command) Then
-        HelpTxt = ""
-        PrintLiveHelp(helpgetfile(helpCollection[command][1]))
-      Else
-        Dim Helpurl As String = "http://gambaswiki.org/wiki/lang" &/ Lower(command)
-        Dim HelpResult As String
-        HelpTxt = ""
-        HelpResult = GetGambasHelp(Helpurl)
-        
-        If HelpResult <> "" And If Not (HelpResult Like "*This page does not exist*") Then
-           HelpTxt = PrintHtmlPage(HelpResult, False)
-        Else
+      command = Trim(Replace(command, "help", "", gb.ignorecase))
+      HelpTxt = HelpSystem.GetHelpDetailedText(command)
+      If HelpTxt = "" Then
            Exec ["man", command] Wait
            Return 
-        Endif
-      Endif
+       Endif
+       
     Else
-      HelpTxt = File.Load("/usr/share/gsh/doc/help.info")
-      HelpTxt &= ("\nUseful included Functions and Classes these may be edited to your taste\nFunctions Can be found in /usr/share/gsh/subs for Default versions or in ~/vars/subs for personal versions")
       
-      For Each sv As String[] In helpcollection
-        helplist.Add(helpcollection.key)
-      Next
+      HelpTxt = HelpSystem.AllHelp()
       
-      helplist.Sort()
-      
-      For Each ss As String In helplist
-        printlivehelp(helpgetfile(helpCollection[ss][1]), False)
-        helptxt &= "\n"
-      Next
     Endif
     
     Dim helpretryCount As Integer = 0
@@ -3272,7 +3174,7 @@ Public Sub printHelp(Optional command As String = "")
     'Try Exec ["clear"] Wait
     Try mproc = Exec ["/usr/bin/less", "-R", "-C", "-"] For Write
     If Error Then 
-      .["$helpdisplay"] = DefaultHelp
+      SharedMem["$helpdisplay"] = DefaultHelp
       Inc helpRetryCount
       Goto helpRetry
     Endif
@@ -3282,8 +3184,7 @@ Public Sub printHelp(Optional command As String = "")
     Write #mproc, Helptxt
     mproc.CloseInput()
     mproc.Wait()
-    
-  End With
+      
 Catch 
   Error.Propagate()
 
