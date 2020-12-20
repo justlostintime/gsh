@@ -53,7 +53,10 @@ Public Sub AskSearchItem() As Variant ' uses the search index
 Dim Index As Integer = 0
 Dim sIndex As String
   If SearchIndex.count = 0 Then Return ""
-  If SearchIndex.count = 1 Then Return SearchResults.First()
+  If SearchIndex.count = 1 Then 
+       SearchCommand = SearchIndex[0]
+       Return SearchResults[SearchIndex[0]]
+  Endif
   Print "Please select Choice using number"
   For Each s As String In SearchIndex
     Print index; ")";; s
@@ -154,7 +157,14 @@ Dim buffer As String
 End
 
 Private Sub GetLiveHelp(msymbol As String[], Title As String, Optional Summary As Boolean = False) As String
-  Dim helptxt As String = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & msymbol[0] & "\n\nDESCRIPTION\n"
+  Dim ch As New ConsoleHighlight
+  Dim helptxt As String = ""
+  If Summary = False Then 
+     helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & msymbol[0] & "\n\nDESCRIPTION\n"
+  Else
+     helptxt = msymbol[0]
+     Return ch.ToConsole(helptxt)
+  Endif
   Dim s As String
   Dim b As String
   For Each s In msymbol
