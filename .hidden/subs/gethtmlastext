@@ -4,7 +4,7 @@ Public Sub GetHtmlAsText(TheUrl as string) as string[]
   Dim buffer As String
   dim aTmps as string[]
   
-  sSource.url = Helpurl
+  sSource.url = TheUrl
   sSource.async = False
   sSource.timeout = 5
   sSource.Get
@@ -25,11 +25,9 @@ Public Sub GetHtmlAsText(TheUrl as string) as string[]
   Endif
            
   Return sTemps
-
 end
 
 Public ReadBuffer as string = ""
-
 Public Sub mProcget_read()
 Dim buffer As String
   buffer = Read #Last, -256

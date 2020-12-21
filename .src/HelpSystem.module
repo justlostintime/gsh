@@ -335,7 +335,11 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
  HelpFromHtml = "NAME\n"
  For Each s As String In SectionIndex
    HelpFromHtml &= s & "\n"
-   HelpFromHtml &= Sections[Replace(s, " ", "")]
+   If s Like "Example" Or If s Like "Examples" Then
+     HelpFromHtml &= ch.ToConsole(Sections[Replace(s, " ", "")])
+   Else
+      HelpFromHtml &= Sections[Replace(s, " ", "")]
+   Endif
    HelpFromHtml &= "\n\n"
  Next
  
