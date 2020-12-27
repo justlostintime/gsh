@@ -5,6 +5,7 @@ Export
 Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String", 
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "", 
   "", "", "", "", ""]
+  
 Public TypeToText As String[] = ["BackGround", "Normal", "KeyWord", "Function", "Operator",
   "Symbol", "Number", "String", "Comment", "BreakPoint", "CurrentLine",
   "DataType", "", "HighLight", "", "Error", "Help", "PreProcessor", "Escape", "Label", 
