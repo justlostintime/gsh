@@ -1295,7 +1295,14 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                Error "Generated Script ="; ScriptName;; ":";; Error.text
             Else
                Dim errtemp As String[] = Split(CompileResult, ":\n", "\"\"", True, True)
-               Error "Script Error :";; errtemp[4]; ":";; ":("; errtemp[1] - 1; "/"; errtemp[2]; ")"
+               Dim errline As Integer = errtemp[1] - 2
+               Error "gsh Error :";;
+               For ii As Integer = 4 To errtemp.max
+                 Print errtemp[ii];;
+               Next
+               errtemp = Split(program, "\n", "\"\"", False, True)
+               Print ":In:";;
+               Print errtemp[errline]
             Endif
               ExecBuffer = ""
               ReturnOutputTo = ""
