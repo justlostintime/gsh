@@ -25,6 +25,7 @@ ControlPublic=1
 ModulePublic=1
 SourcePath=/home/brian/Projects/Distribution/Archive
 Maintainer=Brian G
+Vendor=WESTWOOD
 Address=scriptbuilder@westwoodsvcs.com
 Url=www.westwoodsvcs.com
 License=General Public License
