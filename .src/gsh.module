@@ -1294,7 +1294,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                Error "Generated Script ="; ScriptName;; ":";; Error.text
             Else
                Dim errtemp As String[] = Split(CompileResult, ":\n", "\"\"", True, True)
-               Error "Script Error :";; errtemp[4]; ":"; errtemp[5];; ":("; errtemp[1] - 1; "/"; errtemp[2]; ")"
+               Error "Script Error :";; errtemp[4]; ":";; ":("; errtemp[1] - 1; "/"; errtemp[2]; ")"
             Endif
               ExecBuffer = ""
               ReturnOutputTo = ""
