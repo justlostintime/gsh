@@ -334,12 +334,18 @@ Public Sub RunScript(cmd As String) As Boolean
   Endif
   
   Close AppSource
-  
   appSource = oldAppSource
   Source = OldSource
   CommandMode = OldCommandMode
   Return True
-
+  
+Catch 
+  Close AppSource
+  appSource = oldAppSource
+  Source = OldSource
+  CommandMode = OldCommandMode
+  Error.Propagate()
+     
 End
 
 

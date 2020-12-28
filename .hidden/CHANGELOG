@@ -1,3 +1,8 @@
+* Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
+
+* Sun Dec 27 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
+- Fix && || usage
+
 * Sun Dec 27 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
 - Fixed bug in pipefitting
 
