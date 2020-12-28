@@ -340,11 +340,13 @@ Public Sub RunScript(cmd As String) As Boolean
   Return True
   
 Catch 
+  
   Close AppSource
   appSource = oldAppSource
   Source = OldSource
   CommandMode = OldCommandMode
-  Error.Propagate()
+  Error "gsh Script :";; Error.Text
+  Return True
      
 End
 
@@ -1133,6 +1135,8 @@ Public Sub _unknown(...)
 End
 
 Private CompileResult As String = ""
+Private CompilerOutput As String = ""
+
 Public Sub ProcessProg(Optional NoWait As Boolean = False)
   'Dim ProgramCommand, Result As String
 
@@ -1237,7 +1241,10 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       'Print "Inserting "; linktable[linktable.first]
       If Not AlreadyLinked.Exist(LinkTable.First) Then
         AlreadyLinked.Add(LinkTable.first)
-        Program &= PreProcBuffer(linktable[linktable.first])
+        Try Program &= PreProcBuffer(linktable[linktable.first])
+        If Error Then
+          Error.Raise(Error.text)
+        Endif
       Endif
       linktable.Remove(linktable.first)
     Wend
@@ -1293,7 +1300,9 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
           Endif
           'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
           SharedMem["$execprog"] = program
+          SharedMem.WriteVarTo("$execprog")
           CompileResult = ""
+          CompilerOutput = ""
           eCmd = ["/usr/bin/gbs3", "-b", ScriptName]
           Try Exec ecmd Wait For Read As "compileread"
           If Error Or CompileResult <> "" Then
@@ -1301,14 +1310,15 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                Error "Generated Script ="; ScriptName;; ":";; Error.text
             Else
                Dim errtemp As String[] = Split(CompileResult, ":\n", "\"\"", True, True)
-               Dim errline As Integer = errtemp[1] - 2
+               Dim errline As Integer = errtemp[1]
                Error "gsh Error :";;
                For ii As Integer = 4 To errtemp.max
                  Print errtemp[ii];;
                Next
-               errtemp = Split(program, "\n", "\"\"", False, True)
+               errtemp = Split(CompilerOutput, "\n", "\"\"", False, True)
+               Dim errstart As Integer = errtemp.Find("' Gambas Module File", gb.IgnoreCase)
                Print ":In:";;
-               Print errtemp[errline]
+               Print errtemp[errline + errstart - 1]
             Endif
               ExecBuffer = ""
               ReturnOutputTo = ""
@@ -1406,7 +1416,9 @@ End
 Public Sub compileread_read()
 Dim sLine As String
   Read #Last, sLine, -256
+  CompilerOutput &= sLine
 End
+
 Public Sub compileread_error(Err As String)
   CompileResult &= err
 End

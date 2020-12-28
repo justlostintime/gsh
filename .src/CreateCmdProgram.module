@@ -353,7 +353,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
          
       Case "&>", "&>>"
         Inc i
-        If i > CmdList[CurrentCmd].max Then Error.Raise("Missing Error redirection destination &> &>>" & CmdList[CurrentCmd].join(" "))
+        If i > CmdList[CurrentCmd].max Then Error.Raise("Missing Error redirection destination &> &>> [" & CmdList[CurrentCmd].join(" ") & " ... ]")
          If i + 1 <= CmdList[CurrentCmd].max And If CmdList[CurrentCmd][i + 1][0] = "(" Then
           Inc i
           CmdList[CurrentCmd][i] = CmdList[CurrentCmd][i - 1] & CmdList[CurrentCmd][i]
@@ -397,7 +397,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
       Case ">", ">>" ' Output features
         Inc i
           If i > CmdList[CurrentCmd].max Then 
-            Error.Raise("Missing output redirection destination > >>" & CmdList[CurrentCmd].join(" "))
+            Error.Raise("Missing output redirection destination > >> [" & CmdList[CurrentCmd].join(" ") & " ...]")
           Endif
          
          If i + 1 <= CmdList[CurrentCmd].max And If CmdList[CurrentCmd][i + 1][0] = "(" Then
@@ -453,7 +453,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
      
       Case "<" 'input features
         Inc i
-        If i > CmdList[CurrentCmd].max Then Error.Raise("Missing input redirection destination < " & CmdList[CurrentCmd].join(" "))
+        If i > CmdList[CurrentCmd].max Then Error.Raise("Missing input redirection destination < [" & CmdList[CurrentCmd].join(" ") & " ...]")
         If i + 1 <= CmdList[CurrentCmd].max And If CmdList[CurrentCmd][i + 1][0] = "(" Then
           Inc i
           CmdList[CurrentCmd][i] = CmdList[CurrentCmd][i - 1] & CmdList[CurrentCmd][i]
@@ -474,7 +474,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         
       Case "!>" ' Write the return value from the exec to this variable
         Inc i
-         If i > CmdList[CurrentCmd].max Then Error.Raise("Missing CLI return code destination !> " & CmdList[CurrentCmd].join(" "))
+         If i > CmdList[CurrentCmd].max Then Error.Raise("Missing CLI return code destination !> [" & CmdList[CurrentCmd].join(" ") & "... ]")
         CmdKill[CurrentCmd] &= gsh.PreProcesses(CmdList[CurrentCmd][i]) & " = mProc" & BaseName & Str(CurrentCmd) & ".value\n"
         
       Default
