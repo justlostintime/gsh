@@ -490,7 +490,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
                 gsh.PreProcesses("tostringarray()")
                 sym = MakeAbs(sym)
                 If Not IsNull(sym) Then 
-                   Dim currentcmdname As String = "Cmd" & BaseName 
+                   Dim currentcmdname As String = "Cmd" & BaseName & CurrentCmd
                    gsh.LinkTable.add("Const " & currentcmdname & " As String = " & Quote(System.Find(sym)), currentcmdname)
                    CmdExec[CurrentCmd] &= "tostringarray(CmdBuild," & currentcmdname
                 Endif
