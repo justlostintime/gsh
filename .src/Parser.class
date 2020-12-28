@@ -189,10 +189,12 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
   Dim InSpecialSet As Integer = 0
 
   For i As Integer = 0 To syms.Max
-    If types[i] = Highlight.added And braces.Find(syms[i]) % 2 = 1 Then
-       Inc InSpecialSet
-    Else 
-      Dec InSpecialSet
+    If types[i] = Highlight.added 
+      If braces.Find(syms[i]) % 2 = 1 Then
+         Inc InSpecialSet
+      Else 
+         Dec InSpecialSet
+      Endif
     Endif
     If inSpecialSet = 0 Then 
       If types[i] = Highlight.operator Then
