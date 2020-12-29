@@ -2741,8 +2741,8 @@ Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlim
   If syms[0] = "EXTERN" Then
     If Not ExternTable.Exist(InVar) Then
       ExternTable.Add(invar)
-      syms[0] = "'" & syms[0]
-    Endif
+    Endif 
+    syms[0] = "'" & syms[0]
   Endif
   
   If syms.count >= 1 And syms.count <= 2 And syms[0] = "FAST" Then 
