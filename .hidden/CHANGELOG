@@ -1,4 +1,7 @@
 * Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
+- Updated the way errors are detected and reported
+
+* Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
 - fixed error reporting and recover from bad cli redirection
 
 * Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93

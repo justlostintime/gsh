@@ -1136,7 +1136,7 @@ End
 
 Private CompileResult As String = ""
 Private CompilerOutput As String = ""
-
+Private Const chdirextern As String = "Extern chdir(Dest As String) As Integer In \"libc:6\"" 
 Public Sub ProcessProg(Optional NoWait As Boolean = False)
   'Dim ProgramCommand, Result As String
 
@@ -1248,8 +1248,12 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       Endif
       linktable.Remove(linktable.first)
     Wend
+    'public const chdirextern as string = "Extern chdir(Dest As String) As Integer In \"libc:6\"" 
+    If Not ExternTable.Exist(chdirextern) Then
+      ExternTable.Add(chdirextern)
+    Endif
     
-    ProgPart1 = "#!/usr/bin/gbs3\nExtern chdir(Dest As String) As Integer In \"libc:6\"\nUSE \"westwood.sharedmem\""
+    ProgPart1 = "#!/usr/bin/gbs3\nUSE \"westwood.sharedmem\""
     For Each sinsert In UseTable
       ProgPart1 &= "," & sinsert
     Next
@@ -1280,7 +1284,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
     Endif
     Program &= ExecBuffer 
-    Program &= "end with\nSharedMem.end()\n Catch\nError \"gsh error:\" & error.text \nend\n"
+    Program &= "end with\nSharedMem.end()\n Catch\nError \"gsh error:\" & error.text \nquit 2\nend\n"
     'SharedMem["$execprog"] = ExecBuffer
     If Not CompileOnly Then 
       Dim ScriptName As String = Temp("gsh_") & ".gsh"

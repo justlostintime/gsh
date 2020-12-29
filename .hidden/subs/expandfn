@@ -41,10 +41,16 @@ Next
 globfree(sret)
 Dim results As String[] = paths
 Dim newdir As String = results[0]
-If results.count > 1 Then newdir = path
+If results.count > 1 Then
+   error.raise("Ambiguous request: More Than One solution to "&path)
+endif
 Dim name As String = File.Name(newdir)
 newdir = File.Dir(newdir)
+
+if newdir = "" then newdir = env["PWD"]
+
 Dim sPath As String = Trim(newdir)
+
 Dim sPathSplit As String[] = Split(newdir, "/", "", True)
 Dim pwds As New String[]
 If file.isrelative(sPath) Then pwds.insert(Split(env["PWD"], "/", "", True))
@@ -60,8 +66,7 @@ For Each Sdir As String In sPathSplit
 			pwds.add(sdir)
 	End Select
 	If Not Exist("/" & pwds.join("/")) Then
-		print #file.err, "Directory Not Found :[" & "/" & pwds.join("/") & "]"
-		return ""
+		error.raise("Directory Not Found :[" & "/" & pwds.join("/") & "]")
 	Endif
 Next
 dim result as string = "/" & PWDs.join("/") &/ name
