@@ -1278,7 +1278,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     ExternTable = New String[]
     CompilerDirectiveTable.Clear()
     
-    Program = ProgPart1 & "Public Sub main()\n" & Program & "\nend ' end program\n"
+    Program = ProgPart1 & Program
     
     If bSingleUse Then
       Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
