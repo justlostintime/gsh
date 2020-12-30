@@ -1,6 +1,5 @@
 ' Gambas class file
 
-Export
 Inherits Task
 Public inpipe As Stream
 Public inpipename As String 
