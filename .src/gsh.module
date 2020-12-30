@@ -1253,16 +1253,18 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       ExternTable.Add(chdirextern)
     Endif
     
-    ProgPart1 = "#!/usr/bin/gbs3\nUSE \"westwood.sharedmem\""
-    For Each sinsert In UseTable
-      ProgPart1 &= "," & sinsert
-    Next
-    ProgPart1 &= "\n"
+    ProgPart1 = "#!/usr/bin/gbs3\n"
     
     For Each sinsert As String In CompilerDirectiveTable
       ProgPart1 &= sInsert & "\n"
     Next
     
+    ProgPart1 &= "Use \"westwood.sharedmem\""
+    
+    For Each sinsert In UseTable
+      ProgPart1 &= "," & sinsert
+    Next
+    ProgPart1 &= "\n"
     For Each sinsert In StructTable
       ProgPart1 &= sInsert & "\n"
     Next
@@ -1276,7 +1278,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     ExternTable = New String[]
     CompilerDirectiveTable.Clear()
     
-    Program = ProgPart1 & Program
+    Program = ProgPart1 & "Public Sub main()\n" & Program & "\nend ' end program\n"
     
     If bSingleUse Then
       Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"

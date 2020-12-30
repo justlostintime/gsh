@@ -1,4 +1,6 @@
 * Tue Dec 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
+
+* Tue Dec 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
 - Fix very broken redirection caused by rewrite to support runtime file name resolution
 
 * Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
