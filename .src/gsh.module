@@ -513,7 +513,7 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
       If Not AlreadyLinked.Exist(LinkTable.First) Then
         AlreadyLinked.Add(LinkTable.first)
         If RegExp.Match(linktable[linktable.first], "^class .*", RegExp.Caseless) Then
-          ExtraClasses.add(PreProcBuffer(linktable[linktable.first]), Split(linktable.first, ".")[1])
+          ExtraClasses.add(PreProcBuffer(linktable[linktable.first], True), Split(linktable.first, ".")[1])
         Else
           ProcLinks &= PreProcBuffer(linktable[linktable.first])
         Endif
@@ -1110,9 +1110,11 @@ Public Sub ExecLocal(prog As String[]) As Boolean
   If Error Then
     LocalRunning = False
     If Error.text <> "Terminated" Then 
-      Error (("Local Execute error in :") & prog[0] & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
-      SubCls.doListing(SharedMem["sub." & method], Split(Error.where, ".")[2])
-      Error.Raise(("Local Execute error in :") & prog[0] & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+      If DoTrace Then
+          Error (("Local Execute error in :") & prog[0] & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+          SubCls.doListing(SharedMem["sub." & method], Split(Error.where, ".")[2])
+      Endif
+      Error.Raise(("gsh local execute error :") & prog[0] & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
     Else
       Error ("[Terminated]")
     Endif
@@ -1241,7 +1243,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       'Print "Inserting "; linktable[linktable.first]
       If Not AlreadyLinked.Exist(LinkTable.First) Then
         AlreadyLinked.Add(LinkTable.first)
-        Try Program &= PreProcBuffer(linktable[linktable.first])
+        If Left(linktable.first, 6) = "class." Then
+           Try Program &= PreProcBuffer(linktable[linktable.first], True)
+        Else
+           Try Program &= PreProcBuffer(linktable[linktable.first])
+        Endif
         If Error Then
           Error.Raise(Error.text)
         Endif
@@ -1264,6 +1270,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     For Each sinsert In UseTable
       ProgPart1 &= "," & sinsert
     Next
+    
     ProgPart1 &= "\n"
     For Each sinsert In StructTable
       ProgPart1 &= sInsert & "\n"
@@ -1488,7 +1495,7 @@ Public Sub SystemRead_error(msg As String)
 End
 
 
-Public Sub PreProcBuffer(Proc As String) As String
+Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False) As String
 
   Dim plist As String[]
   Dim finalbuf As String = ""
@@ -1496,7 +1503,7 @@ Public Sub PreProcBuffer(Proc As String) As String
   plist = Split(proc, "\n")
   For Each s As String In plist
     ' Debug "--> " & s
-    If s <> "" Then finalbuf &= preprocesses(s) & "\n"
+    If s <> "" Then finalbuf &= preprocesses(s, IsClass) & "\n"
   Next
   Return finalbuf
 Catch
@@ -2717,7 +2724,7 @@ Catch
 End
 
 
-Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlimited
+Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As String ' MaxGlobSize As 0 mean unlimited
 
   Dim OutBuf As String = ""
   Dim Syms As String[]
@@ -2976,14 +2983,15 @@ Public Sub PreProcesses(InVar As String) As String ' MaxGlobSize As 0 mean unlim
     Highlight.Analyze(Outbuf, True)
     OutBuf = Highlight.TextAfter
     
-    Dim PublicCheck As Integer = IIf(syms[0] = "STATIC", 1, 0)
-    If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE") And If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
-      If Not ExternTable.Exist(OutBuf) Then
-        ExternTable.Add(OutBuf)
-        Outbuf = "'" & OutBuf
+    If Not IsClass Then
+      Dim PublicCheck As Integer = IIf(syms[0] = "STATIC", 1, 0)
+      If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE") And If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
+        If Not ExternTable.Exist(OutBuf) Then
+          ExternTable.Add(OutBuf)
+          Outbuf = "'" & OutBuf
+        Endif
       Endif
     Endif
-    
   Endif
   
   

@@ -6,7 +6,7 @@ inherits task
 Private MonitorWebTimer as timer
 Public MonitorWebAddr as string = ""
 Public ExpectedReturn as string = "" ' "*HTTP/1.1 200 OK*"
-Public ControlVariable as string = "monitorwebagent"
+static public ControlVariable as string = "monweb"
 Public MonitorTimeOut as integer = 15 ' timeout in seconds
 Public MonitorPollTime as integer = 30000 ' time in milliseconds
 Public MonitorNotifyEmail as string = ""
