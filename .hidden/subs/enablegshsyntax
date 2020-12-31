@@ -1,19 +1,21 @@
-sub SetEditSyntaxOn() ' Install Nano and vim highlight syntax
-''install gambas syntax both nano and vim
-
+sub EnableGshSyntax() ' Install Nano and vim highlight syntax
+'seteditsyntaxon() Enable gambas syntax both nano and vim
+''          install gambas syntax both nano and vim
+''          This Should have happened when you installed
+''          gsh
 dim EditRc as string[]
 dim OurEditRc as string[]
 dim lookfor as string
 
 '' Install the updates to the local .vimrc to detect gsh syntax
-if not exist(user.home &/ ".vimrc" then 
+if not exist(user.home &/ ".vimrc") then 
     try copy "/usr/share/gsh/vim/.vimrc" to user.home &/ ".vimrc"
      if error then
         print #file.err, " copy failed from default .vimrc :";;error.text
         quit 1
     endif 
 else
-    try EditRc = split(file.load(user.home &/ ".vimrc")
+    try EditRc = split(file.load(user.home &/ ".vimrc"))
     if error then
         print #file.err, " Unable to access local ~/.vimrc";;error.text
         quit 1
@@ -43,7 +45,7 @@ if not exist(user.home &/ ".nanorc") then
         quit 1
     endif 
 else
-		try EditRc = split(file.load(user.home &/ ".nanorc")
+		try EditRc = split(file.load(user.home &/ ".nanorc"))
     if error then
         print #file.err, " Unable to access local ~/.nanorc";;error.text
         quit 1

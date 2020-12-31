@@ -206,37 +206,36 @@ Private Sub IsGlob(Exp As String) As Boolean
 End
 
 
-  Private CmdExec As String[]       ' this will contain the exec line for each command
-  Private CmdIo As String[]         ' this will contain the read functions for each command or rd wr if inside pipe stream
-  Private CmdErr As String[]        ' Function if errors are captured
-  Private CmdWrite As String[]      ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
-  Private CmdKill As String[]       ' This will have the close io functions when the task ends
-  Private CmdBeforeExec As String[] ' list of things to do before starteing execs
-  Private CmdFinal As String = ""       ' This will contain the finished program segment and functions
-  Private CmdCount As Integer = 0       ' the number of the command we are processing
-  Private CmdList As String[][]         ' The first pass of command line collecting pipe connections
-  Private CmdTypes As Integer[][]       ' the list of types for each value
-  Private CmdWriteTo As Integer[]       ' This is the proc the command writes to
-  Private CmdReadFrom As Integer[]      ' This is the proc the command reads from
-  Private CmdWriters As Integer[][]     ' the list of writers to each command
-  Private WaitCompletion As Boolean = True ' wait for command to finish
-  Private InBlock As Boolean = False
-  Private BuildBlock As String             ' used to construct block a exec parameters
-  Private NoOutRedirect As Boolean = True
-  Private NeedsSTDIOWrite As Boolean = False
-  Private BaseName As String
-  Private CurrentRead As Integer         ' The proc to read from
-  Private x As String[]
-  Private y As Integer[]
-  Private z As Integer[]
-  
-  
 Private Sub DoProcess(source As String) As String ' returns the processed segment of the command line
+
   Dim CurrentCmd As Integer     ' Index of the command we are processing
   Dim i As Integer              ' Index of current symbol within the command
   Dim j As Integer              ' Index general
   Dim sym As String             ' The currently processed symbol
   Dim type As Integer           ' The Current Symbol type 
+  Dim CmdExec As String[]       ' this will contain the exec line for each command
+  Dim CmdIo As String[]         ' this will contain the read functions for each command or rd wr if inside pipe stream
+  Dim CmdErr As String[]        ' Function if errors are captured
+  Dim CmdWrite As String[]      ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
+  Dim CmdKill As String[]       ' This will have the close io functions when the task ends
+  Dim CmdBeforeExec As String[] ' list of things to do before starteing execs
+  Dim CmdFinal As String = ""       ' This will contain the finished program segment and functions
+  Dim CmdCount As Integer = 0       ' the number of the command we are processing
+  Dim CmdList As String[][]         ' The first pass of command line collecting pipe connections
+  Dim CmdTypes As Integer[][]       ' the list of types for each value
+  Dim CmdWriteTo As Integer[]       ' This is the proc the command writes to
+  Dim CmdReadFrom As Integer[]      ' This is the proc the command reads from
+  Dim CmdWriters As Integer[][]     ' the list of writers to each command
+  Dim WaitCompletion As Boolean = True ' wait for command to finish
+  Dim InBlock As Boolean = False
+  Dim BuildBlock As String             ' used to construct block a exec parameters
+  Dim NoOutRedirect As Boolean = True
+  Dim NeedsSTDIOWrite As Boolean = False
+  Dim BaseName As String
+  Dim CurrentRead As Integer         ' The proc to read from
+  Dim x As String[]
+  Dim y As Integer[]
+  Dim z As Integer[] ' Gambas class file
   
    CmdExec = New String[]       ' this will contain the exec line for each command
    CmdIo = New String[]         ' this will contain the read functions for each command or rd wr if inside pipe stream
@@ -384,7 +383,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             Error.Raise("Missing Error redirection destination &> &>> [" & CmdList[CurrentCmd].join(" ") & " ... ]")
         Endif
         
-        i = GenerateRedirectOut(i, CurrentCmd, sym, True)
+        i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, True)
         
         NeedsSTDIOWrite = True
   
@@ -394,7 +393,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             Error.Raise("Missing output redirection destination > >> [" & CmdList[CurrentCmd].join(" ") & " ...]")
         Endif
         
-        i = GenerateRedirectOut(i, CurrentCmd, sym, False)
+        i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, False)
        
         NoOutRedirect = False
      
@@ -405,7 +404,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
            Error.Raise("Missing input redirection destination < [" & CmdList[CurrentCmd].join(" ") & " ...]")
         Endif
         
-        i = GenerateRedirectInput(i, CurrentCmd, sym)
+        i = GenerateRedirectInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
         
       Case "!>" ' Write the return value from the exec to this variable
         Inc i
@@ -587,10 +586,8 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
 
 End
 
-Private Sub GenerateRedirectInput(i As Integer, CurrentCmd As Integer, sym As String, Optional WriteError As Boolean = False) As Integer
+Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
   
-Dim notfile As Boolean = False
-Dim filename As String 
      
         'Check if we will from a function or some other evaluated at runtime function
         If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then 
@@ -619,10 +616,6 @@ Dim filename As String
           i = execStartAt
         Endif
         
-        ' If CmdTypes[CurrentCmd][i] = Highlight.string And If CmdList[CurrentCmd][i][0] <> "(" Then 
-        '    CmdList[CurrentCmd][i] = "(fileexpand(" & CmdList[CurrentCmd][i] & "))"
-        ' Endif
-        
         If CmdList[CurrentCmd][i][0] = "(" Then
           If CmdList[CurrentCmd][i] Like "*fileexpand*" Then
              CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase) & "))") & "\n"
@@ -635,7 +628,7 @@ Dim filename As String
   Return i
 End
 
-Private Sub GenerateRedirectOut(i As Integer, CurrentCmd As Integer, sym As String, Optional WriteError As Boolean = False) As Integer
+Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As Integer, sym As String, CmdErr As String[], CmdIo As String[], CmdList As String[][], CmdTypes As Integer[][], CmdBeforeExec As String[], CmdKill As String[], Optional WriteError As Boolean = False) As Integer
 Dim notfile As Boolean = False
 Dim fullname As String 
 Dim fileext As String
