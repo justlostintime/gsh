@@ -4,11 +4,11 @@
 
 Static Public syms As String[]
 Static Public types As Integer[]
-Static Public seperators As String[] = [" ", "\n"]
-Static Public operators As String[] = ["::", "&&", "||", "(", ")"]
-Static Public SpecialSymbols As String[] = ["{", "}"]
-Static Public quotes As String[] = ["\"", "\""]
-Static Public braces As String[] = ["{", "}"]
+Static Public seperators As String[] = []
+'Static Public operators As String[] = [","]
+Static Public SpecialSymbols As String[] = []
+'Static Public quotes As String[] = ["\"", "\"", "[", "]", "'", "'", "(", ")"]
+Static Public braces As String[] = []
 
 
 Static Private Sub SymsInsert(sym As String, type As Integer)
@@ -23,7 +23,7 @@ Static Private Sub SymsInsert(sym As String, type As Integer)
 End
 
 '' process the input line and split it into seperate commands
-Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = False) As String[]
+Static Public Sub _call(InLine As String, Optional operators As String[] = [","], quotes As String[] = ["\"", "\"", "[", "]", "'", "'", "(", ")"], IncludeBreak As Boolean = False) As String[]
 
   Dim CurrentType As Integer = Highlight.Symbol
   Dim streamPos As Integer = 0
@@ -258,4 +258,5 @@ Static Public Sub CheckBraces(symlist As String[], Optional start As Integer = 0
   Endif
 End
 
+' Gambas class file
 ' Gambas class file

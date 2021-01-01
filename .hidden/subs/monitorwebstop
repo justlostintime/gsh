@@ -1,0 +1,7 @@
+sub monitorwebstop()
+
+with sharedmem
+ .[monitorwebagent.ControlVariable] = false
+end with
+
+end

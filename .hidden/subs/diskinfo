@@ -1,0 +1,72 @@
+Public Sub diskinfo()
+'Linux
+dim statmap As String[] = [
+"&1 = Read I / Os requests number Of Read I / Os processed",
+"&1 = Read merges requests number Of Read I / Os merged With In -queue I / O",
+"&1 = Read sectors sectors number Of sectors Read",
+"&1 = Read ticks milliseconds total Wait Time For Read requests",
+"&1 = Write I / Os requests number Of Write I / Os processed",
+"&1 = Write merges requests number Of Write I / Os merged With In -queue I / O",
+"&1 = Write sectors sectors number Of sectors written",
+"&1 = Write ticks milliseconds total Wait Time For Write requests",
+"&1 = in_flight requests number Of I / Os currently In flight",
+"&1 = io_ticks milliseconds total Time this block device has been active",
+"&1 = time_in_queue milliseconds total Wait Time For all requests",
+"&1 = discard I / Os requests number Of discard I / Os processed",
+"&1 = discard merges requests number Of discard I / Os merged With In -queue I / O",
+"&1 = discard sectors sectors number Of sectors discarded",
+"&1 = discard ticks milliseconds total Wait Time For discard requests"
+]
+
+dim i as integer
+Dim disks As String[] = Dir("/sys/block","s*")  ' you can filter by whatever you like
+Dim Partitions As String[] = Dir("/sys/block/sda", "sda*") ' again I only filter for sda etc
+Dim stats As String[] = Split(file.load("/sys/block/sda/stat"), " \n", "", True, True)
+Dim dSize As String = file.load("/sys/block/sda/size")
+Dim sda1Stats As String[] = Split(file.load("/sys/block/sda/sda1/stat"), " \n", "", True, True)
+Dim sda1dSize As String = file.load("/sys/block/sda/sda1/size")
+' get mount points
+Dim mounts As String[] = Split(file.load("/proc/mounts"), "\n", "", True, True)
+for i = 0 to mounts.max 'lets extract the most interesting fields
+   mounts[i] = split(mounts[i]," \n","",true,true).extract(0,3).join("\t")
+next
+'mount info also retrun the filesystem type
+'/dev/disk/by-uuid lists all the devices as links to the physical device such as sda1 etc
+'these are all available by-id  by-label  by-partlabel  by-partuuid  by-path  by-uuid
+Dim uuids As String[] = Dir("/dev/disk/by-uuid") ' each is a link to the device
+Dim labels As String[] = Dir("/dev/disk/by-label") ' each is a link to the device
+
+plisting(disks, "Disks")
+plisting(Partitions, "DiskPartitions")
+plisting(stats, "Stats for sda", "*", statmap)
+pListing(sda1stats, "Stats for sda1", "*", statmap)
+Print "Sizeof sda  :";; Dsize;; 
+Print "      sda1 :";; sda1dsize
+plisting(mounts, "Mounted Devices", "/dev*") ' change /dev to UUID if your system uses that
+
+For i As Integer = 0 To labels.Max
+    Dim st As Stat = Stat("/dev/disk/by-label" &/ labels[i])
+    labels[i] = labels[i] & "->" & File.Name(st.link)
+Next
+plisting(labels, "Label of disks")
+
+Print "done"
+
+Catch
+Print error.text & "\n" & error.where
+End
+
+Sub plisting(source As String[], title As String, Optional filter As String = "*", map As String[] = [])
+  Print title 
+  For i As Integer = 0 To source.max
+    Dim s As String = source[i]
+    If s Like filter Then
+       If map.count > 0 Then
+          Print Space(10); Subst(map[i], Left(s & Space(10), 10))
+       Else
+          Print Space(10); s
+       Endif
+    Endif
+    Next
+    Print
+End

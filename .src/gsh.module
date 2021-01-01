@@ -753,6 +753,7 @@ Public Sub Main()
   Class.Load("SubCls")
   Class.Load("CreateCmdProgram")
   Class.Load("Parser")
+  Class.Load("ParseParms")
   Class.Load("ServiceMode")
   Class.Load("HelpSystem")
   
@@ -1311,7 +1312,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         If Not Error Then 
           Close MyProg
           If DoTrace Then 
-            For Each sdf As String In Split(program, "\n")
+            For Each sdf As String In Split(program, "\n", "\"\"")
               Error "(Trace "; Now; ") "; ("Execute External "); ": "; sdf
             Next
           Endif
@@ -2688,7 +2689,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   For i As Integer = 0 To interface.Max
     interface[i] = Trim(interface[i])
   Next
-  Dim CmdLine As String[] = Split(CommandLine, " ", "[]\"\"", True, True)
+  Dim CmdLine As String[] = ParseParms(CommandLine, [" "], ["\"\"[]"])
   Dim sCodeLine As String = CmdLine[0] & "("
   Dim types As Integer[]
   Dim syms As String[]
@@ -2825,6 +2826,10 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
   Else
     tcount = 0
     While tCount < Syms.count
+      If syms[tcount] = "" Then 
+         Inc tCount
+         Continue
+      Endif
       Select Case Types[tCount]
           
         Case Highlight.Error
@@ -2854,6 +2859,13 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
           Endif
           
         Case Highlight.symbol
+          If Syms[TCount] = "$" And If (tcount + 1) < types.count And If types[tcount + 1] = Highlight.operator Then
+            Select Case Syms[Tcount + 1]
+              Case "*", "!", "@"
+                Syms[Tcount] &= Syms[Tcount + 1]
+                Syms[Tcount + 1] = ""
+            End Select
+          Endif
           
           If Syms[Tcount] = "$" And If (tcount + 1) < types.count And If types[tcount + 1] = Highlight.String Then
             syms[tcount] = "enumerate"
@@ -2864,14 +2876,16 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             types.Add(Highlight.Operator, tcount + 1)
           Else If Syms[tCount] = "$$"                          ' return the current pid
             syms[tCount] = application.id
-          Else If Syms[tCount] = "$*"                          ' return the current pid
+          Else If Syms[tCount] = "$*"                          ' return all of the command line parameters as a string
             syms[tCount] = "iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\")"
+         Else If Syms[tCount] = "$@"                           ' return all parameters as a list
+            syms[tCount] = "iif(args.count > 1,args.all,[])"   
           Else If Syms[tCount] = "$!"                          ' return the current pid of background task
             syms[tCount] = "application.id"
-          ' Else If Syms[tCount] = "$GID" Then
-          '   syms[tCount] = "User.group"
-          ' Else If Syms[tCount] = "$UID" Then
-          '   syms[tCount] = "User.Group"
+          Else If Syms[tCount] = "$GID" Then
+            syms[tCount] = "User.group"
+          Else If Syms[tCount] = "$UID" Then
+            syms[tCount] = "User.Group"
           Else If Syms[tCount][0] = "$" Then
             Dim convit As Integer
             Try convit = CInteger(Right(Syms[tCount], -1))
@@ -2953,6 +2967,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
     ' scan if we need to include a class, structure or function
     
     For tcount = 0 To syms.max
+      If syms[tcount] = "" Then Continue
       If types[tcount] = highlight.symbol Or If types[tcount] = Highlight.DataType Then
         Dim FunClass As String
         funclass = "class." & Lower(syms[tcount])
@@ -2980,6 +2995,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
     OutBuf = Syms[0]
     
     For tcount = 1 To Syms.Max
+      If syms[tcount] = "" Then Continue
       Dim sspacer As String = ""
       If tcount - 1 >= 0 Then
         

@@ -75,7 +75,7 @@ Sub matchbrace(src As String, start As Integer) As Integer
 End
 
 Sub getenum(enumdef As String) As String[]
-  Dim toEnum As String[] = Split(enumdef, ", ", "{}\"\"", True, True)
+  Dim toEnum As String[] = ParseParms(enumdef, [", "], ["{}\"\""])
   Dim result As New String[]
   For Each s As String In toEnum
   If InStr(s, "{") Then

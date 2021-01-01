@@ -1102,7 +1102,7 @@ DoAliasAgain:
             Dim BreakPos As Integer = InStr(MyReg[0].text, "(")
             Params.Add(Left(MyReg[0].text, BreakPos - 1)) ' add the alias name
             Dim Parameters As String = Mid(MyReg[0].text, BreakPos + 1, MyReg[0].text.len - BreakPos - 1)
-            Params.Insert(Split(Parameters, ",", "''[]()\"\"", True, True))
+            Params.Insert(ParseParms(Parameters))
             MyParams = New String[20]
             For i As Integer = 1 To IIf(params.max - 1 > MyParams.Max, MyParams.Max, params.max)
               MyParams[i - 1] = IIf(params[i][0] = "'", Mid(params[i], 2, params[i].len - 2), Params[i])
