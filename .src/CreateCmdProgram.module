@@ -931,6 +931,8 @@ Private Sub parseline(InLine As String)
     FileExpandInsert(sym, CurrentType)
   Endif
   
+  SpecialVariables(syms, types)
+  
   For i As Integer = 0 To syms.Max
     If types[i] = Highlight.Symbol Then
        If .Exist("sub." & syms[i]) Then 
@@ -948,6 +950,57 @@ Private Sub parseline(InLine As String)
     
 End
 
+
+Public Sub SpecialVariables(syms As String[], types As Integer[]) ' replaces items in sline with Special functions
+  Dim newSyms As New String[]
+  Dim newTypes As New Integer[]
+  
+  For i As Integer = 0 To syms.Max
+    
+  If syms[i] = "$" Or If syms[i][0] = "$" Then
+    If i + 1 <= syms.max And If syms[i] = "$" And syms[i + 1] = "!" Then
+      syms[i] = "$!"
+      syms[i + 1] = ""
+    Endif
+    Select Case syms[i]
+       Case "$*"
+            newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
+       Case "$#"
+            newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
+       Case "$$"  ' insert the curent pid
+            newsyms.Add(Application.id)
+       Case "$!"
+            newsyms.Add("(Application.id)")
+       ' Case "$UID"
+       '      newsyms.Add("(User.id)")
+       ' Case "$GID"
+       '      newsyms.Add("(User.group)")
+       Default
+            If IsNumber(Right(syms[i], -1)) Then
+              Dim argindex As Integer = Right(syms[i], -1)
+              newsyms.Add("(IIf (" & argindex & " > Args.max, \"\", Args[" & argindex & "]))")
+            Else
+              newsyms.Add(syms[i])
+            Endif
+    End Select
+    newTypes.Add(types[i])
+  Else
+    If syms[i] <> "" Then 
+      newsyms.Add(syms[i])
+      newTypes.Add(types[i])
+    Endif
+  Endif
+  
+  Next
+  
+  types.Clear
+  types.Insert(newTypes)
+  syms.Clear
+  syms.insert(newsyms)
+  
+End
+
+
 Private Sub FileExpandInsert(var As String, type As Integer) As Boolean ' return true if we expanded the value
 
   If type = Highlight.string Then 
@@ -955,23 +1008,7 @@ Private Sub FileExpandInsert(var As String, type As Integer) As Boolean ' return
     types.Add(type)
     Return True
   Endif
-  
-  If var[0] = "$" And If InStr(var, "*") = 0 Then
-    Select Case var 
-       Case "$$"  ' insert the curent pid
-            var = Application.id
-       Case "$UID"
-            var = User.id
-       Case "$GID"
-            var = User.group
-    End Select
-    
-    syms.Add(var)
-    types.Add(type)
-    
-    Return True
-  Endif
-  
+   
   If Not IsGlob(var) Then 
     syms.Add(var)
     types.Add(type)
@@ -1033,9 +1070,12 @@ Catch
   
 End
 
-
 Public Sub InitAlias()
-AliasList = SharedMem["$alias"]
+Dim stemp As Collection = SharedMem["$alias"]
+For Each s As String[] In sTemp
+    AliasList[stemp.key] = s
+Next
+
 End
 
 Public Sub AliasReplace(Data As String) As String
@@ -1058,10 +1098,14 @@ DoAliasAgain:
         MyReg.Exec(data)
           If MyReg.Count > 0 Then
             'Print MyReg[0].text
-            Dim params As String[] = Split(MyReg[0].text, "(,)", "\"\"", True, True)
+            Dim params As New String[] 
+            Dim BreakPos As Integer = InStr(MyReg[0].text, "(")
+            Params.Add(Left(MyReg[0].text, BreakPos - 1)) ' add the alias name
+            Dim Parameters As String = Mid(MyReg[0].text, BreakPos + 1, MyReg[0].text.len - BreakPos - 1)
+            Params.Insert(Split(Parameters, ",", "''[]()\"\"", True, True))
             MyParams = New String[20]
             For i As Integer = 1 To IIf(params.max - 1 > MyParams.Max, MyParams.Max, params.max)
-              MyParams[i - 1] = params[i]
+              MyParams[i - 1] = IIf(params[i][0] = "'", Mid(params[i], 2, params[i].len - 2), Params[i])
             Next
             data = Replace(data, MyReg[0].text, Subst(s.Join(" ") & " ", MyParams[0], MyParams[1], MyParams[2], MyParams[3], MyParams[4], MyParams[5], MyParams[6], MyParams[7], MyParams[8], MyParams[9], MyParams[10], MyParams[11], MyParams[12], MyParams[13], MyParams[14], MyParams[15], MyParams[16], MyParams[17], MyParams[18], MyParams[19]))
           Endif
@@ -1082,16 +1126,22 @@ DoAliasAgain:
     Endif
   Next
   
-  If InStr(data, "::") <> 0 Then
-      used = parser(data)
-  
-      If used.count > 1 Then
-        For i As Integer = 1 To used.Max
-          gsh.ReadQueue.Enqueue(used[i])
-        Next
+  If InStr(data, ":") <> 0 Then
+      'used = parser(data)
+      used = Split(data, ":", "\"\"", True, True)
+      If gsh.ReadQueue.count > 0 Then
+         For i As Integer = used.Max DownTo 1 
+            gsh.ReadQueue.push(used[i])
+         Next
+      Else
+        If used.count > 1 Then
+         For i = 1 To used.Max
+            gsh.ReadQueue.add(used[i], 0)
+         Next
+        Endif
       Endif
-      Return Trim(used[0])
       
+      Return Trim(used[0])
   Else
      Return Trim(data)
   Endif

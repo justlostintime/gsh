@@ -15,7 +15,7 @@ Public TypeToText As String[] = ["BackGround", "Normal", "KeyWord", "Function", 
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "get"]
 
 Public ConsoleHighlight As New ConsoleHighlight
-Public ReadQueue As New Queue     ' Used to push items to be read first
+Public ReadQueue As New String[]     ' Used to push items to be read first
 
 Public ExecBuffer As String = ""
 Public LambdaBuffer As String = ""
@@ -305,17 +305,21 @@ Public Sub RunScript(cmd As String) As Boolean
   Dim OldSource As String = Source
   Dim oldAppSource As File = AppSource
 
-  cmd = Replace(cmd, "\"", "")
+  cmd = Trim(Replace(cmd, "\"", ""))
   Dim fPath As String = cmd
   
   If File.Dir(fPath) = "" Then 
     fPath = User.home &/ "vars" &/ cmd
     If Not Exist(fpath) Then 
       fpath = System.Find(cmd)
-      If IsNull(fPath) Then Return False
+      If IsNull(fPath) Then
+        fpath = cmd
+      Endif
     Endif
   Endif
   
+  fpath = CreateCmdProgram.getfullpath(cmd)
+
   CommandMode = True
   Source = "FILE"
   
@@ -1523,6 +1527,9 @@ Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
   If saveSource Then
     savedsourcebuffer = Source
     Source = "BUFFER"
+  Else
+    savedsourcebuffer = "BUFFER"
+    Source = "BUFFER"
   Endif
   
   ReadFromBuffer_buffer = Split(data, "\n", "\"\"", True, True)
@@ -1692,7 +1699,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
   With sharedmem
     
     If DoTrace Then Error "(Trace "; Now; ") ";; "Source input="; source
-    If ReadQueue.IsEmpty Then
+    If ReadQueue.count = 0 Then
       Select Case source
           
         Case "BUFFER"
@@ -1749,7 +1756,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       
     Else
       
-      InBuffer = ReadQueue.Dequeue()
+      InBuffer = ReadQueue.pop()
       
     Endif
     
@@ -1759,7 +1766,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       If InList.count > 1 Then
         InBuffer = InList[0]
         For i As Integer = 1 To InList.Max
-          ReadQueue.Enq(InList[i])
+          ReadQueue.Add(InList[i], 0)
         Next
       Endif
     Endif
@@ -2038,12 +2045,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             
             
           Case "RUN"
-            If inBufParse.count = 2 Then
+            If inBufParse.count > 1 Then
               execbuffer = ""
+              Dim sfilename As String = Trim(Replace(InBuffer, "run", "", gb.ignorecase))
               Dim scriptexit As Boolean
-              Try scriptexit = runscript(inBufParse[1])
+              Try scriptexit = runscript(sfilename)
               If Error Then 
-                Error ("Error running script");; inBufParse[1];; Error.text
+                Error ("Error running script");; sfilename;; Error.text
               Endif
               If scriptexit Then 
                 SharedMem["$result"] = "OK"
@@ -2854,13 +2862,22 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             types.Add(Highlight.operator, tcount + 2)
             syms.Add("(", tcount + 1)
             types.Add(Highlight.Operator, tcount + 1)
-            
+          Else If Syms[tCount] = "$$"                          ' return the current pid
+            syms[tCount] = application.id
+          Else If Syms[tCount] = "$*"                          ' return the current pid
+            syms[tCount] = "iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\")"
+          Else If Syms[tCount] = "$!"                          ' return the current pid of background task
+            syms[tCount] = "application.id"
+          ' Else If Syms[tCount] = "$GID" Then
+          '   syms[tCount] = "User.group"
+          ' Else If Syms[tCount] = "$UID" Then
+          '   syms[tCount] = "User.Group"
           Else If Syms[tCount][0] = "$" Then
             Dim convit As Integer
-            Try convit = CInteger(Mid(Syms[tCount], 2))
+            Try convit = CInteger(Right(Syms[tCount], -1))
             If Not Error Then 
               If Compileonly Then
-                Syms[tCount] = "if(" & Str(convit) & "<args.count,Args[" & Str(convit) & "],\"\")"
+                Syms[tCount] = "iif(" & Str(convit) & "< args.count,Args[" & Str(convit) & "],\"\")"
               Else
                 If convit >= 0 And If convit <= cmdLineParameters.max Then
                   Syms[tCount] = If(IsNull(Val(cmdLineParameters[convit])) = True, Quote(cmdLineParameters[convit]), Val(cmdLineParameters[convit]))
@@ -2895,7 +2912,8 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
         Case Highlight.Operator
           If syms.max >= tcount + 1 Then 
             If syms[tcount] = "@" And types[tcount + 1] = Highlight.symbol Then
-              If SharedMem.exist(syms[tcount + 1]) Then
+              If SharedMem.exist(syms[tcount + 1]) Or If SharedMem.exist("$" & syms[tcount + 1]) Then
+                Dim svarname As String = IIf(SharedMem.exist(syms[tcount + 1]) = True, syms[tcount + 1], "$" & syms[tcount + 1])
                 Dim parm As New String[]
                 Dim pCount As Integer = tcount + 2
                 syms[tcount] = ""
@@ -2923,7 +2941,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
                   Endif
                 Endif
                 If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess before @"); ": "; syms[tcount + 1]
-                Syms[tcount + 1] = execvar(syms[tcount + 1], parm)
+                Syms[tcount + 1] = execvar(svarname, parm)
                 If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess After @"); ": "; syms[tcount + 1]
               Endif
             Endif
@@ -3053,9 +3071,9 @@ Public ExecVarBuffer As String = ""
 Public ExecProc As Process
 
 Public Sub execvar_read()
-  
-  execvarbuffer &= Read #Last, -256
-  
+  Dim sLine As String
+  Read #Last, sLine, -256
+  execvarbuffer &= sLine 
 End
 
 Public Sub execvar_error(procerr As String)
@@ -3073,6 +3091,7 @@ End
 Private Sub execvar(Varname As String, parm As String[]) As String
   
   If SharedMem.exist(VarName) Then
+
     parm.Add(varname, 0)
     parm.Add("-f", 0)
     If dotrace Then parm.Add("-t", 0)
@@ -3081,7 +3100,7 @@ Private Sub execvar(Varname As String, parm As String[]) As String
     ExecVarBuffer = ""
     
     Try execproc = Exec parm For Read As "execvar"
-    If Error Then Error Error.text
+    If Error Then error.raise(Error.text)
     execproc.Wait()
   Else 
     Error.Raise(("@ Unknown global variable\"") & varname & "\"")
@@ -3099,6 +3118,7 @@ End
 
 Public helptxt As String
 Public helpfromhtml As String
+
 Public Sub HexPrint(Val As String)
   Dim bstr As New Byte[]
   bstr = bstr.FromString(val)
@@ -3107,7 +3127,6 @@ Public Sub HexPrint(Val As String)
   Next
   Print
 End
-
 
 
 Public Sub mProcget_read()

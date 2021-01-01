@@ -17,7 +17,8 @@ Component=gb.util.web
 Component=westwood.sharedmem
 Description="Gambas interactive shell"
 Authors="Westwood"
-Arguments=[["~/bin/testgsh"],["-c","nano","~/bin/testgsh"],["-C"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; x2golistsessions; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\";export PATH=\"/usr/local/bin:/usr/bin:/bin\";"],["/home/brian/vars/testscript"],["-","4","c","d"],["-S"],["-m"],["-r","varstat","$path"],["-f","$a"],["-f","$a","Saying"],["-t","3"]]
+Arguments=[["~/bin/testgsh"],["-c","nano","~/bin/testgsh"],["-C"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; x2golistsessions; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\";export PATH=\"/usr/local/bin:/usr/bin:/bin\";"],["/home/brian/vars/testscript"],["-","4","c","d"],["-S"],["-m"],["-r","varstat","$path"],["-f","$a"],["-f","$a","Saying"],["-t","3"],["-","term1","term2","term3"]]
+CurrentArgumentList=["-","term1","term2","term3"]
 TabSize=2
 Language=en_US
 KeepDebugInfo=0
@@ -30,7 +31,7 @@ Address=scriptbuilder@westwoodsvcs.com
 Url=www.westwoodsvcs.com
 License=General Public License
 PackageName=gsh-1.2.93
-PackageVersion=7
+PackageVersion=8
 CreateEachDirectory=1
 MimeTypes="gsh"
 Packager=1
