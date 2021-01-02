@@ -753,7 +753,6 @@ Public Sub Main()
   Class.Load("SubCls")
   Class.Load("CreateCmdProgram")
   Class.Load("Parser")
-  Class.Load("ParseParms")
   Class.Load("ServiceMode")
   Class.Load("HelpSystem")
   
@@ -2674,6 +2673,7 @@ Catch
 
 End
 
+Private CallParser As New ParseParm(False, [" "], ["\"\"[]"])
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim i, j As Integer
@@ -2689,7 +2689,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   For i As Integer = 0 To interface.Max
     interface[i] = Trim(interface[i])
   Next
-  Dim CmdLine As String[] = ParseParms(CommandLine, [" "], ["\"\"[]"])
+  Dim CmdLine As String[] = Parser(CommandLine, CallParser)
   Dim sCodeLine As String = CmdLine[0] & "("
   Dim types As Integer[]
   Dim syms As String[]

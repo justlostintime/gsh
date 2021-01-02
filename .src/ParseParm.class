@@ -1,0 +1,44 @@
+' Gambas class file
+
+Public seperators As String[]
+Public operators As String[]
+Public SpecialSymbols As String[]
+Public quotes As String[]
+Public braces As String[]
+Public comments As String[]
+Public endofline As String[]
+Public ignoreIt As String[]
+Public KeyWords As String[]
+Public DoFileExpand As Boolean = False
+
+Public syms As New String[]
+Public types As New Integer[]
+
+Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = [], qs As String[] = ["\"", "\""])
+  
+  Dim IgnorIt As String[]
+  
+If SetDefaults Then
+ seperators = [" ", "\n"]
+ operators = ["::", "&&", "||", "(", ")"]
+ SpecialSymbols = ["{", "}"]
+ quotes = ["\"", "\""]
+ braces = ["{", "}"]
+ comments = ["'"]
+ endofline = ["\n"]
+ IgnoreIt = []
+ keywords = []
+Else
+ seperators = New String[]
+ operators = ops
+ SpecialSymbols = New String[]
+ quotes = qs
+ braces = New String[]
+ comments = New String[]
+ endofline = New String[]
+ IgnorIt = New String[]
+ keywords = New String[]
+Endif
+
+End
+

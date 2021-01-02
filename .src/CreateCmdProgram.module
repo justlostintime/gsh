@@ -144,7 +144,7 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    Dim AndOrLevelStack As New Integer[]
    Dim i As Integer
    
-   lines = Parser(Source, True)
+   lines = Parser(Source, Null, True)
    For i As Integer = 0 To lines.max
      If Lines[i] = "" Then Continue
      Select Case lines[i]
@@ -185,7 +185,7 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    Return FinalProgram
 End
 
-Private Sub IsGlob(Exp As String) As Boolean
+Public Sub IsGlob(Exp As String) As Boolean
   
   Select Case exp[0]
         Case "@", "/", "~"
@@ -791,258 +791,236 @@ End
 
 Private syms As String[]
 Private types As Integer[]
-Private seperators As String[] = [" ", "\t", "\n"]
-Private operators As String[] = ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"]
-Private braces As String[] = ["(", ")"]
-Private quotes As String[] = ["\"", "\"", "(", ")", "`", "`"]
+' 
+' Private seperators As String[] = [" ", "\t", "\n"]
+' Private operators As String[] = ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"]
+' Private braces As String[] = ["(", ")"]
+' Private quotes As String[] = ["\"", "\"", "(", ")", "`", "`"]
+Private ShellParse As ParseParm
+
+Public Sub _init()
+  
+  ShellParse = New ParseParm(False, ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
+  ShellParse.braces = ["(", ")"]
+  ShellParse.seperators = [" ", "\t", "\n"]
+  ShellParse.DoFileExpand = True
+  
+End
+
 
 '' This function will Parse the LINUX Shell(sh like) command line
 Private Sub parseline(InLine As String)
-  With sharedmem
-  Dim CurrentType As Integer = Highlight.Symbol
-  Dim streamPos As Integer = 0
-  Dim sym As String = ""
-  
-  InLine = Trim(InLine)
-  
-  If InLine[0] = "!" Then Inc StreamPos
-  
-  syms = New String[]
-  types = New Integer[]
+syms = Parser(InLine, ShellParse)
+types = ShellParse.types
+If syms[0] = "!" Then
+  syms.Remove(0)
+  types.Remove(0)
+Endif
 
-  Do
-    
-    If seperators.Exist(InLine[streampos]) Then
-      If sym.len > 0 Then
-        FileExpandInsert(sym, CurrentType)
-        sym = ""
-        CurrentType = Highlight.Symbol
-      Endif
-      Inc streampos
-      Continue
-    Endif
-    
-    If operators.Exist(InLine[streampos]) Then
-      If CurrentType <> Highlight.operator Then
-        If sym.len > 0 Then
-          FileExpandInsert(sym, CurrentType)
-          sym = ""
-          Currenttype = Highlight.operator
-          sym &= InLine[streampos]
-          Inc StreamPos
-          Continue
-        Else
-          CurrentType = Highlight.Operator
-        Endif
-      Else
-        If Not operators.Exist(sym & InLine[StreamPos]) Then
-          FileExpandInsert(sym, CurrentType)
-          sym = InLine[streampos]
-          Inc streampos
-          Continue
-        Else
-          sym &= InLine[StreamPos]
-          Inc streampos
-          Continue
-        Endif
-      Endif
-    Endif
-    
-    If quotes.Exist(InLine[streampos]) Then ' process quoted strings but include () as quotes as it will be evaluated by gambas at runtime
-      If sym.len > 0 Then
-        FileExpandInsert(sym, CurrentType)
-        sym = ""
-      Endif
-      CurrentType = Highlight.string
-      
-      Dim OpenQuote As String = InLine[StreamPos]
-      Dim inquote As Integer = quotes.Find(OpenQuote)
-      Inc inquote
-      If inquote > quotes.max Or If inquote Mod 2 <> 1 Then
-          Error.Raise("Unexpected quote/brace \"" & OpenQuote & "\" in >>" & Quote(inLine) & "\n")
-      Endif
-      
-      Dim currentquote As String = quotes[inquote]
-      Dim quotelevel As Integer = 0
-      Dim InBraces As Boolean = False
-      If braces.Exist(OpenQuote) Then 
-        Inc quotelevel
-        InBraces = True
-      Endif
-       
-      Do
-        If InLine[StreamPos] = "\n" Then ' end of line is as good as a close quote
-          Break 
-        Endif
-        
-        sym &= InLine[StreamPos]
-        
-        If InLine[StreamPos] = "\\" Then
-          Inc StreamPos
-          sym &= InLine[StreamPos]
-        Endif
-        
-        Inc StreamPos
-      
-        If streampos = InLine.len Then Break
-        If InBraces And If InLine[StreamPos] = OpenQuote Then Inc Quotelevel
-        If InBraces And If quotelevel > 0 And If InLine[StreamPos] = currentquote Then Dec quotelevel
-         
-      Loop Until InLine[StreamPos] = currentquote And quotelevel = 0
-      
-      If QuoteLevel <> 0 Then
-         Error.Raise("Missing closing Brace } \"" & OpenQuote & currentquote & "\"\n")
-      Endif
-      
-      sym &= currentquote
-      
-      If OpenQuote = "`" Then 
-        Try sym = gsh.PreProcBuffer(Mid(sym, 2, sym.len - 2))
-        Try sym = Eval(sym)
-        If Error Then
-          Error.Propagate()
-        Endif
-      Endif
-      
-      FileExpandInsert(sym, CurrentType)
-      sym = ""
-      CurrentType = Highlight.symbol
-      Inc StreamPos
-      Continue
-      
-    Endif
-    
-    If InLine[StreamPos] = "\n" Or If InLine[StreamPos] = "'" Then Break
-    
-    If CurrentType = Highlight.Operator Then 
-      If Not operators.Exist(sym & InLine[StreamPos]) Then
-        FileExpandInsert(sym, CurrentType)
-        sym = ""
-        CurrentType = Highlight.symbol
-      Endif 
-    Endif
-    
-    sym &= InLine[StreamPos]
-    Inc StreamPos
-    
-  Loop Until StreamPos >= InLine.Len 
-  
-  If sym.len > 0 Then
-    FileExpandInsert(sym, CurrentType)
-  Endif
-  
-  SpecialVariables(syms, types)
-  
-  For i As Integer = 0 To syms.Max
-    If types[i] = Highlight.Symbol Then
-       If .Exist("sub." & syms[i]) Then 
-         types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
-       Else If i = 0 And If .exist(syms[i]) Then
-             types[i] = Highlight.Label         ' well we need to make it fit in label = system command
-       Endif
-    Endif
-  Next
-  
-  End With
-  
+  ' With sharedmem
+  ' Dim CurrentType As Integer = Highlight.Symbol
+  ' Dim streamPos As Integer = 0
+  ' Dim sym As String = ""
+  ' 
+  ' InLine = Trim(InLine)
+  ' 
+  ' If InLine[0] = "!" Then Inc StreamPos
+  ' 
+  ' syms = New String[]
+  ' types = New Integer[]
+  ' 
+  ' Do
+  '   
+  '   If seperators.Exist(InLine[streampos]) Then
+  '     If sym.len > 0 Then
+  '       FileExpandInsert(sym, CurrentType)
+  '       sym = ""
+  '       CurrentType = Highlight.Symbol
+  '     Endif
+  '     Inc streampos
+  '     Continue
+  '   Endif
+  '   
+  '   If operators.Exist(InLine[streampos]) Then
+  '     If CurrentType <> Highlight.operator Then
+  '       If sym.len > 0 Then
+  '         FileExpandInsert(sym, CurrentType)
+  '         sym = ""
+  '         Currenttype = Highlight.operator
+  '         sym &= InLine[streampos]
+  '         Inc StreamPos
+  '         Continue
+  '       Else
+  '         CurrentType = Highlight.Operator
+  '       Endif
+  '     Else
+  '       If Not operators.Exist(sym & InLine[StreamPos]) Then
+  '         FileExpandInsert(sym, CurrentType)
+  '         sym = InLine[streampos]
+  '         Inc streampos
+  '         Continue
+  '       Else
+  '         sym &= InLine[StreamPos]
+  '         Inc streampos
+  '         Continue
+  '       Endif
+  '     Endif
+  '   Endif
+  '   
+  '   If quotes.Exist(InLine[streampos]) Then ' process quoted strings but include () as quotes as it will be evaluated by gambas at runtime
+  '     If sym.len > 0 Then
+  '       FileExpandInsert(sym, CurrentType)
+  '       sym = ""
+  '     Endif
+  '     CurrentType = Highlight.string
+  '     
+  '     Dim OpenQuote As String = InLine[StreamPos]
+  '     Dim inquote As Integer = quotes.Find(OpenQuote)
+  '     Inc inquote
+  '     If inquote > quotes.max Or If inquote Mod 2 <> 1 Then
+  '         Error.Raise("Unexpected quote/brace \"" & OpenQuote & "\" in >>" & Quote(inLine) & "\n")
+  '     Endif
+  '     
+  '     Dim currentquote As String = quotes[inquote]
+  '     Dim quotelevel As Integer = 0
+  '     Dim InBraces As Boolean = False
+  '     If braces.Exist(OpenQuote) Then 
+  '       Inc quotelevel
+  '       InBraces = True
+  '     Endif
+  '      
+  '     Do
+  '       If InLine[StreamPos] = "\n" Then ' end of line is as good as a close quote
+  '         Break 
+  '       Endif
+  '       
+  '       sym &= InLine[StreamPos]
+  '       
+  '       If InLine[StreamPos] = "\\" Then
+  '         Inc StreamPos
+  '         sym &= InLine[StreamPos]
+  '       Endif
+  '       
+  '       Inc StreamPos
+  '     
+  '       If streampos = InLine.len Then Break
+  '       If InBraces And If InLine[StreamPos] = OpenQuote Then Inc Quotelevel
+  '       If InBraces And If quotelevel > 0 And If InLine[StreamPos] = currentquote Then Dec quotelevel
+  '        
+  '     Loop Until InLine[StreamPos] = currentquote And quotelevel = 0
+  '     
+  '     If QuoteLevel <> 0 Then
+  '        Error.Raise("Missing closing Brace } \"" & OpenQuote & currentquote & "\"\n")
+  '     Endif
+  '     
+  '     sym &= currentquote
+  '     
+  '     If OpenQuote = "`" Then 
+  '       Try sym = gsh.PreProcBuffer(Mid(sym, 2, sym.len - 2))
+  '       Try sym = Eval(sym)
+  '       If Error Then
+  '         Error.Propagate()
+  '       Endif
+  '     Endif
+  '     
+  '     FileExpandInsert(sym, CurrentType)
+  '     sym = ""
+  '     CurrentType = Highlight.symbol
+  '     Inc StreamPos
+  '     Continue
+  '     
+  '   Endif
+  '   
+  '   If InLine[StreamPos] = "\n" Or If InLine[StreamPos] = "'" Then Break
+  '   
+  '   If CurrentType = Highlight.Operator Then 
+  '     If Not operators.Exist(sym & InLine[StreamPos]) Then
+  '       FileExpandInsert(sym, CurrentType)
+  '       sym = ""
+  '       CurrentType = Highlight.symbol
+  '     Endif 
+  '   Endif
+  '   
+  '   sym &= InLine[StreamPos]
+  '   Inc StreamPos
+  '   
+  ' Loop Until StreamPos >= InLine.Len 
+  ' 
+  ' If sym.len > 0 Then
+  '   FileExpandInsert(sym, CurrentType)
+  ' Endif
+  ' 
+  ' SpecialVariables(syms, types)
+  ' 
+  ' For i As Integer = 0 To syms.Max
+  '   If types[i] = Highlight.Symbol Then
+  '      If .Exist("sub." & syms[i]) Then 
+  '        types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
+  '      Else If i = 0 And If .exist(syms[i]) Then
+  '            types[i] = Highlight.Label         ' well we need to make it fit in label = system command
+  '      Endif
+  '   Endif
+  ' Next
+  ' 
+  ' End With
+  ' 
   Catch
    Error.Propagate()
     
 End
 
 
-Public Sub SpecialVariables(syms As String[], types As Integer[]) ' replaces items in sline with Special functions
-  Dim newSyms As New String[]
-  Dim newTypes As New Integer[]
-  
-  For i As Integer = 0 To syms.Max
-    
-  If syms[i] = "$" Or If syms[i][0] = "$" Then
-    If i + 1 <= syms.max And If syms[i] = "$" And syms[i + 1] = "!" Then
-      syms[i] = "$!"
-      syms[i + 1] = ""
-    Endif
-    Select Case syms[i]
-       Case "$*"
-            newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
-       Case "$#"
-            newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
-       Case "$$"  ' insert the curent pid
-            newsyms.Add(Application.id)
-       Case "$!"
-            newsyms.Add("(Application.id)")
-       ' Case "$UID"
-       '      newsyms.Add("(User.id)")
-       ' Case "$GID"
-       '      newsyms.Add("(User.group)")
-       Default
-            If IsNumber(Right(syms[i], -1)) Then
-              Dim argindex As Integer = Right(syms[i], -1)
-              newsyms.Add("(IIf (" & argindex & " > Args.max, \"\", Args[" & argindex & "]))")
-            Else
-              newsyms.Add(syms[i])
-            Endif
-    End Select
-    newTypes.Add(types[i])
-  Else
-    If syms[i] <> "" Then 
-      newsyms.Add(syms[i])
-      newTypes.Add(types[i])
-    Endif
-  Endif
-  
-  Next
-  
-  types.Clear
-  types.Insert(newTypes)
-  syms.Clear
-  syms.insert(newsyms)
-  
-End
+' Public Sub SpecialVariables(syms As String[], types As Integer[]) ' replaces items in sline with Special functions
+'   Dim newSyms As New String[]
+'   Dim newTypes As New Integer[]
+'   
+'   For i As Integer = 0 To syms.Max
+'     
+'   If syms[i] = "$" Or If syms[i][0] = "$" Then
+'     If i + 1 <= syms.max And If syms[i] = "$" And syms[i + 1] = "!" Then
+'       syms[i] = "$!"
+'       syms[i + 1] = ""
+'     Endif
+'     Select Case syms[i]
+'        Case "$*"
+'             newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
+'        Case "$#"
+'             newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
+'        Case "$$"  ' insert the curent pid
+'             newsyms.Add(Application.id)
+'        Case "$!"
+'             newsyms.Add("(Application.id)")
+'        ' Case "$UID"
+'        '      newsyms.Add("(User.id)")
+'        ' Case "$GID"
+'        '      newsyms.Add("(User.group)")
+'        Default
+'             If IsNumber(Right(syms[i], -1)) Then
+'               Dim argindex As Integer = Right(syms[i], -1)
+'               newsyms.Add("(IIf (" & argindex & " > Args.max, \"\", Args[" & argindex & "]))")
+'             Else
+'               newsyms.Add(syms[i])
+'             Endif
+'     End Select
+'     newTypes.Add(types[i])
+'   Else
+'     If syms[i] <> "" Then 
+'       newsyms.Add(syms[i])
+'       newTypes.Add(types[i])
+'     Endif
+'   Endif
+'   
+'   Next
+'   
+'   types.Clear
+'   types.Insert(newTypes)
+'   syms.Clear
+'   syms.insert(newsyms)
+'   
+' End
 
 
-Private Sub FileExpandInsert(var As String, type As Integer) As Boolean ' return true if we expanded the value
 
-  If type = Highlight.string Then 
-    syms.Add(var)
-    types.Add(type)
-    Return True
-  Endif
-   
-  If Not IsGlob(var) Then 
-    syms.Add(var)
-    types.Add(type)
-     Return False
-  Endif
-  
-  If syms.count = 0 Then                                 'this is the command to execute
-      Dim files As String[]
-     files = DoGlob(var)
-      If Files.count = 1 And If files[0] = var Then
-          syms.Add(Files[0])
-          types.Add(Highlight.added)
-         Return False
-    Else If Files.count > 1 Then
-        Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
-        Return False
-    Else
-        syms.Add(Files[0])
-        types.Add(Highlight.symbol)
-    Endif
-  Else
-    syms.add("(")
-    types.Add(Highlight.Operator)
-    syms.Add("fileexpand(" & Quote(var) & ")")
-    types.Add(Highlight.custom)
-    syms.add(")")
-    types.Add(Highlight.Operator)
-  Endif
-  Return True
-  
-  Catch
-    Error.Propagate()
-  
-End
 
 Public Sub DoGlob(path As String, Optional dironly As Boolean = False) As String[]
   
@@ -1078,9 +1056,9 @@ Next
 
 End
 
+Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"])
 Public Sub AliasReplace(Data As String) As String
   'Dim bChanged As Boolean = False
-  
   'Dim aList As String[] = Split(Trim(data), " \t!|", "\"\"", True, True)
   Dim s As Variant
   Dim used As New String[]
@@ -1102,7 +1080,7 @@ DoAliasAgain:
             Dim BreakPos As Integer = InStr(MyReg[0].text, "(")
             Params.Add(Left(MyReg[0].text, BreakPos - 1)) ' add the alias name
             Dim Parameters As String = Mid(MyReg[0].text, BreakPos + 1, MyReg[0].text.len - BreakPos - 1)
-            Params.Insert(ParseParms(Parameters))
+            Params.Insert(Parser(Parameters, AliasParms))
             MyParams = New String[20]
             For i As Integer = 1 To IIf(params.max - 1 > MyParams.Max, MyParams.Max, params.max)
               MyParams[i - 1] = IIf(params[i][0] = "'", Mid(params[i], 2, params[i].len - 2), Params[i])

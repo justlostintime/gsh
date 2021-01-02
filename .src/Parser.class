@@ -2,44 +2,51 @@
 
 ' Gambas module file
 
-Static Public syms As String[]
-Static Public types As Integer[]
-Static Public seperators As String[] = [" ", "\n"]
-Static Public operators As String[] = ["::", "&&", "||", "(", ")"]
-Static Public SpecialSymbols As String[] = ["{", "}"]
-Static Public quotes As String[] = ["\"", "\""]
-Static Public braces As String[] = ["{", "}"]
+'These are the defaults
+' Static Public syms As String[]
+' Static Public types As Integer[]
+' Static Public seperators As String[] = [" ", "\n"]
+' Static Public operators As String[] = ["::", "&&", "||", "(", ")"]
+' Static Public SpecialSymbols As String[] = ["{", "}"]
+' Static Public quotes As String[] = ["\"", "\""]
+' Static Public braces As String[] = ["{", "}"]
+Static defaultp As New ParseParm(True)
 
+Static Private Sub SymsInsert(p As ParseParm, sym As String, type As Integer)
 
-Static Private Sub SymsInsert(sym As String, type As Integer)
   sym = Trim(sym)
   If sym = "" Then
     Return
   Endif
   
-  syms.Add(sym)
-  types.Add(type)
-  
+  If p.DoFileExpand = True Then
+    FileExpandInsert(p, sym, type)
+  Else
+    p.syms.Add(sym)
+    p.types.Add(type)
+  Endif
 End
 
 '' process the input line and split it into seperate commands
-Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = False) As String[]
+Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, IncludeBreak As Boolean = False) As String[]
 
   Dim CurrentType As Integer = Highlight.Symbol
   Dim streamPos As Integer = 0
   Dim sym As String = ""
   Dim OutputList As New String[]
-
+  
+  If IsNull(p) Then p = Defaultp
+  
   InLine = Trim(InLine)
   
-  syms = New String[]
-  types = New Integer[]
+  p.syms = New String[]
+  p.types = New Integer[]
 
   Do
     
-    If seperators.Exist(InLine[streampos]) Then
+    If p.seperators.Exist(InLine[streampos]) Then
       If sym.len > 0 Then
-        SymsInsert(sym, CurrentType)
+        SymsInsert(p, sym, CurrentType)
         sym = ""
         CurrentType = Highlight.Symbol
       Endif
@@ -47,21 +54,21 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
       Continue
     Endif
     
-    If SpecialSymbols.Exist(InLine[streampos]) Then
+    If p.SpecialSymbols.Exist(InLine[streampos]) Then
       If CurrentType <> Highlight.added And If sym.len > 0 Then
-          SymsInsert(sym, CurrentType)
+          SymsInsert(p, sym, CurrentType)
       Endif
-      SymsInsert(InLine[streampos], Highlight.added)
+      SymsInsert(p, InLine[streampos], Highlight.added)
       sym = ""
       CurrentType = Highlight.Symbol
       Inc StreamPos
       Continue
     Endif
     
-    If operators.Exist(InLine[streampos]) Then
+    If p.operators.Exist(InLine[streampos]) Then
       If CurrentType <> Highlight.operator Then
         If sym.len > 0 Then
-          SymsInsert(sym, CurrentType)
+          SymsInsert(p, sym, CurrentType)
           sym = ""
           Currenttype = Highlight.operator
           sym &= InLine[streampos]
@@ -71,8 +78,8 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
           CurrentType = Highlight.Operator
         Endif
       Else
-        If Not operators.Exist(sym & InLine[StreamPos]) Then
-          SymsInsert(sym, CurrentType)
+        If Not p.operators.Exist(sym & InLine[StreamPos]) Then
+          SymsInsert(p, sym, CurrentType)
           sym = InLine[streampos]
           Inc streampos
           Continue
@@ -82,18 +89,18 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
           Continue
         Endif
       Endif
-    Else If streampos + 1 < InLine.len And If operators.Exist(InLine[StreamPos] & InLine[StreamPos + 1]) Then ' look ahead, limit 2
+    Else If streampos + 1 < InLine.len And If p.operators.Exist(InLine[StreamPos] & InLine[StreamPos + 1]) Then ' look ahead, limit 2
       If CurrentType <> Highlight.operator Then
         If sym.len > 0 Then
-          SymsInsert(sym, CurrentType)
+          SymsInsert(p, sym, CurrentType)
           sym = ""
         Endif
         CurrentType = Highlight.Operator
         sym &= InLine[StreamPos] & InLine[StreamPos + 1]
         StreamPos += 2
       Else
-        If Not operators.Exist(sym & InLine[StreamPos] & InLine[StreamPos + 1]) Then
-          SymsInsert(sym, CurrentType)
+        If Not p.operators.Exist(sym & InLine[StreamPos] & InLine[StreamPos + 1]) Then
+          SymsInsert(p, sym, CurrentType)
           sym = InLine[streampos] & InLine[streampos + 1]
           streampos += 2
           Continue
@@ -105,24 +112,24 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
       Endif
     Endif
     
-    If quotes.Exist(InLine[streampos]) Then  ' check for a quote character
+    If p.quotes.Exist(InLine[streampos]) Then  ' check for a quote character
       If sym.len > 0 Then
-        SymsInsert(sym, CurrentType)
+        SymsInsert(p, sym, CurrentType)
         sym = ""
       Endif
       
       CurrentType = Highlight.string
       
       Dim currentquote As String = InLine[StreamPos]
-      Dim inquote As Integer = quotes.Find(currentquote)
+      Dim inquote As Integer = p.quotes.Find(currentquote)
       
       Inc inquote
       
-      If inquote > quotes.max Or If inquote Mod 2 <> 1 Then
+      If inquote > p.quotes.max Or If inquote Mod 2 <> 1 Then
           Error.Raise("Invalid quote character \"" & currentquote & "\"\n" & Quote(inLine) & "\n")
       Endif
       
-      currentquote = quotes[inquote]
+      currentquote = p.quotes[inquote]
       sym &= InLine[StreamPos] 
       Inc Streampos
       While StreamPos < InLine.len
@@ -155,17 +162,17 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
         
       Wend
       
-      SymsInsert(sym, CurrentType)
+      SymsInsert(p, sym, CurrentType)
       sym = ""
       CurrentType = Highlight.symbol
       Continue
     Endif
     
-    If InLine[StreamPos] = "\n" Or If InLine[StreamPos] = "'" Then Break
+    If p.endofline.Exist(InLine[StreamPos]) Or If p.comments.Exist(InLine[StreamPos]) Then Break
     
     If CurrentType = Highlight.Operator Then 
-      If Not operators.Exist(sym & InLine[StreamPos]) Then
-        SymsInsert(sym, CurrentType)
+      If Not p.operators.Exist(sym & InLine[StreamPos]) Then
+        SymsInsert(p, sym, CurrentType)
         sym = ""
         CurrentType = Highlight.symbol
       Endif 
@@ -177,74 +184,88 @@ Static Public Sub _call(InLine As String, Optional IncludeBreak As Boolean = Fal
   Loop Until StreamPos >= InLine.Len 
   
    If sym.len > 0 Then
-    SymsInsert(sym, CurrentType)
+    SymsInsert(p, sym, CurrentType)
   Endif
   
-  CheckBraces(syms)
+  CheckBraces(p)
   'find a way to make {} a special set
   
-  'Divide the sets into single command lines
-  Dim CurrentLine As Integer = 0
-  Dim LastSegmentStart As Integer = 0
-  Dim InSpecialSet As Integer = 0
-
-  For i As Integer = 0 To syms.Max
-    If types[i] = Highlight.added 
-      If braces.Find(syms[i]) % 2 = 1 Then
-         Inc InSpecialSet
-      Else 
-         Dec InSpecialSet
-      Endif
-    Endif
-    If inSpecialSet = 0 Then 
-      If types[i] = Highlight.operator Then
-        If lastSegmentStart < i Then 
-          OutputList.Add(syms.Copy(lastSegmentStart, i - lastSegmentStart).Join(" "))
+  If p.DoFileExpand = False Then
+     'Divide the sets into single command lines
+    Dim CurrentLine As Integer = 0
+    Dim LastSegmentStart As Integer = 0
+    Dim InSpecialSet As Integer = 0
+    For i As Integer = 0 To p.syms.Max
+      If p.types[i] = Highlight.added 
+       If p.braces.Find(p.syms[i]) % 2 = 1 Then
+           Inc InSpecialSet
+       Else 
+           Dec InSpecialSet
+       Endif
+     Endif
+      If inSpecialSet = 0 Then 
+        If p.types[i] = Highlight.operator Then
+          If lastSegmentStart < i Then 
+            OutputList.Add(p.syms.Copy(lastSegmentStart, i - lastSegmentStart).Join(" "))
+          Endif
+          LastSegmentStart = i + 1
+         Inc CurrentLine
         Endif
-        LastSegmentStart = i + 1
-       Inc CurrentLine
+    
+       If IncludeBreak Then
+          If p.types[i] = Highlight.operator Then
+            OutputList.Add(p.syms[i])
+          Endif
+        Endif
       Endif
     
-      If IncludeBreak Then
-        If types[i] = Highlight.operator Then
-          OutputList.Add(syms[i])
-        Endif
-      Endif
-    Endif
-    
-  Next
+    Next
   
-  If LastSegmentStart <= syms.max Then 
-     OutputList.Add(syms.copy(lastSegmentStart, i - LastSegmentStart).Join(" "))
+    If LastSegmentStart <= p.syms.max Then 
+       OutputList.Add(p.syms.copy(lastSegmentStart, i - LastSegmentStart).Join(" "))
+    Endif
+    
+    Return OutputList
+     
+  Else
+    SpecialVariables(p.syms, p.types)
+  
+    For i As Integer = 0 To p.syms.Max
+      If p.types[i] = Highlight.Symbol Then
+        If sharedmem.Exist("sub." & p.syms[i]) Then 
+            p.types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
+        Else If i = 0 And If sharedmem.exist(p.syms[i]) Then
+            p.types[i] = Highlight.Label         ' well we need to make it fit in label = system command
+        Endif
+      Endif
+    Next
+    
+    Return p.syms
   Endif
-  
-  
-  
-  Return OutputList
   
   Catch
    Error.Propagate()
     
 End 
 
-Static Public Sub CheckBraces(symlist As String[], Optional start As Integer = 0, matching As String = "") As Integer
+Static Public Sub CheckBraces(p As ParseParm, Optional start As Integer = 0, matching As String = "") As Integer
   Dim index As Integer = start
   Dim braceindex As Integer 
   
-  If symlist.count = 0 Then Return 0
+  If p.syms.count = 0 Then Return 0
   
-  While index < symlist.count
-    If symlist[index].len > 1 Or If symlist[index] = "" Then 
+  While index < p.syms.count
+    If p.syms[index].len > 1 Or If p.syms[index] = "" Then 
        Inc index
        Continue
     Endif
-    braceindex = braces.Find(symlist[index])
+    braceindex = p.braces.Find(p.syms[index])
     If braceindex > -1 Then
                If braceindex % 2 = 0 Then ' have an opening brace
                    Inc index
-                   index = CheckBraces(symlist, index, braces[braceindex + 1])
-              Else If braceindex % 2 = 1 And If matching <> braces[braceindex] Then
-                   Error.Raise("Missing/mismatched Bracket/brace [ " & Quote(IIf(matching <> "", matching, braces[braces.Find(symlist[index]) - 1])) & " ] in " & symlist.Join(" "))
+                   index = CheckBraces(p, index, p.braces[braceindex + 1])
+              Else If braceindex % 2 = 1 And If matching <> p.braces[braceindex] Then
+                   Error.Raise("Missing/mismatched Bracket/brace [ " & Quote(IIf(matching <> "", matching, p.braces[p.braces.Find(p.syms[index]) - 1])) & " ] in " & p.syms.Join(" "))
               Else
                   Return index
               Endif
@@ -254,8 +275,100 @@ Static Public Sub CheckBraces(symlist As String[], Optional start As Integer = 0
   If matching = "" Then
         Return 0
   Else
-    Error.Raise("Missing closing Bracket/brace [ " & Quote(matching) & "  ] in " & symlist.Join(" "))
+    Error.Raise("Missing closing Bracket/brace [ " & Quote(matching) & "  ] in " & p.syms.Join(" "))
   Endif
+End
+
+Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integer) As Boolean ' return true if we expanded the value
+
+  If type = Highlight.string Then 
+    p.syms.Add(var)
+    p.types.Add(type)
+    Return True
+  Endif
+   
+  If Not CreateCmdProgram.IsGlob(var) Then 
+    p.syms.Add(var)
+    p.types.Add(type)
+    Return False
+  Endif
+  
+  If p.syms.count = 0 Then                                 'this is the command to execute
+      Dim files As String[]
+     files = CreateCmdProgram.DoGlob(var)
+      If Files.count = 1 And If files[0] = var Then
+          p.syms.Add(Files[0])
+          p.types.Add(Highlight.added)
+         Return False
+    Else If Files.count > 1 Then
+        Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
+        Return False
+    Else
+        p.syms.Add(Files[0])
+        p.types.Add(Highlight.symbol)
+    Endif
+  Else
+    p.syms.add("(")
+    p.types.Add(Highlight.Operator)
+    p.syms.Add("fileexpand(" & Quote(var) & ")")
+    p.types.Add(Highlight.custom)
+    p.syms.add(")")
+    p.types.Add(Highlight.Operator)
+  Endif
+  Return True
+  
+  Catch
+    Error.Propagate()
+  
+End
+
+Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' replaces items in sline with Special functions
+  Dim newSyms As New String[]
+  Dim newTypes As New Integer[]
+  
+  For i As Integer = 0 To syms.Max
+    
+  If syms[i] = "$" Or If syms[i][0] = "$" Then
+    If i + 1 <= syms.max And If syms[i] = "$" And syms[i + 1] = "!" Then
+      syms[i] = "$!"
+      syms[i + 1] = ""
+    Endif
+    Select Case syms[i]
+       Case "$*"
+            newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
+       Case "$#"
+            newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
+       Case "$$"  ' insert the curent pid
+            newsyms.Add(Application.id)
+       Case "$!"
+            newsyms.Add("(Application.id)")
+       ' Case "$UID"
+       '      newsyms.Add("(User.id)")
+       ' Case "$GID"
+       '      newsyms.Add("(User.group)")
+       Default
+            If IsNumber(Right(syms[i], -1)) Then
+              Dim argindex As Integer = Right(syms[i], -1)
+              newsyms.Add("(IIf (" & argindex & " > Args.max, \"\", Args[" & argindex & "]))")
+            Else
+              newsyms.Add(syms[i])
+            Endif
+    End Select
+    newTypes.Add(types[i])
+  Else
+    If syms[i] <> "" Then 
+      newsyms.Add(syms[i])
+      newTypes.Add(types[i])
+    Endif
+  Endif
+  
+  Next
+  
+  types.Clear
+  types.Insert(newTypes)
+  syms.Clear
+  syms.insert(newsyms)
+  
 End
 
 ' Gambas class file
