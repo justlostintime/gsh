@@ -300,7 +300,6 @@ End
 
 
 Public Sub RunScript(cmd As String) As Boolean
-  System.BreakOnError = True
   Dim oldCommandMode As Boolean = CommandMode
   Dim OldSource As String = Source
   Dim oldAppSource As File = AppSource
@@ -336,7 +335,6 @@ Public Sub RunScript(cmd As String) As Boolean
       Wait
     Wend
   Endif
-  System.BreakOnError = False
   Close AppSource
   appSource = oldAppSource
   Source = OldSource
@@ -719,7 +717,6 @@ Public Sub gshlogging(logname As String, msg As String)
 End
 
 Public Sub Main()
-  'System.BreakOnError = True
   Dim DontExit As Boolean
   Dim i As Integer
   
@@ -2637,13 +2634,10 @@ Private Sub isLocalClass(msym As String, Optional docompile As Boolean = True, d
     Endif
     Return True
   Endif
-  Dim olddebug As Boolean = System.BreakOnError
-  System.BreakOnError = False
   If doclasscheck Then
     Try c = Classes[sym]
     If Not Error Then Return True
   Endif
-  System.BreakOnError = olddebug
   Return False
   
 Catch 
