@@ -15,7 +15,7 @@ Public DoSpecial As Boolean
 Public syms As New String[]
 Public types As New Integer[]
 
-Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = [], qs As String[] = ["\"", "\""], sep As String[] = [])
+Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = [], qs As String[] = ["\"", "\""], sep As String[] = [], Special As Boolean = False)
   
   Dim IgnorIt As String[]
   
@@ -42,7 +42,7 @@ Else
  IgnoreChar = New String[]
  keywords = New String[]
  DoFileExpand = False
- DoSpecial = False
+ DoSpecial = special
 Endif
 
 End

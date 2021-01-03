@@ -330,16 +330,20 @@ Public Sub RunScript(cmd As String) As Boolean
     CommandMode = OldCommandMode
     Return False
   Else
+    Dim SaveQueue As String[] = ReadQueue.Copy()
+    ReadQueue.clear()
     While IfReader(["QUIT"])
       ProcessProg()
       Wait
     Wend
+    ReadQueue.Insert(SaveQueue)
   Endif
+    
   Close AppSource
   appSource = oldAppSource
   Source = OldSource
   CommandMode = OldCommandMode
-  Return True
+  Return IIf(ReadQueue.count > 0, False, True)
   
 Catch 
   
@@ -348,7 +352,7 @@ Catch
   Source = OldSource
   CommandMode = OldCommandMode
   Error "gsh Script :";; Error.Text
-  Return True
+  Return IIf(ReadQueue.count > 0, False, True)
      
 End
 
@@ -1688,6 +1692,7 @@ End
 
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
+Private MultyParse As New ParseParm(False, ["::"], ["\"", "\""], ["\n"], True)
 
 Public Sub IfReader(EndBlk As String[]) As Boolean
 
@@ -1763,11 +1768,11 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Endif
     
     If InStr(InBuffer, "::") <> 0 Then
-      Dim InList As String[] = Parser(InBuffer)
+      Dim InList As String[] = Parser(InBuffer, MultyParse, False)
       If InList.count > 1 Then
         InBuffer = InList[0]
         For i As Integer = 1 To InList.Max
-          ReadQueue.Add(InList[i], 0)
+          If InList[i] <> "::" Then ReadQueue.Add(InList[i], 0)
         Next
       Endif
     Endif
