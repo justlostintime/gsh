@@ -1049,9 +1049,10 @@ Catch
 End
 
 Public Sub InitAlias()
+
 Dim stemp As Collection = SharedMem["$alias"]
 For Each s As String[] In sTemp
-    AliasList[stemp.key] = s
+   Try AliasList[stemp.key] = s
 Next
 
 End
@@ -1172,9 +1173,11 @@ Public Sub setalias(cmdline As String)
       Endif
   
       If Not aliasList.exist(cmd[1]) Then
-         aliasList.Add(body, cmd[1])
+         Try aliasList.Add(body, cmd[1])
+         If Error Then Return
       Else
-          aliaslist[cmd[1]] = body
+         Try aliaslist[cmd[1]] = body
+         If Error Then Return
       Endif
   Endif
   

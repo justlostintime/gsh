@@ -756,6 +756,9 @@ Public Sub Main()
   Class.Load("ServiceMode")
   Class.Load("HelpSystem")
   
+  Try chdir(Env["PWD"])
+  CreateCmdProgram.InitAlias()
+  
   gshrcdate = Stat(User.home &/ ".gshrc").lastmodified
   If Not SharedMem.exist("gshrcdate") Then SharedMem["gshrcdate"] = ""
   If SharedMem["gshrcdate"] < datetostring(gshrcdate) Then
@@ -773,10 +776,6 @@ Public Sub Main()
     Endif
     execbuffer = ""
   Endif
-  
-  
-  Try chdir(Env["PWD"])
-  CreateCmdProgram.InitAlias()
   
   'If VarCommandSource = "" Then
   If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup")
@@ -2012,6 +2011,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               CreateCmdProgram.listAlias(InBufParse.Join(""))
             Else 
               CreateCmdProgram.setalias(InBuffer)
+            Endif
+            execbuffer = ""
+            Return True
+            
+          Case "UNALIAS"
+            If InBufParse.count = 2 Then
+              CreateCmdProgram.setalias(InBuffer & " =")
             Endif
             execbuffer = ""
             Return True
