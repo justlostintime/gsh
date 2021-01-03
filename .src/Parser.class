@@ -342,10 +342,10 @@ Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' repla
             newsyms.Add(Application.id)
        Case "$!"
             newsyms.Add("(Application.id)")
-       ' Case "$UID"
-       '      newsyms.Add("(User.id)")
-       ' Case "$GID"
-       '      newsyms.Add("(User.group)")
+        Case "$UID"
+             newsyms.Add("(User.id)")
+        Case "$GID"
+             newsyms.Add("(User.group)")
        Default
             If IsNumber(Right(syms[i], -1)) Then
               Dim argindex As Integer = Right(syms[i], -1)
