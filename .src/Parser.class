@@ -190,8 +190,8 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
   CheckBraces(p)
   'find a way to make {} a special set
   
-  If p.DoFileExpand = False Then
-     'Divide the sets into single command lines
+  If p.DoSpecial = True Then
+    'Divide the sets into single command lines
     Dim CurrentLine As Integer = 0
     Dim LastSegmentStart As Integer = 0
     Dim InSpecialSet As Integer = 0

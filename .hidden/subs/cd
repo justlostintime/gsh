@@ -13,7 +13,6 @@ Dim sPath As String
 Dim sPathSplit As String[]
 dim pwds as new string[]
 Dim newdir as string
-print "change to";; CDToDir
 Dim OldPWD as string = env["PWD"]
 
 if CDToDir = "-" then 

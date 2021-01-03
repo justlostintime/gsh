@@ -318,7 +318,7 @@ Public Sub RunScript(cmd As String) As Boolean
     Endif
   Endif
   
-  fpath = CreateCmdProgram.getfullpath(cmd)
+  fpath = CreateCmdProgram.getfullpath(fpath)
 
   CommandMode = True
   Source = "FILE"
@@ -658,8 +658,8 @@ Private Sub VerifyAppDepend()
     Mkdir User.Home &/ "vars/struct"
   Endif
   
-  If Not Exist(User.home &/ "vars/gsh.rc") Then
-    Shell "touch " & User.home &/ "vars/gsh.rc" Wait
+  If Not Exist(User.home &/ ".gshrc") Then
+    Shell "touch " & User.home &/ ".gshrc" Wait
   Endif
   
   If Not Exist(User.home &/ "vars/subs/onstart") Then
@@ -756,14 +756,20 @@ Public Sub Main()
   Class.Load("ServiceMode")
   Class.Load("HelpSystem")
   
-  gshrcdate = Stat(User.home &/ "vars/gsh.rc").lastmodified
+  gshrcdate = Stat(User.home &/ ".gshrc").lastmodified
   If Not SharedMem.exist("gshrcdate") Then SharedMem["gshrcdate"] = ""
   If SharedMem["gshrcdate"] < datetostring(gshrcdate) Then
     SharedMem["gshrcdate"] = datetostring(gshrcdate)
-    If Not bDbaseserver Then Error ("Loading updated gsh.rc")
-    Try RunScript(User.home &/ "vars/gsh.rc")
+    If Not bDbaseserver Then 
+       If DoTrace Then
+         Error ("Loading updated .gshrc")
+       Endif
+    Endif
+    
+    Try RunScript(User.home &/ ".gshrc")
+    
     If Error Then
-      Error ("Unable to run updated gsh.rc :");; Error.text
+      Error ("Unable to run updated .gshrc :");; Error.text
     Endif
     execbuffer = ""
   Endif
@@ -1762,7 +1768,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     
     If InStr(InBuffer, "::") <> 0 Then
       Dim InList As String[] = Parser(InBuffer)
-      
       If InList.count > 1 Then
         InBuffer = InList[0]
         For i As Integer = 1 To InList.Max
@@ -2673,7 +2678,7 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, [" "], ["\"\"[]"])
+Private CallParser As New ParseParm(False, [" "], ["\"\"[]"], [" "])
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim i, j As Integer

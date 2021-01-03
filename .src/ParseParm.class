@@ -7,14 +7,15 @@ Public quotes As String[]
 Public braces As String[]
 Public comments As String[]
 Public endofline As String[]
-Public ignoreIt As String[]
+Public ignoreChar As String[]
 Public KeyWords As String[]
-Public DoFileExpand As Boolean = False
+Public DoFileExpand As Boolean
+Public DoSpecial As Boolean
 
 Public syms As New String[]
 Public types As New Integer[]
 
-Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = [], qs As String[] = ["\"", "\""])
+Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = [], qs As String[] = ["\"", "\""], sep As String[] = [])
   
   Dim IgnorIt As String[]
   
@@ -26,8 +27,10 @@ If SetDefaults Then
  braces = ["{", "}"]
  comments = ["'"]
  endofline = ["\n"]
- IgnoreIt = []
- keywords = []
+ IgnoreChar = New String[]
+ keywords = New String[]
+ DoFileExpand = False
+ DoSpecial = True
 Else
  seperators = New String[]
  operators = ops
@@ -36,8 +39,10 @@ Else
  braces = New String[]
  comments = New String[]
  endofline = New String[]
- IgnorIt = New String[]
+ IgnoreChar = New String[]
  keywords = New String[]
+ DoFileExpand = False
+ DoSpecial = False
 Endif
 
 End
