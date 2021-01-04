@@ -723,7 +723,7 @@ End
 Public Sub Main()
   Dim DontExit As Boolean
   Dim i As Integer
-  
+ 
   'System.Language = "fr_FR"
   'System.Language = "en_US"
   cmdLineParameters = ProcessOptions()

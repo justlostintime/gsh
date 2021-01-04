@@ -1070,10 +1070,13 @@ Public Sub AliasReplace(Data As String) As String
 DoAliasAgain:
   For Each s In aliaslist
     Dim akey As String = aliaslist.key
+    akey = Replace(akey, "?", "\\?")
+    akey = Replace(akey, "$", "\\$")
+    
     If Not used.Exist(akey) Then
       If InStr(aKey, "()") > 0 Then
-        'If MyReg.Match(data, "^.*" & Left(aliaslist.key, aliaslist.Key.len - 1) & "([(]+.*+[)])") Then 
-        MyReg.compile("^.*" & Left(aKey, aKey.len - 2) & "([(].*[)])", RegExp.MultiLine)
+        'If MyReg.Match(data, "^.*" & Left(aliaslist.key, aliaslist.Key.len - 1) & "([(]+.*+[)])") Then
+        MyReg.compile("^" & Left(aKey, aKey.len - 2) & "([(].*[)])", RegExp.MultiLine)
         MyReg.Exec(data)
           If MyReg.Count > 0 Then
             'Print MyReg[0].text
@@ -1128,6 +1131,7 @@ DoAliasAgain:
   Endif
   
   Catch
+    Dim errortext As String = Error.where & ":" & Error.text
     Error.Propagate()
 End
 
