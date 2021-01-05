@@ -218,7 +218,6 @@ Public Sub _init()
   
 End
 
-
 Public Sub ProcessOptions() As String[]
   
   Dim bA, bR As Boolean
@@ -829,21 +828,21 @@ Public Sub Main()
     If DoTrace Then Error "(Trace "; Now; ") ";; ("Execute The Content of a variable from shared memory ");; VarCommandSource
     
     If SharedMem.exist(VarCommandSource) Then
-      Dim codebuffer As String = "Lambda"
+      Dim codebuffer As String '= "Lambda"
       
-      If cmdLineParameters.count > 0 Then
-        For i As Integer = 0 To cmdLineParameters.Max
-          cmdLineParameters[i] = Quote(cmdLineParameters[i])
-        Next
-        codebuffer &= "("
-        For i = 0 To cmdLineParameters.max
-          codebuffer &= cmdLineParameters[i]
-          If i < cmdLineParameters.max Then codebuffer &= ","
-        Next
-        codebuffer &= ")"
-      Endif
+      ' If cmdLineParameters.count > 0 Then
+      '   ' For i As Integer = 0 To cmdLineParameters.Max
+      '   '   cmdLineParameters[i] = Quote(cmdLineParameters[i])
+      '   ' Next
+      '   ' codebuffer &= "("
+      '   ' For i = 0 To cmdLineParameters.max
+      '   '   codebuffer &= cmdLineParameters[i]
+      '   '   If i < cmdLineParameters.max Then codebuffer &= ","
+      '   ' Next
+      '   ' codebuffer &= ")"
+      ' Endif
       
-      codebuffer &= "\n" & SharedMem[VarCommandSource] & "\nend\n"
+      codebuffer &= "\n" & SharedMem[VarCommandSource] & "\n" '& "end\n"
       If DoTrace Then Print "(Trace "; Now; ") ";; ("***********************************\nVariable program call defined as \n ");; codebuffer;; "\n*********************\n"
       OpenBuffer(codebuffer)
       While IfReader(["QUIT"])
@@ -1074,6 +1073,9 @@ End
 
 
 Public Sub ExecLocal(prog As String[]) As Boolean
+
+  If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
+  If UseTable.count > 0 Then Return False                         ' If this command has any kind of use parameters we can not process
   
   If prog.count <> 1 Then Return False
   
@@ -1089,8 +1091,7 @@ Public Sub ExecLocal(prog As String[]) As Boolean
   If SubCls.changed(sObject) Then Return False                    ' we changed it in this session so will reflect this after start
   ' In the mean time we will execute this as a script until its reloaded
   ' Can only load a function once after start
-  If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
-  If UseTable.count > 0 Then Return False                         ' If this command has any kind of use parameters we can not process
+ 
   ' Link Table will always have link to own code 
   linktable.Clear()
   Dim newsplit As String = RegExp.Replace(prog[0], "^.*[(]", "")
@@ -1327,6 +1328,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
           CompileResult = ""
           CompilerOutput = ""
           eCmd = ["/usr/bin/gbs3", "-b", ScriptName]
+          
           Try Exec ecmd Wait For Read As "compileread"
           If Error Or CompileResult <> "" Then
             If Error Then 
@@ -2921,15 +2923,27 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
                 Inc tCount
               Else
                 ContainsGlobal = True
-                If SharedMem.exist(Syms[tcount]) Then
-                  If SharedMem.SymbolTable[Syms[tcount]].symtype = gb.object Then
-                    Dim classname As String = SharedMem.SymbolTable[Syms[tcount]].ClassName
+                Dim varlookup As String = Right(syms[tcount], -1)
+                Dim varbase As Integer = tcount
+                If tcount + 2 < syms.count Then
+                  If Syms[tcount + 1] = "." And If types[Tcount + 2] = Highlight.symbol And If syms[tcount + 2][0] = "$" Then
+                    varlookup &= "." & Right(syms[tcount + 2], -1)
+                    Syms[tcount + 1] = ""
+                    Syms[TCount + 2] = ""
+                    tcount += 2
+                  Endif
+                Endif
+                If SharedMem.exist(varlookup) Then
+                  If SharedMem.SymbolTable[varlookup].symtype = gb.object Then
+                    Dim classname As String = SharedMem.SymbolTable[varlookup].ClassName
                     If SharedMem.exist("class." & classname) Then
                       LinkTable.Add(SharedMem["class." & classname], "class." & classname)
+                    Else If SharedMem.exist("struct." & classname)
+                      LinkTable.Add(SharedMem["struct." & classname], "struct." & classname)
                     Endif
                   Endif
                 Endif
-                Syms[tcount] = "SharedMem[\"" & Lower(Syms[tCount]) & "\"]"
+                Syms[varbase] = "SharedMem[\"" & Lower(varlookup) & "\"]"
               Endif
             Endif 
           Endif
@@ -2939,34 +2953,46 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             If syms[tcount] = "@" And types[tcount + 1] = Highlight.symbol Then
               If SharedMem.exist(syms[tcount + 1]) Or If SharedMem.exist("$" & syms[tcount + 1]) Then
                 Dim svarname As String = IIf(SharedMem.exist(syms[tcount + 1]) = True, syms[tcount + 1], "$" & syms[tcount + 1])
-                Dim parm As New String[]
-                Dim pCount As Integer = tcount + 2
-                syms[tcount] = ""
-                If syms.max > pCount Then
-                  If syms[pcount] = "(" Then
-                    syms[pcount] = ""
-                    Inc pcount
-                    While Syms[pcount] <> ")" And pcount <= syms.Max
-                      If syms[pcount] = "," Then 
-                        syms[pcount] = ""
-                      Else
-                        parm.Add(syms[pcount])
-                        syms[pcount] = ""
-                      Endif
-                      Inc pcount
-                    Wend
-                    
-                    If Syms.max >= pcount Then
-                      If Syms[pcount] = ")" Then
-                        syms[pcount] = ""
-                      Else
-                        Error.Raise(("@ Improper parameter definition"))
-                      Endif
-                    Endif
-                  Endif
-                Endif
+                ' Dim parm As New String[]
+                ' Dim pCount As Integer = tcount + 2
+                ' syms[tcount] = ""
+                ' If syms.max > pCount Then
+                '   If syms[pcount] = "(" Then
+                '     syms[pcount] = ""
+                '     Inc pcount
+                '     While Syms[pcount] <> ")" And pcount <= syms.Max
+                '       If syms[pcount] = "," Then 
+                '         syms[pcount] = ""
+                '       Else
+                '         parm.Add(syms[pcount])
+                '         syms[pcount] = ""
+                '       Endif
+                '       Inc pcount
+                '     Wend
+                '     
+                '     If Syms.max >= pcount Then
+                '       If Syms[pcount] = ")" Then
+                '         syms[pcount] = ""
+                '       Else
+                '         Error.Raise(("@ Improper parameter definition"))
+                '       Endif
+                '     Endif
+                '   Endif
+                ' Endif
                 If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess before @"); ": "; syms[tcount + 1]
-                Syms[tcount + 1] = execvar(svarname, parm)
+                'Syms[tcount + 1] = execvar(svarname, parm)
+                Syms[tCount] = "runvar"
+                types[tcount] = highlight.Symbol
+                If syms.max > tcount + 2 And If syms[tcount + 2] = "(" Then
+                  Syms[tcount + 2] = Quote(svarname) & ","
+                  Types[tcount + 2] = Highlight.symbol
+                  Syms[tcount + 1] = "("
+                  types[tcount + 1] = Highlight.operator
+                Else
+                  Syms[tcount + 1] = "(" & Quote(svarname) & ")"
+                  types[tcount + 1] = Highlight.operator
+                Endif
+                'Syms[tcount + 1] = "runvar(" & Quote(svarname) & IIf(parm.count > 0, "," & parm.Join(",") & ")", ")")
                 If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess After @"); ": "; syms[tcount + 1]
               Endif
             Endif

@@ -1,0 +1,26 @@
+public sub runvar(varname as string,...) as string[]
+dim mOutput as string 
+dim errorresult as new string[]
+dim cmd as string[] = ["/usr/bin/gsh","-f"]
+if sharedmem.exist(varname) then
+    cmd.add(varname)
+    for each s as variant in param
+     cmd.add(s)
+    next
+    try exec cmd to mOutput
+
+    if error then 
+        errorResult.add("Error:"&Error.text)
+        return ErrorResult
+    endif
+
+    return split(mOutput,"\n","\"\"",true)
+else
+    ErrorResult.add("Variable Not found : "&varname)
+    return 
+endif
+
+catch
+ error "runsub error: ";error.text;;error.where
+
+end

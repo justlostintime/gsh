@@ -1,3 +1,13 @@
+* Tue Jan 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
+
+* Mon Jan 04 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
+- Updated @var redirection to run correctly at runtime in a script
+
+* Mon Jan 04 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
+
+* Mon Jan 04 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
+- Updated alias to only work on first command on line
+
 * Sun Jan 03 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
 
 * Sat Jan 02 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
