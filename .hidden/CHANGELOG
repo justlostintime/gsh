@@ -1,3 +1,9 @@
+* Tue Jan 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.95
+- Updated to enumeration, alias, and global variable handling
+
+* Tue Jan 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
+- Updated variable system to allow multi level variables
+
 * Tue Jan 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
 
 * Mon Jan 04 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
