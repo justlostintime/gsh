@@ -9,6 +9,7 @@ Public Struct subload
   iChanged As Boolean
   iFirstDef As Boolean
   iMd5 As String
+  bUSEIncluded As Boolean
 End Struct
 
 Public SubsAndClasses As New Collection(gb.ignorecase)
@@ -92,6 +93,8 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
   ' Now add all "Use" lines from the source code
   For Each sUse As String In gsh.usetable
       sUse = UnQuote(sUse)
+      
+      cObject.bUSEIncluded = True
       
       If InStr(sUse, ":") Then
          sUse = "Library=" & ProcessLibrary(sUse)
@@ -229,6 +232,11 @@ Public Sub GetFunc(index As String) As Object
   
 End
 
+Public Sub HasUse(index As String) As Boolean
+  index = Split(index, ".")[1]
+  If Not SubsAndClasses.exist(index) Then Return Null
+  Return SubsAndClasses[index].bUSEIncluded
+End
 
 Public Sub changed(index As String) As Boolean
   

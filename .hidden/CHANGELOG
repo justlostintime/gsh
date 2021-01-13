@@ -1,3 +1,8 @@
+* Tue Jan 12 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+
+* Tue Jan 12 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+- Fixed errors in parsing params to internal plugins
+
 * Tue Jan 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.95
 - Updated to enumeration, alias, and global variable handling
 

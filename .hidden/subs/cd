@@ -8,7 +8,6 @@ Sub cd(Optional CDToDir As String = "~") As Boolean ' change directory
 ''          $result contains the error text or "OK"
 with sharedmem
 dim a as new glob_t
-.Free("$result")
 Dim sPath As String
 Dim sPathSplit As String[]
 dim pwds as new string[]

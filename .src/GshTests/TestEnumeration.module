@@ -74,7 +74,7 @@ Sub matchbrace(src As String, start As Integer) As Integer
   
 End
 
-Private EnumParser As New ParseParm(False, [", "], ["{}\"\""])
+Private EnumParser As New ParseParm(False, [",", " "], ["{", "}", "\"", "\""])
 Sub getenum(enumdef As String) As String[]
   Dim toEnum As String[] = Parser(enumdef, EnumParser)
   Dim result As New String[]

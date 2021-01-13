@@ -1,9 +1,28 @@
-Sub listing(Text as string)
-  use "gb.eval.highlight"
+Sub listing(optional Text as string = "") ' print a listing of a subroutine/class/struct
+  dim mtext as class = classes["ConsoleHighlight"]
+  dim txthigh as object = mtext.new()
+  dim gsh as class = classes["gsh"]
+  dim CreateCmdProgram as class =classes["CreateCmdProgram"]
+  dim allList as collection = object.call(gsh,"GetAllThings")
+  dim listprog as string = ""
 
-  dim lines as string [] = split(text,"\n","\"\"",true,true)
+  if text <> "" and if alllist.exist(text) then
+    Dim listpath As String = AllList[text][1]
+    If listpath[0] = "/" Then
+        listprog = File.Load(listpath)
+    Else
+        listprog = SharedMem[listpath]
+    Endif
+  else if text = ""
+    listprog = object.call(gsh,"lambda") & "\n"
+  else
+    Try listprog = File.Load(object.call(CreateCmdProgram,"MakeAbs",[listpath]))
+    If Error Then Error.Raise(("List: Unable to find ") & text)
+  endif
+
+  dim lines as string [] = split(listprog,"\n","\"\"",true,true)
   for each s as string in lines
-    highlight.analyze(s)
+   	print  txthigh.ToConsole(s);
   next
 
 End

@@ -1072,6 +1072,7 @@ Public Sub SetTitle()
 End
 
 
+Private SubParmParser As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
 Public Sub ExecLocal(prog As String[]) As Boolean
 
   If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
@@ -1089,6 +1090,7 @@ Public Sub ExecLocal(prog As String[]) As Boolean
   
   If Not SubCls.Exist(sObject) Then Return False                  ' its not in the compiled list
   If SubCls.changed(sObject) Then Return False                    ' we changed it in this session so will reflect this after start
+  If SubCls.HasUse(sObject) Then Return False                     ' If it compiled with a use comp then run externally
   ' In the mean time we will execute this as a script until its reloaded
   ' Can only load a function once after start
  
@@ -1096,7 +1098,8 @@ Public Sub ExecLocal(prog As String[]) As Boolean
   linktable.Clear()
   Dim newsplit As String = RegExp.Replace(prog[0], "^.*[(]", "")
   newsplit = RegExp.Replace(newsplit, "[)]$", "")
-  lsplit = Split(newsplit, ",", "[]()\n", True, True)
+  'lsplit = Split(newsplit, "," , "[]()", True, True)
+  lsplit = Parser(newsplit, SubParmParser)
   Dim parms As New Variant[]
   For Each s As String In lsplit
     If s.len > 1 And If s[0] = "." Then 
@@ -2686,7 +2689,7 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, [" "], ["\"\"[]"], [" "])
+Private CallParser As New ParseParm(False, [" "], ["\"", "\"", "[", "]"], [" "])
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim i, j As Integer
@@ -2793,6 +2796,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
       Endif
     Next
     syms[0] = "' " & syms[0]
+    ContainsGlobal = True
     Return Syms.Join(" ")
   Endif
   
@@ -2953,32 +2957,6 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             If syms[tcount] = "@" And types[tcount + 1] = Highlight.symbol Then
               If SharedMem.exist(syms[tcount + 1]) Or If SharedMem.exist("$" & syms[tcount + 1]) Then
                 Dim svarname As String = IIf(SharedMem.exist(syms[tcount + 1]) = True, syms[tcount + 1], "$" & syms[tcount + 1])
-                ' Dim parm As New String[]
-                ' Dim pCount As Integer = tcount + 2
-                ' syms[tcount] = ""
-                ' If syms.max > pCount Then
-                '   If syms[pcount] = "(" Then
-                '     syms[pcount] = ""
-                '     Inc pcount
-                '     While Syms[pcount] <> ")" And pcount <= syms.Max
-                '       If syms[pcount] = "," Then 
-                '         syms[pcount] = ""
-                '       Else
-                '         parm.Add(syms[pcount])
-                '         syms[pcount] = ""
-                '       Endif
-                '       Inc pcount
-                '     Wend
-                '     
-                '     If Syms.max >= pcount Then
-                '       If Syms[pcount] = ")" Then
-                '         syms[pcount] = ""
-                '       Else
-                '         Error.Raise(("@ Improper parameter definition"))
-                '       Endif
-                '     Endif
-                '   Endif
-                ' Endif
                 If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess before @"); ": "; syms[tcount + 1]
                 'Syms[tcount + 1] = execvar(svarname, parm)
                 Syms[tCount] = "runvar"
@@ -3395,5 +3373,11 @@ Private Sub doListing(Command As String)
   
   Print ConsoleHighlight.ToConsole(ListProg)
   
+End
+
+Public Sub lambda() As String
+
+  Return LambdaBuffer
+   
 End
 
