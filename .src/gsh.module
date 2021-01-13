@@ -107,6 +107,7 @@ Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "li
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
 Extern chdir(Dest As String) As Integer In "libc:6"
+'Extern SignalSend(sigpid As Integer, Sig As Integer) As Integer In "libc:6" Exec "kill"
 Private windowwidth As Integer = 80
 Private windowheight As Integer = 24
 
@@ -157,11 +158,14 @@ Public Sub application_signal(sig As Integer)
 
   Select Case sig
     Case Signal.SIGWINCH
-      If DoTrace Then Error (" Window was Resized to "); Env["LINES"]; " and "; Env["COLUMNS"]
       windowwidth = File.Out.Term.width 
       Env["COLUMNS"] = windowwidth
-      windowheight = File.Out.Term.Width
+      windowheight = File.Out.Term.height
       Env["LINES"] = Windowheight
+      If DoTrace Then Error (" Window was Resized to "); Env["LINES"]; " and "; Env["COLUMNS"]
+      If runningprocess <> Null Then
+        Signal.send(RunningProcess.Handle, Signal.SIGWINCH)
+      Endif
       Return
       
     Case Signal.SIGHUP
