@@ -158,8 +158,10 @@ Public Sub application_signal(sig As Integer)
   Select Case sig
     Case Signal.SIGWINCH
       If DoTrace Then Error (" Window was Resized to "); Env["LINES"]; " and "; Env["COLUMNS"]
-      windowwidth = Env["COLUMNS"]
-      windowheight = Env["LINES"]
+      windowwidth = File.Out.Term.width 
+      Env["COLUMNS"] = windowwidth
+      windowheight = File.Out.Term.Width
+      Env["LINES"] = Windowheight
       Return
       
     Case Signal.SIGHUP
