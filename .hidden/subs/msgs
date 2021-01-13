@@ -1,0 +1,6 @@
+Sub msgs(text as string)
+use "gb.gui"
+
+message(upper(text))
+
+End
