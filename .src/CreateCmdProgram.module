@@ -949,13 +949,8 @@ DoAliasAgain:
 End
 'Public ShelliParse As ParseParms
 Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As Integer)
-  Dim NewLine As String = AliasReplace(CmdList[currentcmd][0])
+  Dim NewLine As String = AliasReplace(CmdList[currentcmd].Join(" "))
   Parser(NewLine, ShelliParse)
-  
-  If ShelliParse.syms.count > 1 And If CmdList[currentcmd].count > 1 Then
-    ShelliParse.syms.Insert(CmdList[currentcmd], 1)
-    ShelliParse.types.Insert(CmdTypes[currentcmd], 1)
-  Endif
   CmdTypes[currentcmd] = ShelliParse.types
   CmdList[currentcmd] = ShelliParse.syms
 End
