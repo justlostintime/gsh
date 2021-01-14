@@ -4,13 +4,13 @@ Sub lsubs(Optional varname As String = "") As Boolean ' list all subs/functions/
 ''          May be used as command or subroutine in scripts
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
-Use "gb.eval.highlight"
+'Use "gb.eval.highlight"
 
 With sharedmem
 
 Dim allsubs As Collection
 Dim allindex As New String[]
-Dim GetHighlight As New TxtHighLight
+Dim GetHighlight As New gshHighLight
 Dim ShowDetail As Boolean = False
 
 allsubs = lany("sub", "subs")

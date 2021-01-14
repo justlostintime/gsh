@@ -1,4 +1,8 @@
 * Wed Jan 13 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+- Fix alias of commands after the first one
+- fix passing process variable source and function source a seperate processes
+
+* Wed Jan 13 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
 - Updated screen handling, and corrected embeded use handling
 
 * Tue Jan 12 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
