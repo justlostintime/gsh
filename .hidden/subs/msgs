@@ -1,6 +1,9 @@
-Sub msgs(text as string)
+Sub msgs(...)
 use "gb.gui"
-
-message(upper(text))
+dim sOutput as string = ""
+for each i as variant in  param
+	sOutput &= iif(sOutput <> ""," ","") & cstr(i)
+next
+message(sOutput)
 
 End

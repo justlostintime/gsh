@@ -1,9 +1,7 @@
 Sub listing(optional Text as string = "") ' print a listing of a subroutine/class/struct
-  dim mtext as class = classes["ConsoleHighlight"]
-  dim txthigh as object = mtext.new()
-  dim gsh as class = classes["gsh"]
-  dim CreateCmdProgram as class =classes["CreateCmdProgram"]
-  dim allList as collection = object.call(gsh,"GetAllThings")
+
+  dim txthigh as new gshhighlight
+  dim allList as collection = GetAllThings()
   dim listprog as string = ""
 
   if text <> "" and if alllist.exist(text) then
@@ -14,9 +12,9 @@ Sub listing(optional Text as string = "") ' print a listing of a subroutine/clas
         listprog = SharedMem[listpath]
     Endif
   else if text = ""
-    listprog = object.call(gsh,"lambda") & "\n"
+    listprog = sharedmem["$lambda"]
   else
-    Try listprog = File.Load(object.call(CreateCmdProgram,"MakeAbs",[listpath]))
+    Try listprog = File.Load(expandfn(text))
     If Error Then Error.Raise(("List: Unable to find ") & text)
   endif
 
@@ -24,5 +22,22 @@ Sub listing(optional Text as string = "") ' print a listing of a subroutine/clas
   for each s as string in lines
    	print  txthigh.ToConsole(s);
   next
+
+End
+
+Public Sub GetAllThings() As Collection
+
+  Dim AllCollection As Collection
+  
+  AllCollection = lany()
+  Dim tClassStruct As Collection = lany("class", "class")
+  For Each sv As String[] In tClassStruct
+    AllCollection.Add(sv, tClassStruct.key)
+  Next
+  tClassStruct = lany("struct", "struct")
+  For Each sv As String[] In tClassStruct
+    AllCollection.Add(sv, tClassStruct.key)
+  Next
+  Return AllCollection
 
 End

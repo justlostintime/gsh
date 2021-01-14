@@ -991,7 +991,7 @@ interactive:
       If Not DontExit Then Break
       Try ProcessProg()
       If Error Then 
-        Error Error.text   ' ;; "(" & Error.where & ")"
+        Error "gsh: Command";; Error.text   ' ;; "(" & Error.where & ")"
         If DoTrace Then Error execBuffer
         CleanUpError()
       Else
@@ -1333,7 +1333,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
           Endif
           'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
           SharedMem["$execprog"] = program
-          SharedMem.WriteVarTo("$execprog")
+          If TraceLevel = 20 Then SharedMem.WriteVarTo("$execprog")
           CompileResult = ""
           CompilerOutput = ""
           eCmd = ["/usr/bin/gbs3", "-b", ScriptName]
@@ -1344,15 +1344,19 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                Error "Generated Script ="; ScriptName;; ":";; Error.text
             Else
                Dim errtemp As String[] = Split(CompileResult, ":\n", "\"\"", True, True)
-               Dim errline As Integer = errtemp[1]
-               Error "gsh Error :";;
-               For ii As Integer = 4 To errtemp.max
-                 Print errtemp[ii];;
-               Next
-               errtemp = Split(CompilerOutput, "\n", "\"\"", False, True)
-               Dim errstart As Integer = errtemp.Find("' Gambas Module File", gb.IgnoreCase)
-               Print ":In:";;
-               Print errtemp[errline + errstart - 1]
+               Dim errline As Variant = errtemp[1]
+              If Not IsNumber(errline) Then
+                 Error CompileResult
+              Else 
+                  Error "gsh Error :";;
+                  For ii As Integer = 4 To errtemp.max
+                    Print errtemp[ii];;
+                  Next
+                  errtemp = Split(CompilerOutput, "\n", "\"\"", False, True)
+                  Dim errstart As Integer = errtemp.Find("' Gambas Module File", gb.IgnoreCase)
+                  Print ":In:";;
+                  Print errtemp[errline + errstart - 1]
+              Endif
             Endif
               ExecBuffer = ""
               ReturnOutputTo = ""
@@ -2297,6 +2301,7 @@ Sub lambdaExpression(eblk As String[])
       Next
     Endif
     Execbuffer &= ")\n"
+    SharedMem["$lambda"] = LambdaBuffer
   Else
     execbuffer = ""
     Error.Raise("Bad Lambda expression")
