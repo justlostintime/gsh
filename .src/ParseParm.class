@@ -11,25 +11,27 @@ Public ignoreChar As String[]
 Public KeyWords As String[]
 Public DoFileExpand As Boolean
 Public DoSpecial As Boolean
+Public KeepQuote As Boolean
 
 Public syms As New String[]
 Public types As New Integer[]
 
 Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = [], qs As String[] = ["\"", "\""], sep As String[] = [], Special As Boolean = False)
   
-  Dim IgnorIt As String[]
+Dim IgnorIt As String[]
   
 If SetDefaults Then
  seperators = [" ", "\n"]
  operators = ["::", "&&", "||", "(", ")"]
  SpecialSymbols = ["{", "}"]
- quotes = ["\"", "\""]
+ quotes = ["\"", "\"", "`", "`"]
  braces = ["{", "}"]
  comments = ["'"]
  endofline = ["\n"]
  IgnoreChar = New String[]
  keywords = New String[]
  DoFileExpand = False
+ KeepQuote = True
  DoSpecial = True
 Else
  seperators = New String[]
@@ -42,6 +44,7 @@ Else
  IgnoreChar = New String[]
  keywords = New String[]
  DoFileExpand = False
+ KeepQuote = True
  DoSpecial = special
 Endif
 

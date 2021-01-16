@@ -148,6 +148,7 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    lines = Parser(Source, Null, True)
    For i As Integer = 0 To lines.max
      If Lines[i] = "" Then Continue
+     If i > 0 Then lines[i] = AliasReplace(lines[i])
      Select Case lines[i]
        Case "!"
          Continue
@@ -442,13 +443,13 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             bFirst = False
         Else
            'If Not InBlock Then CmdExec[CurrentCmd] &= "\n"
-           If Left(sym, 2) = "--" Then                          ' take care of options
+          If Left(sym, 2) = "--" Then                          ' take care of options
              rtemp = UnQuote(preprocess(Right(sym, -2)))
              rrtemp = "--"
              rtemp = rrtemp & Rtemp
              CmdExec[CurrentCmd] &= "," & Quote(rTemp)
             
-           Else If sym[0] = "-" Then
+          Else If sym[0] = "-" Then
              rtemp = "-" & UnQuote(preprocess(Mid(sym, 2)))
             CmdExec[CurrentCmd] &= "," & Quote(rTemp)
             
@@ -811,11 +812,11 @@ Public Sub _init()
   ShellParse.braces = ["(", ")"]
   ShellParse.seperators = [" ", "\t", "\n"]
   ShellParse.DoFileExpand = True
+  
   ShelliParse = New ParseParm(False, ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
   ShelliParse.braces = ["(", ")"]
   ShelliParse.seperators = [" ", "\t", "\n"]
   ShelliParse.DoFileExpand = True
-  
 End
 
 

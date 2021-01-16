@@ -132,7 +132,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Endif
       
       currentquote = p.quotes[inquote]
-      sym &= InLine[StreamPos] 
+      If p.KeepQuote Then sym &= InLine[StreamPos] 
       Inc Streampos
       While StreamPos < InLine.len
         
@@ -140,11 +140,12 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
                Error.raise("Unmatched Quote  [" & currentquote & " ] in :" & Quote(inline))
         Endif
         
-        sym &= InLine[StreamPos]
-        
         If InLine[StreamPos] = currentquote Then
+          If p.KeepQuote Then sym &= InLine[StreamPos]
           Inc StreamPos
           Break
+        Else
+          sym &= InLine[StreamPos]
         Endif
         
         If InLine[StreamPos] = "\\" Then
@@ -158,7 +159,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
         
         Inc StreamPos
         
-        If streampos = InLine.len Then 
+        If streampos >= InLine.len Then 
                Error.raise("Unmatched Quote  [" & currentquote & "]  in :" & Quote(inline))
         Endif
         
