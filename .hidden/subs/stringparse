@@ -1,42 +1,15 @@
-' Gambas class file
-
-' Gambas module file
-
-'These are the defaults
-' Static Public syms As String[]
-' Static Public types As Integer[]
-' Static Public seperators As String[] = [" ", "\n"]
-' Static Public operators As String[] = ["::", "&&", "||", "(", ")"]
-' Static Public SpecialSymbols As String[] = ["{", "}"]
-' Static Public quotes As String[] = ["\"", "\""]
-' Static Public braces As String[] = ["{", "}"]
-Static defaultp As New ParseParm(True)
-
-Static Private Sub SymsInsert(p As ParseParm, sym As String, type As Integer)
-
-  sym = Trim(sym)
-  If sym = "" Then
-    Return
-  Endif
-  
-  If p.DoFileExpand = True Then
-    FileExpandInsert(p, sym, type)
-  Else
-    p.syms.Add(sym)
-    p.types.Add(type)
-  Endif
-End
-
+Public Sub StringParse(InLine As String, Optional p As ParseInfo = Null, IncludeBreak As Boolean = False) As String[]
 '' process the input line and split it into seperate commands
-Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, IncludeBreak As Boolean = False) As String[]
+use "gb.eval.highlight"
+Public defaultp As New ParseInfo(True)
 
-  Dim CurrentType As Integer = Highlight.Symbol
+  Dim CurrentType As Integer = highlight.Symbol
   Dim streamPos As Integer = 0
   Dim sym As String = ""
   Dim OutputList As New String[]
   
   If inline = "" Then Return OutputList
-  
+
   If IsNull(p) Then p = Defaultp
   
   InLine = Trim(InLine)
@@ -50,7 +23,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       If sym.len > 0 Then
         SymsInsert(p, sym, CurrentType)
         sym = ""
-        CurrentType = Highlight.Symbol
+        CurrentType = highlight.Symbol
       Endif
       Inc streampos
       Continue
@@ -68,27 +41,27 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     Endif
     
     If p.SpecialSymbols.Exist(InLine[streampos]) Then
-      If CurrentType <> Highlight.added And If sym.len > 0 Then
+      If CurrentType <> highlight.added And If sym.len > 0 Then
           SymsInsert(p, sym, CurrentType)
       Endif
-      SymsInsert(p, InLine[streampos], Highlight.added)
+      SymsInsert(p, InLine[streampos], highlight.added)
       sym = ""
-      CurrentType = Highlight.Symbol
+      CurrentType = highlight.Symbol
       Inc StreamPos
       Continue
     Endif
     
     If p.operators.Exist(InLine[streampos]) Then
-      If CurrentType <> Highlight.operator Then
+      If CurrentType <> highlight.operator Then
         If sym.len > 0 Then
           SymsInsert(p, sym, CurrentType)
           sym = ""
-          Currenttype = Highlight.operator
+          Currenttype = highlight.operator
           sym &= InLine[streampos]
           Inc StreamPos
           Continue
         Else
-          CurrentType = Highlight.Operator
+          CurrentType = highlight.Operator
         Endif
       Else
         If Not p.operators.Exist(sym & InLine[StreamPos]) Then
@@ -103,12 +76,12 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
         Endif
       Endif
     Else If streampos + 1 < InLine.len And If p.operators.Exist(InLine[StreamPos] & InLine[StreamPos + 1]) Then ' look ahead, limit 2
-      If CurrentType <> Highlight.operator Then
+      If CurrentType <> highlight.operator Then
         If sym.len > 0 Then
           SymsInsert(p, sym, CurrentType)
           sym = ""
         Endif
-        CurrentType = Highlight.Operator
+        CurrentType = highlight.Operator
         sym &= InLine[StreamPos] & InLine[StreamPos + 1]
         StreamPos += 2
       Else
@@ -131,7 +104,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
         sym = ""
       Endif
       
-      CurrentType = Highlight.string
+      CurrentType = highlight.string
       
       Dim currentquote As String = InLine[StreamPos]
       Dim inquote As Integer = p.quotes.Find(currentquote)
@@ -178,17 +151,17 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       
       SymsInsert(p, sym, CurrentType)
       sym = ""
-      CurrentType = Highlight.symbol
+      CurrentType = highlight.symbol
       Continue
     Endif
     
     If p.endofline.Exist(InLine[StreamPos]) Or If p.comments.Exist(InLine[StreamPos]) Then Break
     
-    If CurrentType = Highlight.Operator Then 
+    If CurrentType = highlight.Operator Then 
       If Not p.operators.Exist(sym & InLine[StreamPos]) Then
         SymsInsert(p, sym, CurrentType)
         sym = ""
-        CurrentType = Highlight.symbol
+        CurrentType = highlight.symbol
       Endif 
     Endif
     
@@ -210,7 +183,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     Dim LastSegmentStart As Integer = 0
     Dim InSpecialSet As Integer = 0
     For i As Integer = 0 To p.syms.Max
-      If p.types[i] = Highlight.added 
+      If p.types[i] = highlight.added 
        If p.braces.Find(p.syms[i]) % 2 = 1 Then
            Inc InSpecialSet
        Else 
@@ -218,7 +191,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
        Endif
      Endif
       If inSpecialSet = 0 Then 
-        If p.types[i] = Highlight.operator Then
+        If p.types[i] = highlight.operator Then
           If lastSegmentStart < i Then 
             OutputList.Add(p.syms.Copy(lastSegmentStart, i - lastSegmentStart).Join(" "))
           Endif
@@ -227,7 +200,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
         Endif
     
        If IncludeBreak Then
-          If p.types[i] = Highlight.operator Then
+          If p.types[i] = highlight.operator Then
             OutputList.Add(p.syms[i])
           Endif
         Endif
@@ -245,13 +218,13 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     SpecialVariables(p.syms, p.types)
   
     For i As Integer = 0 To p.syms.Max
-      If p.types[i] = Highlight.Symbol Then
+      If p.types[i] = highlight.Symbol Then
         If sharedmem.Exist("sub." & p.syms[i]) Then 
-            p.types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
+            p.types[i] = highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
         Else If i = 0 And If sharedmem.exist(p.syms[i]) Then 
-            p.types[i] = Highlight.Label             ' well we need to make it fit in label = execute var as command
+            p.types[i] = highlight.Label             ' well we need to make it fit in label = execute var as command
         Else If p.syms[0] = "!" And If i = 1 And If sharedmem.exist(p.syms[i]) Then
-            p.types[i] = Highlight.Label             ' well we need to make it fit in label = execute var as command
+            p.types[i] = highlight.Label             ' well we need to make it fit in label = execute var as command
         Endif
       Endif
     Next
@@ -264,7 +237,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     
 End 
 
-Static Public Sub CheckBraces(p As ParseParm, Optional start As Integer = 0, matching As String = "") As Integer
+Sub CheckBraces(p As ParseInfo, Optional start As Integer = 0, matching As String = "") As Integer
   Dim index As Integer = start
   Dim braceindex As Integer 
   
@@ -295,41 +268,43 @@ Static Public Sub CheckBraces(p As ParseParm, Optional start As Integer = 0, mat
   Endif
 End
 
-Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integer) As Boolean ' return true if we expanded the value
+Sub FileExpandInsert(p As ParseInfo, var As String, type As Integer) As Boolean ' return true if we expanded the value
 
-  If type = Highlight.string Then 
+  If type = highlight.string Then 
     p.syms.Add(var)
     p.types.Add(type)
     Return True
   Endif
    
-  If Not CreateCmdProgram.IsGlob(var) Then 
+  If Not IsGlob(var) Then 
     p.syms.Add(var)
     p.types.Add(type)
     Return False
   Endif
   
   If p.syms.count = 0 Then                                 'this is the command to execute
-      Dim files As String[]
-     files = CreateCmdProgram.DoGlob(var)
-      If Files.count = 1 And If files[0] = var Then
+    Dim files As String[]
+    files = fileexpand(var)
+    If Files.count = 1 And If files[0] = var Then
           p.syms.Add(Files[0])
-          p.types.Add(Highlight.added)
-         Return False
+          p.types.Add(highlight.added)
+          Return False
     Else If Files.count > 1 Then
         Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
         Return False
     Else
         p.syms.Add(Files[0])
-        p.types.Add(Highlight.symbol)
+        p.types.Add(highlight.symbol)
     Endif
   Else
     p.syms.add("(")
-    p.types.Add(Highlight.Operator)
-    p.syms.Add("fileexpand(" & Quote(var) & ")")
-    p.types.Add(Highlight.custom)
+    p.types.Add(highlight.Operator)
+    for each s as string in fileexpand(var)
+         p.syms.Add(s)
+         p.types.Add(highlight.custom)
+    next
     p.syms.add(")")
-    p.types.Add(Highlight.Operator)
+    p.types.Add(highlight.Operator)
   Endif
   Return True
   
@@ -338,7 +313,7 @@ Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integ
   
 End
 
-Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' replaces items in sline with Special functions
+Sub SpecialVariables(syms As String[], types As Integer[]) ' replaces items in sline with Special functions
   Dim newSyms As New String[]
   Dim newTypes As New Integer[]
   
@@ -387,4 +362,37 @@ Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' repla
   
 End
 
-' Gambas class file
+Sub SymsInsert(p As ParseInfo, sym As String, type As Integer)
+
+  sym = Trim(sym)
+  If sym = "" Then
+    Return
+  Endif
+  
+  If p.DoFileExpand = True Then
+    FileExpandInsert(p, sym, type)
+  Else
+    p.syms.Add(sym)
+    p.types.Add(type)
+  Endif
+End
+
+Public Sub IsGlob(Exp As String) As Boolean
+  
+  Select Case exp[0]
+        Case "@", "/", "~"
+          Return True
+          
+        Case "."
+          If exp[1] = "/" Then Return True
+          If exp.len = 1 Then Return True
+          Return False
+          
+        Default
+          If InStr(exp, "*") Then Return True
+          
+  End Select
+  
+  Return False
+  
+End

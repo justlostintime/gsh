@@ -7,7 +7,7 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
  ' Endif
  
 'If checkonly = True Then Return True
- Dim expandsets As String[] = Split(value, " ", " ''", True, True)
+ Dim expandsets As String[] = Split(value, " ", "''", True, True)
  Dim FirstSet As String[]
  Dim intermresults As New String[]
  For Each eitem As String In expandsets
@@ -73,7 +73,7 @@ Sub matchbrace(src As String, start As Integer) As Integer
 End
 
 Sub getenum(enumdef As String) As String[]
-  Dim toEnum As String[] = Split(enumdef, ", ", "{}\"\"", True, True)
+  Dim toEnum As String[] = Split(enumdef, ", ", "{}", True, True)
   Dim result As New String[]
   For Each s As String In toEnum
   If InStr(s, "{") Then
