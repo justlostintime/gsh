@@ -2283,29 +2283,29 @@ Sub lambdaExpression(eblk As String[])
 
   execbuffer = removeLastLine(execbuffer)
   Dim savebuf2 As String = execbuffer
+  execbuffer = ""
   
   NoPreProcess = True
   DoBlock(eblk)
   NoPreProcess = False
   execbuffer = removeLastLine(execbuffer)
+  
   Dim lambdaname As String = "lambda" & Str(linktable.count)
   lambdabuffer &= "sub " & lambdaname & "(...) as variant\n" & execbuffer & "\nend\n"
-  If True Then
-    linktable.Add(lambdabuffer, lambdaname)
-    execbuffer = savebuf2 & lambdaname & "("
-    Dim parms As String[] = Split(Variables, " \t,()", "\"\"", True, True)
-    If parms.count > 1 Then
-      For i As Integer = 1 To parms.max
+  
+  linktable.Add(lambdabuffer, lambdaname)
+  execbuffer = savebuf2 & lambdaname & "("
+  
+  Dim parms As String[] = Split(Variables, " \t,()", "\"\"", True, True)
+  If parms.count > 1 Then
+    For i As Integer = 1 To parms.max
         execbuffer &= parms[i]
         If i < parms.max Then execbuffer &= ","
-      Next
-    Endif
-    Execbuffer &= ")\n"
-    SharedMem["$lambda"] = LambdaBuffer
-  Else
-    execbuffer = ""
-    Error.Raise("Bad Lambda expression")
+    Next
   Endif
+  Execbuffer &= ")\n"
+  
+  SharedMem["$lambda"] = LambdaBuffer
   
 Catch
   NoPreProcess = False

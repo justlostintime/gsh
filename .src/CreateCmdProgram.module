@@ -742,7 +742,7 @@ Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As St
     Case "\""
       Return Quote(UnQuote(gsh.PreProcesses(val)))
     Case "$"
-      If SharedMem.exist(val) Then
+      If SharedMem.exist(Right(val, -1)) Then
           Return UnQuote(gsh.PreProcesses(val))
       Else
           Return Quote(Eval(Mid(val, 2)))
@@ -870,7 +870,7 @@ Next
 
 End
 
-Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False)
+Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
 Public Sub AliasReplace(Data As String) As String
   'Dim bChanged As Boolean = False
   'Dim aList As String[] = Split(Trim(data), " \t!|", "\"\"", True, True)

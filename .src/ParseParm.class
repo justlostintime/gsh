@@ -16,7 +16,7 @@ Public KeepQuote As Boolean
 Public syms As New String[]
 Public types As New Integer[]
 
-Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = [], qs As String[] = ["\"", "\""], sep As String[] = [], Special As Boolean = False)
+Public Sub _new(SetDefaults As Boolean, Optional ops As String[] = ["+", "-", "*", "/", "&", "%", "^"], qs As String[] = ["\"", "\""], sep As String[] = [" ", ","], Special As Boolean = False, LeaveQuotes As Boolean = True)
   
 Dim IgnorIt As String[]
   
@@ -34,7 +34,7 @@ If SetDefaults Then
  KeepQuote = True
  DoSpecial = True
 Else
- seperators = New String[]
+ seperators = sep
  operators = ops
  SpecialSymbols = New String[]
  quotes = qs
@@ -44,7 +44,7 @@ Else
  IgnoreChar = New String[]
  keywords = New String[]
  DoFileExpand = False
- KeepQuote = True
+ KeepQuote = LeaveQuotes
  DoSpecial = special
 Endif
 
