@@ -1,4 +1,7 @@
 * Sun Jan 17 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+- Fix issue with incorrectly handled expansion
+
+* Sun Jan 17 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
 - Fixes for parameterized alias and nested lambda expressions
 
 * Sat Jan 16 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96

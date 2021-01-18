@@ -56,6 +56,17 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Continue
     Endif
     
+     If p.SpecialSymbols.Exist(InLine[streampos]) And If p.DoSpecial Then
+      If CurrentType <> Highlight.added And If sym.len > 0 Then
+          SymsInsert(p, sym, CurrentType)
+      Endif
+      SymsInsert(p, InLine[streampos], Highlight.added)
+      sym = ""
+      CurrentType = Highlight.Symbol
+      Inc StreamPos
+      Continue
+    Endif
+    
     If p.braces.Exist(InLine[streampos]) Then
       If sym.len > 0 Then
           SymsInsert(p, sym, CurrentType)
@@ -67,16 +78,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Continue
     Endif
     
-    If p.SpecialSymbols.Exist(InLine[streampos]) Then
-      If CurrentType <> Highlight.added And If sym.len > 0 Then
-          SymsInsert(p, sym, CurrentType)
-      Endif
-      SymsInsert(p, InLine[streampos], Highlight.added)
-      sym = ""
-      CurrentType = Highlight.Symbol
-      Inc StreamPos
-      Continue
-    Endif
+   
     
     If p.operators.Exist(InLine[streampos]) Then
       If CurrentType <> Highlight.operator Then
@@ -164,14 +166,14 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
           If streampos < inline.len Then 
              sym &= InLine[StreamPos]
           Else
-             Error.raise("Unmatched Quote  [" & currentquote & "]  in :" & Quote(inline))
+             Error.raise("Unmatched Quote at escape char [" & currentquote & "]  in :" & Quote(inline))
           Endif
         Endif
         
         Inc StreamPos
         
         If streampos >= InLine.len Then 
-               Error.raise("Unmatched Quote  [" & currentquote & "]  in :" & Quote(inline))
+               Error.raise("Unmatched Quote at eol [" & currentquote & "]  in :" & Quote(inline))
         Endif
         
       Wend
@@ -209,14 +211,16 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     Dim CurrentLine As Integer = 0
     Dim LastSegmentStart As Integer = 0
     Dim InSpecialSet As Integer = 0
-    For i As Integer = 0 To p.syms.Max
+    Dim i As Integer = 0
+    Do
+      If i >= p.syms.count Then Break
       If p.types[i] = Highlight.added 
-       If p.braces.Find(p.syms[i]) % 2 = 1 Then
+        If p.SpecialSymbols.Find(p.syms[i]) % 2 = 0 Then
            Inc InSpecialSet
-       Else 
+        Else 
            Dec InSpecialSet
-       Endif
-     Endif
+        Endif
+      Endif
       If inSpecialSet = 0 Then 
         If p.types[i] = Highlight.operator Then
           If lastSegmentStart < i Then 
@@ -226,14 +230,14 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
          Inc CurrentLine
         Endif
     
-       If IncludeBreak Then
+        If IncludeBreak Then
           If p.types[i] = Highlight.operator Then
             OutputList.Add(p.syms[i])
           Endif
         Endif
       Endif
-    
-    Next
+      Inc i
+    Loop
   
     If LastSegmentStart <= p.syms.max Then 
        OutputList.Add(p.syms.copy(lastSegmentStart, i - LastSegmentStart).Join(" "))

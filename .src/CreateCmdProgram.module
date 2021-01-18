@@ -808,15 +808,17 @@ Public ShelliParse As ParseParm
 
 Public Sub _init()
   
-  ShellParse = New ParseParm(False, ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
-  ShellParse.braces = ["(", ")"]
+  ShellParse = New ParseParm(False, ["&", ">", ">>", "<", "&>", "&>>", "|", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
+  ShellParse.braces = []
   ShellParse.seperators = [" ", "\t", "\n"]
   ShellParse.DoFileExpand = True
   
-  ShelliParse = New ParseParm(False, ["&", "&&", ">", ">>", "<", "&>", "&>>", "|", "||", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
+  ShelliParse = New ParseParm(False, [], ["\"", "\"", "`", "`"])
   ShelliParse.braces = ["(", ")"]
+  ShelliParse.SpecialSymbols = []
   ShelliParse.seperators = [" ", "\t", "\n"]
-  ShelliParse.DoFileExpand = True
+  ShelliParse.DoFileExpand = False
+  ShelliParse.DoSpecial = False
 End
 
 
@@ -950,8 +952,12 @@ DoAliasAgain:
 End
 'Public ShelliParse As ParseParms
 Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As Integer)
-  Dim NewLine As String = AliasReplace(CmdList[currentcmd].Join(" "))
+  Dim NewLine As String = AliasReplace(CmdList[currentcmd][0])
   Parser(NewLine, ShelliParse)
+  If CmdList[currentcmd].count > 1 Then
+      ShelliParse.syms.Insert(CmdList[currentcmd].Extract(1, -1))
+      ShelliParse.types.Insert(CmdTypes[currentCmd].Extract(1, -1))
+  Endif
   CmdTypes[currentcmd] = ShelliParse.types
   CmdList[currentcmd] = ShelliParse.syms
 End
