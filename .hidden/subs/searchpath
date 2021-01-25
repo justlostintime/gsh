@@ -1,0 +1,38 @@
+Sub searchpath()
+Print "Begin library Search list"
+
+dim gbsver as string = "gambas"&system.version
+dim adatapaths as string[]
+dim i as integer
+Print user.home &/ ".local/share" &/ gbsver &/ "lib"
+print "/usr/lib" &/ gbsver
+If Env["XDG_DATA_HOME"] <> "" Then
+    print  Env["XDG_DATA_HOME"] &/ gbsver &/ "lib"
+Endif
+
+If Exist("usr/lib/" &/ System.Architecture) Then
+    print "usr/lib/" &/ System.Architecture &/ gbsver
+  Endif
+
+If Env["LD_LIBRARY_PATH"] <> "" Then
+    aDataPaths = Split(Env["LD_LIBRARY_PATH"], ":", "", True)
+    For i= 0 To aDataPaths.Max
+      print aDataPaths[i] & "/" & gbsver
+    Next
+Endif
+
+If Env["XDG_DATA_DIRS"] <> "" Then
+    aDataPaths = Split(Env["XDG_DATA_DIRS"], ":", "", True)
+    For i = 0 To aDataPaths.Max
+      print aDataPaths[i] & "/" & gbsver &/ "lib"
+    Next
+Endif
+If Env["PATH"] <> "" Then
+    aDataPaths = Split(Env["PATH"], ":", "", True)
+    For i = 0 To aDataPaths.Max
+      print aDataPaths[i] 
+    Next
+Endif
+
+print "End Of List"
+End

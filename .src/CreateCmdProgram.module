@@ -873,6 +873,7 @@ Next
 End
 
 Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
+Private MultyParse As New ParseParm(False, ["::"], ["\"", "\"", "[", "]"], ["\n"], True)
 Public Sub AliasReplace(Data As String) As String
   'Dim bChanged As Boolean = False
   'Dim aList As String[] = Split(Trim(data), " \t!|", "\"\"", True, True)
@@ -926,8 +927,8 @@ DoAliasAgain:
   Next
   
   If InStr(data, ":") <> 0 Then
-      'used = parser(data)
-      used = Split(data, ":", "\"\"", True, True)
+      used = parser(data, MultyParse)
+      'used = Split(data, ":", "\"\"", True, True)
       If gsh.ReadQueue.count > 0 Then
          For i As Integer = used.Max DownTo 1 
             gsh.ReadQueue.push(used[i])

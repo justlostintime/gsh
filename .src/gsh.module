@@ -1336,6 +1336,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
           Endif
           'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
           SharedMem["$execprog"] = program
+          File.Save(user.home & "/vars/ExecProg.gbs", program)
           If TraceLevel = 20 Then SharedMem.WriteVarTo("$execprog")
           CompileResult = ""
           CompilerOutput = ""
@@ -1710,7 +1711,7 @@ End
 
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
-Private MultyParse As New ParseParm(False, ["::"], ["\"", "\""], ["\n"], True)
+Private MultyParse As New ParseParm(False, ["::"], ["\"", "\"", "[", "]"], ["\n"], True)
 
 Public Sub IfReader(EndBlk As String[]) As Boolean
 

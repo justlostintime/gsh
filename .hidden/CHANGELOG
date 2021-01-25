@@ -1,3 +1,11 @@
+* Mon Jan 25 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+- Fix bug with usage of : when not intended to be seperator
+
+* Mon Jan 18 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+
+* Mon Jan 18 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+- Added abort to prevent any farther image write and database changes
+
 * Sun Jan 17 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
 - More issues with the pipe fiting and alis replacement... did it the hard way, need a good re write
 
