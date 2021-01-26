@@ -5,26 +5,26 @@ Export
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
 Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
 Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
-Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "add_history"
+Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "history_expand"
 Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
 Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
-Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "add_history"
+Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "history_expand"
 Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
 Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
-Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "add_history"
+Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "history_expand"
 Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
 Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
-Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "add_history"
+Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "history_expand"
 Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
 Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
-Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "add_history"
+Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "history_expand"
 
 Private ReadLineVersion As Integer
 Public DoTrace As Boolean 
 Public DefaultPrompt As String
 Public UserPrompt As String
 
-Public Sub _new(Optional sUserPrompt As String = "$", sDefaultPrompt As String = "$")
+Public Sub _new(Optional sUserPrompt As String = Quote("$"), sDefaultPrompt As String = Quote("$"))
 
   DoTrace = False
   ReadLineVersion = -1
