@@ -1,4 +1,7 @@
 * Tue Jan 26 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
+- Made readline a a seperate class
+
+* Tue Jan 26 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
 - Fixed the stderr output to console when stdout was redirected... lol
 
 * Mon Jan 25 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
