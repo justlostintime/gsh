@@ -1,0 +1,155 @@
+' Gambas class file
+
+Export
+
+Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
+Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
+Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
+Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "add_history"
+Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
+Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
+Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "add_history"
+Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
+Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
+Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "add_history"
+Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
+Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
+Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "add_history"
+Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
+Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
+Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "add_history"
+
+Private ReadLineVersion As Integer
+Public DoTrace As Boolean 
+Public DefaultPrompt As String
+Public UserPrompt As String
+
+Public Sub _new(Optional sUserPrompt As String = "$", sDefaultPrompt As String = "$")
+
+  DoTrace = False
+  ReadLineVersion = -1
+  ReadLineVersion = DetectReadLineVersion()
+  DefaultPrompt = sDefaultPrompt
+  UserPrompt = sUserPrompt
+  
+End
+
+Public Sub Trace(onoff As Boolean)
+  DoTrace = onoff
+End
+
+Private Sub DetectReadlineVersion() As Integer
+
+
+  Try c9_add_history("")
+  If Not Error Then Return 9
+  Try c8_add_history("")
+  If Not Error Then Return 8
+  Try c7_add_history("")
+  If Not Error Then Return 7
+  Try c6_add_history("")
+  If Not Error Then Return 6
+  Try c5_add_history("")
+  If Not Error Then Return 5
+  
+  Return 4
+
+End
+
+Public Sub add_history(data As String)
+
+  If readlineversion = -1 Then 
+    readlineversion = DetectReadlineVersion()
+  Endif
+  
+  Select Case ReadLineVersion
+    Case 9
+      c9_add_history(data)
+    Case 8
+      c8_add_history(data)
+    Case 7
+      c7_add_history(data)
+    Case 6
+      c6_add_history(data)
+    Case 5
+      c5_add_history(data)
+  End Select
+
+End
+
+Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = False) As String
+  
+  Dim pInput As Pointer
+  Dim sInput As String
+  Dim Prompt As String
+
+  If DoTrace Then Error ("Begin readline")
+  
+  If bDbaseServer Then
+    If DoTrace Then Error ("Begin server mode reads")
+    Dim rByte As Byte
+    sInput = ""
+    While True
+      Read #file.in, rByte
+      If rbyte = &H0A Then Break
+      sInput &= Chr(rbyte)
+    Wend
+    sInput = Trim(sInput)
+    If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput 
+  Else
+    Dim retryloop As Integer = 2
+  retryprompt: 
+    Wait
+    If DoTrace Then Error ("Trying to read from terminal")
+    If retryloop = 0 Then 
+      Error ("Unable to evaluate any prompt type")
+      prompt = "$"
+    Else 
+      Try prompt = Eval(userprompt)
+      If Error Then
+        userprompt = DefaultPrompt
+        Dec retryloop
+        Goto retryprompt
+      Endif
+    Endif
+    
+    If DoTrace Then Error ("Reading From Readline Version");; readlineversion 
+    ' SetBlockIndent()
+    Select Case ReadLineVersion
+      Case 9
+        pinput = c9_readline(Prompt & BlockIndent)
+      Case 8
+        pinput = c8_readline(Prompt & BlockIndent)
+      Case 7
+        pinput = c7_readline(prompt & BlockIndent)
+      Case 6
+        pinput = c6_readline(prompt & BlockIndent)
+      Case 5
+        pinput = c5_readline(prompt & BlockIndent)
+      Default 
+        Error Prompt; "%"; BlockIndent;                 ' Use input line as we cant find readline unix version
+        Line Input sInput
+        sInput = Trim(sInput)
+    End Select
+    
+    If ReadlineVersion > 4 Then
+      
+      If IsNull(pinput) Then Return "QUIT"
+      
+      If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
+      sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
+      rFree(pInput)
+      sInput = Trim(sInput)
+      If sInput <> "" Then add_history(sInput & "\x00")
+    Endif
+    If DoTrace Then Error ("Readline Complete")
+  Endif
+  
+  Wait
+  
+  Return sInput
+  
+Catch 
+  Error.Propagate()
+
+End

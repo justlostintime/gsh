@@ -49,7 +49,7 @@ Public ContainsGlobal As Boolean = False
 
 Public History As New Collection
 Public HCurrentRead As Integer = -1
-Private ReadLineVersion As Integer = -1
+'Private ReadLineVersion As Integer = -1
 
 Public PreOutBuf As New Collection
 Public BlockSize As Integer = 4512000
@@ -81,6 +81,7 @@ Private LocalRunning As Boolean = False
 Private gshrcdate As Date = Now
 Private onstartrcdate As Date = Now
 Private onexitrcdate As Date = Now
+Private getline As GshReadLine
 
 
 ' Extern rWrite(handle As Integer, data As Pointer, len As Integer) As Integer In "libc:6" Exec "write"
@@ -88,23 +89,6 @@ Private onexitrcdate As Date = Now
 ' Extern unsetenv(name As String) As Integer In "libc:6"
 ' Extern putenv(name As String) As Integer In "libc:6"
 ' Extern getenv(name As String) As Pointer In "libc:6"
-
-Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
-Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
-Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "add_history"
-Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
-Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
-Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "add_history"
-Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
-Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
-Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "add_history"
-Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
-Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
-Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "add_history"
-Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
-Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
-Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "add_history"
-
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
 Extern chdir(Dest As String) As Integer In "libc:6"
@@ -117,23 +101,6 @@ Public DoTrace As Boolean = False
 Public TraceLevel As Integer = 1
 Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
-
-Private Sub DetectReadlineVersion() As Integer
-
-  Dim v As Integer = 4
-  Try c9_add_history("")
-  If Not Error Then Return 9
-  Try c8_add_history("")
-  If Not Error Then Return 8
-  Try c7_add_history("")
-  If Not Error Then Return 7
-  Try c6_add_history("")
-  If Not Error Then Return 6
-  Try c5_add_history("")
-  If Not Error Then Return 5
-  Return v
-
-End
 
 
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel) ' this function turns on the compile tracing
@@ -220,6 +187,7 @@ Public Sub _init()
   Class.Load("Signal")
   Class.Load("SubCls")
   Class.Load("CreateCmdProgram")
+  Class.Load("gshReadLine")
   
   SharedMem.DoInit()
   
@@ -691,27 +659,6 @@ Private Sub VerifyAppDepend()
   
 End
 
-Private Sub add_history(data As String)
-
-  If readlineversion = -1 Then 
-    readlineversion = DetectReadlineVersion()
-    SharedMem["readlineversion"] = readlineversion
-  Endif
-  Select Case ReadLineVersion
-    Case 9
-      c9_add_history(data)
-    Case 8
-      c8_add_history(data)
-    Case 7
-      c7_add_history(data)
-    Case 6
-      c6_add_history(data)
-    Case 5
-      c5_add_history(data)
-  End Select
-
-End
-
 
 Public Sub gshlogging(logname As String, msg As String)
   
@@ -762,6 +709,7 @@ Public Sub Main()
   Class.Load("Parser")
   Class.Load("ServiceMode")
   Class.Load("HelpSystem")
+  Class.Load("gshReadLine")
   
   Try chdir(Env["PWD"])
   CreateCmdProgram.InitAlias()
@@ -904,6 +852,8 @@ Public Sub Main()
     Close AppSource
     ExitProgram()
   Endif
+  
+  getline = New GshReadLine
   If TraceLevel > 0 Then DoTrace = True
   ' Then assume it is an interactive session
   If Not bDbaseServer Then ' dont do this if in service mode
@@ -940,9 +890,9 @@ Public Sub Main()
     Endif
     
     SetTitle()
-    
+
     For Each sh As String In history
-      add_history(sh & "\x00")
+     getline.add_history(sh & "\x00")
     Next
     
     execlocal(["onstart()"])                                                  ' only if we are not a service
@@ -1162,6 +1112,8 @@ End
 Private CompileResult As String = ""
 Private CompilerOutput As String = ""
 Private Const chdirextern As String = "Extern chdir(Dest As String) As Integer In \"libc:6\"" 
+Private $execprog As String = ""          ' the last executed gbs script
+
 Public Sub ProcessProg(Optional NoWait As Boolean = False)
   'Dim ProgramCommand, Result As String
 
@@ -1188,7 +1140,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     execbuffer = Replace(execbuffer, "&\n", "\n")
   Endif
   
-  SharedMem["$execprog"] = ExecBuffer
+  'SharedMem["$execprog"] = ExecBuffer
   
   If Not nowait Then
     If execlocal(Split(execbuffer, "\n", "\"\"", True, True)) Then 
@@ -1334,10 +1286,13 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
               Error "(Trace "; Now; ") "; ("Execute External "); ": "; sdf
             Next
           Endif
-          'Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
-          SharedMem["$execprog"] = program
-          File.Save(user.home & "/vars/ExecProg.gbs", program)
-          If TraceLevel = 20 Then SharedMem.WriteVarTo("$execprog")
+          
+          $execprog = program  ' save a copy of last executed program, can be edited by "edit $execprog" on command line
+          
+          If TraceLevel = 20 Then 
+               File.Save(user.home & "/vars/ExecProg.gbs", program)
+               Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
+          Endif
           CompileResult = ""
           CompilerOutput = ""
           eCmd = ["/usr/bin/gbs3", "-b", ScriptName]
@@ -1615,7 +1570,7 @@ Catch
 
 End
 
-Sub SetBlockIndent()
+Sub SetBlockIndent() As String 
 
   With sharedmem
     If blocklevel = 0 Then
@@ -1624,89 +1579,20 @@ Sub SetBlockIndent()
       blockindent = String(blocklevel, .["$blockindent"]) & "\x00"
     Endif
   End With
-
+ Return blockindent
 End
 
 Public Sub readline() As String
-  
-  Dim pInput As Pointer
-  Dim sInput As String
-  Dim Prompt As String 
-  
-  If ReadLineVersion = -1 Then 
-    ReadLineVersion = DetectReadlineVersion()
-    SharedMem["readlineversion"] = readlineversion
-  Endif
-  
-  If DoTrace Then Error ("Begin readline")
-  
-  If bDbaseServer Then
-    If DoTrace Then Error ("Begin server mode reads")
-    Dim rByte As Byte
-    sInput = ""
-    While True
-      Read #file.in, rByte
-      If rbyte = &H0A Then Break
-      sInput &= Chr(rbyte)
-    Wend
-    sInput = Trim(sInput)
-    If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput 
-  Else
-    Dim retryloop As Integer = 2
-  retryprompt: 
-    Wait
-    If DoTrace Then Error ("Trying to read from terminal")
-    If retryloop = 0 Then 
-      Error ("Unable to evaluate any prompt type")
-      prompt = "$"
-    Else 
-      Try prompt = Eval(SharedMem["$prompt"])
-      If Error Then
-        SharedMem["$prompt"] = DefaultPrompt
-        Dec retryloop
-        Goto retryprompt
-      Endif
-    Endif
-    
-    If DoTrace Then Error ("Reading From Readline Version");; readlineversion 
-    SetBlockIndent()
-    Select Case ReadLineVersion
-      Case 9
-        pinput = c9_readline(Prompt & BlockIndent)
-      Case 8
-        pinput = c8_readline(Prompt & BlockIndent)
-      Case 7
-        pinput = c7_readline(prompt & BlockIndent)
-      Case 6
-        pinput = c6_readline(prompt & BlockIndent)
-      Case 5
-        pinput = c5_readline(prompt & BlockIndent)
-      Default 
-        Error Prompt; "%"; BlockIndent;
-        Line Input sInput
-        sInput = Trim(sInput)
-    End Select
-    
-    If ReadlineVersion > 4 Then
-      
-      If IsNull(pinput) Then Return "QUIT"
-      
-      If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
-      sInput = String(1, String@(pInput))
-      rFree(pInput)
-      sInput = Trim(sInput)
-      If sInput <> "" Then add_history(sInput & "\x00")
-    Endif
-    If DoTrace Then Error ("Readline Complete")
-  Endif
-  
-  Wait
-  
-  Return sInput
-  
-Catch 
+   Dim sbuffer As String  
+   getline.DoTrace = DoTrace
+   getline.UserPrompt = SharedMem["$prompt"]
+   sbuffer = getline(SetBlockIndent(), bDbaseServer)
+   SharedMem["$prompt"] = getline.UserPrompt
+   Return sBuffer
+   
+Catch
   Error.Propagate()
-
+  
 End
 
 Private executedblock As String = ""
@@ -1756,7 +1642,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
           
         Case "HISTORY"
           inBuffer = Trim(ReadHistory())
-          add_history(inBuffer)
+          getline.add_history(inBuffer)
           If DoTrace Then Error "(Trace "; Now; ") ";; ("Read History '"); inbuffer; "'"
           
         Case "FILE"
@@ -2105,18 +1991,17 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Else
               PrintHelp()
             Endif
-            SharedMem.Free("$result")
+            
             SharedMem["$result"] = "OK"
             execbuffer = ""
             
-          Case "LIST"    ' list the last executed program or any program
+          Case "LIST"              ' list the last executed program or any program
             If InBufParse.count = 2 Then
               DoListing(InBufParse[1])
             Else
               DoListing("")
             Endif
             
-            SharedMem.Free("$result")
             SharedMem["$result"] = "OK"
             execbuffer = ""
             
@@ -2130,7 +2015,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Else
               Error.Raise("Nothing to get")
             Endif
-            SharedMem.Free("$result")
             SharedMem["$result"] = "OK"
             execbuffer = ""
             
@@ -2138,23 +2022,26 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
           Case "EDIT"    ' edit a class or Procedure
             
             LinkTable.Clear()
-            SharedMem.Free("$result")
             Dim funclass As String
             If InBufParse.count = 1 Then
               lastexecutedblock = editbuffer(lastexecutedblock)
               OpenBuffer(lastexecutedblock, True)
               execbuffer = ""
               Return True
+            Else If InBufParse.count = 2 And If InBufParse[1] = "$execprog" Then
+              $execprog = editbuffer($execprog)
+              execbuffer = ""
+              Return False
             Else If inbufParse.count >= 2 Then
               If HTypes[1] = highlight.symbol Then
                 funclass = "class." & inBufParse[1]
-                If Not sharedmem.exist(funclass) Then
+                If Not sharedmem.exist(funclass) Then  ' check if it is a class definition
                   funclass = "sub." & inbufparse[1]
-                  If Not Sharedmem.exist(funclass) Then
+                  If Not Sharedmem.exist(funclass) Then ' check if it is a function definition
                     funclass = "struct." & inbufparse[1]
-                    If Not SharedMem.exist(funclass) Then 
+                    If Not SharedMem.exist(funclass) Then  ' check if it is a structure definition
                       funclass = inbufparse[1]
-                      If Not SharedMem.exist(funclass) Then
+                      If Not SharedMem.exist(funclass) Then ' check for any old variable
                         funclass = ""
                       Endif
                     Endif
@@ -2349,7 +2236,7 @@ Sub editanything(funclass As String) As Boolean
 
   If funclass <> "" Then
     Dim cvString As Variant = sharedmem[funclass]
-    If funclass Like "sub.*" Or If funclass Like "class.*" Then cvString = Trim(cvString)
+    If funclass Like "sub.*" Or If funclass Like "class.*" Or If funclass Like "struct.*" Then cvString = Trim(cvString)
     Select Case TypeOf(cvString)
       Case gb.String
         cvString = editbuffer(cvString)
@@ -3386,7 +3273,7 @@ Private Sub doListing(Command As String)
     Endif
   Else
     ListProg = LambdaBuffer & "\n"
-    ListProg &= SharedMem["$execprog"]
+    ListProg &= $execprog
   Endif
   
   Print ConsoleHighlight.ToConsole(ListProg)
