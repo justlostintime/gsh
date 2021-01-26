@@ -232,7 +232,9 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
   Dim InBlock As Boolean = False
   Dim BuildBlock As String             ' used to construct block a exec parameters
   Dim NoOutRedirect As Boolean = True
+  Dim NoErrRedirect As Boolean = True
   Dim NeedsSTDIOWrite As Boolean = False
+  Dim NeedsSTDERRWrite As Boolean = False
   Dim BaseName As String
   Dim CurrentRead As Integer         ' The proc to read from
   Dim x As String[]
@@ -256,6 +258,8 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
    InBlock = False
    NoOutRedirect = True
    NeedsSTDIOWrite = False
+   NoErrRedirect = True
+   NeedsSTDERRWrite = False
    BaseName = "r" & Str(Rand(9999))
 
   'Dim NextedFinals As String[]        ' this is where the generated && and || will be statcked until added to final final
@@ -391,6 +395,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, True)
         
         NeedsSTDIOWrite = True
+        NoErrRedirect = False
   
       Case ">", ">>" ' Output redirect features
         Inc i
@@ -399,7 +404,8 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
         Endif
         
         i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, False)
-       
+        
+        NeedsSTDERRWrite = True
         NoOutRedirect = False
      
       Case "<" 'input features
@@ -510,6 +516,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     Endif
     
     If NoOutRedirect And NeedsSTDIOWrite Then CmdIo[CurrentCmd] &= "write #File.out, sInput\n"
+    If NoErrRedirect And NeedsSTDERRWrite Then CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
     If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"   ' do this only on first, allows to inject data to stream
   Next
   
@@ -780,6 +787,10 @@ Private Sub SetIoSub(CmdIndex As Integer, basename As String) As String
   Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, -256\n"
 End
 
+Private Sub DefaultIoSub(CmdIndex As Integer, basename As String) As String
+  Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, -256\nwrite #file.out,sInput\nend"
+End
+
 Private Sub SetKillSub(CmdIndex As Integer, basename As String) As String
   Dim final As String 
   final = "mRead" & BaseName & Str(CmdIndex) & "_kill|Public sub mRead" & BaseName & Str(CmdIndex) & "_kill()\nwith sharedmem\n"
@@ -793,6 +804,12 @@ End
 Private Sub SetErrSub(CmdIndex As Integer, basename As String) As String
   
   Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\n"
+  
+End
+
+Private Sub DefaultErrSub(CmdIndex As Integer, basename As String) As String
+  
+  Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\nwrite #file.err,  msg\n"
   
 End
 
