@@ -1,7 +1,14 @@
 ' Gambas module file
 
-Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki/cat", "https://gambaswiki.org/wiki/lang", "https://gambaswiki.org/wiki/comp/gb", "https://gambaswiki.org/wiki/comp"
-                                     "https://gambaswiki.org/wiki/comp/gb.qt4", "https://gambaswiki.org/wiki", "https://gambaswiki.org/wiki/def", "https://gambaswiki.org/wiki/error"]
+Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki/cat", 
+                                                                         "https://gambaswiki.org/wiki/lang", 
+                                                                         "https://gambaswiki.org/wiki/comp/gb", 
+                                                                         "https://gambaswiki.org/wiki/comp",
+                                                                         "https://gambaswiki.org/wiki/comp/gb.qt4", 
+                                                                         "https://gambaswiki.org/wiki", 
+                                                                         "https://gambaswiki.org/wiki/def", 
+                                                                         "https://gambaswiki.org/wiki/error"]
+                                     
 Public GambasHelpList As New Collection(gb.ignorecase)
 Public GshHelpList As New Collection(gb.ignorecase)
 Public GambasHelpIndex As New String[]
@@ -80,7 +87,7 @@ Public Sub GetHelpDetailedText(Command As String) As String
   Dim sSource As New HttpClient As "hclient"
   Dim buffer As String = ""
   Dim Result As Variant
-  command = UnQuote(command)
+  command = "*" & Replace(UnQuote(command), " ", "*") & "*"
   SearchResults.Clear()
   SearchHelp(command, GshHelpList, GshHelpIndex)
   SearchHelp(command, GambasHelpList, GambasHelpIndex)
@@ -158,6 +165,7 @@ End
 
 Private Sub GetLiveHelp(msymbol As String[], Title As String, Optional Summary As Boolean = False) As String
   Dim ch As New ConsoleHighlight
+  'Dim ch As New Highlight
   Dim helptxt As String = ""
   If Summary = False Then 
      helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & msymbol[0] & "\n\nDESCRIPTION\n"
@@ -267,6 +275,10 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
  Dim mproc As Process
  Dim ch As New ConsoleHighlight
  helpfromhtml = ""
+ If Not System.Exist("html2text") Then 
+   Print "Please install the application 'html2text'  in order to display full gambas help information"
+   Print " source = " & CmdName
+ Endif
  mproc = Exec ["html2text", "-ascii", "-width", "200"] For Read Write As "mrProcget"
  Write #mproc, sSource
  ' Flush #mproc

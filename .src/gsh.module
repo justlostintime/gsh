@@ -461,7 +461,7 @@ End
 
 
 Public Sub compileFunctionsOnStart()
-  
+
   Dim Syms As String[] = SharedMem.Variables("sub.*")
   
   For Each sym As String In syms
@@ -932,7 +932,7 @@ Public Sub Main()
   If DoTrace Then Error "(Trace "; Now; ") ";; ("Enter interactive mode!")
   Dim InteractiveErrorCount As Integer = 0 
 interactive: 
-  
+
   While True
     Try DontExit = IfReader(["QUIT"])
     If Error Then
@@ -1031,7 +1031,8 @@ Public Sub SetTitle()
 End
 
 
-Private SubParmParser As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
+'Private SubParmParser As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
+Private SubParmParser As New ParseParm(False, [","], ["(", ")", "\"", "\""])
 Public Sub ExecLocal(prog As String[]) As Boolean
 
   If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
@@ -1289,13 +1290,13 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
           
           $execprog = program  ' save a copy of last executed program, can be edited by "edit $execprog" on command line
           
-          If TraceLevel = 20 Then 
+         ' If TraceLevel = 20 Then 
                File.Save(user.home & "/vars/ExecProg.gbs", program)
                Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
-          Endif
+        '  Endif
           CompileResult = ""
           CompilerOutput = ""
-          eCmd = ["/usr/bin/gbs3", "-b", ScriptName]
+          eCmd = ["/usr/bin/gbs3", "-b", "-T", ScriptName]
           
           Try Exec ecmd Wait For Read As "compileread"
           If CompileResult <> "" And Left(Compileresult, 5) <> "Class" And If Error Or CompileResult <> "" Then
@@ -1324,7 +1325,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
               Return 
           Endif
           'If DoTrace Then ecmd.Add("-t", 1)
-          eCmd = ["/usr/bin/gbs3", ScriptName]
+          eCmd = ["/usr/bin/gbs3", "-T", ScriptName]
           eCmd.Insert(cmdLineParameters)
           If nowait Then
             Try MyProcess = Exec ecmd As "SysProc"
@@ -1597,7 +1598,7 @@ End
 
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
-Private MultyParse As New ParseParm(False, ["::"], ["\"", "\"", "[", "]"], ["\n"], True)
+Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
 
 Public Sub IfReader(EndBlk As String[]) As Boolean
 

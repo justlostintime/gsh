@@ -78,7 +78,7 @@ Public Sub MakeAbs(newdir As String) As String
   Endif
    
    If pwds.count > 0 Then
-   			 Return RealPath
+       Return RealPath
    Else
        Return "/"
    Endif
@@ -128,7 +128,7 @@ Public Sub getfullpath(filename As String) As String
    Next
    
    If pwds.count > 0 Then
-   			 Return "/" &/ pwds.join("/")
+       Return "/" &/ pwds.join("/")
    Else
          Return "/"
    Endif
@@ -356,7 +356,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
       DoAlias(CmdList, CmdTypes, currentcmd)
     Endif
     Dim bFirst As Boolean = True
-    gsh.LinkTable.Add("Public mProc" & BaseName & Str(CurrentCmd) & " As process\n", "mProc" & BaseName & Str(CurrentCmd))
+    gsh.LinkTable.Add("Public mProc" & BaseName & Str(CurrentCmd) & " As Process\n", "mProc" & BaseName & Str(CurrentCmd))
     
     If CmdKill[CurrentCmd] = "" Then CmdKill[CurrentCmd] = SetKillSub(CurrentCmd, basename)
     
@@ -890,7 +890,7 @@ Next
 End
 
 Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
-Private MultyParse As New ParseParm(False, ["::"], ["\"", "\"", "[", "]"], ["\n"], True)
+Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
 Public Sub AliasReplace(Data As String) As String
   'Dim bChanged As Boolean = False
   'Dim aList As String[] = Split(Trim(data), " \t!|", "\"\"", True, True)
@@ -1016,7 +1016,7 @@ Public Sub setalias(cmdline As String)
         cmd[1] = params[0] & "()"                                   ' set up the alias so we match a bracket
       Endif
       
-      body = Split(cmd[2], " \t", "", True)
+      body = Split(cmd[2], " \t", "", True)                          'What the hell is this
       
       If body.count < 1 Then 
         Error.Raise("alias: no definition provided: " & cmdline)
