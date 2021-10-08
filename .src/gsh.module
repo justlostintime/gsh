@@ -1935,12 +1935,15 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             execbuffer = ""
             Return True
             
-          Case "COMPILE"
+          Case "COMPILE", "PROGRAM"
+            
             CompileOnly = True
             data = getlastline(execbuffer)
             execbuffer = removeLastLine(execbuffer)
-            DoBlock(["END", "COMPILE"])
+            DoBlock(["END", Upper(inBufParse[0])])
+            
             execbuffer = removeLastLine(execbuffer)
+            
             ProcessProg()
             execbuffer = ""
             CompileOnly = False
