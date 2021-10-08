@@ -1059,10 +1059,12 @@ Public Sub ExecLocal(prog As String[]) As Boolean
   Dim newsplit As String = RegExp.Replace(prog[0], "^.*[(]", "")
   newsplit = RegExp.Replace(newsplit, "[)]$", "")
   'lsplit = Split(newsplit, "," , "[]()", True, True)
-  lsplit = Parser(newsplit, SubParmParser)
+ ' lsplit = Parser(newsplit, SubParmParser)
+  lsplit.Remove(0)
   Dim parms As New Variant[]
+  
   For Each s As String In lsplit
-    If s.len > 1 And If s[0] = "." Then 
+    If s.len > 1 And If s[0] = "." Or s[0] = "!" Then 
       If s.len > 2 And If s[1] = "[" Then
         s = "sharedmem" & Mid(s, 2)
       Else
@@ -2595,7 +2597,7 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, [" "], ["\"", "\"", "[", "]"], [" "])
+Private CallParser As New ParseParm(False, [" "], ["\"", "\"", "[", "]"], [" ", ","])
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim i, j As Integer
@@ -2611,7 +2613,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   For i As Integer = 0 To interface.Max
     interface[i] = Trim(interface[i])
   Next
-  Dim CmdLine As String[] = Parser(CommandLine, CallParser)
+  Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
   Dim sCodeLine As String = CmdLine[0] & "("
   Dim types As Integer[]
   Dim syms As String[]

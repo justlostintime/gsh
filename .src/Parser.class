@@ -28,7 +28,7 @@ Static Private Sub SymsInsert(p As ParseParm, sym As String, type As Integer)
 End
 
 '' process the input line and split it into seperate commands
-Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, IncludeBreak As Boolean = False) As String[]
+Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, IncludeBreak As Boolean = False, BreakOnEscape As Boolean = True) As String[]
 
   Dim CurrentType As Integer = Highlight.Symbol
   Dim streamPos As Integer = 0
@@ -128,12 +128,12 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     Endif
     
     If p.quotes.Exist(InLine[streampos]) Then  ' check for a quote character
-      If sym.len > 0 Then
+      If BreakOnEscape And If sym.len > 0 Then
         SymsInsert(p, sym, CurrentType)
         sym = ""
       Endif
       
-      CurrentType = Highlight.string
+      If BreakOnEscape Then CurrentType = Highlight.string
       
       Dim currentquote As String = InLine[StreamPos]
       Dim inquote As Integer = p.quotes.Find(currentquote)
@@ -178,9 +178,11 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
         
       Wend
       
-      SymsInsert(p, sym, CurrentType)
-      sym = ""
-      CurrentType = Highlight.symbol
+      If BreakOnEscape Then 
+        SymsInsert(p, sym, CurrentType)
+        sym = ""
+        CurrentType = Highlight.symbol
+      Endif
       Continue
     Endif
     

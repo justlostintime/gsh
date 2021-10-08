@@ -34,6 +34,7 @@ PackageName=gsh-1.2.100
 PackageVersion=18
 CreateEachDirectory=1
 MimeTypes="gsh"
+RuntimeVersion="3.14"
 Packager=1
 Systems=autotools,debian,fedora,mageia,suse,slackware,ubuntu
 SameDependencies=1
