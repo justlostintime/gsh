@@ -140,7 +140,6 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Dim currentquote As String = InLine[StreamPos]
       Dim inquote As Integer = p.quotes.Find(currentquote)
       OpenQuote = currentquote
-      Inc QuoteLevel
       Inc inquote
       
       If inquote > p.quotes.max Or If inquote Mod 2 <> 1 Then
@@ -148,7 +147,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Endif
       
       currentquote = p.quotes[inquote]
-      
+      If Currentquote <> OpenQuote Then Inc QuoteLevel
       If p.KeepQuote Then sym &= InLine[StreamPos] 
       Inc Streampos
       
