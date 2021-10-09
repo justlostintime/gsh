@@ -1031,22 +1031,24 @@ Public Sub SetTitle()
 End
 
 
-'Private SubParmParser As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
+Private SubParmItems As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
 Private SubParmParser As New ParseParm(False, [","], ["(", ")", "\"", "\""])
 Public Sub ExecLocal(prog As String[]) As Boolean
-
+  Dim newsplit As String
+  
   If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
   If UseTable.count > 0 Then Return False                         ' If this command has any kind of use parameters we can not process
   
   If prog.count <> 1 Then Return False
   
-  Dim lsplit As String[] = Split(prog[0], "(,)", "\"\"", True, True)
+  'Dim lsplit As String[] = Split(prog[0], "(,)", "\"\"", True, True)
+  Dim lsplit As String[] = Parser(prog[0], SubParmParser)
   
   If lsplit.count < 1 Then Return False
   
   Dim method As String = lsplit[0]
   Dim sObject As String = "sub." & method
-  
+  lsplit.Remove(0)
   
   If Not SubCls.Exist(sObject) Then Return False                  ' its not in the compiled list
   If SubCls.changed(sObject) Then Return False                    ' we changed it in this session so will reflect this after start
@@ -1056,11 +1058,11 @@ Public Sub ExecLocal(prog As String[]) As Boolean
  
   ' Link Table will always have link to own code 
   linktable.Clear()
-  Dim newsplit As String = RegExp.Replace(prog[0], "^.*[(]", "")
+  
+  newsplit = RegExp.Replace(lsplit[0], "^.*[(]", "")
   newsplit = RegExp.Replace(newsplit, "[)]$", "")
   'lsplit = Split(newsplit, "," , "[]()", True, True)
- ' lsplit = Parser(newsplit, SubParmParser)
-  lsplit.Remove(0)
+  lsplit = Parser(newsplit, SubParmItems, False, False)
   Dim parms As New Variant[]
   
   For Each s As String In lsplit
@@ -2600,7 +2602,7 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, [" "], ["\"", "\"", "[", "]"], [" ", ","])
+Private CallParser As New ParseParm(False, [" "], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim i, j As Integer

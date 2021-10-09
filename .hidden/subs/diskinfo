@@ -1,6 +1,8 @@
+'' Display the information about local disks
+'' and partitions
 Public Sub diskinfo()
 'Linux
-dim statmap As String[] = [
+Dim statmap As String[] = [
 "&1 = Read I / Os requests number Of Read I / Os processed",
 "&1 = Read merges requests number Of Read I / Os merged With In -queue I / O",
 "&1 = Read sectors sectors number Of sectors Read",
@@ -18,55 +20,90 @@ dim statmap As String[] = [
 "&1 = discard ticks milliseconds total Wait Time For discard requests"
 ]
 
-dim i as integer
-Dim disks As String[] = Dir("/sys/block","s*")  ' you can filter by whatever you like
-Dim Partitions As String[] = Dir("/sys/block/sda", "sda*") ' again I only filter for sda etc
-Dim stats As String[] = Split(file.load("/sys/block/sda/stat"), " \n", "", True, True)
-Dim dSize As String = file.load("/sys/block/sda/size")
-Dim sda1Stats As String[] = Split(file.load("/sys/block/sda/sda1/stat"), " \n", "", True, True)
-Dim sda1dSize As String = file.load("/sys/block/sda/sda1/size")
+Dim i As Integer
+Dim disks As String[] = Dir("/sys/block", "s*")  ' you can filter by whatever you like
+disks.Insert(Dir("/sys/block", "n*"))
+disks.Sort()
+
+Dim Partitions As New String[][]
+For Each diskset As String In disks
+        Dim Results As String[] = Dir("/sys/block/" &/ diskset, DiskSet & "*")
+        If Results.count > 0 Then Partitions.add(Results.Sort())
+Next
+
+plisting(disks, "Disks")
+For i As Integer = 0 To Disks.max
+    plisting(Partitions[i], "Disk Partitions " & Disks[i])
+Next 
+
+For i = 0 To Disks.max
+  printInformation(Disks[i], statmap)
+  For j As Integer = 0 To Partitions[i].Max
+    printInformation(Disks[i] &/ Partitions[i][j], statmap)
+  Next
+Next 
+
 ' get mount points
 Dim mounts As String[] = Split(file.load("/proc/mounts"), "\n", "", True, True)
-for i = 0 to mounts.max 'lets extract the most interesting fields
-   mounts[i] = split(mounts[i]," \n","",true,true).extract(0,3).join("\t")
-next
+
+For i = 0 To mounts.max 'lets extract the most interesting fields
+  Dim lineSet As String[]
+  Try lineset = Split(mounts[i], " \n", "", True, True).extract(0, 3)
+  Try mounts[i] = prtlen(lineset[0], 20) & prtlen(lineset[1], 20) & Lineset[2]
+Next
 'mount info also retrun the filesystem type
 '/dev/disk/by-uuid lists all the devices as links to the physical device such as sda1 etc
 'these are all available by-id  by-label  by-partlabel  by-partuuid  by-path  by-uuid
 Dim uuids As String[] = Dir("/dev/disk/by-uuid") ' each is a link to the device
 Dim labels As String[] = Dir("/dev/disk/by-label") ' each is a link to the device
 
-plisting(disks, "Disks")
-plisting(Partitions, "DiskPartitions")
-plisting(stats, "Stats for sda", "*", statmap)
-pListing(sda1stats, "Stats for sda1", "*", statmap)
-Print "Sizeof sda  :";; Dsize;; 
-Print "      sda1 :";; sda1dsize
+
+
 plisting(mounts, "Mounted Devices", "/dev*") ' change /dev to UUID if your system uses that
 
 For i As Integer = 0 To labels.Max
-    Dim st As Stat = Stat("/dev/disk/by-label" &/ labels[i])
-    labels[i] = labels[i] & "->" & File.Name(st.link)
+    Dim st As Stat
+    Try st = Stat("/dev/disk/by-label" &/ labels[i])
+    Try labels[i] = prtlen(Replace(labels[i], "\\x20", " "), 20) & "-> " & File.Name(st.link)
 Next
-plisting(labels, "Label of disks")
+plisting(labels, "Labels of disks")
 
-Print "done"
+Print "Complete"
 
 Catch
 Print error.text & "\n" & error.where
 End
 
+Sub printInformation(DiskInfo As String, StatMap As String[])
+  
+    Dim stats As String[] = Split(file.load("/sys/block/" &/ DiskInfo &/ "/stat"), " \n", "", True, True)
+    plisting(stats, "Stats for " & diskinfo, "*", statmap)
+    Dim dSize As String = file.load("/sys/block/" &/ DiskInfo &/ "/size")
+    Dim Blocks As Float = CFloat(Trim(dsize) & ".0")
+    Print "Size of " & diskInfo & "  :";; Format(((blocks * 512.0) / 1000000000.0) + 0.001, "####0.0");; " Gigabytes, ";; Format(blocks * 512.0, "###,###,###,###,##0");; "Bytes\n"
+  
+End
+
+
+
 Sub plisting(source As String[], title As String, Optional filter As String = "*", map As String[] = [])
   Print title 
   For i As Integer = 0 To source.max
-    Dim s As String = source[i]
+    Dim s As String 
+    Try s = source[i]
     If s Like filter Then
        If map.count > 0 Then
-          Print Space(10); Subst(map[i], Left(s & Space(10), 10))
+          Try Print Space(10); Subst(map[i], Left(s & Space(15), 15))
        Else
           Print Space(10); s
        Endif
     Endif
     Next
     Print
+End
+
+'' Set a fixed length to the text being displayed
+Sub prtlen(text As String, length As Integer) As String
+    text = Left(text & Space(length), length)
+    Return text
 End

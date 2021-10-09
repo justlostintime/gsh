@@ -34,6 +34,8 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
   Dim streamPos As Integer = 0
   Dim sym As String = ""
   Dim OutputList As New String[]
+  Dim QuoteLevel As Integer = 0
+  Dim OpenQuote As String
   
   If inline = "" Then Return OutputList
   
@@ -137,7 +139,8 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       
       Dim currentquote As String = InLine[StreamPos]
       Dim inquote As Integer = p.quotes.Find(currentquote)
-      
+      OpenQuote = currentquote
+      Inc QuoteLevel
       Inc inquote
       
       If inquote > p.quotes.max Or If inquote Mod 2 <> 1 Then
@@ -145,18 +148,35 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Endif
       
       currentquote = p.quotes[inquote]
+      
       If p.KeepQuote Then sym &= InLine[StreamPos] 
       Inc Streampos
+      
       While StreamPos < InLine.len
         
         If InLine[StreamPos] = "\n" Then      ' end of line is as good as a close quote"
-               Error.raise("Unmatched Quote  [" & currentquote & " ] in :" & Quote(inline))
+               Error.raise("Unmatched Quote Found End Of Line [" & currentquote & " ] in :" & Quote(inline))
+        Endif
+        
+        If InLine[StreamPos] = OpenQuote And If OpenQuote <> CurrentQuote Then 
+          Inc QuoteLevel
         Endif
         
         If InLine[StreamPos] = currentquote Then
-          If p.KeepQuote Then sym &= InLine[StreamPos]
-          Inc StreamPos
-          Break
+          If OpenQuote <> currentquote Then 
+             Dec QuoteLevel
+             If QuoteLevel = 0 Then 
+               If p.KeepQuote Then sym &= InLine[StreamPos]
+               Inc StreamPos
+               Break
+             Else 
+               sym &= InLine[StreamPos]
+             Endif 
+          Else 
+             If p.KeepQuote Then sym &= InLine[StreamPos]
+             Inc StreamPos
+             Break
+          Endif
         Else
           sym &= InLine[StreamPos]
         Endif
