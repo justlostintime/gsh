@@ -2525,6 +2525,8 @@ Private Sub isKeyword(sym As String) As Boolean
 
   If LocalKeyWords.Exist(Lower(sym)) Or If System.Keywords.Exist(sym) Then 
     Return True
+  Else If Left(System.fullversion, 4) >= "3.16" And System.Subroutines.Exist(sym) Then
+    Return True
   Endif
   
   Return False
