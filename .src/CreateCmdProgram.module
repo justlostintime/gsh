@@ -464,9 +464,20 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             If sym = "$" And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then                           ' handle all special shell functions
               CmdExec[CurrentCmd] &= "," & gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1])
               Inc i
-            Else
-                'PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
+              
+            Else If sym = "$" And If CmdTypes[CurrentCmd][i + 1] = Highlight.Symbol And If Left(CmdList[CurrentCmd][i + 1], 1) = "[" Then
+                 Inc i
+                 sym = CmdList[CurrentCmd][i]
+                 sym = Mid(sym, 2, sym.Len - 2)
                  PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym, True))
+              
+            Else If Left(sym, 2) = "$[" And If Right(sym, 1) = "]" Then
+                 sym = Mid(sym, 3, sym.Len - 3)
+                 PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym, True))
+                 
+            Else 
+                'PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
+                 PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym))
             Endif 
             If Preprocstuff = "(" Then 
                'Dim addcomma As Boolean = False
