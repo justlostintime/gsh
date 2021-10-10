@@ -12,7 +12,7 @@ Public TypeToText As String[] = ["BackGround", "Normal", "KeyWord", "Function", 
   "Constant", "Alternate", "Custom1", "", "", "", "", "", "", "", ""]
 
 ''Why are repeat and do in this list..?
-Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "get", "abort"]
+Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"]
 
 Public ConsoleHighlight As New ConsoleHighlight
 Public ReadQueue As New String[]     ' Used to push items to be read first
@@ -1636,13 +1636,14 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
           Do
             inbuffer = readline()
             If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; inbuffer; "'"
-            If Upper(inbuffer) <> "EDIT" And If BlockLevel = 0 Then 
-              executedblock = lastexecutedblock
-              lastexecutedblock = inbuffer & "\n"
-            Else If Upper(inbuffer) <> "EDIT" And If blocklevel > 0 Then
-              lastexecutedblock &= inbuffer & "\n"
+            If Upper(InBuffer) <> "EDIT" And If Upper(InBuffer) <> "RUN" Then
+              If BlockLevel = 0 Then 
+                 executedblock = lastexecutedblock
+                 lastexecutedblock = inbuffer & "\n"
+              Else If blocklevel > 0 Then
+                    lastexecutedblock &= inbuffer & "\n"
+              Endif
             Endif
-            
           Loop Until InBuffer <> ""
           
         Case "HISTORY"
@@ -1677,12 +1678,12 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       
     Endif
     
-    If InStr(InBuffer, "::") <> 0 Then
+    If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
       Dim InList As String[] = Parser(InBuffer, MultyParse, False)
       If InList.count > 1 Then
         InBuffer = InList[0]
         For i As Integer = 1 To InList.Max
-          If InList[i] <> "::" Then ReadQueue.Add(InList[i], 0)
+          If InList[i] <> ":;" Then ReadQueue.Add(InList[i], 0)
         Next
       Endif
     Endif
@@ -1987,9 +1988,14 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               Else
                 SharedMem["$result"] = "ERROR"
               Endif
+            Else If inBufParse.count = 1 Then
+               LinkTable.Clear()
+               OpenBuffer(lastexecutedblock, True)
+               execbuffer = ""
+               Return True
             Else
-              SharedMem["$result"] = ("Error : No Script named")
-              Error.Raise(("file not found.. Did you forget quotes"))
+               SharedMem["$result"] = ("Error : No Script named")
+               Error.Raise(("file not found.. Did you forget quotes"))
             Endif
             execbuffer = ""
             
