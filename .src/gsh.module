@@ -3192,9 +3192,11 @@ Public Sub printHelp(Optional command As String = "")
     
     Wait
     
-    Write #mproc, Helptxt
-    mproc.CloseInput()
-    mproc.Wait()
+    Try Write #mproc, Helptxt
+    Try Flush #mproc
+    
+    Try mproc.CloseInput()
+    Try mproc.Wait()
       
 Catch 
   Error.Propagate()
