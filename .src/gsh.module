@@ -3159,6 +3159,8 @@ End
 
 Public Sub printHelp(Optional command As String = "")
 
+  Signal[Signal.SIGPIPE].Ignore
+
   Dim mproc As Process
   HelpSystem.LoadHelp() ' only loads help if not already loaded
   
@@ -3197,9 +3199,10 @@ Public Sub printHelp(Optional command As String = "")
     
     Try mproc.CloseInput()
     Try mproc.Wait()
-      
+    
+    Signal[Signal.SIGPIPE].Reset
 Catch 
-  Error.Propagate()
+  Error "Help System error :";; Error.text
 
 End
 
