@@ -1,4 +1,4 @@
-﻿ Gambas Shell V1.2
+﻿ Gambas Shell V1.3
   
  help <command name>  command name will print a more detailed description
                       of the external commands found in the ~/vars/subs directory
@@ -199,11 +199,11 @@
                              ...... ' process data
                              end
 
-&&, ||, ::, ()       : Used to control the flow of a unix CLI line eg. ls && ps || echo "failed" :: echo "do this anyway"
+&&, ||, :;, ()       : Used to control the flow of a unix CLI line eg. ls && ps || echo "failed" :: echo "do this anyway"
                         &&  is used to execute the next command if the first work correctly eg  'true && ps' will print the ps output, 'false && ps' will print nothing
                         ||  is used to execute the next command if the first one fails  eg ' true || ps ' will print no output , 'false || ps' will print ps
                         && and || are alway executed left to right and all operators are evaluated in the same way bash or sh evaluates them.
-                        :: always execute the next command when the previous one completes.
+                        :; always execute the next command when the previous one completes.
                         () may be used to manage the order of operation, inside brackets are always evaluated first.
                                                      
 <                   : Direct content of global variable,function or file  into external command CLI or function()
@@ -229,7 +229,9 @@
 !>                  : Assign the result code from a Linux command or process to a variable
 	                  eg. ls :>$a | tr [A-Z] [a-z] :> $b | less :> $c
 	                  well store the exit code of each cli into the variable specified
-                      
+	                  
+:;                  : Statement seperator
+
  number!            : Will re-execute the command from history for example : 3!
  
  [0]findpattern/replacepattern : Allows to edit the history lines regular expression regex.replace()
@@ -254,11 +256,15 @@
                       
  &                  : Place this after the last line of your command to execute the command as an independent process
  
+ $[GambasVarName]   : Pass Gambas Variable to Linux CLI
+ 
+ $GambasShellVarName: Refrence a shell variable or pass a shell variable to a linux CLI
+ 
  { } or Lambda..end : are used to create a block of executable code. Gsh will execute code as it is read.
-                      Also any other  block type command will start a block eg for .... next, while...do etc . 
+ Begin..end           Also any other  block type command will start a block eg for .... next, while...do etc . 
                       example:
                       
-                      {                    lambda parm1 parm2 ... this is useful in a for next loop or
+                      { parm1 parm2 ...   [lambda | Begin] parm1 parm2 ... this is useful in a for next loop or
                        Dim i As String        Dim i As String     as a use one function
                        i = "this\nthat"       i = "this\nthat"
                        dim j as string[]      dim j as string[]
@@ -273,7 +279,7 @@
                       If used in gsh scripts { to }  execute  after the closing brace, local variables(inside {}) are lost.
                      
  Code Blocks        : Will execute independently in the order they appear in the script
-                      eg if-endif while-wend {} lambda-end ... Any Gambas block
+                      eg if-endif while-wend {} lambda-end Begin..end... Any Gambas block
  
  quit               : End of execution or close gsh session.  
                       gsh shells/scripts return values in global variables
@@ -305,6 +311,7 @@
  run "Scriptname"             Execute an external gsh script immediately. Scripts should return information in global variables.
                               This is a  shell script not a gambas script. See also runscript() in profile.rc this function
                               is the preferred method of executing an external scripts.
+ run                          Re-execute the last code block.
                                         
  list                         This will list the code of the last executed block or line of Gambas code.
                                         
@@ -333,10 +340,11 @@
                                ' this will remove the home alias
                                           
  
- Compile <program name>       This will not execute the script entered but will produce an executable Gambas script.
+ [Compile | Program] <program name>       
+                              This will not execute the script entered but will produce an executable Gambas script.
   .....                       The script is standalone and may be executed directly from the command line. The Output
                               is placed into the ~/bin folder and marked as executable.
- end compile                  The default program name if not specified is script.out
+ end [compile | program]      The default program name if not specified is script.out
                               In terms of functional programming. You may compile and test each function and then
                               after the final test. Create a function which is a main and compile it.
                               AS an Example:
