@@ -23,7 +23,8 @@ Dim statmap As String[] = [
 Dim i As Integer
 Dim disks As String[] = Dir("/sys/block", "s*")  ' you can filter by whatever you like
 disks.Insert(Dir("/sys/block", "n*"))
-disks.Sort()
+disks.Insert(Dir("/sys/block", "m*"))
+'disks.Sort()
 
 Dim Partitions As New String[][]
 For Each diskset As String In disks
@@ -31,18 +32,23 @@ For Each diskset As String In disks
         If Results.count > 0 Then Partitions.add(Results.Sort())
 Next
 
-plisting(disks, "Disks")
+try plisting(disks, "Disks")
 For i As Integer = 0 To Disks.max
-    plisting(Partitions[i], "Disk Partitions " & Disks[i])
+    try plisting(Partitions[i], "Disk Partitions " & Disks[i])
 Next 
 
+print "Partition Information .............................."
 For i = 0 To Disks.max
-  printInformation(Disks[i], statmap)
+  print "Disk > ";
+  try printInformation(Disks[i], statmap)
+  if i > partitions.max then continue
   For j As Integer = 0 To Partitions[i].Max
-    printInformation(Disks[i] &/ Partitions[i][j], statmap)
+   print "Partition > ";
+    try printInformation(Disks[i] &/ Partitions[i][j], statmap)
   Next
 Next 
 
+print "Mount Points ......................................."
 ' get mount points
 Dim mounts As String[] = Split(file.load("/proc/mounts"), "\n", "", True, True)
 
@@ -59,19 +65,19 @@ Dim labels As String[] = Dir("/dev/disk/by-label") ' each is a link to the devic
 
 
 
-plisting(mounts, "Mounted Devices", "/dev*") ' change /dev to UUID if your system uses that
+try plisting(mounts, "Mounted Devices", "/dev*") ' change /dev to UUID if your system uses that
 
 For i As Integer = 0 To labels.Max
     Dim st As Stat
     Try st = Stat("/dev/disk/by-label" &/ labels[i])
     Try labels[i] = prtlen(Replace(labels[i], "\\x20", " "), 20) & "-> " & File.Name(st.link)
 Next
-plisting(labels, "Labels of disks")
+try plisting(labels, "Labels of disks")
 
 Print "Complete"
 
 Catch
-Print error.text & "\n" & error.where
+  Print error.text & "\n" & error.where
 End
 
 Sub printInformation(DiskInfo As String, StatMap As String[])
@@ -81,7 +87,8 @@ Sub printInformation(DiskInfo As String, StatMap As String[])
     Dim dSize As String = file.load("/sys/block/" &/ DiskInfo &/ "/size")
     Dim Blocks As Float = CFloat(Trim(dsize) & ".0")
     Print "Size of " & diskInfo & "  :";; Format(((blocks * 512.0) / 1000000000.0) + 0.001, "####0.0");; " Gigabytes, ";; Format(blocks * 512.0, "###,###,###,###,##0");; "Bytes\n"
-  
+catch
+   return
 End
 
 
@@ -100,6 +107,8 @@ Sub plisting(source As String[], title As String, Optional filter As String = "*
     Endif
     Next
     Print
+catch
+   return
 End
 
 '' Set a fixed length to the text being displayed
