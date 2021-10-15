@@ -31,23 +31,33 @@ For Each v As Variant In vParms
                     For Each s as string In v
                         Print #mFile, s
                     Next
+
+                Case "Date[]"
+                     for each da as date in v
+                        Print #mFile, cstr(da)
+                     next
+
                 Case "Byte[]"
                     v.write(mfile)
-                Case "Variant[]"
+
+                Case "Variant[]", "Object[]"
                     for each vs as Variant in v
                         fprint(mfile,vs)
                     next
-                case "Integer[]"
+
+                case "Integer[]","Long[]","Short[]","Float[]","Boolean[]","Null[]","Single[]","Pointer[]"
                     for each i as variant in v
                         print #mFile, i;;
                     next
                     print #mfile
+
                 Case "Collection"
                     For Each vs In v
                         'Print #mFile, v.key; "="; vs
                         print #mFile, quote(v.Key);;":";;
                         fprint(mfile, vs)
                     next
+
                 Case "Class"
                     print #mFile, "Class :"; v.name;; "Refs=";v.count
                     print "  Symbols :";
@@ -55,18 +65,26 @@ For Each v As Variant In vParms
                         print  #mFile,s;;
                     next
                     print #mFile
+
                 Case "String"
                     print #mFile, v
+
                 Default
-                    If object.class(v).exist("_print") Then
-                        v._print(mFile)
-                    Else
-                        if object.class(v).exist("_write") Then
-                            v._write(mfile)
-                        else
-                            Print  #mFile,v;;
-                        endif
-                    Endif
+                    if right(typeof(v),2) = "[]" then
+                        for each i in v
+                          fprint (mFile,i)
+                        next
+                    else
+                    	If object.class(v).exist("_print") Then
+                        	v._print(mFile)
+                    	Else
+                        	if object.class(v).exist("_write") Then
+                            		v._write(mfile)
+                        	else
+                            		Print  #mFile,v;;
+                        	endif
+                    	Endif
+                    endif
             End Select
         case gb.class
             print  #mFile,"Class :"; v.name;; "Refs=";v.count
