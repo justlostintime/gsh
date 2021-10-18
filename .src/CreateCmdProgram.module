@@ -98,6 +98,7 @@ Public Sub getfullpath(filename As String) As String
   End Select
    
   expandedList = DoGlob(filename)
+  
   If expandedlist.count <> 1 Then
      Error.Raise("Too many files match [" & expandedlist.Join(" ; ") & "]")
   Endif
@@ -146,6 +147,7 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    Dim i As Integer
    
    lines = Parser(Source, Null, True)
+   
    For i As Integer = 0 To lines.max
      If Lines[i] = "" Then Continue
      If i > 0 Then lines[i] = AliasReplace(lines[i])
@@ -474,11 +476,14 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             Else If Left(sym, 2) = "$[" And If Right(sym, 1) = "]" Then
                  sym = Mid(sym, 3, sym.Len - 3)
                  PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym, True))
+            'Else If sym = "$[" Then
+              
                  
             Else 
                 'PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
                  PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym))
             Endif 
+            
             If Preprocstuff = "(" Then 
                'Dim addcomma As Boolean = False
                'CmdExec[CurrentCmd] &= "tostringarray(CmdBuild," 

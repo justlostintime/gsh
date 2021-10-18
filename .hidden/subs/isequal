@@ -1,0 +1,67 @@
+Sub isEqual(leftval As Variant, rightval As Variant) As Boolean ' compare anything to anything
+'' Compares any data to any data, including array content and object
+'' object arrays
+'' simple data types
+
+If TypeOf(leftval) <> TypeOf(rightval) Then Return False
+
+If TypeOf(leftval) <> gb.object Then Return leftval = rightval
+
+Dim ObjClass As Class = object.class(rightval)
+
+If ObjClass <> object.class(rightval) Then Return False
+
+If ObjClass.symbols.exist("_compare") Then
+   If leftval._compare(rightval) = 0 Then Return True
+   Return False
+Endif
+
+Select Case ObjClass.name
+       Case "Collection"
+            If leftval.count <> rightval.count Then Return False
+            For Each v As Variant In leftval
+              If v <> rightval[leftval.key] Then Return False
+            Next
+            Return True
+
+       Case "String[]", "Integer[]", "Long[]", "Short[]", "Float[]", "Byte[]", "Boolean[]", "Single[]", "Date[]","Pointer[]"
+            If LeftVal.count <> rightval.count Then Return False
+            For i As Integer = 0 To leftval.max
+                 If leftval[i] <> rightval[i] Then Return False
+            Next
+            Return True
+            
+       Case "Variant[]"
+            If LeftVal.count <> rightval.count Then Return False
+            For i As Integer = 0 To leftval.max
+                 If TypeOf(leftval[i]) = gb.Object Then
+                    If Not isEqual(leftval[i], rightval[i]) Then Return False
+                 Else
+                    If leftval[i] <> rightval[i] Then Return False
+                Endif
+            Next
+            Return True
+
+       Case "Object[]"                                             ' Left just for documentation, same as else 
+            If leftval.count <> rightval.count Then Return False
+            For i = 0 To leftval.max
+             If Not isEqual(leftval[i], rightval[i]) Then Return False
+            Next
+            Return True
+
+       Case Else
+         
+            If Right(ObjClass.name, 2) = "[]" Then                    ' every other type of object array
+                 If leftval.count <> rightval.count Then Return False
+                 For i = 0 To leftval.max
+                     If Not isEqual(leftval[i], rightval[i]) Then Return False
+                 Next
+                 Return True
+            Endif
+            
+           Return leftval = rightval
+           
+End Select
+
+Return False
+End

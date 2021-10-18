@@ -1,0 +1,19 @@
+Sub VarTypeOf(Value As Variant) As String ' return the variable type as a string
+'' Return the type of the variable as a string
+'' it will identify the simple types by name and object by thier class name
+'' In most cases this can be used for comparicons in scripts
+
+dim  DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String", 
+  "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "", 
+  "", "", "", "", ""]
+dim VarType as integer = typeof(Value)
+select case VarType
+     case gb.object
+       return object.class(Value).name
+     case gb.class
+       return value.name
+     default
+           return DataTypes[VarType]
+     end select
+ return "UnKnown"
+end

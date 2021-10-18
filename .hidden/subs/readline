@@ -1,0 +1,250 @@
+Sub readline(Optional prompt As String = "str(time) & \" > \"") As String '' Read a line from console with editing and recall
+'' Reads a line from the console with editing and recall
+'' Prompt is evaluated at runtime default is
+'' prompt = "str(date)&\"> \"" then at run time --> eval(prompt)
+'' Readline is customized by putting commands in an initialization file (the inputrc file). 
+'' The name of this file is taken from the value of the INPUTRC environment variable. 
+'' If that variable is unset, the default is ~/.inputrc. If that file does not exist or cannot be read, 
+'' the ultimate default is /etc/inputrc. When a program which uses the 
+'' readline library starts up, the init file is read, and the key bindings and variables are set. 
+'' There are only a few basic constructs allowed in the readline init file. 
+'' Blank lines are ignored. Lines beginning with a # are comments. 
+'' Lines beginning with a $ indicate conditional constructs. Other lines denote key bindings and variable 
+'' settings. Each program using this library may add its own commands and bindings.
+'' see man pages for readline()
+'' 
+'' History Substitutions
+'' 
+'' History substitutions place words from previous command input as portions of new commands, 
+'' making it easy to repeat commands, repeat arguments of a previous command in the current command, or fix spelling
+'' mistakes in the previous command with little typing and a high degree of confidence. 
+'' History substitutions begin with the character ! and  may begin anywhere in the input stream (as long as they are not nested).
+'' This ! may be preceded by a backslash (\) to prevent its special meaning; 
+'' for convenience, ! is passed unchanged when it is followed by a blank, tab, newline, =, or (. 
+'' (History substitutions also occur when an input line begins with ^. This special abbreviation is described 
+'' later in this reference page.) Any input line that contains history substitution is echoed on the 
+'' terminal before it is executed as it could have been typed without history substitution.
+'' 
+'' Commands input from the terminal that consist of one or more words are saved on the history list. 
+'' The history substitutions reintroduce sequences of words from these saved '' commands into the input stream. 
+'' The size of the history list is controlled by the history variable; the previous command is always retained,
+'' regardless of the value of the '' history variable. Commands are numbered sequentially from 1.
+'' 
+'' For example, consider the following output from the  history commands:
+'' 
+'' 09  mapimail michael
+'' 10  vi write.c
+'' 11  cat oldwrite.c
+'' 12  diff *write.c
+'' 
+'' The commands are shown with their event numbers. It is not usually necessary to use event numbers, 
+'' but the current event number can be made part of the prompt by placing '' an ! in the prompt string.
+'' 
+'' With the current event 13, you can refer to previous events by event number !11, 
+'' relatively as in !-2 (referring to the same event), by a prefix of a command word as in !d 
+'' for event 12 or !mapi for event 9, or by a string contained in a word in the command as in !?mic? 
+'' also referring to event 9. These forms, without further change, simply reintroduce the words of the
+'' specified events, each separated by a single blank. As a special case, 
+'' !! refers to the previous command; thus !! alone is a redo.
+'' 
+'' To select words from an event we can follow the event specification by a : and a designator for the desired words. 
+'' The words of an input line are numbered from 0, the '' '' first (usually command)
+'' word being 0, the second word (first argument) being 1, 
+'' and so on. The basic word designators are:
+''
+'' 0	the first (command) word
+'' n	the nth argument
+'' ^	the first argument, that is, 1
+'' $	the last argument
+'' %	the word matched by an immediately preceding ?s? search
+'' x-y	range of words
+'' -y	abbreviation for 0-y
+'' *	abbreviation for ^-$, or nothing if only 1 word in event
+'' x*	abbreviation for x-$
+'' x-	like x* but omitting word $
+'' The : separating the event specification from the word designator can be omitted if the argument selector 
+'' begins with a ^, $, *, -, or %. After the optional word '' '' '' designator can be placed a sequence of modifiers, 
+'' each preceded by a :. The following modifiers are defined:
+'' 
+'' h	removes a trailing path name component, leaving the head.
+'' r	removes a trailing .xxx component, leaving the root name.
+'' e	removes all but the extension .xxx part.
+'' s/l/r/	substitutes l for r
+'' t	removes all leading path name components, leaving the tail.
+'' &	repeats the previous substitution.
+'' g	applies the change once on each word, prefixing the above, for example, g&.
+'' a	applies the change as many times as possible on a single word, prefixing the above
+'' 	(can be used together with g to apply a substitution globally).
+'' p	prints the new command line but does not execute it.
+'' q	quotes the substituted words, preventing further substitutions.
+'' x	is like q, but breaks into words at blanks, tabs and newlines.
+'' Unless preceded by the g modifier, the change is applied only to the first 
+'' modifiable word. With substitutions, it is an error for no word to be applicable.
+
+'' The left hand side of substitutions are not regular expressions in the sense of the editors,
+'' but instead strings. Any character may be used as the delimiter in place of the slash (/); 
+'' a backslash (\) quotes the delimiter in the l and r strings. The character & in the right hand 
+'' side is replaced by the text from the left. A \ also quotes &. A null left side (//) uses the 
+'' previous string either from an l or from a contextual scan string s in !?s\?. The trailing delimiter 
+'' in the substitution may be omitted if a newline follows immediately as may the trailing ? in a contextual scan.
+'' 
+'' A history reference may be given without an event specification, for example, !$. 
+'' Here, the reference is to the previous command unless a previous history reference occurred 
+'' on the same line in which case this form repeats the previous reference. Thus !?foo?^ !$ 
+'' gives the first and last arguments from the command matching ?foo?.
+'' 
+'' A special abbreviation of a history reference occurs when the first non-blank character of 
+'' an input line is a ^. This is equivalent to !:s^ providing a convenient shorthand for substitutions
+'' on the text of the previous line. Thus ^lb^lib fixes the spelling of lib in the previous command.
+'' Finally, a history substitution may be surrounded with { and } if necessary to insulate it from the
+'' characters that follow. Thus, after ls -ld ~paul, you might do !{l}a to do ls -ld ~paula, 
+'' while !la would look for a command starting with la.
+
+Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
+
+Extern c9_using_history() In "libreadline:9" Exec "using_history"
+Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
+Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
+Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "history_expand"
+
+Extern c8_using_history() In "libreadline:8" Exec "using_history"
+Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
+Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
+Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "history_expand"
+
+Extern c7_using_history() In "libreadline:7" Exec "using_history"
+Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
+Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
+Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "history_expand"
+
+Extern c6_using_history() In "libreadline:6" Exec "using_history"
+Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
+Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
+Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "history_expand"
+
+Extern c5_using_history() In "libreadline:5" Exec "using_history"
+Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
+Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
+Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "history_expand"
+
+Private ReadLineVersion As Integer = -1
+
+If ReadLineVersion < 0 Then
+  Try c9_using_history()
+  If Not Error Then  
+    ReadLineVersion = 9
+  Else
+    Try c8_using_history()
+    If Not Error Then
+        ReadLineVersion = 8
+    Else
+        Try c7_using_history()
+        If Not Error Then
+            ReadLineVersion = 7
+        Else
+            Try c6_using_history()
+            If Not Error Then
+                ReadLineVersion = 6
+            Else
+                Try c5_using_history()
+                If Not Error Then
+                    ReadLineVersion = 5
+                Else
+                    ReadLineVersion = 4
+                Endif
+            Endif
+        Endif
+    Endif
+  Endif
+Endif
+
+  Dim pInput As Pointer
+  Dim sInput As String
+
+      Try prompt = Eval(prompt)
+      If Error Then
+        prompt = "$ "
+      Endif
+    
+    Select Case ReadLineVersion
+      Case 9
+        pinput = c9_readline(Prompt)
+      Case 8
+        pinput = c8_readline(Prompt)
+      Case 7
+        pinput = c7_readline(prompt)
+      Case 6
+        pinput = c6_readline(prompt)
+      Case 5
+        pinput = c5_readline(prompt)
+      Default 
+        Error Prompt; "% ";                 ' Use input line as we cant find readline unix version
+        Flush #File.err
+        Line Input sInput
+        sInput = Trim(sInput)
+    End Select
+    
+    If ReadlineVersion > 4 Then
+      
+      If IsNull(pinput) Then Return ""
+      sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
+      rFree(pInput)
+      sInput = Trim(sInput)
+
+      If sInput <> "" Then
+         sInput = history_expand(ReadLineVersion, sInput)
+         add_history(ReadLineVersion, sInput)
+      Endif
+    Endif
+
+  Wait
+  
+  Return sInput
+  
+Catch 
+  Error.Propagate()
+
+End
+
+Private Sub history_expand(ReadLineVersion As Integer, data As String) As String
+  Dim pExpansion As Pointer = 0
+  Dim Result As Integer = 0
+  Dim NewData As String = data
+  
+  Select Case ReadLineVersion
+    Case 9
+      Result = c9_history_expand(data, VarPtr(pExpansion))
+    Case 8
+      Result = c8_history_expand(data, VarPtr(pExpansion))
+    Case 7
+      Result = c7_history_expand(data, VarPtr(pExpansion))
+    Case 6
+      Result = c6_history_expand(data, VarPtr(pExpansion))
+    Case 5
+      Result = c5_history_expand(data, VarPtr(pExpansion))
+  End Select
+  If Result = 1 Then
+    NewData = String(1, String@(pExpansion))              ' do this to force a copy of the string to our data segment
+    rFree(pExpansion)
+  Endif
+  
+  Return NewData
+   
+End
+
+Private Sub add_history(ReadLineVersion As Integer, data As String)
+
+  Select Case ReadLineVersion
+    Case 9
+      c9_add_history(data)
+    Case 8
+      c8_add_history(data)
+    Case 7
+      c7_add_history(data)
+    Case 6
+      c6_add_history(data)
+    Case 5
+      c5_add_history(data)
+  End Select
+
+End
