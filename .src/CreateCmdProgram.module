@@ -137,6 +137,11 @@ Public Sub getfullpath(filename As String) As String
 End
 
 '' This function will compile a Standard(SH) shell CLI line into gambas syntax
+Public Sub _call(Source As String) As String
+  
+  Return compile(source)
+  
+End
 
 Public Sub Compile(Source As String) As String ' returns a correctly created program to run the command
    Dim lines As New String[]
@@ -425,7 +430,8 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
              Error.Raise("Missing CLI return code destination !> [" & CmdList[CurrentCmd].join(" ") & "... ]")
         Endif
         CmdKill[CurrentCmd] &= gsh.PreProcesses(CmdList[CurrentCmd][i]) & " = mProc" & BaseName & Str(CurrentCmd) & ".value\n"
-        
+      'Case "{" 
+       '  Stop 
       Default
         If bFirst Then
             Select Case CmdTypes[CurrentCmd][i]
@@ -463,39 +469,33 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
             
           Else                                                      ' not an option
             Dim Preprocstuff As String
-            If sym = "$" And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then                           ' handle all special shell functions
+            If (sym = "$" And i + 1 <= CmdTypes[CurrentCmd].max) And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then   ' handle all special shell functions
               CmdExec[CurrentCmd] &= "," & gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1])
               Inc i
               
-            Else If sym = "$" And If CmdTypes[CurrentCmd][i + 1] = Highlight.Symbol And If Left(CmdList[CurrentCmd][i + 1], 1) = "[" Then
+            Else If (sym = "$" And i + 1 <= CmdTypes[CurrentCmd].max) And If CmdTypes[CurrentCmd][i + 1] = Highlight.Symbol And If Left(CmdList[CurrentCmd][i + 1], 1) = "[" Then
                  Inc i
                  sym = CmdList[CurrentCmd][i]
                  sym = Mid(sym, 2, sym.Len - 2)
                  PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym, True))
-              
-            Else If Left(sym, 2) = "$[" And If Right(sym, 1) = "]" Then
-                 sym = Mid(sym, 3, sym.Len - 3)
-                 PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym, True))
-            'Else If sym = "$[" Then
-              
-                 
             Else 
-                'PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
-                 PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym))
+                PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
+                'PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym))
             Endif 
             
             If Preprocstuff = "(" Then 
-               'Dim addcomma As Boolean = False
+               Dim addcomma As Boolean = True
                'CmdExec[CurrentCmd] &= "tostringarray(CmdBuild," 
                InBlock = True
             Else If PreprocStuff = ")" Then 
                'CmdExec[CurrentCmd] &= ")\n"
                InBlock = False
+               addcomma = True
             Else
                If InBlock Then 
-                  'If addcomma Then CmdExec[CurrentCmd] &= ","
-                  If preProcStuff <> "" Then CmdExec[CurrentCmd] &= "," & PreProcStuff
-                  'addcomma = True
+                  If addcomma Then CmdExec[CurrentCmd] &= ","
+                  If preProcStuff <> "" Then CmdExec[CurrentCmd] &= PreProcStuff
+                  addcomma = False
                Else
                     If Not IsNull(PreprocStuff) Then CmdExec[CurrentCmd] &= "," & PreProcStuff 
                Endif
@@ -768,8 +768,10 @@ Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As St
     Case "$"
       If SharedMem.exist(Right(val, -1)) Then
           Return UnQuote(gsh.PreProcesses(val))
-      Else
+      Else If val.len > 1 Then
           Return Quote(Eval(Mid(val, 2)))
+      Else 
+          Return val                                 ' just return the dollar sign if that all there is
       Endif
     Case "("
           Return gsh.PreProcesses(val)

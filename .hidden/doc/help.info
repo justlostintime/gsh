@@ -256,7 +256,7 @@
                       
  &                  : Place this after the last line of your command to execute the command as an independent process
  
- $[GambasVarName]   : Pass Gambas Variable to Linux CLI
+ {expression/var}   : CLI ONLY - Pass Gambas Variable/functions call, Any valid gambas expression to Linux CLI
  
  $GambasShellVarName: Refrence a shell variable or pass a shell variable to a linux CLI
  
