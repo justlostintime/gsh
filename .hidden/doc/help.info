@@ -257,8 +257,21 @@
  &                  : Place this after the last line of your command to execute the command as an independent process
  
  {expression/var}   : CLI ONLY - Pass Gambas Variable/functions call, Any valid gambas expression to Linux CLI
+                      Example:
+                        Dim a = "bye world"
+                        echo "hello world" {a} {replace(a,"bye","Wonderful")} {application.id}
  
- $GambasShellVarName: Refrence a shell variable or pass a shell variable to a linux CLI
+ $GambasShellVarName: Reference a shell variable or pass a shell variable to a linux CLI
+                      Example:
+                         $a = "Hello World"
+                         echo $a
+                         
+$"Expansion Expr":    This will expand the enclosed expansion expression following the same expansion rulles
+                      as Bash or csh. See BASH or csh expansion for more details.
+                      Example:
+                         echo $"This{1..10}"
+                      Outputs:
+                         this1 this2 this3 this4 this5 this6 this7 this8 this9 this10
  
  { } or Lambda..end : are used to create a block of executable code. Gsh will execute code as it is read.
  Begin..end           Also any other  block type command will start a block eg for .... next, while...do etc . 
