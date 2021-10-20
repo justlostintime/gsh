@@ -34,7 +34,7 @@ For Each v As Variant In vParms
 
                 Case "Date[]"
                      for each da as date in v
-                        Print #mFile, cstr(da)
+                        Print #mFile, str(da)
                      next
 
                 Case "Byte[]"

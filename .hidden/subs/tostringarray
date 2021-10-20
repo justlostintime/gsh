@@ -12,27 +12,33 @@ vParms = param.all
 For Each v As Variant In vParms
     Select Case TypeOf(v)
         Case gb.object
-            Select Case object.class(v).name
+            dim ClassName as string = object.class(v).name
+            Select Case ClassName
 
-                Case "Variant[]"
+                Case "Variant[]","Object[]","Collection[]"
                     for each vs as Variant in v
-                        sResult.insert(ToStringArray(v))
+                        ToStringArray(sResult,vs)
                     next
-                    
+
                 case "String[]","Integer[]","Float[]","Long[]","Short[]","Single[]","Pointer[]","Byte[]","Date[]"
                        sResult.insert(v)
                        
+                case "Date[]"
+                    for each ds as date in v
+                        sResult.add(str(ds))
+                    next
+
                 Case "Boolean[]"
                      for each c as boolean in v
                         sResult.add(iif(c=true,"True","False"))
                      next
-                    
+
                 Case "Collection"
                     For Each vs In v
                         sResult.add(quote(v.Key)&":")
                         sResult.insert(ToStringArray(sResult, v))
                     next
-                    
+
                 Case "Class"
                     sresult.add("Class:"& v.name)
                     sresult.add("Refs:"& v.count)
@@ -41,14 +47,21 @@ For Each v As Variant In vParms
                     next
                     sResult.add("End Class")
                     
+                case "String"
+                    sResult.add(v)
+
                 Default
-                    If object.class(v).exist("_export") Then
-                        v._export()
+                    if right(ClassName,2) = "[]" then
+                       for each vs in v
+                          ToStringArray(sResult,vs)
+                       next
+                    else If object.class(v).exist("_export") Then
+                        sResult.add(v._export())
                     Else
                         sResult.add("Object:"&v)
                     Endif
             End Select
-            
+
         case gb.class
             sresult.add("Class:"& v.name)
             sresult.add("Refs:"& v.count)
@@ -56,16 +69,16 @@ For Each v As Variant In vParms
                 sResult.add("Symbol:"&s)
             next
             sResult.add("End Class")
-            
+
         case gb.boolean
-            sResult.add(iif(c=false,"False","True"))
-            
+            sResult.add(iif(v=false,"False","True"))
+
         Default
             try sResult.add(v)
             if error then 
-              sResult.add(error.text)
+              sResult.add(quote("\"{\"&error.text&\"}\""))
             endif
-            
+
         End Select
 Next
 
