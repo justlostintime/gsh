@@ -3,18 +3,28 @@
 Export
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
+
+Extern c9_using_history() In "libreadline:9" Exec "using_history"
 Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
 Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
 Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "history_expand"
+
+Extern c8_using_history() In "libreadline:8" Exec "using_history"
 Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
 Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
 Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "history_expand"
+
+Extern c7_using_history() In "libreadline:7" Exec "using_history"
 Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
 Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
 Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "history_expand"
+
+Extern c6_using_history() In "libreadline:6" Exec "using_history"
 Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
 Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
 Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "history_expand"
+
+Extern c5_using_history() In "libreadline:5" Exec "using_history"
 Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
 Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
 Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "history_expand"
@@ -41,15 +51,15 @@ End
 Private Sub DetectReadlineVersion() As Integer
 
 
-  Try c9_add_history("")
+  Try c9_using_history()
   If Not Error Then Return 9
-  Try c8_add_history("")
+  Try c8_using_history()
   If Not Error Then Return 8
-  Try c7_add_history("")
+  Try c7_using_history()
   If Not Error Then Return 7
-  Try c6_add_history("")
+  Try c6_using_history()
   If Not Error Then Return 6
-  Try c5_add_history("")
+  Try c5_using_history()
   If Not Error Then Return 5
   
   Return 4
@@ -141,7 +151,12 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
       sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
       rFree(pInput)
       sInput = Trim(sInput)
-      If sInput <> "" Then add_history(sInput & "\x00")
+      
+       If sInput <> "" Then
+         sInput = history_expand(sInput)
+         add_history(sInput)
+      Endif 
+      
     Endif
     If DoTrace Then Error ("Readline Complete")
   Endif
@@ -152,5 +167,33 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
   
 Catch 
   Error.Propagate()
+End
 
+Private Sub history_expand(data As String) As String
+  Dim pExpansion As Pointer = 0
+  Dim Result As Integer = 0
+  Dim NewData As String = data
+  
+  Select Case ReadLineVersion
+    Case 9
+      Result = c9_history_expand(data, VarPtr(pExpansion))
+    Case 8
+      Result = c8_history_expand(data, VarPtr(pExpansion))
+    Case 7
+      Result = c7_history_expand(data, VarPtr(pExpansion))
+    Case 6
+      Result = c6_history_expand(data, VarPtr(pExpansion))
+    Case 5
+      Result = c5_history_expand(data, VarPtr(pExpansion))
+  End Select
+  If Result = 1 Then
+    NewData = String(1, String@(pExpansion))              ' do this to force a copy of the string to our data segment
+    rFree(pExpansion)
+  Endif
+  
+  Return NewData
+  
+Catch 
+   Error.Propagate()
+   
 End

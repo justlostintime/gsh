@@ -1,6 +1,6 @@
 #!/usr/bin/gsh
 'Defaults to be loaded into an empty system
-'Script for Shell Version 1.2
+'Script for Shell Version 1.3
 'Functions in this file or the plugin directory are loaded as 
 ' plugins each time the gsh starts or as needed by the shell.
 ' The comment lines starting with double ' will be printed by the help
