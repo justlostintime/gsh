@@ -29,12 +29,13 @@ alias cls='clear'
 alias home='cd ~'
 alias pkill='!kill'
 alias ??='lprint'
-alias ps='ps -u'
+alias ps='ps -l'
 alias hh='hist -10'
 alias path='? env["PATH"]'
 alias exit='Quit 0'
 alias update=
-
+alias tcb='toclipboard'
+alias fcb='fromclipboard'
 
 
 

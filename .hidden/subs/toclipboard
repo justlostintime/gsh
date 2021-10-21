@@ -1,0 +1,17 @@
+Sub toclipboard(fileName as string) '' copy a file into the clipboard
+'' Copies a file into the clipboard
+'' it uses the xclip cli to do this
+'' alias tcb='toclipboard'
+
+dim lookfor as string = expandfn(filename)
+
+if not exist(lookfor) then
+  print "file not found :"&Filename
+  return
+endif
+if not system.exist("xclip") then
+  print "xclip must be installed to use this functionallity"
+  return
+endif
+exec ["xclip","-sel","clip",lookfor] 
+End
