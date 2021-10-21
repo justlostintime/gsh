@@ -2,7 +2,7 @@
 Title=Gambas Shell
 Startup=gsh
 UseTerminal=1
-Version=1.3.12
+Version=1.3.14
 Component=gb.args
 Component=gb.compress
 Component=gb.data
@@ -30,7 +30,7 @@ Vendor=WESTWOOD
 Address=scriptbuilder@westwoodsvcs.com
 Url=www.westwoodsvcs.com
 License=General Public License
-PackageName=gsh-1.3.12
+PackageName=gsh-1.3.14
 CreateEachDirectory=1
 MimeTypes="gsh"
 RuntimeVersion="3.14"

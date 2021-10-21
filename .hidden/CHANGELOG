@@ -1,3 +1,5 @@
+* Thu Oct 21 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.3.14
+
 * Wed Oct 20 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.3.12
 - Fix issues with passing mixed arrays to linux cli lines
 

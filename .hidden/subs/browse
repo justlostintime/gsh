@@ -1,0 +1,7 @@
+Sub browse(optional directory as string = ".") '' Open the system default browser to the current directory by default
+'' Open the system default file browser
+'' opens to the current directory by default
+'' or the directory specified on the command line
+dim newpath as string = expandfn(directory)
+exec ["xdg-open",directory]
+End
