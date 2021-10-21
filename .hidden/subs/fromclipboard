@@ -7,6 +7,5 @@ Sub fromclipboard() '' prints the clipboard to stdout
 use "gb.gui","gb.image"
 class.load("clipboard")
 
-print "Format :";;clipboard.format
 print clipboard.paste()
 End
