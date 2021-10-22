@@ -17,7 +17,7 @@ Component=gb.signal
 Component=gb.util.web
 Component=westwood.sharedmem
 Description="Gambas interactive shell"
-Authors="Westwood"
+Authors="Westwood, Brian G"
 Arguments=[["~/bin/testgsh"],["-c","nano","~/bin/testgsh"],["-C"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; x2golistsessions; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\";export PATH=\"/usr/local/bin:/usr/bin:/bin\";"],["/home/brian/vars/testscript"],["-","4","c","d"],["-S"],["-m"],["-r","varstat","$path"],["-f","$a"],["-t","3"]]
 TabSize=2
 Language=en_US
