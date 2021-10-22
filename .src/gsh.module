@@ -364,19 +364,27 @@ Public Sub GetSub(cmd As String) As Boolean
 
 End
 
+Public Sub SystemVariables() As String[]
+  
+  Return SysVars
+  
+End
 
+Private SysVars As String[] = ["$profile", "globstar", "$alias", "$blockindent", "$execprog", "lastexecutedblock", "prompt", "$result", "$maxhistory", "$historycurrent",
+                                      "$history", "$editor", "$hexeditor", "$helpdisplay", "$home", "$hosttype", "$hostname", "$term", "newprofile", "$path", "$env"]
+                                      
 Private Sub SetDefaults()
   
   With sharedmem
     
     If Not .exist("$profile") Then .["$profile"] = False
-    If Not .exist("globstar") Then .["globstar"] = False                                                                           ' set to cause fileexpansion to see ** as meaning recurse, it dangerous
+    If Not .exist("globstar") Then .["globstar"] = False                  ' set to cause fileexpansion to see ** as meaning recurse, it dangerous
     If Not .exist("$alias") Then .["$alias"] = New Collection
     If Not .exist("$blockindent") Or If .["$blockindent"] = "" Then .["$blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
     If Not .exist("$execprog") Then .["$execprog"] = "print \"Gambas Shell \""
     If Not .exist("lastexecutedblock") Then .lastexecutedblock = "print \"hello world\""
     If Not .exist("executedblock") Then .lastexecutedblock = "print \"hello world\""
-    If Not .exist("$prompt") Then .["$prompt"] = DefaultPrompt
+    If Not .exist("prompt") Then .["prompt"] = DefaultPrompt
     If Not .exist("$result") Then .["$result"] = "OK"
     If Not .exist("$maxhistory") Then .["$maxhistory"] = 300                                                             ' define the max history length
     If Not .exist("$historycurrent") Then .["$historycurrent"] = 0                                                     ' defines the current history level
@@ -1590,9 +1598,9 @@ End
 Public Sub readline() As String
    Dim sbuffer As String  
    getline.DoTrace = DoTrace
-   getline.UserPrompt = SharedMem["$prompt"]
+   getline.UserPrompt = SharedMem["prompt"]
    sbuffer = getline(SetBlockIndent(), bDbaseServer)
-   SharedMem["$prompt"] = getline.UserPrompt
+   SharedMem["prompt"] = getline.UserPrompt
    Return sBuffer
    
 Catch
@@ -2081,7 +2089,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                       Return True
                     Endif
                   Endif
-                  Error Eval(SharedMem["$prompt"]) & inbufparse[1] & (" not found! Create {Class |Sub |strucT| Var | [No]} now ? ");
+                  Error Eval(SharedMem["prompt"]) & inbufparse[1] & (" not found! Create {Class |Sub |strucT| Var | [No]} now ? ");
                   Flush
                   Line Input iQuery
                   Select Case Upper(IQuery)
@@ -2428,7 +2436,7 @@ Public Sub editHistory(index As Integer) As Boolean
   Endif
   'Error "regexp.replace("; history[Str(editnum)]; "'"; EditParts[0]; ","; EditParts[1]; ")"
   Dim resultbuf As String = regexp.replace(history[Str(editnum)], EditParts[0], EditParts[1])
-  Error Eval(sharedMem["$prompt"]); "["; editnum; "]";; resultBuf
+  Error Eval(sharedMem["prompt"]); "["; editnum; "]";; resultBuf
   history[Str(editnum)] = resultBuf
   sharedmem["$history"] = history
 Catch 

@@ -1,0 +1,38 @@
+Sub clearvars(Optional varname As String = "") As Boolean ' Delete all user variables and content
+''clearvars  <$GlobalVarName> - delete all varables or specific variable
+''          function clearvars(<varname>)
+''          command clearvars <varname>
+''          delete all user defined variables if no parameter, other wise delete varname passed
+''            Varname may cntain wildcards eg. clearvars "b*"
+''          returns true if found, false otherwise
+''          $result contains the error text or "OK"
+with sharedmem
+if varname <> "" and if not instr(varname,"*") then
+	if .exist(varname) then
+		.free(varname)
+		return true
+	else
+		.["$result"] = "Error : Global variable Not found ["&varname&"]"
+		print #file.err, .["$result"]
+		return false
+	endif
+endif
+ 
+dim SymbolList as string[] = .Variables()
+dim gshClass as object = classes["gsh"]
+dim SysVars as string[] = object.call(gshclass,"SystemVariables")
+For Each s As string In SymbolList
+    if (s like "sub.*" or s like "class.*" or s like "struct.*") then continue
+	  if varname <> ""  and if not (s like varname) then continue
+	  if SysVars.exist(s) then continue
+	  .free(s)
+Next
+
+.["$result"] = "OK"
+end with
+return true
+
+catch 
+   print error.text
+   error.propagate()
+End
