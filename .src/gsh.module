@@ -2636,6 +2636,14 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
     interface[i] = Trim(interface[i])
   Next
   Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
+  ' Scan it for comments... forgot about this
+  For iScan As Integer = 0 To CmdLine.max
+    If Left(CmdLine[iScan], 1) = "'" Then
+        CmdLine.Remove(iScan, -1)
+        Break
+    Endif
+  Next
+  
   Dim sCodeLine As String = CmdLine[0] & "("
   Dim types As Integer[]
   Dim syms As String[]
