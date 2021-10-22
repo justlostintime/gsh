@@ -352,7 +352,7 @@ Public Sub GetSub(cmd As String) As Boolean
   Else 
     If Not Exist(fPath) Then
       Error.Raise(("Get Error: Command not found ") & cmd)
-      Return False
+      Return False  ' never gets here but reminds us what happens up the chain
     Endif
   Endif
   
@@ -371,7 +371,8 @@ Public Sub SystemVariables() As String[]
 End
 
 Private SysVars As String[] = ["$profile", "globstar", "$alias", "$blockindent", "$execprog", "lastexecutedblock", "prompt", "$result", "$maxhistory", "$historycurrent",
-                                      "$history", "$editor", "$hexeditor", "$helpdisplay", "$home", "$hosttype", "$hostname", "$term", "newprofile", "$path", "$env"]
+                                      "$history", "$editor", "$hexeditor", "$helpdisplay", "$home", "$hosttype", "$hostname", "$term", "newprofile", "$path", "$env",
+                                      "lambda"]
                                       
 Private Sub SetDefaults()
   
@@ -397,9 +398,9 @@ Private Sub SetDefaults()
     If Not .exist("$hosthame") Then .["$hostname"] = system.host
     If Not .exist("$term") Then .["$term"] = "xterm-256color"
     If Not .exist("newprofile") Then .["newprofile"] = False
+    If Not .exist("$lambda") Then .["$lambda"] = "print application.name"
     If Not .exist("$path") Then .["$path"] = User.home &/ ".local/bin:" & User.home &/ "bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
     If Not .exist("$env") Then .["$env"] = ["PWD=" & .["$pwd"], "PATH=" & .["$path"], "HOME=" & .["$home"], "TERM=" & .["$term"], "HOSTTYPE=" & .["$hosttype"], "HOSTHAME=" & .["$hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
-    'If Not .exist("$pwd") Then .["$pwd"] = Env["PWD"]
     
     If bLogon Then Env["PATH"] = SharedMem["$path"]
     

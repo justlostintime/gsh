@@ -1,0 +1,15 @@
+Sub set(Variablename as string, Value as variant, subscript0 as variant,optional subscript1 as variant = -1, subscript2 as variant = -1)
+with sharedmem
+dim vArray as  variant = .[VariableName]
+if subscript2 > -1 then
+   vArray[subscript0,subscript1,subscript2] = Value
+else if subscript1 > -1 then
+  vArray[Subscript0,subscript1] = Value
+else 
+  vArray[Subscript0] = value
+endif
+.[VariableName] = vArray
+catch
+  print error.text
+end with
+End
