@@ -1,5 +1,5 @@
 Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant ' process a text value with enumeration
- '' Will return an enumerated text vale as an array of string values
+ '' Will return an enumerated text value as an array of string values
  '' much like the bash braced enumeration
 
  ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then

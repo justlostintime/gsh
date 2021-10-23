@@ -2501,7 +2501,7 @@ Private Sub FunctionCommandOrexecVar(symbol As String) As Boolean
 
 End
 
-Private Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As Integer
+Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As Integer
 
   Dim sym As String = Lower(msym)
   
@@ -2540,7 +2540,7 @@ Private Sub isKeyword(sym As String) As Boolean
 
   If LocalKeyWords.Exist(Lower(sym)) Or If System.Keywords.Exist(sym) Then 
     Return True
-  Else If Left(System.fullversion, 4) >= "3.16" And System.Subroutines.Exist(sym) Then
+  Else If Left(System.fullversion, 4) >= "3.16" And If System.Subroutines.Exist(sym) Then
     Return True
   Endif
   

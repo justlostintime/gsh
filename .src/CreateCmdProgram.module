@@ -752,7 +752,14 @@ Dim fileext As String
             If WriteError Then
               CmdErr[CurrentCmd] &= gsh.preprocesses(CmdList[CurrentCmd][i]) & " &= msg\n"
             Else
-              CmdIo[CurrentCmd] &= gsh.preProcesses(CmdList[CurrentCmd][i]) & " &= sInput\n"  ' send data to the global or public variable or function returning a variable
+              Dim sSinkObject As String 
+              sSinkObject = gsh.preProcesses(CmdList[CurrentCmd][i])
+              If sSinkObject Like "*()" Then
+                 sSinkObject = Left(sSinkobject, -1) & "sInput)\n"
+              Else
+                 sSinkObject &= " &= sInput\n"  ' send data to the global or public variable or function returning a variable
+              Endif
+              CmdIo[CurrentCmd] &= sSinkObject
             Endif
             
           Endif

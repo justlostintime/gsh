@@ -1,5 +1,4 @@
 Sub ref(SrcObj As Variant, method as string, ... ) As Variant
-print SrcObj,Method,param[0]
 object.call(SrcObj,method,param.all)
 return SrcObj
 end
