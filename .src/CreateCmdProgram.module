@@ -647,6 +647,10 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
           i = execStartAt
         Endif
         
+        If CmdTypes[CurrentCmd][i] = Highlight.string Then 
+           CmdList[CurrentCmd][i] = "(" & CmdList[CurrentCmd][i] & ")"
+        Endif
+        
         If CmdList[CurrentCmd][i][0] = "(" Then
           If CmdList[CurrentCmd][i] Like "*fileexpand*" Then
              CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase) & "))") & "\n"
@@ -663,6 +667,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
 Dim notfile As Boolean = False
 Dim fullname As String 
 Dim fileext As String
+Dim sSinkObject As String 
 
         If WriteError Then
           If CmdErr[CurrentCmd] = "" Then CmdErr[CurrentCmd] = SetErrSub(CurrentCmd, basename)
@@ -750,12 +755,17 @@ Dim fileext As String
             Endif
             
             If WriteError Then
-              CmdErr[CurrentCmd] &= gsh.preprocesses(CmdList[CurrentCmd][i]) & " &= msg\n"
+              sSinkObject = gsh.preProcesses(CmdList[CurrentCmd][i])
+               If sSinkObject Like "*()" Then
+                 sSinkObject = Left(sSinkobject, -1) & "msg)\n" ' Call a function with the data
+              Else
+                 sSinkObject &= " &= msg\n"  ' send data to the global or public variable or function returning a variable
+              Endif
+              CmdErr[CurrentCmd] &= sSinkObject
             Else
-              Dim sSinkObject As String 
               sSinkObject = gsh.preProcesses(CmdList[CurrentCmd][i])
               If sSinkObject Like "*()" Then
-                 sSinkObject = Left(sSinkobject, -1) & "sInput)\n"
+                 sSinkObject = Left(sSinkobject, -1) & "sInput)\n"  ' call a function with the data
               Else
                  sSinkObject &= " &= sInput\n"  ' send data to the global or public variable or function returning a variable
               Endif

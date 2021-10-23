@@ -2,5 +2,5 @@ public filename as string = ""
 public mfile as file
 Sub tofile(optional data As String) ' write the string to a file
     if filename = ""  then filename = data
-    print filename, data
+    print data;
 end
