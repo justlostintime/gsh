@@ -9,24 +9,29 @@ With sharedmem
     Dim globdir As String[] = Dir("/usr/share/gsh" &/ dirbase, "*", gb.file)
     Dim locdir As String[] = Dir(user.home &/ "vars" &/ dirbase, "*", gb.file)
     Dim loadeddir As New String[]
+
     For Each sSyms As SharedMemSymbol In .SymbolTable
         If sSyms.symname Like sType & ".*" Then
             Try loadeddir.add(Split(sSyms.symname, ".")[1])
 		If Error Then Error "lany " & error.text
         Endif
     Next
-    
+
     For Each s As String In globdir
 	If Not tolist.exist(s) Then tolist.add("", s)
-        tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s]
+        tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s,"Default"]
     Next
-    
+
     For Each s In locdir
-        tolist[s] = ["Personal", user.home &/ "vars" &/ dirbase &/ s, s]
+        tolist[s] = ["Personal", user.home &/ "vars" &/ dirbase &/ s, s,"Personal"]
     Next
 
     For Each s In loadeddir
-        tolist[s] = ["In-Mem", sType & "." & s, s]
+        if tolist.exist(s) then
+          tolist[s][3] = "In-Mem"
+        else
+          tolist[s] = ["In-Mem", sType & "." & s, s,"In-Mem"]
+        endif
     Next
 
 '    for each sp as string[] in tolist

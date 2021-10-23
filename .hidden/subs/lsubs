@@ -29,9 +29,9 @@ If varname <> "" And If Not InStr(varname, "*") Then
 	If allsubs.exist(varname) Then
 		Print varname;; "in";; allsubs[varname][0]
 		If allsubs[varname][0] <> "In-Mem" Then
-            Print GetHighlight.ToConsole(lsubgetfile(allsubs[varname][1]).join("\n"))
+                    Print GetHighlight.ToConsole(lsubgetfile(allsubs[varname][1]).join("\n"))
 		Else
-			Print GetHighlight.ToConsole(.["sub." & varname])
+		    Print GetHighlight.ToConsole(.["sub." & varname])
 		Endif
 		Return True
 	Else
@@ -39,7 +39,6 @@ If varname <> "" And If Not InStr(varname, "*") Then
 		sharedmem["$result"] = "Error : Global Function Not found [" & varname & "]"
 		Error sharedmem["$result"]
 		Return False
-		
 	Endif
 Endif
 
@@ -72,13 +71,28 @@ If Not ShowDetail Then
        CurrentElement = i + (j * colperiod)
        Dim thecolor As String
        If currentelement < allindex.count Then
-            thecolor = "\x1b[3" & IIf(allsubs[allindex[CurrentElement]][0] = "Default", "2m", IIf(allsubs[allindex[CurrentElement]][0] = "Personal", "3m", "4m"))
-            Try Print thecolor; Left(allindex[CurrentElement] & Space(colwidth), colwidth); "\x1b[0m";
+            thecolor = "\x1b[3" 
+            select case allsubs[allindex[CurrentElement]][0]
+              case "Default"
+                    theColor &= "2m"
+              case "Personal"
+                    theColor &= "3m"
+              case "In-Mem"
+                    theColor &= "1m"
+           end select
+           dim PrtText as  string = Left(allindex[CurrentElement] & Space(colwidth), colwidth)
+           if allsubs[allindex[CurrentElement]][3] = "In-Mem" then
+                PrtText =  "\e[31m"&left(PrtText,1)&thecolor&right(PrtText,-1)
+           else
+                PrtText = thecolor & Prttext
+           endif
+
+           Try Print PrtText; "\x1b[0m";
        Endif
      Next
      Print
   Next
-  Print "\x1b[33m* Personal   \x1b[32m* Default   \x1b[34m* In-Mem\x1b[0m"
+  Print "\x1b[33m* Personal   \x1b[32m* Default   \x1b[31m* In-Mem  D\e[32mefault  \e[31mP\e[33mersonal\x1b[0m"
 Else
 
   For Each ss In allIndex
