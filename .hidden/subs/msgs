@@ -1,9 +1,32 @@
-Sub msgs(...)
+Sub msgs(...) as integer ' display a popup message and return the selection
+'' Display the message popup with the defined buttons 1-3
+'' returns the index of the button pressed
+'' msgs [type] message buttontxt1 buttontxt2 buttontxt3
+'' type is one of , info, warning, question, error, delete
+
 use "gb.gui"
-dim sOutput as string = ""
-for each i as variant in  param
-	sOutput &= iif(sOutput <> ""," ","") & cstr(i)
-next
-message(sOutput)
+dim typemessage as string = "info"
+dim baseparm as integer = 0
+
+select case lower(param[0])
+    case "info","warning","question","error","delete"
+         Typemessage = param[0]
+         BaseParm = 1
+    default
+        if param.count > 2 then typemessage = "question"
+end select
+
+select case  param.count
+ case 1,2
+     return object.call(message,typemessage,[param[BaseParm]])
+ case 3
+     return object.call(message,typemessage,[param[BaseParm],param[BaseParm+1]])
+ case 4
+     return object.call(message,typemessage,[param[baseParm],param[baseParm+1],param[BaseParm+2]])
+ case 5
+     return object.call(message,typemessage,[param[BaseParm],param[BaseParm+1],param[BaseParm+2],param[BaseParm+3]])
+ default
+     message.error("msgs error: Too many parameters, max is 3 buttons")
+ end select
 
 End
