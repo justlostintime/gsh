@@ -289,7 +289,9 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
    Print "Please install the application 'html2text'  in order to display full gambas help information"
    Print " source = " & CmdName
  Endif
- mproc = Exec ["html2text", "-ascii", "-width", "200"] For Read Write As "mrProcget"
+ SharedMem["lasthtmlhelp"] = sSource
+ mproc = Exec ["html2text", "-ascii", "-width", "80", "-nobs", "-style", "compact"] For Read Write As "mrProcget"
+ 
  Write #mproc, sSource
  ' Flush #mproc
  mproc.closeinput
@@ -297,6 +299,13 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
  ' While mproc.state = Process.Running
  '   Wait
  ' Wend
+ If process.LastValue <> 0 Then 
+   Print "Help Html conversion Failed "
+   Return ""
+ Endif
+ 
+ SharedMem["lasthelp"] = helpfromhtml
+ 
  Dim Sections As New Collection(gb.ignorecase)
  Dim atmps As String[]
  Dim tmps As String
