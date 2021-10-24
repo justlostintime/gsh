@@ -2711,8 +2711,8 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
   Endif
   
   If syms[0] = "EXTERN" Then
-    If Not ExternTable.Exist(InVar) Then
-      ExternTable.Add(invar)
+    If Not ExternTable.Exist(Trim(InVar)) Then
+      ExternTable.Add(Trim(invar))
     Endif 
     syms[0] = "'" & syms[0]
   Endif
@@ -2973,8 +2973,8 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
     If Not IsClass Then
       Dim PublicCheck As Integer = IIf(syms[0] = "STATIC", 1, 0)
       If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE") And If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
-        If Not ExternTable.Exist(OutBuf) Then
-          ExternTable.Add(OutBuf)
+        If Not ExternTable.Exist(Trim(OutBuf)) Then
+          ExternTable.Add(Trim(OutBuf))
           Outbuf = "'" & OutBuf
         Endif
       Endif

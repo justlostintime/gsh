@@ -581,7 +581,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
        If CmdWrite[i] <> "" Or i > 0 Then CmdExec[i] &= "Write "
     Endif
     
-    CmdExec[i] &= "as \"mRead" & BaseName & Str(i) & "\"\n"
+    CmdExec[i] &= "with [\"PWD=\"&env[\"PWD\"]] as \"mRead" & BaseName & Str(i) & "\"\n"
     
     If gsh.jobctl Then
          Dim StartCopy As Integer = InStr(CmdExec[i], "''#", 0, gb.IgnoreCase)
