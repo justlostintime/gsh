@@ -1683,6 +1683,11 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       End Select
       
       If source = "STDIN" Then ' only record keystroke entries
+      
+        If InBuffer Like "*!!*" Then 
+           inbuffer = Replace(inbuffer, "!!", SharedMem["$history"][SharedMem["$historycurrent"] - 1])
+        Endif
+        
         history = SharedMem["$history"]
         History.add(InBuffer, sharedMem["$historycurrent"])
         Inc SharedMem["$historycurrent"]
@@ -1695,6 +1700,8 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       InBuffer = ReadQueue.pop()
       
     Endif
+    
+    
     
     If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
       Dim InList As String[] = Parser(InBuffer, MultyParse, False)
