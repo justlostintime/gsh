@@ -490,7 +490,7 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
   Dim FinalProgram As String = ""
   Dim ExtraClasses As New Collection
   
-  proc = PreProcBuffer(buffer)
+  proc = PreProcBuffer(buffer, False, True)
   If IsNull(proc) Then Return False
   
   Dim AlreadyLinked As New String[]
@@ -502,9 +502,9 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
       If Not AlreadyLinked.Exist(LinkTable.First) Then
         AlreadyLinked.Add(LinkTable.first)
         If RegExp.Match(linktable[linktable.first], "^class .*", RegExp.Caseless) Then
-          ExtraClasses.add(PreProcBuffer(linktable[linktable.first], True), Split(linktable.first, ".")[1])
+          ExtraClasses.add(PreProcBuffer(linktable[linktable.first], True, True), Split(linktable.first, ".")[1])
         Else
-          ProcLinks &= PreProcBuffer(linktable[linktable.first])
+          ProcLinks &= PreProcBuffer(linktable[linktable.first], False, True)
         Endif
       Endif
     Endif 
@@ -1233,9 +1233,9 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       If Not AlreadyLinked.Exist(LinkTable.First) Then
         AlreadyLinked.Add(LinkTable.first)
         If Left(linktable.first, 6) = "class." Then
-           Try Program &= PreProcBuffer(linktable[linktable.first], True)
+           Try Program &= PreProcBuffer(linktable[linktable.first], True, True)
         Else
-           Try Program &= PreProcBuffer(linktable[linktable.first])
+           Try Program &= PreProcBuffer(linktable[linktable.first], False, True)
         Endif
         If Error Then
           Error.Raise(Error.text)
@@ -1493,15 +1493,24 @@ Public Sub SystemRead_error(msg As String)
 End
 
 
-Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False) As String
+Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, DoAlias As Boolean = False) As String
 
   Dim plist As String[]
   Dim finalbuf As String = ""
   ''Debug "enter preprocbuffer"
-  plist = Split(proc, "\n")
+  plist = Split(proc, "\n", "", True)
   For Each s As String In plist
     ' Debug "--> " & s
-    If s <> "" Then finalbuf &= preprocesses(s, IsClass) & "\n"
+    If s == "'noalias" Then 
+         DoAlias = False
+         Continue 
+    Endif
+    
+    If DoAlias Then s = CreateCmdProgram.AliasReplace(s)
+    
+    If s <> "" Then 
+        finalbuf &= preprocesses(s, IsClass) & "\n"
+    Endif
   Next
   Return finalbuf
 Catch
@@ -1612,7 +1621,7 @@ End
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
-
+Private DoAlias As Boolean = True 
 Public Sub IfReader(EndBlk As String[]) As Boolean
 
   Dim lastElement As String = ""
@@ -1699,7 +1708,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     
     If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed 
     
-    InBuffer = CreateCmdProgram.AliasReplace(InBuffer)
+    If DoAlias Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)
     
     InBufParse = Highlight.Analyze(InBuffer)
     HTypes = Highlight.Types
@@ -1816,7 +1825,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                   If CommandMode Then
                     Error.Raise("Error :" & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & " Aready Defined")
                     NoPreProcess = True
+                    DoAlias = False
                     DoBlock(["END"])
+                    DoAlias = True
                     NoPreProcess = False
                   Else
                     Error.Raise(("Use Edit to change :") & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & (" ... Already Defined\n") & SharedMem["sub." & Lower(InBufParse[parsepos + 1])])
@@ -1828,7 +1839,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               Endif
               
               NoPreProcess = True
+              doAlias = False
               DoBlock(["END"])
+              doAlias = True
               NoPreProcess = False
               
               If AutoCompile Then
@@ -1872,7 +1885,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               
               NoPreProcess = True
               AutoCompile = False
+              DoAlias = False
               DoBlock(["END", "CLASS"])
+              DoAlias = True
               NoPreProcess = False
               AutoCompile = True
               SharedMem[LastElement] = ExecBuffer

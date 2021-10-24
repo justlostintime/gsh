@@ -167,8 +167,18 @@ Private Sub GetLiveHelp(msymbol As String[], Title As String, Optional Summary A
   Dim ch As New ConsoleHighlight
   'Dim ch As New Highlight
   Dim helptxt As String = ""
+  Dim SynText As String = ""
+  For Each sText As String In msymbol
+    sText = Trim(sText)
+    If sText[0] = "'" Then Continue 
+    If Upper(sText) Like "*SUB*" Or If Upper(sText) Like "*FUNCTION*" Or If Upper(sText) Like "*PROCEDURE*" Then 
+      SynText = sText
+      Break
+    Endif
+  Next
+  If SynText = "" Then syntext = msymbol[0]
   If Summary = False Then 
-     helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & msymbol[0] & "\n\nDESCRIPTION\n"
+     helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & SynText & "\n\nDESCRIPTION\n"
   Else
      helptxt = msymbol[0]
      Return ch.ToConsole(helptxt)

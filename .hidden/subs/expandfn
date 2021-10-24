@@ -1,3 +1,4 @@
+'noalias
 Sub expandfn(path As String) As String ' resolve path to absolute path
 ''returns a relative path made into absolute path
 
