@@ -1,15 +1,33 @@
-Sub set(Variablename as string, Value as variant, subscript0 as variant,optional subscript1 as variant = -1, subscript2 as variant = -1)
-with sharedmem
-dim vArray as  variant = .[VariableName]
-if subscript2 > -1 then
-   vArray[subscript0,subscript1,subscript2] = Value
-else if subscript1 > -1 then
-  vArray[Subscript0,subscript1] = Value
-else 
-  vArray[Subscript0] = value
-endif
-.[VariableName] = vArray
+Sub set(vArray as variant, Value as variant, ... ) as variant ' Update ghs shell array value
+'' Update the content of an array or collection  that is stored in memory database - gsh shell variable
+'' returns the updated array or collection
+'' usage : $a = set($a,myvalue,subscript1,....) ' up to 3 subscripts
+'' or      $a = set($a,myvalue,MyKey) for collections
+'' Rather slow as it gets the array as a copy then updates it
+'' then returns it and the user needs to store it again
+select case Param.count
+case 0
+  vArray = Value
+case 1
+ print object.class(vArray).name
+ if typeof(vArray) = gb.object and if object.class(vArray).name == "collection" then
+   vArray[param[0]] = Value
+ else
+   vArray[Param[0]] = value
+ endif
+
+case 2
+   vArray[param[0],param[1]] = Value
+case 3
+   vArray[param[0],param[1],param[2]] = Value
+default
+   error "Only 3 subscripts are supported"
+   return vArray
+end select
+
+return vArray
+
 catch
-  print error.text
-end with
+  error error.text
+
 End
