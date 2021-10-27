@@ -36,7 +36,11 @@ alias exit='Quit 0'
 alias update=
 alias tcb='toclipboard'
 alias fcb='fromclipboard'
+alias done='loop until true'
 
+error "The Base System plugins have changed.\nRun clearsubs\nAfter saving all your own personalized sub"
+
+' This is a system check
 
 
 
