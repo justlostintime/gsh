@@ -522,7 +522,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"$env\"] "
     CmdExec[CurrentCmd] &= ")\n"
     CmdExec[CurrentCmd] &= "\n''#" & CmdList[currentcmd].Join(" ") & "#''\n"
-    CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild with [ Env[\"PWD\"] ] "
+    CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild with [ \" PWD=\"&Env[\"PWD\"] ] "
     
      If CmdWriteTo[CurrentCmd] >= 0 Then   ' we need to do the write to the next command in pipe
        If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
