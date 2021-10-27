@@ -236,6 +236,16 @@
  
  [0]findpattern/replacepattern : Allows to edit the history lines regular expression regex.replace()
  
+ `Cli commands`     : Back Ticks Execute the linux cli and return the last exit code. May be used anywhere a gambas
+                      function may be called. This is a little different than Bash `` they return the output so be aware 
+                      Example:
+                      if `ls -l > $a` = 0 then
+                        print $a
+                      else
+                        echo this ls failed
+                      endif
+                      
+ 
  "#{expression}"    : evaluate the expression immediately and replace text with evaluated expression
                       example "#{'print'}" application.name; "stuff"..
                       inside expressions use single quote instead of double quote
@@ -290,6 +300,12 @@ $"Expansion Expr":    This will expand the enclosed expansion expression followi
                       This is basically a syntactic trick to let the editor know your entering code that should be executed 
                       as one block. By default gsh executes each line as it is entered.
                       If used in gsh scripts { to }  execute  after the closing brace, local variables(inside {}) are lost.
+{..} in cli expresion : When used inside a cli expression then the gambas/shell variables are inserted at runtime, if surrounded in ()
+                        inside the {} then the expresin is evaluated at runtime and inserted.
+                        Example:
+                        echo {application.id} {system.version} {(user.name&" "&User.id)}
+                        outputs:
+                        1234 3.15.3 sam 1002
                      
  Code Blocks        : Will execute independently in the order they appear in the script
                       eg if-endif while-wend {} lambda-end Begin..end... Any Gambas block

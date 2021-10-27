@@ -6,7 +6,7 @@
 	<meta name="generator" content="LibreOffice 6.4.7.2 (Linux)"/>
 	<meta name="created" content="2020-05-05T15:28:02.700934000"/>
 	<meta name="changedby" content="Brian G"/>
-	<meta name="changed" content="2021-10-11T15:20:59.713323300"/>
+	<meta name="changed" content="2021-10-27T10:56:16.215570207"/>
 	<style type="text/css">
 		@page { size: 8.5in 11in; margin-right: 0.78in; margin-top: 0.79in; margin-bottom: 0.79in }
 		p { margin-bottom: 0in; direction: ltr; color: #000000; line-height: 100%; orphans: 2; widows: 2; background: transparent }
@@ -203,6 +203,8 @@ Shell - gsh - 1.3 - Table of Contents</b></font></font></p>
 	Store the return code from this process to a variable	36</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc57_3411073610">HistoryEntryNumber!	36</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc616_1004977946">[0]findpattern/replacepattern/	36</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc139_3697558090">`Linux
+	cli` Back Ticks - Execute cli and return exit code	36</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc618_1004977946">&quot;#{expression}&quot;	37</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc63_3411073610">?
 	Same as print	37</a></p>
@@ -210,8 +212,8 @@ Shell - gsh - 1.3 - Table of Contents</b></font></font></p>
 	Start the command/function as a detached process	37</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc169_297940400">:;
 	Used to separate Gambas statements	37</a></p>
-	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc171_297940400">$[Var],$gshVar
-	Passes a Gambas variable into a Linux command (CLI)	37</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc171_297940400">{Var/Expr}
+	or $gshVar Passes a Gambas variable into a Linux command (CLI)	37</a></p>
 	<p style="margin-left: 0.2in; line-height: 100%"><a href="#__RefHeading___Toc73_3411073610">Global
 	Commands/Functions/Classes	38</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc75_3411073610">get
@@ -247,6 +249,8 @@ Shell - gsh - 1.3 - Table of Contents</b></font></font></p>
 	Clears the history of entered commands	45</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc240_2829647683">clearsubs
 	Clears all subs/functions/procedures from the image	45</a></p>
+	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc141_3697558090">clearvars
+	Clears all user defined shell variables from memory	45</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc242_2829647683">compload
 	Loads a gambas3 component into the image	45</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc101_3411073610">fprint
@@ -256,7 +260,7 @@ Shell - gsh - 1.3 - Table of Contents</b></font></font></p>
 	variable	45</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc105_3411073610">hist
 	&lt;start at&gt;&lt;number of entries&gt; Prints a list input lines
-	to the stdout	45</a></p>
+	to the stdout	46</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc168_2829647683">hh
 	Lists the last 10 history entries only	46</a></p>
 	<p style="margin-left: 0.79in; line-height: 100%"><a href="#__RefHeading___Toc622_1004977946">jobs
@@ -546,15 +550,17 @@ where you downloaded gsh/sharedmem to.</p>
 </p>
 <p class="western" style="line-height: 115%">Install shared memory
 library.</p>
-<p class="western" style="line-height: 115%"><span style="font-variant: normal"><font face="Ubuntu"><font size="2" style="font-size: 10pt"><span style="letter-spacing: normal"><span style="font-style: normal"><b>sudo
-apt install ./gambas3-westwood-sharedmem_3.15-0ubuntu38_all.deb</b></span></span></font></font></span></p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; line-height: 115%">
+<font face="Ubuntu"><font size="2" style="font-size: 10pt"><b>sudo
+apt install ./gambas3-westwood-sharedmem_3.15-0ubuntu38_all.deb</b></font></font></p>
 <p class="western" style="line-height: 115%"><br/>
 
 </p>
 <p class="western" style="line-height: 115%">Install Gambas shell
 gsh.</p>
-<p class="western" style="line-height: 115%"><span style="font-variant: normal"><font face="Ubuntu"><font size="2" style="font-size: 10pt"><span style="letter-spacing: normal"><span style="font-style: normal"><b>Sudo
-apt install ./gsh_1.3.1-0ubuntu18_all.deb(or most current from site)</b></span></span></font></font></span></p>
+<p class="western" style="font-variant: normal; letter-spacing: normal; font-style: normal; line-height: 115%">
+<font face="Ubuntu"><font size="2" style="font-size: 10pt"><b>Sudo
+apt install ./gsh_1.3.1-0ubuntu18_all.deb(or most current from site)</b></font></font></p>
 <p class="western" style="line-height: 115%"><br/>
 
 </p>
@@ -2519,10 +2525,19 @@ regex.replace().</p>
 <p class="western" style="margin-left: 0.29in; line-height: 115%"><br/>
 
 </p>
-<h5 class="western" style="line-height: 115%; orphans: 2; widows: 2"><br/>
-<br/>
+<h5 class="western"><a name="__RefHeading___Toc139_3697558090"></a>`Linux
+cli`  Back Ticks - Execute cli and return exit code</h5>
+<p class="western" style="margin-left: 0.29in; line-height: 100%">
+This will Execute the the linux command line and returns the exit
+code of the last command</p>
+<p class="western" style="margin-left: 0.29in; line-height: 100%">example:</p>
+<p class="western" style="margin-left: 0.58in; line-height: 100%">if
+`ls / &gt; $a` = 0 then  print &quot; the command worked\n&quot; ; $a</p>
+<p class="western" style="margin-left: 0.29in; line-height: 100%">This
+may be used Anywhere a gambas function may be called</p>
+<p class="western" style="margin-left: 0.58in; line-height: 100%"><br/>
 
-</h5>
+</p>
 <h5 class="western" style="line-height: 115%; page-break-before: always"><a name="__RefHeading___Toc618_1004977946"></a>
 &quot;#{expression}&quot;</h5>
 <p class="western" style="margin-left: 0.29in; line-height: 115%">Evaluate
@@ -2598,12 +2613,13 @@ to separate Gambas statements</h5>
 is used to separate  multiple statements on single line, changed from
 : as Gambas name spaces now use the : in their definition.</p>
 <h5 class="western" style="line-height: 115%; orphans: 2; widows: 2"><a name="__RefHeading___Toc171_297940400"></a>
-$[Var],$gshVar		Passes a Gambas variable into a Linux command (CLI)</h5>
+{Var/Expr} or $gshVar		Passes a Gambas variable into a Linux command
+(CLI)</h5>
 <p class="western" style="margin-left: 0.29in; line-height: 100%">This
 format is used to pass a Gambas block local variable into a Linux
 command.</p>
 <p class="western" style="margin-left: 0.29in; line-height: 100%">Example
-: $a = 4 :; For I as integer = 0 to 5 :; echo the variables are $[i] 
+: $a = 4 :; For I as integer = 0 to 5 :; echo the variables are {i} 
 and  $a :; next</p>
 <p class="western" style="margin-left: 0.29in; line-height: 100%">gsh
 global variables are passed simply as  : $myvar</p>
@@ -3104,7 +3120,7 @@ clear	Clears the screen</h5>
 ‘true’ if cleared, ‘false,’ otherwise.</p>
 <p class="western" style="margin-left: 0.58in; line-height: 115%">$result
 contains the error text or &quot;OK.&quot;</p>
-<h5 class="western"><a name="__RefHeading___Toc238_2829647683"></a>clearclass		Clears
+<h5 class="western"><a name="__RefHeading___Toc238_2829647683"></a>clearclass	Clears
 all classes and structures from the image</h5>
 <h5 class="western" style="line-height: 115%"><a name="__RefHeading___Toc99_3411073610"></a>
 clearhist 	Clears the history of entered commands</h5>
@@ -3116,8 +3132,10 @@ clearhist()</p>
 ‘true’ if found, ‘false’ otherwise.</p>
 <p class="western" style="margin-left: 0.58in; line-height: 115%">$result
 contains the error text or &quot;OK.&quot;</p>
-<h5 class="western"><a name="__RefHeading___Toc240_2829647683"></a>clearsubs		Clears
-all subs/functions/procedures from the image</h5>
+<h5 class="western"><a name="__RefHeading___Toc240_2829647683"></a>clearsubs
+	Clears all subs/functions/procedures from the image</h5>
+<h5 class="western"><a name="__RefHeading___Toc141_3697558090"></a>clearvars	Clears
+all user defined shell variables from memory</h5>
 <h5 class="western"><a name="__RefHeading___Toc242_2829647683"></a>compload	Loads
 a gambas3 component into the image</h5>
 <p class="western" style="margin-left: 0.58in">Compload
