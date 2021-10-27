@@ -1621,6 +1621,7 @@ End
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
+Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 Private DoAlias As Boolean = True 
 Public Sub IfReader(EndBlk As String[]) As Boolean
 
@@ -1701,8 +1702,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       
     Endif
     
-    
-    
     If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
       Dim InList As String[] = Parser(InBuffer, MultyParse, False)
       If InList.count > 1 Then
@@ -1720,7 +1719,19 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     InBufParse = Highlight.Analyze(InBuffer)
     HTypes = Highlight.Types
     
-    If HTypes[0] = Highlight.Comment Then Return True
+    If HTypes[0] = Highlight.Comment Or If HTypes[0] = Highlight.Help Then Return True
+    
+    If HTypes.Exist(Highlight.Error) Then ' check for what ever the error is looking for `....`
+       If InBufParse.Last[0] = "`" Then
+          Dim tmpParse As String[] = Parser(InBuffer, ErrorParse, True)
+          inBufParse.Clear()
+          HTypes.Clear()
+          For Each sSym As String In tmpParse
+            InBufParse.Insert(Highlight.Analyze(sSym))
+            HTypes.Insert(Highlight.types)
+          Next
+       Endif
+    Endif
     
     Dim newCmdLine As String = Preprocesses(InBuffer)
     
@@ -2708,7 +2719,7 @@ Catch
 
 End
 
-
+Private AutoGenSub As Integer = 0
 Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As String ' MaxGlobSize As 0 mean unlimited
 
   Dim OutBuf As String = ""
@@ -2725,8 +2736,19 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
   If IsSpace(Invar) Then Return " "
   
   Syms = Highlight.Analyze(InVar)
-  
   types = Highlight.types
+  
+  If Types.Exist(Highlight.Error) Then ' check for what ever the error is looking for `....`
+      If syms.Last[0] = "`" Then
+          Dim tmpParse As String[] = Parser(InVar, ErrorParse, True)
+          Syms.Clear()
+          Types.Clear()
+          For Each sSym As String In tmpParse
+            Syms.Insert(Highlight.Analyze(sSym))
+            Types.Insert(Highlight.types)
+          Next
+      Endif
+  Endif
   
   If syms.count = 0 Or If types[0] = Highlight.Comment Or If types[0] = Highlight.Help Then
     Return InVar
@@ -2811,7 +2833,9 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
           
         Case Highlight.Error
           If syms[tCount][0] = "`" And If syms[tCount][syms[tCount].len - 1] = "`" Then
-            syms[tCount] = Eval(Preprocesses(Mid(syms[tCount], 2, syms[tCount].len - 2)))
+            Dim EvalStmt As String = Mid(syms[tCount], 2, syms[tCount].len - 2)
+            Dim CompileStmt As String = CreateCmdProgram.compile(EvalStmt, True)
+            syms[tCount] = CompileStmt
           Endif
           
         Case Highlight.string

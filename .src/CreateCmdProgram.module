@@ -137,13 +137,14 @@ Public Sub getfullpath(filename As String) As String
 End
 
 '' This function will compile a Standard(SH) shell CLI line into gambas syntax
-Public Sub _call(Source As String) As String
+Public Sub _call(Source As String, Optional AsFunction As Boolean = False) As String
   
-  Return compile(source)
+  Return compile(source, AsFunction)
   
 End
 
-Public Sub Compile(Source As String) As String ' returns a correctly created program to run the command
+Private AutoFuncName As Integer = 0
+Public Sub Compile(Source As String, Optional AsFunction As Boolean = False) As String ' returns a correctly created program to run the command
    Dim lines As New String[]
    Dim FinalProgram As String = ""
    Dim BraceLevel As Integer = 0
@@ -191,6 +192,15 @@ Public Sub Compile(Source As String) As String ' returns a correctly created pro
    If BraceLevel > 0 Or BraceLevel < 0 Then Error.raise("Incorrect(unbalanced)  usage of '()' Braces in CLI")
    If AndOrLevel Then Finalprogram &= "Endif\n"
 '   FinalProgram &= "Catch\nError \"gsh error:\" & error.text \n"
+
+   If AsFunction Then 
+        Dim AutoName As String = "FuncGen" & AutoFuncName
+        Inc AutoFuncName
+        Dim AutoFunc As String = "Sub " & AutoName & "() as integer\n" & FinalProgram & "\nReturn Process.LastValue\nend\n"
+        gsh.LinkTable.Add(AutoFunc, AutoName)
+        FinalProgram = AutoName & "()"
+   Endif
+   
    Return FinalProgram
 End
 
@@ -512,7 +522,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"$env\"] "
     CmdExec[CurrentCmd] &= ")\n"
     CmdExec[CurrentCmd] &= "\n''#" & CmdList[currentcmd].Join(" ") & "#''\n"
-    CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild "
+    CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild with [ Env[\"PWD\"] ] "
     
      If CmdWriteTo[CurrentCmd] >= 0 Then   ' we need to do the write to the next command in pipe
        If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
@@ -581,7 +591,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
        If CmdWrite[i] <> "" Or i > 0 Then CmdExec[i] &= "Write "
     Endif
     
-    CmdExec[i] &= "with [\"PWD=\"&env[\"PWD\"]] as \"mRead" & BaseName & Str(i) & "\"\n"
+    CmdExec[i] &= " as \"mRead" & BaseName & Str(i) & "\"\n"
     
     If gsh.jobctl Then
          Dim StartCopy As Integer = InStr(CmdExec[i], "''#", 0, gb.IgnoreCase)
