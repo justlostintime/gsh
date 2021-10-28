@@ -1,6 +1,7 @@
 Public Struct glob_t   'The structure definition used by the glob system function
 ''          Some size_t functions are implemented as prointer as size_t
 ''          follows the size of the address pointer in most systems
+''          Used by some plugin functions
 gl_pathc As Pointer                                      'Count Of paths matched by the pattern. *size_t use ptr as it follows address width and absolute vaue,like size_t
 gl_pathv As Pointer                                      'List Of matched pathnames.  char * * gl_pathv; * /
 gl_offs As Pointer                                          'Slots To reserve In `gl_pathv'.   __size_t gl_offs; */

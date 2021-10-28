@@ -40,7 +40,6 @@ alias done='loop until true'
 
 error "The Base System plugins have changed.\nRun clearsubs\nAfter saving all your own personalized sub"
 
-' This is a system check
 
 
 
