@@ -658,8 +658,8 @@ Private Sub VerifyAppDepend()
     Copy "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh"
     Chmod User.home &/ "vars/profile.gsh" To "rwxr-x---"
   Else
-    Print "System Profile date " & Stat("/usr/share/gsh/profiles").lastmodified
-    Print "Local Profile date  " & Stat(User.home &/ "vars/profile.gsh").lastmodified
+    'Print "System Profile date " & Stat("/usr/share/gsh/profiles").lastmodified
+    'Print "Local Profile date  " & Stat(User.home &/ "vars/profile.gsh").lastmodified
     If Stat("/usr/share/gsh/profiles").lastmodified > Stat(User.home &/ "vars/profile.gsh").lastmodified Then
       If Exist(User.home &/ "vars/profile.gsh.new") Then Kill User.home &/ "vars/profile.gsh.new"
       Copy "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh.new" 
