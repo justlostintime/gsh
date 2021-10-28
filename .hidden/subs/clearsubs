@@ -25,6 +25,7 @@ Dim allIndex as new string[]
 Dim answer as string = "n"
 allSubs = lany("sub","subs")
 for each sEntry as string[] in allSubs
+ if allSubs.key = "update" then continue
  if sEntry[SubInMem] = "In-Mem" then
    allIndex.add(allsubs.key)
    ' print "In memory :";;sEntry[SubPath]
@@ -37,8 +38,8 @@ for each sEntry as string[] in allSubs
         savesubs(allsubs.key)
         error  "Clearsubs: Sub Saved ";allsubs.key
      endif
-   else if  file.load(sEntry[SubPath]) <> sharedmem["sub."&allsubs.key] then
-     error "Clearsub";;sentry[SubSource];" '"allsubs.key;"' Has changed, Would you like to save it Y/n?";
+   else if  sEntry[SubSource] <> "Default" and if file.load(sEntry[SubPath]) <> sharedmem["sub."&allsubs.key] then
+     error "Clearsub";;sentry[SubSource];" '";allsubs.key;"' Has changed, Would you like to save it Y/n?";
      line input answer
      if trim(answer)[0] == "n" then
        error "ClearSubs: Changed Sub Not Saved ";allsubs.key

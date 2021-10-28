@@ -1,6 +1,6 @@
 #!/usr/bin/gsh
 'Defaults to be loaded into an empty system
-'Script for Shell Version 1.3
+'Script for Shell Version 1.3 version 44.6
 'Functions in this file or the plugin directory are loaded as 
 ' plugins each time the gsh starts or as needed by the shell.
 ' The comment lines starting with double ' will be printed by the help
@@ -37,8 +37,6 @@ alias update=
 alias tcb='toclipboard'
 alias fcb='fromclipboard'
 alias done='loop until true'
-
-error "The Base System plugins have changed.\nRun clearsubs\nAfter saving all your own personalized sub"
 
 
 

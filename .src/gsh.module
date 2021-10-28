@@ -712,6 +712,8 @@ Public Sub Main()
     SharedMem.Merge(DefaultImageName)
   Endif 
   
+  If SharedMem.exist("sub.update") Then SharedMem.Free("sub.update")              ' this must always be read from the latest system install
+  
   SharedMem["$pwd"] = Env["PWD"]
   SetDefaults()
   
@@ -876,6 +878,11 @@ Public Sub Main()
       Try SharedMem["sub.onstart"] = File.load(User.home &/ "vars/subs/onstart")
       If Error Then
         Error ("Unable to load onstart ;");; Error.text
+      Else
+        Try compile("sub.onstart")
+        If Error Then
+           Error ("Compile On Start of onstart");; ("Failed :");; Error.text;; Error.where
+        Endif
       Endif
       execbuffer = ""
     Endif
@@ -887,6 +894,11 @@ Public Sub Main()
       Try SharedMem["sub.onexit"] = File.load(User.home &/ "vars/subs/onexit")
       If Error Then
         Error ("Unable to load onexit :");; Error.text
+      Else
+        Try compile("sub.onexit")
+        If Error Then
+         Error ("Compile On Start of onexit");; ("Failed :");; Error.text;; Error.where
+        Endif
       Endif
       execbuffer = ""
     Endif
@@ -1008,6 +1020,12 @@ Private Sub CleanUpError()
   
   ContainsGlobal = False
   Error.Clear()
+  
+End
+
+Public Sub ExitNow()
+  
+  ReadQueue.push("QUIT")
   
 End
 

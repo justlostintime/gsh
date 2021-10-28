@@ -2,13 +2,35 @@ Sub update() As Boolean ' when a new profile.gsh is available update the environ
 ''update() update to the latest profile default functions
 ''         loads the latest alias and functions and classes from
 ''         the profile file
-if not exist( user.home &/ "vars/profile.gsh.new") then return
-if exist(user.home &/ "vars/profile.gsh.old") then
-kill user.home &/ "vars/profile.gsh.old"
+if not exist( user.home &/ "vars/profile.gsh.new") then 
+ error "Nothing to do"
+ return false
 endif
-move user.home &/ "vars/profile.gsh" to user.home &/ "vars/profile.gsh.old"
-move user.home &/ "vars/profile.gsh.new" to user.home &/ "vars/profile.gsh"
-dim src as class = classes["gsh"]
-object.call(src,"runfromextern",["profile.gsh"])
-return true
+
+print "Update gsh";application.version
+print "Clearing all in memory subs, prompting to change user subs"
+print "Update must exit the shell and you must restart it for changes to take effect"
+print "Other running shells must be exited before running this update"
+error "Run update now Y/n?";
+dim answer as string = ""
+line input answer
+answer = upper(trim(answer))
+if answer = "" or if answer[0] = "Y" then
+
+   if exist(user.home &/ "vars/profile.gsh.old") then
+      kill user.home &/ "vars/profile.gsh.old"
+   endif
+   move user.home &/ "vars/profile.gsh" to user.home &/ "vars/profile.gsh.old"
+   move user.home &/ "vars/profile.gsh.new" to user.home &/ "vars/profile.gsh"
+   dim src as class = classes["gsh"]
+   object.call(src,"runfromextern",["profile.gsh"])
+   clearsubs()
+   dim cGsh as class = classes["gsh"]
+   object.call(cGsh,"ExitNow")
+   
+else
+  error "Update: Update Cancelled"
+  return false
+endif
+
 end

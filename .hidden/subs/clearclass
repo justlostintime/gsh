@@ -1,30 +1,71 @@
-Sub clearclass(...) ' Clear all or some of the classes from the image
-''clearsubs(<name of sub >,...) clears subs from memory
+Sub clearclass(...) ' clear all or some of the class/struct from the image
+''clearclass(<name of class/struct >,...) clears classes from memory
+''clearclass <name of Class/struct> ...     ' command line format
+''          Does not delete the class/struct from disk
 ''          if no parameters than clear all
-''          if parameters remove each from memory 
+''          if parameters remove each from memory
+''          prompt for each unsaved user altered system class/sub
+''          prompt for each user created class/struct, not saved yet
+ 
 if param.count <> 0 then
   for each subname as string in param
-    if sharedmem.exist("class."&subname)
-        print #file.err, "Clear Class :" ;;subname
-        sharedmem.free("sub."&subname)
-    else if sharedmem.exist("struct."&subname) then 
-        print #file.err, "Clear Struct :" ;;subname
+    if sharedmem.exist("class."&subname) then
+        error "ClearClass: Clear Class :" ;;subname
+        sharedmem.free("class."&subname)
+    else if sharedmem.exist("struct."&subname) then
+        error "ClearClass: Clear struct :" ;;subname
         sharedmem.free("struct."&subname)
     else
-        print #file.err, "Class/Structure not found :";;subname
+        error "Struct/Class not found :";;subname
     endif
   next
   return
 endif
 
-for each s as SharedMemSymbol in sharedmem.SymbolTable
-  if s.symname like "class.*" or if s.symname like "struct.*" then
-	print #file.err, "Clear Class/Struct :" ;;s.symname 
-	sharedmem.free(s.symname)
-  endif
+' Here is where we will use lany to save the sub
+Dim allSubs as collection
+Dim allStructs as collection
+
+allSubs = lany("class","class")
+allstructs = lany("struct","struct")
+doRemove(allSubs,"class")
+doRemove(allStructs,"struct")
+end
+
+sub doRemove(allsubs as collection,extension as string)
+dim answer as string = ""
+for each sEntry as string[] in allSubs
+
+ if sEntry[SubInMem] = "In-Mem" then
+   ' print "In memory :";;sEntry[SubPath]
+   if sEntry[SubSource] = "In-Mem" then
+     error "ClearClass:";;extension;" '";AllSubs.key;"' Not Saved, Do You want to save it now Y/n?";
+     line input Answer 
+     if trim(upper(answer))[0] <> "" and if trim(upper(answer))[0] <> "Y" then
+        error "ClearClass:";;extension;" not saved ";allsubs.key
+     else
+        saveclasses(allsubs.key)
+        'error  "ClearClass:";;extension;" Saved ";allsubs.key
+     endif
+   else if  sEntry[SubSource] <> "Default" and if file.load(sEntry[SubPath]) <> sharedmem[extension&"."&allsubs.key] then
+     error "Clearclass";extension;;sentry[SubSource];" '";allsubs.key;"' Has changed, Would you like to save it Y/n?";
+     line input answer
+      if trim(upper(answer))[0] <> "" and if trim(upper(answer))[0] <> "Y" then
+       error "Clearclass: Changed ";extension;" Not Saved ";allsubs.key
+     else
+       saveclasses(allsubs.key)
+       'error "Clearclass:  Changed ";extension;" Saved ";allsubs.key
+     endif
+   endif
+   error "Clearclear:";;extension;" '";allsubs.key;;"' removed from memory"
+   sharedmem.free(extension&"."&allSubs.key)
+ endif
+
 next
 
 catch
  print #file.err, "Error :";;error.text;; error.where
 
 end
+
+enum SubSource, SubPath, SubName, SubInMem
