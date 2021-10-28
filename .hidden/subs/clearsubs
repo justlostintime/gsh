@@ -27,7 +27,7 @@ allSubs = lany("sub","subs")
 for each sEntry as string[] in allSubs
  if sEntry[SubInMem] = "In-Mem" then
    allIndex.add(allsubs.key)
-   print "In memory :";;sEntry[SubPath]
+   ' print "In memory :";;sEntry[SubPath]
    if sEntry[SubSource] = "In-Mem" then
      error "Clearsub: Sub '";AllSubs.key;"' Not Saved, Do You want to save it now Y/n?";
      line input Answer 
