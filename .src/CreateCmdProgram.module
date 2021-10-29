@@ -527,7 +527,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     
      If CmdWriteTo[CurrentCmd] >= 0 Then   ' we need to do the write to the next command in pipe
        If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
-       CmdIo[CurrentCmd] &= "write #mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ", sInput\n"
+       CmdIo[CurrentCmd] &= "write #mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ", sInput, sInput.len\n"
        If CmdKill[CurrentCmd] = "" Then CmdKill[CurrentCmd] = SetKillSub(CurrentCmd, basename)
        CmdKill[CurrentCmd] &= "if mClose" & BaseName & Str(CmdWriteTo[CurrentCmd]) & "() then mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ".closeinput()\n"
        If CmdWrite[CmdWriteTo[CurrentCmd]] = "" Then
@@ -538,12 +538,12 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
     Else If CmdReadFrom[CurrentCmd] >= 0 Then ' we are a read from we have to add this
        If CmdIo[CmdReadFrom[CurrentCmd]] = "" Then CmdIo[CmdReadFrom[CurrentCmd]] = SetIoSub(CmdReadFrom[CurrentCmd], basename)
        If CmdKill[CmdReadFrom[CurrentCmd]] = "" Then CmdKill[CmdReadFrom[CurrentCmd]] = SetKillSub(CmdReadFrom[CurrentCmd], basename)
-       CmdIo[CmdReadFrom[CurrentCmd]] &= "write #mProc" & BaseName & Str(CurrentCmd) & ", sInput\n"
+       CmdIo[CmdReadFrom[CurrentCmd]] &= "write #mProc" & BaseName & Str(CurrentCmd) & ", sInput, sInput.len\n"
        CmdKill[CmdReadFrom[CurrentCmd]] &= "if mClose" & BaseName & Str(CurrentCmd) & "() then mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"
        CmdWriters[CurrentCmd].add(CmdReadFrom[CurrentCmd])
     Endif
     
-    If NoOutRedirect And NeedsSTDIOWrite Then CmdIo[CurrentCmd] &= "write #File.out, sInput\n"
+    If NoOutRedirect And NeedsSTDIOWrite Then CmdIo[CurrentCmd] &= "write #File.out, sInput, sInput.len\n"
     If NoErrRedirect And NeedsSTDERRWrite Then CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
     If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"   ' do this only on first, allows to inject data to stream
   Next
@@ -831,11 +831,11 @@ End
 
 
 Private Sub SetIoSub(CmdIndex As Integer, basename As String) As String
-  Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, -256\n"
+  Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\n"
 End
 
 Private Sub DefaultIoSub(CmdIndex As Integer, basename As String) As String
-  Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, -256\nwrite #file.out,sInput\nend"
+  Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\nwrite #file.out,sInput, sInput.len\nend"
 End
 
 Private Sub SetKillSub(CmdIndex As Integer, basename As String) As String
@@ -856,7 +856,7 @@ End
 
 Private Sub DefaultErrSub(CmdIndex As Integer, basename As String) As String
   
-  Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\nwrite #file.err,  msg\n"
+  Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\nwrite #file.err,  msg, msg.len\n"
   
 End
 

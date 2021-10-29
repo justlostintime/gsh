@@ -29,7 +29,7 @@ For Each v As Variant In vParms
             Select Case object.class(v).name
                 Case "String[]"
                     For Each s as string In v
-                        Print #mFile, s
+                        sendchunks(mFile, s)
                     Next
 
                 Case "Date[]"
@@ -38,7 +38,7 @@ For Each v As Variant In vParms
                      next
 
                 Case "Byte[]"
-                    v.write(mfile)
+                    sendchunks(mfile,v.tostring())
 
                 Case "Variant[]", "Object[]"
                     for each vs as Variant in v
@@ -67,7 +67,7 @@ For Each v As Variant In vParms
                     print #mFile
 
                 Case "String"
-                    print #mFile, v
+                    sendchunks(mFile, v)
 
                 Default
                     if right(typeof(v),2) = "[]" then
@@ -86,6 +86,10 @@ For Each v As Variant In vParms
                     	Endif
                     endif
             End Select
+            
+        case gb.string
+            sendchunks(mfile, v)
+            
         case gb.class
             print  #mFile,"Class :"; v.name;; "Refs=";v.count
             print  #mFile,"  Symbols :";;
@@ -101,4 +105,24 @@ Next
 End With
 if typeof(filename) = gb.string then close mfile
 Return True
+End
+
+' This is only required because pipes will block and gambas does not release
+' so no more events are processed. This happens if we are sending data to a task and getting
+' responses from that task
+
+Sub sendchunks(sink As Variant, buffer As String)
+ if buffer.len < 2048 then
+  write #sink, buffer, buffer.len
+  return
+ endif 
+
+' this is a lot slower but since pipes block, we need to send small chunks at a time
+ For i As Integer = 0 To buffer.len Step 256
+
+   Write #sink, Mid(buffer, i + 1, 256), 256
+   Flush #sink
+   Wait
+ Next
+ 
 End
