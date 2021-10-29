@@ -1,74 +1,150 @@
-Sub lclass(Optional varname As String = "") As Boolean ' List user classes
-''lClass    <GlobalClassname> - prints a list of global classes
-''          prints the content of classif name is provided
-''          function lsub(<subname>)
-''          Command lsub <subname>
+Sub lclass(Optional varname As String = "") As Boolean ' list all classes/structures
+''lSubs <GlobalSubName> - prints a list of global Functions, Subs or Procs
+''          prints the content of Class/Struct if name is provided same as list command
+''          May be used as command or subroutine in scripts
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
-''          returns true if found, false otherwise
-''          $result contains the error text or "OK"
+'Use "gb.eval.highlight"
 
-with sharedmem
+With sharedmem
 
-dim allsubs as collection
-dim allstruct as collection
+Dim allsubs As Collection
+Dim allStruct as Collection
 
-allsubs = lany("class","class")
-allstruct = lany("struct","struct")
+Dim allindex As New String[]
+Dim GetHighlight As New gshHighLight
+Dim ShowDetail As Boolean = False
 
-for each s as string[] in allstruct
-    allsubs.add(s,allstruct.key)
+allsubs = lany("class", "class")
+allStruct = lany("struct","struct")
+
+for each aEntry as string[] in allStruct
+       allsubs[allstruct.key] = aEntry
 next
 
-if isnull(allsubs) then 
-	print #file.err, "file list error"
-	return false
-endif
+If varname.len = 2 And If varname = "-l" Then 
+    varname = ""
+    ShowDetail = True
+Endif
 
-if varname <> ""  and if not instr(varname,"*") then 
-	if allsubs.exist(varname) then
-		print varname ;;"in";;allsubs[varname][0]
-		if allsubs[varname][0] <> "Image" then
-            lprint(lsubgetfile(allsubs[varname][1]))
-		else
-			print .["sub."&varname]
-		endif
-		return true
-	else
-		.["$result"] = "Error : Global class/struct Not found ["&varname&"]"
-		print #file.err, .["$result"]
-		return false
-	endif
-endif
+If IsNull(allsubs) Then 
+	Error "lclass: Error building list"
+	Return False
+Endif
 
-For Each s As string[]  In allsubs
-      if varname <> "" and if not (allsubs.key like varname) then continue 
-      print left(s[0]&space(10),10);;lsubgetdef(lsubgetfile(s[1]))
+If varname <> "" And If Not InStr(varname, "*") Then 
+	If allsubs.exist(varname) Then
+		Print varname;; "in";; allsubs[varname][0]
+		If allsubs[varname][0] <> "In-Mem" Then
+        Print GetHighlight.ToConsole(lsubgetfile(allsubs[varname][1]).join("\n"))
+		Else
+		    if allstruct.exist(varname) then
+		      Print GetHighlight.ToConsole(.["struct." & varname])
+		    else
+		      Print GetHighlight.ToConsole(.["class." & varname])
+		    Endif
+		Endif
+		Return True
+	Else
+
+		sharedmem["$result"] = "Error : Global Function Not found [" & varname & "]"
+		Error sharedmem["$result"]
+		Return False
+	Endif
+Endif
+
+For Each s As String[] In allsubs
+   allindex.add(allsubs.key)
 Next
+
+allindex.sort()
+
+Print "Listing";; allindex.count;; "Class/Structures"
+
+If Not ShowDetail Then 
+  
+  Dim colcount As Integer = 0
+  Dim colwidth As Integer = 0
+  Dim colperiod As Integer = 0
+  Dim CurrentElement As Integer = 0
+  
+  For Each ss As String In allindex
+    If ss.len > colwidth Then colwidth = ss.len
+  Next
+  
+  colwidth += 2
+  
+  colcount = CInteger(env["COLUMNS"]) / colwidth
+  colperiod = allindex.count / colcount
+  colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
+  For i As Integer = 0 To colperiod - 1
+     For j As Integer = 0 To colcount - 1
+       CurrentElement = i + (j * colperiod)
+       Dim thecolor As String
+       If currentelement < allindex.count Then
+            thecolor = "\x1b[3" 
+            select case allsubs[allindex[CurrentElement]][0]
+              case "Default"
+                    theColor &= "2m"
+              case "Personal"
+                    theColor &= "3m"
+              case "In-Mem"
+                    theColor &= "1m"
+           end select
+           dim PrtText as  string = Left(allindex[CurrentElement] & Space(colwidth), colwidth)
+           if allsubs[allindex[CurrentElement]][3] = "In-Mem" then
+                PrtText =  "\e[31m"&left(PrtText,1)&thecolor&right(PrtText,-1)
+           else
+                PrtText = thecolor & Prttext
+           endif
+
+           Try Print PrtText; "\x1b[0m";
+       Endif
+     Next
+     Print
+  Next
+  Print "\x1b[33m* Personal   \x1b[32m* Default   \x1b[31m* In-Mem  D\e[32mefault  \e[31mP\e[33mersonal\x1b[0m"
+Else
+
+  For Each ss In allIndex
+    Dim Outdef As String
+    Dim symbols As String[]
+    Dim types As Integer[]
+
+    s = allsubs[ss]
+    outdef = lsubgetdef(lsubgetfile(s[1]))
+    symbols = highlight.analyze(outdef, True)
+    types = highlight.types
+    
+    Try Print Left(s[0] & Space(10), 10);;
+    Try Print GetHighlight.ToConsole(highlight.textafter);
+  Next
+
+Endif
 
 .["$result"] = "OK"
 
-end with
-return true
+End With
+Return True
 End
 
-sub lsubgetdef(func as string[]) as string
-	for each s as string in func
-		if s like "*[Cc]lass *" or if s like "*[Ss]truct *" then return s
-	next
-   return "*"&func[0]
-end
+Sub lsubgetdef(func As String[]) As String
+	For Each s As String In func
+		If s Like "^*[Cc]lass *" or if s Like "^*[Ss]truct *" Then Return s
+	Next
+  Return "*" & func[0]
+End
 
-sub lsubgetfile(path as string) as string[]
-dim func as string[]
-	if  path[0] = "/" then
-		try  func = split(file.load(path),"\n","\"\"",true,true)
-		if error then
-			 print #file.err, "unable to read "&path
-			return null
-		endif
-	else
-		func = split(sharedmem[path],"\n","\"\"",true,true)
-	endif
-return func
-end
+Sub lsubgetfile(path As String) As String[]
+Dim func As String[]
+	If path[0] = "/" Then
+		Try func = Split(file.load(path), "\n", "\"\"", True, True)
+		If Error Then
+			 Print #file.err, "unable to read " & path
+			Return Null
+		Endif
+	Else
+		func = Split(sharedmem[path], "\n", "\"\"", True, True)
+	Endif
+Return func
+End

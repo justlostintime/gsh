@@ -121,7 +121,7 @@ Sub lsubgetdef(func As String[]) As String
 	For Each s As String In func
 		If s Like "*[Ss]ub *" Then Return s
 	Next
-   Return "*" & func[0]
+  Return "*" & func[0]
 End
 
 Sub lsubgetfile(path As String) As String[]
