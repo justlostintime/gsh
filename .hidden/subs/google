@@ -6,6 +6,7 @@ public Sub google(SearchTerm as string) '' Search for something on the web
 '' if the search tern contains spaces then it mush be inclised in ".."
 '' it actually uses firefox, and what ever you have set the default
 '' search engine to
-exec ["firefox","--search",SearchTerm]
+dim junk as string
+exec ["firefox","--search",SearchTerm] to junk
 
 End
