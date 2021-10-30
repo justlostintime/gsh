@@ -20,7 +20,7 @@ Public Sub _new(Optional SetDefaults As Boolean = True, ops As String[] = ["+", 
   
 If SetDefaults Then
  seperators = [" ", "\t", "\n"]
- operators = ["::", "&&", "||", "(", ")"]
+ operators = [":;", "&&", "||", "(", ")"]
  SpecialSymbols = ["{", "}"]
  quotes = ["\"", "\"", "`", "`"]
  braces = ["{", "}"]

@@ -778,9 +778,9 @@ Public Sub Main()
     If DoTrace Then Error "(Trace "; Now; ") "; (" Execute a function in image "); LocalFunRun
     execBuffer = LocalFunRun
     For i As Integer = 0 To cmdLineParameters.Max
-      cmdLineParameters[i] = Quote(cmdLineParameters[i])
+      If Not IsNumber(cmdLineParameters[i]) Then cmdLineParameters[i] = Quote(cmdLineParameters[i])
     Next
-    execBuffer &= " " & cmdLineParameters.Join(" ")
+    execBuffer &= "(" & cmdLineParameters.Join(",") & ")"
     ExecBuffer = preprocesses(execbuffer) & "\n"
     Try ProcessProg()
     If Error Then 
@@ -2672,7 +2672,7 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, [" "], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
+Private CallParser As New ParseParm(False, [" " "+", "-", "*", "/", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim i, j As Integer
@@ -2759,7 +2759,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
   types = Highlight.types
   
   If Types.Exist(Highlight.Error) Then ' check for what ever the error is looking for `....`
-      If syms.Last[0] = "`" Then
+      'If syms.Last[0] = "`" Or If Syms.first[0] = "|" Then
           Dim tmpParse As String[] = Parser(InVar, ErrorParse, True)
           Syms.Clear()
           Types.Clear()
@@ -2767,7 +2767,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             Syms.Insert(Highlight.Analyze(sSym))
             Types.Insert(Highlight.types)
           Next
-      Endif
+      'Endif
   Endif
   
   If syms.count = 0 Or If types[0] = Highlight.Comment Or If types[0] = Highlight.Help Then

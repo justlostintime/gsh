@@ -386,7 +386,7 @@ Private Sub DoProcess(source As String) As String ' returns the processed segmen
       Sym = CmdList[CurrentCmd][i]
       type = CmdTypes[currentCmd][i]
       If i = 0 And CurrentCmd > 0 Then ' verify that this is a valid command
-         If Cmdtypes[CurrentCmd][i] <> Highlight.function And If Cmdtypes[currentCmd][i] <> Highlight.label Then
+         If type <> Highlight.function And If type <> Highlight.label Then
            Try sym = System.find(sym)
            If Error Or If sym = "" Then Error.Raise("Pipe Fitting error: Command/Function [" & CmdList[CurrentCmd][i] & "] Unknown")
          Endif
@@ -1015,6 +1015,7 @@ DoAliasAgain:
     errortext = Error.where & ":" & Error.text
     Error.Propagate()
 End
+
 'Public ShelliParse As ParseParms
 Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As Integer)
   Dim NewLine As String = AliasReplace(CmdList[currentcmd][0])

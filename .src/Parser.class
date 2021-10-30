@@ -271,7 +271,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
   
     For i As Integer = 0 To p.syms.Max
       If p.types[i] = Highlight.Symbol Then
-        If sharedmem.Exist("sub." & p.syms[i]) Then 
+        If gsh.isLocalFunc(p.syms[i]) Then 
             p.types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
         Else If i = 0 And If sharedmem.exist(p.syms[i]) Then 
             p.types[i] = Highlight.Label             ' well we need to make it fit in label = execute var as command
