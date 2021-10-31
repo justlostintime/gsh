@@ -2710,18 +2710,20 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
   
-  If CmdLine.last = "&" Then
-    CmdLine.Pop() 
-    NoWait = True
-  Endif
+ 
   
   ' Scan it for comments... forgot about this
   For iScan As Integer = 0 To CmdLine.max
-    If iScan = "'" Then
+    If CmdLine[iScan] = "'" Then
         CmdLine.Remove(iScan, -1)
         Break
     Endif
   Next
+  
+   If CmdLine.last = "&" Then
+    CmdLine.Pop() 
+    NoWait = True
+  Endif
   
   Dim sCodeLine As String = CmdLine[0] & "("
   Dim types As Integer[]
