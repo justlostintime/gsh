@@ -1954,7 +1954,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             DoBlock(["NEXT"])
             
           Case "IF"
-            If Upper(inBufparse[InBufParse.max]) = "THEN"
+            If inBufparse[InBufParse.max] == "THEN"
               DoBlock(["ENDIF"])
             Endif
             
@@ -2672,26 +2672,52 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, [" " "+", "-", "*", "/", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
+Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
+Private ParmParser As New ParseParm(False, ["'"], ["\"", "\"", "[", "]"], [","])
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   
   Dim i, j As Integer
+  Dim si As String
   Dim nowait As Boolean = False
-  
-  If Commandline[CommandLine.len - 1] = "&" Then 
-    Commandline = Left(Commandline, CommandLine.len - 1)
-    nowait = True
-  Endif
+  Dim MinCount As Integer = 0
   
   Dim Funcdef As String = getSubdef(Split(SharedMem["sub." & funcname], "\n", "\"\"", True))
-  Dim interface As String[] = Split(FuncDef, "(,)", "\"\"", True, True)
-  For i As Integer = 0 To interface.Max
-    interface[i] = Trim(interface[i])
+  'Dim interface As String[] = Split(FuncDef, "(,)", "\"\"", True, True)
+  ParmParser.braces = ["(", ")", "{", "}"]
+  Dim interfaceDef As String[] = Parser(FuncDef, ParmParser, False, False)
+  
+  Dim InBrace As Integer = 0
+  Dim interface As New String[]
+  Dim GotMin As Boolean = False
+  For Each si As String In interfaceDef
+    If si = "(" Then
+      Inc Inbrace
+      Continue
+    Else If si = ")" Then
+      Dec Inbrace
+      Continue 
+    Endif
+    si = Trim(si)
+    If Inbrace = 0 Then Continue
+    If Not gotmin And If Left(si, 8) == "optional" Then
+      MinCount = interface.count
+      gotmin = True
+    Endif
+  
+    interface.Add(si)
+    
   Next
+  
   Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
+  
+  If CmdLine.last = "&" Then
+    CmdLine.Pop() 
+    NoWait = True
+  Endif
+  
   ' Scan it for comments... forgot about this
   For iScan As Integer = 0 To CmdLine.max
-    If Left(CmdLine[iScan], 1) = "'" Then
+    If iScan = "'" Then
         CmdLine.Remove(iScan, -1)
         Break
     Endif
@@ -2702,22 +2728,23 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   Dim syms As String[]
   Dim DataTypePos As Integer = 0
   If Not interface.Exist("...")
-    If CmdLine.max - 1 > interface.max - 1 Then
-      SharedMem["$result"] = ("Error : Too many parameters :") & Split(SharedMem["sub." & funcname], "\n", "", True)[0]
+    If CmdLine.count - 1 < MinCount Or If CmdLine.max > interface.count Then
+      SharedMem["$result"] = ("Error : Bad Parameter Count :") & funcdef & " Got " & CmdLine.Count - 1 & " Wanted " & interface.count
       Return ""
     Endif
   Endif
-  j = 1
+  j = 0
   For i = 1 To CmdLine.max
+    If j > interface.max Then Break
     If i > 1 Then sCodeLine &= ","
     
-    If interface[j] <> "..." And If Lower(interface[j]) <> "optional" Then
-      syms = highlight.Analyze(interface[i])
+    If interface[j] <> "..." Then
+      syms = highlight.Analyze(interface[j])
       types = highlight.types
       DataTypePos = types.Find(Highlight.DataType)
       If DataTypePos > 0 Then
         If syms[DataTypePos] = "STRING" And CmdLine[i][0] <> "\"" Then
-          sCodeLine &= "\"" & CmdLine[i] & "\""
+          sCodeLine &= Quote(CmdLine[i])
         Else
           sCodeLine &= CmdLine[i]
         Endif

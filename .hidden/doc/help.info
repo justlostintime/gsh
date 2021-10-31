@@ -258,23 +258,22 @@
                                  print application.name                  'this will print "execgbs" The Context of the executed block
                                  They happen in different contexts, global variables span contexts
 
- @<variable>        : Will execute the content of a variable as a program and return the result as a string[] of the \n
-                      seperated string returned by the program.
+ @<gsh variable>      : Will execute the content of a variable as a program and return the result as a string[] of the \n
+                        seperated string returned by the program. Notice that the @ replaces the $ in the refrence.
+                        Example:
+                              eg. > $j = "Print \"\"hello\"\""  ' This returns "hello"
+                                  > ? @j                        ' This prints hello
+                              Parameters
+                               $0-$n and $# This will contain all the parameters passed to the @variable call 
+                               eg > $j = "Print quote($0)"
+                                  > ? @j("hello")               ' This prints hello
                              
  ?                  : at the beginning of a line will print what ever follows Same as scripts.
                       For example ? $a;$b,c,d -- will print the content of these variables
                       
  &                  : Place this after the last line of your command to execute the command as an independent process
  
- {expression/var}   : CLI ONLY - Pass Gambas Variable/functions call, Any valid gambas expression to Linux CLI
-                      Example:
-                        Dim a = "bye world"
-                        echo "hello world" {a} {replace(a,"bye","Wonderful")} {application.id}
- 
- $GambasShellVarName: Reference a shell variable or pass a shell variable to a linux CLI
-                      Example:
-                         $a = "Hello World"
-                         echo $a
+
                          
 $"Expansion Expr":    This will expand the enclosed expansion expression following the same expansion rulles
                       as Bash or csh. See BASH or csh expansion for more details.
@@ -282,38 +281,57 @@ $"Expansion Expr":    This will expand the enclosed expansion expression followi
                          echo $"This{1..10}"
                       Outputs:
                          this1 this2 this3 this4 this5 this6 this7 this8 this9 this10
+                         
+ Code Blocks        : Will execute independently in the order they appear in the script
+                      Examples:  
+                       Language defined code blocks:
+                             if .. endif, while .. wend, for .. next, do..loop, select..end select, with .. end with, repeat .. until
+                             
+                       Gsh Code blocks lambda functions with parameters:      
+                             {...} lambda..end Begin..end
+                             
+                       Gsh Alias based code blocks, These are not lambda expressions:
+                             do .. done   is the same as:  do .. loop until true
  
- { } or Lambda..end : are used to create a block of executable code. Gsh will execute code as it is read.
- Begin..end           Also any other  block type command will start a block eg for .... next, while...do etc . 
-                      example:
+ { } or Lambda..end : are used to create a block of executable code.
+ Begin..End           example:
                       
-                      { parm1 parm2 ...   [lambda | Begin] parm1 parm2 ... this is useful in a for next loop or
-                       Dim i As String        Dim i As String     as a use one function
-                       i = "this\nthat"       i = "this\nthat"
-                       dim j as string[]      dim j as string[]
-                       j = split(j,"\n")      j = split(j,"\n")
-                       $e = j                 $e = j
-                       } <&>               end <&>
+                      [ { | lambda | begin ] Parm1 Parm2 ... this is useful in a for next loop or
+                       Dim i As String       
+                       i = "this\nthat"
+                       dim j as string[] 
+                       j = split(j,"\n")
+                       $e = j
+                       } <&>
                        
                       You may edit and execute the last lambda expression by using edit lambda.
                       Parameters may be passed to a lambda expression using the param for Gambas ... functions
                       This is basically a syntactic trick to let the editor know your entering code that should be executed 
                       as one block. By default gsh executes each line as it is entered.
                       If used in gsh scripts { to }  execute  after the closing brace, local variables(inside {}) are lost.
-{..} in cli expresion : When used inside a cli expression then the gambas/shell variables are inserted at runtime, if surrounded in ()
+                      
+{..} in cli expression : When used inside a cli expression then the gambas/shell variables are inserted at runtime, if surrounded in ()
                         inside the {} then the expresin is evaluated at runtime and inserted.
                         Example:
                         echo {application.id} {system.version} {(user.name&" "&User.id)}
                         outputs:
                         1234 3.15.3 sam 1002
-                     
- Code Blocks        : Will execute independently in the order they appear in the script
-                      eg if-endif while-wend {} lambda-end Begin..end... Any Gambas block
+                        
+        {expression/var}   : CLI ONLY - Pass Gambas Variable/functions call, Any valid gambas expression to Linux CLI
+                        Example:
+                        Dim a = "bye world"
+                        echo "hello world" {a} {replace(a,"bye","Wonderful")} {application.id}
  
- quit               : End of execution or close gsh session.  
+        $GambasShellVarName: Reference a shell variable or pass a shell variable to a linux CLI
+                        Example:
+                         $a = "Hello World"
+                         echo $a
+                     
+quit                : End of execution or close gsh session.  
                       gsh shells/scripts return values in global variables
+exit                : Alias for quit
 
- Global Commands/Functions/Classes : These commands are built into the gambas shell
+Global Commands/Functions/Classes : These commands are built into the gambas shell
  
  Get <Command> <Command> ...  A List of additional commands  to be loaded as plugins these are complete modules having many functions
                               only the provided command name may be called from the command line.
@@ -408,16 +426,6 @@ $"Expansion Expr":    This will expand the enclosed expansion expression followi
                                             Hello
                                             More From The Script
                                             Bye
-
-                                                              
- @GlobalVariableName(don't include $)  This will execute the content of the variable as a program and place the text output
-                              into the current program line. Sort of self modifying code. It must return a string.
-                              eg. > $j = "Print \"\"hello\"\""  ' This returns "hello"
-                                  > ? @j                        ' This prints hello
-                              Parameters
-                               $0-$n and $# This will contain all the parameters passed to the @variable call 
-                               eg > $j = "Print quote($0)"
-                                  > ? @j("hello")               ' This prints hello
  
  Sub,Function,Procedure,Class,Struct  Each are compiled immediately after creation. If used as a command then they are executed
                               in the context of the current shell they are loaded as plugins to the shell.

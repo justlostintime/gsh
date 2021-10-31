@@ -7,6 +7,10 @@ public Sub google(SearchTerm as string) '' Search for something on the web
 '' it actually uses firefox, and what ever you have set the default
 '' search engine to
 dim junk as string
-exec ["firefox","--search",SearchTerm] to junk
+if system.exist("google-chrome") then
+ exec ["google-chrome", "? " & SearchTerm] to junk
+else
+ exec ["firefox","--search",SearchTerm] to junk
+endif
 
 End
