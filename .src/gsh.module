@@ -2731,7 +2731,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   Dim DataTypePos As Integer = 0
   If Not interface.Exist("...")
     If CmdLine.count - 1 < MinCount Or If CmdLine.max > interface.count Then
-      SharedMem["$result"] = ("Error : Bad Parameter Count :") & funcdef & " Got " & CmdLine.Count - 1 & " Wanted " & interface.count
+      SharedMem["$result"] = Subst(("&4 : Bad Parameter Count : Got &2, wanted &3,for [&1]"), funcdef, CmdLine.Count - 1, interface.count, CmdLine[0])
       Return ""
     Endif
   Endif
