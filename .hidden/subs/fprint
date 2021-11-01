@@ -30,6 +30,8 @@ For Each v As Variant In vParms
                 Case "String[]"
                     For Each s as string In v
                         sendchunks(mFile, s)
+                        print #mfile
+                        flush #mfile
                     Next
 
                 Case "Date[]"
@@ -54,7 +56,7 @@ For Each v As Variant In vParms
                 Case "Collection"
                     For Each vs In v
                         'Print #mFile, v.key; "="; vs
-                        print #mFile, quote(v.Key);;":";;
+                         print #mFile, quote(v.Key);;":";;
                         fprint(mfile, vs)
                     next
 
@@ -68,6 +70,8 @@ For Each v As Variant In vParms
 
                 Case "String"
                     sendchunks(mFile, v)
+                    print #mfile
+                    flush #mfile
 
                 Default
                     if right(typeof(v),2) = "[]" then
@@ -89,6 +93,8 @@ For Each v As Variant In vParms
             
         case gb.string
             sendchunks(mfile, v)
+            print #mfile
+            flush #mfile
             
         case gb.class
             print  #mFile,"Class :"; v.name;; "Refs=";v.count

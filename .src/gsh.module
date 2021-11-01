@@ -2118,7 +2118,14 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                     If Not SharedMem.exist(funclass) Then  ' check if it is a structure definition
                       funclass = inbufparse[1]
                       If Not SharedMem.exist(funclass) Then ' check for any old variable
-                        funclass = ""
+                        If funclass[0] = "$" Then 
+                           Funclass = Right(funclass, -1)
+                           If Not SharedMem.exist(funclass) Then ' check for any old variable
+                             funclass = ""
+                           Endif
+                        Else
+                           funclass = ""
+                        Endif
                       Endif
                     Endif
                   Endif
@@ -2309,21 +2316,33 @@ End
 
 
 Sub editanything(funclass As String) As Boolean
-
+Dim cvBuffer As String[]
+  Dim cvBufferString As String
+  Dim cvVariantBuffer As Variant
+  Dim cvLine As String
+  Dim cvLineSet As String[]
   If funclass <> "" Then
+    If funclass[0] = "$" Then funclass = Right(funclass, -1)
     Dim cvString As Variant = sharedmem[funclass]
     If funclass Like "sub.*" Or If funclass Like "class.*" Or If funclass Like "struct.*" Then cvString = Trim(cvString)
     Select Case TypeOf(cvString)
+      Case gb.Boolean
+        cvBufferString = Str(cvstring)
+        cvString = editbuffer(cvString)
+        sharedMem[funclass] = IIf(cvstring[0] == "T" Or cvstring == "1", True, False)
+        
+      Case gb.integer, gb.long, gb.float, gb.short, gb.Date
+        cvBufferString = Str(cvstring)
+        cvString = editbuffer(cvString)
+        sharedMem[funclass] = Val(cvString)
+        
       Case gb.String
         cvString = editbuffer(cvString)
         If funclass Like "sub.*" Or If funclass Like "class.*" Then cvString = Trim(cvString)
         sharedMem[funclass] = cvString
+        
       Case gb.Object
-        Dim cvBuffer As String[]
-        Dim cvBufferString As String
-        Dim cvVariantBuffer As Variant
-        Dim cvLine As String
-        Dim cvLineSet As String[]
+        
         If Object.Class(cvString).Symbols.Exist("_edit") Then ' check if the object by some strange chance can edit itsself
           SharedMem[funclass] = cvString._edit()
           Return True
@@ -2338,31 +2357,62 @@ Sub editanything(funclass As String) As Boolean
           Case "Byte[]"
             SharedMem[funclass] = editHex(cvstring)
             
+          Case "Boolean[]" 
+             cvBufferString = ""
+            For Each s As Variant In cvString
+               cvBufferString &= IIf(s, "True", "False") & "\n"
+            Next
+            cvBufferString = editbuffer(cvBufferString)
+            cvString.clear()
+            Dim cvArray As String[] = Split(cvBufferString, "\n", "", True, False)
+            For Each s In cvArray
+                s = Trim(s)
+                cvString.add(IIf(s[0] == "T" Or s == "1", True, False))
+            Next
+            
+            sharedMem[funclass] = cvString
+            
+          Case "Integer[]", "Long[]", "Float[]", "Short[]", "Date[]"
+            cvBufferString = ""
+            For Each s As Variant In cvString
+               cvBufferString &= Str(s) & "\n"
+            Next
+            cvBufferString = editbuffer(cvBufferString)
+            cvString.clear()
+            cvArray = Split(cvBufferString, "\n", "", True, False)
+            For Each s In cvArray
+                cvString.add(Val(s))
+            Next
+            sharedMem[funclass] = cvString
+            
           Case "Collection"
             cvBufferString = ""
             For Each cvVariantBuffer In cvString
               If TypeOf(cvVariantBuffer) = gb.string Then
-                cvBufferString &= "\"" & cvString.key & "\"=\"" & cvVariantBuffer & "\"\n"
+                cvBufferString &= cvString.key & "=" & Quote(cvVariantBuffer) & "\n"
+              Else
+                cvBufferString &= cvString.key & "=" & cvVariantBuffer & "\n"
               Endif
             Next
             cvBufferString = editbuffer(cvBufferString)
             cvBuffer = Split(cvBufferString, "\n", "\"\"", True, True)
             For Each cvLine In cvBuffer
-              cvLineSet = Split(cvLine, "=", "\"\"", True, False)
-              If cvString.exist(cvLineSet[0]) Then
-                cvString[cvLineSet[0]] = cvLineSet[1]
+              cvLineSet = Split(cvLine, "=", "\"\"", True, True)
+              Dim localkey As String = cvLine[0]
+              If cvString.exist(localkey) Then
+                cvString[localkey] = cvLineSet[1]
               Else
-                cvString.add(cvLineSet[1], cvLineSet[0])
+                cvString.add(IIf(IsNumber(cvLineSet[1]), Val(cvLineSet[1]), cvLineSet[1]), cvLineSet[0]) 
               Endif
             Next
             sharedMem[funclass] = cvString
             
           Default
-            SharedMem["$result"] = ("Error : May not edit objects of type ") & Object.Class(cvString).name 
+            Error.raise(("Error : May not edit objects of type ") & Object.Class(cvString).name)
             Return False
         End Select
       Default 
-        SharedMem["$result"] = ("Error : May only edit strings and some objects")
+        Error.raise(("Error : May only edit strings and some objects"))
         Return False
     End Select
   Endif
