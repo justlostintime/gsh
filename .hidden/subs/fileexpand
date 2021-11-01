@@ -45,7 +45,7 @@ Dim ReturnSet As Pointer
 Dim CallResult As Integer
 Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
 
-  if Recurse = false and if globstar = true then recurse = (path like "*\\*\\**")
+  if Recurse = false and if globstar = true then recurse = (path like "*\\*\\*.*")
   
   if dironly = true or if  path[path.len-1] = "/" Then
      dironly = true

@@ -1,6 +1,6 @@
 #!/usr/bin/gsh
 'Defaults to be loaded into an empty system
-'Script for Shell Version 1.3 version 44.6
+'Script for Shell Version 1.3 version 58
 'Functions in this file or the plugin directory are loaded as 
 ' plugins each time the gsh starts or as needed by the shell.
 ' The comment lines starting with double ' will be printed by the help
@@ -19,6 +19,8 @@
 
 $profile = true  ' sets this to true on the first load of the profile. only done upon first init
 
+print "Gsh Profile Version";;$gshversion;;"Loaded"
+
 alias fgrep='fgrep --color=auto'
 alias grep='grep --color=auto'
 alias l='ls -CF'
@@ -33,7 +35,6 @@ alias ps='ps -l'
 alias hh='hist -10'
 alias path='? env["PATH"]'
 alias exit='Quit 0'
-alias update=
 alias tcb='toclipboard'
 alias fcb='fromclipboard'
 alias done='loop until true'

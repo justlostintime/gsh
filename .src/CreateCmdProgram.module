@@ -929,7 +929,7 @@ End
 
 Public Sub InitAlias()
 
-Dim stemp As Collection = SharedMem["$alias"]
+Dim stemp As Collection = SharedMem["alias"]
 For Each s As String[] In sTemp
    Try AliasList[stemp.key] = s
 Next
@@ -1079,7 +1079,7 @@ Public Sub setalias(cmdline As String)
       Endif
   Endif
   
-  SharedMem["$alias"] = aliasList
+  SharedMem["alias"] = aliasList
   
   Catch
     Error.Propagate()
@@ -1111,7 +1111,7 @@ sortlist.sort()
 For i As Integer = 0 To sortlist.max
   If sortlist[i][sortlist[i].len - 1] = "(" Then
     AliasList.Remove(sortlist[i])
-    SharedMem["$alias"] = aliasList
+    SharedMem["alias"] = aliasList
     Continue
   Endif
   printAlias(sortlist[i], AliasList[sortlist[i]], MaxLen)

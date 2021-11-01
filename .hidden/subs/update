@@ -15,16 +15,24 @@ error "Run update now Y/n?";
 dim answer as string = ""
 line input answer
 answer = upper(trim(answer))
+
 if answer = "" or if answer[0] = "Y" then
 
+   if sharedmem.exist("$profile") then sharedmem.free("$profile")                           ' replaced by profile
+   if sharedmem.exist("$alias") then sharedmem.free("$alias")                               ' Replaced by alias
+   
    if exist(user.home &/ "vars/profile.gsh.old") then
       kill user.home &/ "vars/profile.gsh.old"
    endif
+   
    move user.home &/ "vars/profile.gsh" to user.home &/ "vars/profile.gsh.old"
    move user.home &/ "vars/profile.gsh.new" to user.home &/ "vars/profile.gsh"
-   dim src as class = classes["gsh"]
-   object.call(src,"runfromextern",["profile.gsh"])
    clearsubs()
+   
+   dim src as class = classes["gsh"]
+   sharedmem["profile"] = false
+   object.call(src,"runfromextern",["profile.gsh"])
+  
    dim cGsh as class = classes["gsh"]
    object.call(cGsh,"ExitNow")
    
