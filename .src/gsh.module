@@ -2306,6 +2306,7 @@ Sub lambdaSubFuncClass(eblk As String[])
 
   execbuffer = removeLastLine(execbuffer)
   Dim savebuf2 As String = execbuffer
+  execbuffer = ""
   NoPreProcess = True
   DoBlock(eblk)
   NoPreProcess = False
