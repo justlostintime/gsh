@@ -2986,9 +2986,9 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
           Else If Syms[tCount] = "$$"                          ' return the current pid
             syms[tCount] = application.id
           Else If Syms[tCount] = "$*"                          ' return all of the command line parameters as a string
-            syms[tCount] = "iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\")"
+            syms[tCount] = "iif(args.count > 1 , args.all.extract(1,args.max).join(\",\"),\"\")"
          Else If Syms[tCount] = "$@"                           ' return all parameters as a list
-            syms[tCount] = "iif(args.count > 1,args.all,[])"   
+            syms[tCount] = "iif(args.count > 1 , args.all.extract(1,args.max),[])"
           Else If Syms[tCount] = "$!"                          ' return the current pid of background task
             syms[tCount] = "application.id"
           Else If Syms[tCount] = "$GID" Then
@@ -3000,7 +3000,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             Try convit = CInteger(Right(Syms[tCount], -1))
             If Not Error Then 
               If Compileonly Then
-                Syms[tCount] = "iif(" & Str(convit) & "< args.count,Args[" & Str(convit) & "],\"\")"
+                Syms[tCount] = "iif(" & Str(convit) & "< args.count , Args[" & Str(convit) & "],\"\")"
               Else
                 If convit >= 0 And If convit <= cmdLineParameters.max Then
                   Syms[tCount] = If(IsNull(Val(cmdLineParameters[convit])) = True, Quote(cmdLineParameters[convit]), Val(cmdLineParameters[convit]))
@@ -3189,55 +3189,55 @@ Public Sub resolvefilename(filename As String) As String
   Return "/" & PWDs.join("/") &/ name
 
 End
-
-Public ExecVarBuffer As String = ""
-Public ExecProc As Process
-
-Public Sub execvar_read()
-  Dim sLine As String
-  Read #Last, sLine, -256
-  execvarbuffer &= sLine 
-End
-
-Public Sub execvar_error(procerr As String)
-  
-  Error procerr;
-  
-End
-
-Public Sub execvar_kill()
-  
-  If DoTrace Then Error ("Execvar process ended")
-  
-End
-
-Private Sub execvar(Varname As String, parm As String[]) As String
-  
-  If SharedMem.exist(VarName) Then
-
-    parm.Add(varname, 0)
-    parm.Add("-f", 0)
-    If dotrace Then parm.Add("-t", 0)
-    parm.Add("/usr/bin/gsh", 0)
-    
-    ExecVarBuffer = ""
-    
-    Try execproc = Exec parm For Read As "execvar"
-    If Error Then error.raise(Error.text)
-    execproc.Wait()
-  Else 
-    Error.Raise(("@ Unknown global variable\"") & varname & "\"")
-  Endif
-  
-  If dotrace Then 
-    Error ("Exec variable complete output: Start")
-    Error ExecVarBuffer
-    Error ("Exec variable complete output: End")
-  Endif
-  
-  Return ExecVarBuffer
-  
-End
+' 
+' Public ExecVarBuffer As String = ""
+' Public ExecProc As Process
+' 
+' Public Sub execvar_read()
+'   Dim sLine As String
+'   Read #Last, sLine, -256
+'   execvarbuffer &= sLine 
+' End
+' 
+' Public Sub execvar_error(procerr As String)
+'   
+'   Error procerr;
+'   
+' End
+' 
+' Public Sub execvar_kill()
+'   
+'   If DoTrace Then Error ("Execvar process ended")
+'   
+' End
+' 
+' Private Sub execvar(Varname As String, parm As String[]) As String
+'   
+'   If SharedMem.exist(VarName) Then
+' 
+'     parm.Add(varname, 0)
+'     parm.Add("-f", 0)
+'     If dotrace Then parm.Add("-t", 0)
+'     parm.Add("/usr/bin/gsh", 0)
+'     
+'     ExecVarBuffer = ""
+'     
+'     Try execproc = Exec parm For Read As "execvar"
+'     If Error Then error.raise(Error.text)
+'     execproc.Wait()
+'   Else 
+'     Error.Raise(("@ Unknown global variable\"") & varname & "\"")
+'   Endif
+'   
+'   If dotrace Then 
+'     Error ("Exec variable complete output: Start")
+'     Error ExecVarBuffer
+'     Error ("Exec variable complete output: End")
+'   Endif
+'   
+'   Return ExecVarBuffer
+'   
+' End
 
 Public helptxt As String
 Public helpfromhtml As String
