@@ -6,7 +6,7 @@ Sub clearsubs(...) ' clear all or some of the subs/func/proc from the image
 ''          if parameters remove each from memory
 ''          prompt for each unsaved user altered system sub
 ''          prompt for each user created sub, not saved yet
- 
+
 if param.count <> 0 then
   for each subname as string in param
     if sharedmem.exist("sub."&subname) then
@@ -26,10 +26,10 @@ Dim answer as string = "n"
 allSubs = lany("sub","subs")
 for each sEntry as string[] in allSubs
  if allSubs.key = "update" then continue
- if sEntry[SubInMem] = "In-Mem" then
+ if sEntry[eSubInMem] = "In-Mem" then
    allIndex.add(allsubs.key)
-   ' print "In memory :";;sEntry[SubPath]
-   if sEntry[SubSource] = "In-Mem" then
+   ' print "In memory :";;sEntry[eSubPath]
+   if sEntry[eSubSource] = "In-Mem" then
      error "Clearsub: Sub '";AllSubs.key;"' Not Saved, Do You want to save it now Y/n?";
      line input Answer 
      if trim(answer)[0] == "n" then
@@ -38,8 +38,8 @@ for each sEntry as string[] in allSubs
         savesubs(allsubs.key)
         error  "Clearsubs: Sub Saved ";allsubs.key
      endif
-   else if  sEntry[SubSource] <> "Default" and if file.load(sEntry[SubPath]) <> sharedmem["sub."&allsubs.key] then
-     error "Clearsub";;sentry[SubSource];" '";allsubs.key;"' Has changed, Would you like to save it Y/n?";
+   else if  sEntry[eSubSource] <> "Default" and if file.load(sEntry[eSubPath]) <> sharedmem["sub."&allsubs.key] then
+     error "Clearsub";;sentry[eSubSource];" '";allsubs.key;"' Has changed, Would you like to save it Y/n?";
      line input answer
      if trim(answer)[0] == "n" then
        error "ClearSubs: Changed Sub Not Saved ";allsubs.key
@@ -58,5 +58,4 @@ catch
  print #file.err, "Error :";;error.text;; error.where
 
 end
-
-enum SubSource, SubPath, SubName, SubInMem
+enum eSubSource, eSubPath, eSubName, eSubInMem

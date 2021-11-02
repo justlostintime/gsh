@@ -27,8 +27,9 @@ if answer = "" or if answer[0] = "Y" then
    
    move user.home &/ "vars/profile.gsh" to user.home &/ "vars/profile.gsh.old"
    move user.home &/ "vars/profile.gsh.new" to user.home &/ "vars/profile.gsh"
-   clearsubs()
+   
    clearclass()
+   clearsubs()
    
    dim src as class = classes["gsh"]
    sharedmem["profile"] = false
