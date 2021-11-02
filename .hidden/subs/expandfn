@@ -6,24 +6,25 @@ Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_
 Extern globfree(glob_def As Glob_t) In "libc:6"
 Extern chdir(Dest As String) As Integer In "libc:6"
 
-Dim GLOB_ERR As Integer         = &b000000000000001              ' Return On Read errors. * /
-Dim GLOB_MARK As Integer        = &b000000000000010              ' Append a slash To Each name. * /
-Dim GLOB_NOSORT As Integer      = &b000000000000100              ' Don 't sort the names.  */
-Dim GLOB_DOOFFS As Integer      = &b000000000001000              ' Insert PGLOB - > gl_offs NULLs. * /
-Dim GLOB_NOCHECK As Integer     = &b000000000010000              ' If nothing matches, Return the pattern. * /
-Dim GLOB_APPEND As Integer      = &b000000000100000              ' Append To results Of a previous call. * /
-Dim GLOB_NOESCAPE As Integer    = &b000000001000000              ' Backslashes don 't quote metacharacters.  */
-Dim GLOB_PERIOD As Integer      = &b000000010000000              ' Leading `.' can be matched by metachars.  */
-Dim GLOB_MAGCHAR As Integer     = &b000000100000000              ' Set In gl_flags If any metachars seen. * /
-Dim GLOB_ALTDIRFUNC As Integer  = &b000001000000000              ' Use gl_opendir et al functions. * /
-Dim GLOB_BRACE As Integer       = &b000010000000000              ' Expand "{a,b}" To "a" "b". * /
-Dim GLOB_NOMAGIC As Integer     = &b000100000000000              ' If no magic chars, Return the pattern. * /
-Dim GLOB_TILDE As Integer       = &b001000000000000              ' Expand ~user and ~ to home directories. */
-Dim GLOB_ONLYDIR As Integer     = &b010000000000000              ' Match only directories. * /
-Dim GLOB_TILDE_CHECK As Integer = &b100000000000000
+Dim GLOB_ERR As Integer = &h0001              ' Return On Read errors. * /
+Dim GLOB_MARK As Integer = &h0002              ' Append a slash To Each name. * /
+Dim GLOB_NOSORT As Integer = &h0004              ' Don 't sort the names.  */
+Dim GLOB_DOOFFS As Integer = &h0008             ' Insert PGLOB - > gl_offs NULLs. * /
+Dim GLOB_NOCHECK As Integer = &h0010             ' If nothing matches, Return the pattern. * /
+Dim GLOB_APPEND As Integer = &h0020              ' Append To results Of a previous call. * /
+Dim GLOB_NOESCAPE As Integer = &h0040              ' Backslashes don 't quote metacharacters.  */
+Dim GLOB_PERIOD As Integer = &h0080              ' Leading `.' can be matched by metachars.  */
+Dim GLOB_MAGCHAR As Integer = &h0100             ' Set In gl_flags If any metachars seen. * /
+Dim GLOB_ALTDIRFUNC As Integer = &h0200              ' Use gl_opendir et al functions. * /
+Dim GLOB_BRACE As Integer = &h0400              ' Expand "{a,b}" To "a" "b". * /
+Dim GLOB_NOMAGIC As Integer = &h0800              ' If no magic chars, Return the pattern. * /
+Dim GLOB_TILDE As Integer = &h1000              ' Expand ~user and ~ to home directories. */
+Dim GLOB_ONLYDIR As Integer = &h2000           ' Match only directories. * /
+Dim GLOB_TILDE_CHECK As Integer = &h4000
 
 
-dim globerrors As String[] = ["No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
+
+dim globerrors As String[] = ["System Call error","No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
 Dim Paths As New String[]
 Dim sret As New Glob_t
 Dim ReturnSet As Pointer
@@ -33,7 +34,7 @@ Dim flags as integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
 chdir(env["PWD"])
 CallResult = glob(path, flags, Null, sret)
 If Callresult <> 0 Then
-	print #file.err, "File Expansion Error :" & globerrors[CallResult]
+	print #file.err, "File Expansion Error :" & globerrors[CallResult+1]
 	return ""
 Endif
 ReturnSet = sret.gl_pathv
