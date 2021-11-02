@@ -22,8 +22,6 @@ Dim GLOB_TILDE As Integer = &h1000              ' Expand ~user and ~ to home dir
 Dim GLOB_ONLYDIR As Integer = &h2000           ' Match only directories. * /
 Dim GLOB_TILDE_CHECK As Integer = &h4000
 
-
-
 dim globerrors As String[] = ["System Call error","No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
 Dim Paths As New String[]
 Dim sret As New Glob_t

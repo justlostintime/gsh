@@ -8,7 +8,7 @@ if not exist( user.home &/ "vars/profile.gsh.new") then
 endif
 
 print "Update gsh";application.version
-print "Clearing all in memory subs, prompting to change user subs"
+print "Clearing all in memory subs/classes/structs, prompting to save user subs"
 print "Update must exit the shell and you must restart it for changes to take effect"
 print "Other running shells must be exited before running this update"
 error "Run update now Y/n?";
@@ -28,6 +28,7 @@ if answer = "" or if answer[0] = "Y" then
    move user.home &/ "vars/profile.gsh" to user.home &/ "vars/profile.gsh.old"
    move user.home &/ "vars/profile.gsh.new" to user.home &/ "vars/profile.gsh"
    clearsubs()
+   clearclass()
    
    dim src as class = classes["gsh"]
    sharedmem["profile"] = false
