@@ -82,15 +82,10 @@ Private Sub ColorToConsole(TxtColor As Integer) As String
   Dim Green As Integer
   Dim Blue As Integer
   
-#if version < "3.16.3"
-  cred = Shr((TxtColor And &hff0000), 16)
-  green = Shr((TxtColor And &h00ff00), 8)
-#else
-  cred = (TxtColor And &hff0000) shr 16
-  green = (TxtColor And &h00ff00) shr 8
-#endif
-
+  cred =  (TxtColor And &hff0000) / 256 / 256
+  green = (TxtColor And &h00ff00) / 256
   Blue = TxtColor And &h0000FF
+  
   Return "" & cRed & ";" & green & ";" & blue
 End
 

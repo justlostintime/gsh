@@ -6,39 +6,22 @@ Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_
 Extern globfree(glob_def As Glob_t) In "libc:6"
 Extern chdir(Dest As String) As Integer In "libc:6"
 
-#if Version < "3.16.3"
-Dim GLOB_ERR As Integer = Shl(1, 0)                     ' Return On Read errors. * /
-Dim GLOB_MARK As Integer = Shl(1, 1)                    ' Append a slash To Each name. * /
-Dim GLOB_NOSORT As Integer = Shl(1, 2)                  ' Don 't sort the names.  */
-Dim GLOB_DOOFFS As Integer = Shl(1, 3)                  ' Insert PGLOB - > gl_offs NULLs. * /
-Dim GLOB_NOCHECK As Integer = Shl(1, 4)                 ' If nothing matches, Return the pattern. * /
-Dim GLOB_APPEND As Integer = Shl(1, 5)                  ' Append To results Of a previous call. * /
-Dim GLOB_NOESCAPE As Integer = Shl(1, 6)                ' Backslashes don 't quote metacharacters.  */
-Dim GLOB_PERIOD As Integer = Shl(1, 7)                  ' Leading `.' can be matched by metachars.  */
-Dim GLOB_MAGCHAR As Integer = Shl(1, 8)                 ' Set In gl_flags If any metachars seen. * /
-Dim GLOB_ALTDIRFUNC As Integer = Shl(1, 9)              ' Use gl_opendir et al functions. * /
-Dim GLOB_BRACE As Integer = Shl(1, 10)                  ' Expand "{a,b}" To "a" "b". * /
-Dim GLOB_NOMAGIC As Integer = Shl(1, 11)                ' If no magic chars, Return the pattern. * /
-Dim GLOB_TILDE As Integer = Shl(1, 12)                  ' Expand ~user and ~ to home directories. */
-Dim GLOB_ONLYDIR As Integer = Shl(1, 13)                ' Match only directories. * /
-Dim GLOB_TILDE_CHECK As Integer = Shl(1, 14)
-#else
-Dim GLOB_ERR As Integer = 1 shl 0                     ' Return On Read errors. * /
-Dim GLOB_MARK As Integer = 1 shl 1                    ' Append a slash To Each name. * /
-Dim GLOB_NOSORT As Integer = 1 shl 2                  ' Don 't sort the names.  */
-Dim GLOB_DOOFFS As Integer = 1 shl 3                  ' Insert PGLOB - > gl_offs NULLs. * /
-Dim GLOB_NOCHECK As Integer = 1 shl 4                 ' If nothing matches, Return the pattern. * /
-Dim GLOB_APPEND As Integer = 1 shl 5                  ' Append To results Of a previous call. * /
-Dim GLOB_NOESCAPE As Integer = 1 shl 6                ' Backslashes don 't quote metacharacters.  */
-Dim GLOB_PERIOD As Integer = 1 shl 7                  ' Leading `.' can be matched by metachars.  */
-Dim GLOB_MAGCHAR As Integer = 1 shl 8                 ' Set In gl_flags If any metachars seen. * /
-Dim GLOB_ALTDIRFUNC As Integer = 1 shl 9              ' Use gl_opendir et al functions. * /
-Dim GLOB_BRACE As Integer = 1 shl 10                  ' Expand "{a,b}" To "a" "b". * /
-Dim GLOB_NOMAGIC As Integer = 1 shl 11                ' If no magic chars, Return the pattern. * /
-Dim GLOB_TILDE As Integer = 1 shl 12                  ' Expand ~user and ~ to home directories. */
-Dim GLOB_ONLYDIR As Integer = 1 shl 13                ' Match only directories. * /
-Dim GLOB_TILDE_CHECK As Integer = 1 shl 14
-#endif
+Dim GLOB_ERR As Integer         = &b000000000000001              ' Return On Read errors. * /
+Dim GLOB_MARK As Integer        = &b000000000000010              ' Append a slash To Each name. * /
+Dim GLOB_NOSORT As Integer      = &b000000000000100              ' Don 't sort the names.  */
+Dim GLOB_DOOFFS As Integer      = &b000000000001000              ' Insert PGLOB - > gl_offs NULLs. * /
+Dim GLOB_NOCHECK As Integer     = &b000000000010000              ' If nothing matches, Return the pattern. * /
+Dim GLOB_APPEND As Integer      = &b000000000100000              ' Append To results Of a previous call. * /
+Dim GLOB_NOESCAPE As Integer    = &b000000001000000              ' Backslashes don 't quote metacharacters.  */
+Dim GLOB_PERIOD As Integer      = &b000000010000000              ' Leading `.' can be matched by metachars.  */
+Dim GLOB_MAGCHAR As Integer     = &b000000100000000              ' Set In gl_flags If any metachars seen. * /
+Dim GLOB_ALTDIRFUNC As Integer  = &b000001000000000              ' Use gl_opendir et al functions. * /
+Dim GLOB_BRACE As Integer       = &b000010000000000              ' Expand "{a,b}" To "a" "b". * /
+Dim GLOB_NOMAGIC As Integer     = &b000100000000000              ' If no magic chars, Return the pattern. * /
+Dim GLOB_TILDE As Integer       = &b001000000000000              ' Expand ~user and ~ to home directories. */
+Dim GLOB_ONLYDIR As Integer     = &b010000000000000              ' Match only directories. * /
+Dim GLOB_TILDE_CHECK As Integer = &b100000000000000
+
 
 dim globerrors As String[] = ["No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
 Dim Paths As New String[]
