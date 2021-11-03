@@ -154,7 +154,13 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       While StreamPos < InLine.len
         
         If InLine[StreamPos] = "\n" Then      ' end of line is as good as a close quote"
-               Error.raise("Unmatched Quote Found End Of Line [" & currentquote & " ] in :" & Quote(inline))
+               If p.allowEolToClose Then        ' this gets used for comment character ate end of line 
+                 sym &= InLine[StreamPos]
+                 Inc StreamPos
+                 Break
+               Else 
+                 Error.raise("Unmatched Quote Found End Of Line [" & currentquote & " ] in :" & Quote(inline))
+               Endif 
         Endif
         
         If InLine[StreamPos] = OpenQuote And If OpenQuote <> CurrentQuote Then 

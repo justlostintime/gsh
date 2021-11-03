@@ -1648,7 +1648,7 @@ End
 
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
-Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
+Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 Private DoAlias As Boolean = True 
 Public Sub IfReader(EndBlk As String[]) As Boolean
@@ -1731,6 +1731,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Endif
     
     If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
+      MultyParse.allowEolToClose = True
       Dim InList As String[] = Parser(InBuffer, MultyParse, False)
       If InList.count > 1 Then
         InBuffer = InList[0]

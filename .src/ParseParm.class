@@ -12,6 +12,7 @@ Public KeyWords As String[]
 Public DoFileExpand As Boolean
 Public DoSpecial As Boolean
 Public KeepQuote As Boolean
+Public allowEolToClose As Boolean
 
 Public syms As New String[]
 Public types As New Integer[]
@@ -31,6 +32,7 @@ If SetDefaults Then
  DoFileExpand = False
  KeepQuote = True
  DoSpecial = True
+ allowEolToClose = False
 Else
  seperators = sep
  operators = ops
@@ -44,6 +46,7 @@ Else
  DoFileExpand = False
  KeepQuote = LeaveQuotes
  DoSpecial = special
+ allowEolToClose = False
 Endif
 
 End
