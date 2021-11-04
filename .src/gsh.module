@@ -372,7 +372,7 @@ End
 
 Private SysVars As String[] = ["profile", "globstar", "alias", "$blockindent", "$execprog", "lastexecutedblock", "prompt", "$result", "$maxhistory", "$historycurrent",
                                       "$history", "$editor", "$hexeditor", "$helpdisplay", "$home", "$hosttype", "$hostname", "$term", "newprofile", "$path", "$env",
-                                      "lambda"]
+                                      "lambda", "helpuseshtml"]
                                       
 Private Sub SetDefaults()
   
@@ -390,6 +390,7 @@ Private Sub SetDefaults()
     Endif
     
     If Not .exist("$blockindent") Or If .["$blockindent"] = "" Then .["$blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
+    If Not .exist("helpuseshtml") Then .helpuseshtml = False                                         ' Help will do a popup help when html is found
     If Not .exist("$execprog") Then .["$execprog"] = "print \"Gambas Shell \""                      ' Used for debugging only
     If Not .exist("lastexecutedblock") Then .lastexecutedblock = "print \"hello world\""            ' Used for debugging only
     If Not .exist("executedblock") Then .lastexecutedblock = "print \"hello world\""                ' Used for debugging only
@@ -3117,7 +3118,11 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
           sspacer = " "
         Endif
       Endif
-      OutBuf &= sspacer & Syms[tcount]
+      If Syms[tcount] = ":" Or If Syms[tcount] = ";" Then
+          OutBuf &= Syms[tcount]
+      Else
+          OutBuf &= sspacer & Syms[tcount]
+      Endif
     Next
     
     If DoTrace Then Error "(Trace "; Now; ") "; ("After Preprocess "); ": "; Outbuf 
@@ -3373,6 +3378,7 @@ Public Sub printHelp(Optional command As String = "")
     Try mproc.Wait()
     
     Signal[Signal.SIGPIPE].Reset
+    
 Catch 
   Error "Help System error :";; Error.text
 

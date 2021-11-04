@@ -7,20 +7,26 @@ Sub clearvars(Optional varname As String = "") As Boolean ' Delete all user vari
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
 with sharedmem
+dim SymbolList as string[] = .Variables()
+dim gshClass as object = classes["gsh"]
+dim SysVars as string[] = object.call(gshclass,"SystemVariables")
+
 if varname <> "" and if not instr(varname,"*") then
-	if .exist(varname) then
+	if not Sysvars.exist(varname) and if varname.exist(varname) then
 		.free(varname)
 		return true
 	else
-		.["$result"] = "Error : Global variable Not found ["&varname&"]"
+	  if SysVars.exist(varname) then
+	    .["$result"] = "Error : System Variables may not be deleted ["&varname&"]"
+	  else
+		  .["$result"] = "Error : Global variable Not found ["&varname&"]"
+		endif
 		print #file.err, .["$result"]
 		return false
 	endif
 endif
  
-dim SymbolList as string[] = .Variables()
-dim gshClass as object = classes["gsh"]
-dim SysVars as string[] = object.call(gshclass,"SystemVariables")
+
 For Each s As string In SymbolList
     if (s like "sub.*" or s like "class.*" or s like "struct.*") then continue
 	  if varname <> ""  and if not (s like varname) then continue

@@ -1,0 +1,28 @@
+Sub htmlpopup(htmltext As String)            '' Display an html page in a popup window
+
+use "gb.form","gb.image","gb.gui","gb.form.htmlview","gb.settings"
+    dim iHeight as integer = 500
+    dim iWidth as integer  = 500
+    iHeight = settings["htmlpopup/height",iHeight]
+    iwidth  = settings["htmlpopup/width", iWidth]
+    component.load("gb.gui")
+    component.load("gb.image")
+    component.load("gb.form")
+    component.load("gb.form.htmlview")
+    dim a as new window
+        a.height = 500
+        a.width = 500
+    dim b as new form(a)
+        b.height = 499
+        b.width = 499
+    dim c as new htmlview(b)
+        c.height = 498
+        c.width = 498
+        
+    c.html = htmltext
+    a.show()
+    
+    settings["htmlpopup/height"] = iHeight
+    settings["htmlpopup/width"] =  iWidth
+    
+end
