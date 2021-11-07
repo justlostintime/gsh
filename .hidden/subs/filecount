@@ -1,0 +1,74 @@
+Sub filecount(...) ' Count the number of files
+'' ftw - fast traverse (walk) a file tree
+
+' numOpenFds is the maximum number of file descriptors that will be open at any one time
+'            they are used to open each directory depth wise, 64 is a good number
+
+Extern ftw(dirpath As String, CalledFunction As Pointer, NumOpenFd As Integer) As Integer In "libc:6"
+Extern nftw(dirpath As String, CalledFunction As Pointer, NumOpenFd As Integer, flags As Integer) As Integer In "libc:6"
+
+Public FlagsText As String[] = ["File                        ", "Directory                   ","Unreadable Dir              ","Unstable File               ", "Sym Link                    ", "Dir All Subs Visited        ","Sym Link Naming Non Existant"]
+Public totalfiles As Long = 0
+Public TotalDirectories As Long = 0
+Public OpenFiles as integer = 256
+dim DirPath as string = "."
+
+  if param.count = 0 then 
+     PrintInfo(DirPath)
+     return
+  endif
+
+  for each DirPath in param
+   PrintInfo(DirPath)
+  next
+  
+
+'  nftw(User.home, ftwprocess2, 64, FTW_PHYS) ' only phsical files no symlinks
+'  Print "NFTW: Total Directories =";; Format(TotalDirectories, "########0"), "Total Files =";; totalFiles
+
+End
+
+Private Sub PrintInfo(DirPAth as string)
+  Print "File/Directory Count for : ";DirPath
+  TotalDirectories = 0
+  TotalFiles = 0
+  FTW(DirPath, ftwprocess, OpenFiles)
+  Print "FTW : Total Directories =";; Format(TotalDirectories, "########0"), "Total Files =";; totalFiles
+end
+
+
+Public Sub ftwProcess(fpath As String, sb As Pointer, typeflag As Integer) As Integer
+
+'  Print Subst("Type = &1, FileName = [&2]", FlagsText[typeFlag], fPath)
+  If typeflag = FTW_F Then Inc totalfiles
+  If typeFlag = FTW_D Then Inc TotalDirectories
+  Return FTW_CONTINUE
+
+End
+
+Public Sub ftwProcess2(fpath As String, sb As Pointer, typeflag As Integer, ftw_info As Pointer) As Integer
+
+  If typeflag = FTW_F Then Inc totalfiles
+  If typeFlag = FTW_D Then Inc TotalDirectories
+  Return FTW_CONTINUE
+
+End
+'Flags for the fourth parameter to nftw
+Enum FTW_PHYS = 1, FTW_MOUNT = 2, FTW_CHDIR = 4, FTW_DEPTH = 8, FTW_ACTIONRETVAL
+
+'Values to be returned from callback function
+Enum FTW_CONTINUE = 0, FTW_STOP = 1, FTW_SKIP_SUBTREE = 2, FTW_SKIP_SIBLINGS = 3
+
+'Flags passed to the user callback function
+Enum FTW_F,         'Regular file
+     FTW_D,         'Directory
+     FTW_DNR,       'UnReadable Directory
+     FTW_NS,        'Unstable file
+     FTW_SL,        'Symbolic link
+     FTW_DP,        'nftw only, Directory, all subdirs have been visited
+     FTW_SNL        'nftw only - Symbolic link naming non-existing file
+
+Public Struct FTW
+       base As Integer             '  offset of the filename (i.e., basename component) in the pathname given In fpath.
+       level As Integer            '  level is the depth of fpath in the directory tree, relative To the root Of the tree(dirpath, which has depth 0).
+End Struct

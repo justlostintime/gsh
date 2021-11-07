@@ -1,0 +1,163 @@
+Sub playground(...)
+try component.load("gb.net")
+if error then
+  print "Playground requires gb.net and gb.net.curl be installed"
+ return
+endif
+try component.load("gb.net.curl")
+if error then
+  print "Playground requires gb.net and gb.net.curl be installed"
+ return
+endif
+
+try class.load("httpClient")
+if error then
+  print "Playground was unable to load the class httpClient"
+  return
+endif
+
+Static Private hClient As New HttpClient
+Private BaseUrl As String
+Private STable As New String[]
+Static Private Examples As New Collection
+Static Private Choices as New string[]
+Static Private TheIndex as  new string[]
+
+BaseUrl = "https://gambas.one/playground/examplesmobile.html"
+Private gClient as new httpClient as "responses"
+hClient.URL = BaseUrl
+hClient.Async = false
+hClient.TimeOut = 60
+hClient.Get()
+
+print "Listing Playground Examples"
+
+if hClient.Status = 0 then
+   Dim x as integer
+   Print "Process Response"
+   ScrapeTextLines()
+   BuildExample()
+   Choices = new string[]
+   dim index as integer =  1
+   for each s as string in examples
+     choices.push(Examples.key)
+     TheIndex.push(subst("&1) &2",format(index,"##0"),examples.key))
+     inc index
+   next
+else
+   print "Unable to get playground list"
+   return
+endif
+DisplayListing(TheIndex)
+print
+
+dim answer as string
+retryAnswer:
+Print "Enter the Number of the example you would like to work with 0 or Q to quit? > ";
+flush
+line input answer
+if answer = 0 or if answer == "q" then return
+if not isnumber(answer) or if cint(answer) > Choices.count or if cint(answer) < 1 then
+    print "Invalid Selection" 
+    goto retryAnswer
+endif
+
+if not exist(user.home &/ "vars/playground")
+      mkdir User.home &/ "vars/playground"
+endif
+
+dim filename as string = replace(Choices[cint(answer)-1]," ","_")
+dim savepath as string = user.home &/"vars/playground" &/ filename
+
+if exist(savepath) then
+   exec [sharedmem["$editor"],savepath] wait
+else
+   editExample(Choices[cint(answer)-1])
+endif
+
+exec ["gbs"&system.version,savepath] wait
+
+end
+
+Sub ScrapeTextLines()
+
+For Each g As String In hClient.Lines
+  If RegExp.Match(Left(g, 15), ".*<td.*") Then FindText(g)
+Next
+
+End
+
+Sub FindText(g As String)
+  
+  Dim sBlock As String
+  sBlock = RegExp.Replace(g, "<.*>", "")
+  sBlock = Trim(sBlock)
+  STable.Add(sblock)
+  
+End
+
+Public Sub BuildExample()
+  Dim f1, f2, f3 As String
+  For i As Integer = 0 To STable.max Step 3
+    f1 = STable[i]
+    f2 = STable[i + 1]
+    f3 = RegExp.Replace(STable[i + 2], ".*=", "")
+    If f3 = "" Then Continue
+    Examples.Add(f3, f2)
+  Next
+End
+
+sub editexample(index as string)
+
+   Dim MyUrl As String = "https://api.github.com/gists/" &/ Examples[Index]
+   Dim response as string =  httpclient.download(MyUrl)
+   Dim jsondb As Variant
+   jsondb = json.Decode(response , True)
+   Dim EditBuffer as string = ""
+   For Each v As JsonCollection In jsondb["files"]
+      Try EditBuffer &= v["content"]
+      If Error Then
+           error Error.text;; ":" ;; Error.where
+      Endif
+   Next
+  
+   dim filename as string = replace(index," ","_")
+   dim savepath as string
+   savepath = user.home &/"vars/playground" &/ filename
+   file.save(SavePath,EditBuffer)
+   exec [ sharedmem["$editor"], savepath] wait
+   Print "Saved to :";;Savepath
+end
+
+
+Public sub DisplayListing(AllIndex as string[])
+
+  Dim colcount As Integer = 0
+  Dim colwidth As Integer = 0
+  Dim colperiod As Integer = 0
+  Dim CurrentElement As Integer = 0
+  Dim PrtText as string
+
+  For Each ss As String In allindex
+    If ss.len > colwidth Then colwidth = ss.len
+  Next
+
+  colwidth += 2
+
+  colcount = CInteger(env["COLUMNS"]) / colwidth
+  colperiod = allindex.count / colcount
+  colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
+  For i As Integer = 0 To colperiod - 1
+     For j As Integer = 0 To colcount - 1
+       CurrentElement = i + (j * colperiod)
+       if CurrentElement < AllIndex.count then
+           PrtText = Left(allindex[CurrentElement] & Space(colwidth), colwidth)
+       else
+           Prttext = Space(ColWidth)
+       endif 
+       Try Print PrtText;
+     Next
+     Print
+  Next
+
+End

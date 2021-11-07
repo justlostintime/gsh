@@ -2849,7 +2849,6 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
   types = Highlight.types
   
   If Types.Exist(Highlight.Error) Then ' check for what ever the error is looking for `....`
-      'If syms.Last[0] = "`" Or If Syms.first[0] = "|" Then
           Dim tmpParse As String[] = Parser(InVar, ErrorParse, True)
           Syms.Clear()
           Types.Clear()
@@ -2857,7 +2856,6 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             Syms.Insert(Highlight.Analyze(sSym))
             Types.Insert(Highlight.types)
           Next
-      'Endif
   Endif
   
   If syms.count = 0 Or If types[0] = Highlight.Comment Or If types[0] = Highlight.Help Then
