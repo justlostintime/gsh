@@ -36,7 +36,7 @@ If varname <> "" And If Not InStr(varname, "*") Then
 	If allsubs.exist(varname) Then
 		Print varname;; "in";; allsubs[varname][0]
 		If allsubs[varname][0] <> "In-Mem" Then
-        Print GetHighlight.ToConsole(lsubgetfile(allsubs[varname][1]).join("\n"))
+        Print GetHighlight.ToConsole(clsubgetfile(allsubs[varname][1]).join("\n"))
 		Else
 		    if allstruct.exist(varname) then
 		      Print GetHighlight.ToConsole(.["struct." & varname])
@@ -112,7 +112,7 @@ Else
     Dim types As Integer[]
 
     s = allsubs[ss]
-    outdef = lsubgetdef(lsubgetfile(s[1]))
+    outdef = clsubgetdef(clsubgetfile(s[1]))
     symbols = highlight.analyze(outdef, True)
     types = highlight.types
     
@@ -128,14 +128,14 @@ End With
 Return True
 End
 
-Sub lsubgetdef(func As String[]) As String
+Sub clsubgetdef(func As String[]) As String
 	For Each s As String In func
 		If s Like "^*[Cc]lass *" or if s Like "^*[Ss]truct *" Then Return s
 	Next
   Return "*" & func[0]
 End
 
-Sub lsubgetfile(path As String) As String[]
+Sub clsubgetfile(path As String) As String[]
 Dim func As String[]
 	If path[0] = "/" Then
 		Try func = Split(file.load(path), "\n", "\"\"", True, True)
