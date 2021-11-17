@@ -1,0 +1,50 @@
+' Gambas class file
+
+Inherits Task
+
+Public Parms As Variant[]
+Public Method As String
+Public sObject As String
+
+Public Sub _new(mObject As String, sMethod As String, vParms As Variant[])
+  
+  Parms = vParms
+  Method = SMethod
+  sObject = mObject
+  
+End
+
+Public Sub main()
+  If gsh.dotrace Then 
+    Print "Start bg task with";; Method, sObject
+    Flush 
+    Wait
+  Endif 
+  
+  gsh.LocalRunning = True
+  Try Object.Call(SubCls[sObject], method, parms)
+  If Error Then
+    gsh.LocalRunning = False
+    If Error.text <> "Terminated" Then 
+      If gsh.DoTrace Then
+          Error (("Local Execute error in :") & Method & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+          SubCls.doListing(SharedMem["sub." & method], Split(Error.where, ".")[2])
+      Endif
+      Error.Raise(("gsh local execute error :") & Method & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+    Else
+      Error ("[Terminated]")
+    Endif
+  Endif
+  
+  If gsh.dotrace Then 
+    Print "call completed"
+    Flush 
+    Wait
+  Endif
+  
+  gsh.LocalRunning = False
+  
+Catch 
+  Print "Local Task Error :";; Error.text;; Error.where
+  
+End

@@ -77,7 +77,7 @@ Public DefaultImageName As String = "gsh.image"
 Private RunningProcess As Process = Null
 Private RunningProcessStart As Date
 Private AutoCompile As Boolean = True
-Private LocalRunning As Boolean = False
+Public LocalRunning As Boolean = False
 Private gshrcdate As Date = Now
 Private onstartrcdate As Date = Now
 Private onexitrcdate As Date = Now
@@ -732,6 +732,7 @@ Public Sub Main()
   Class.Load("ServiceMode")
   Class.Load("HelpSystem")
   Class.Load("gshReadLine")
+  Class.Load("LocalTask")
   
   Try chdir(Env["PWD"])
   CreateCmdProgram.InitAlias()
@@ -755,10 +756,10 @@ Public Sub Main()
   Endif
   
   'If VarCommandSource = "" Then
-  If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup")
-  compileClassOnStart()
-  compileFunctionsOnStart()
-  If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup complete")
+  'If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup")
+  'compileClassOnStart()
+  'compileFunctionsOnStart()
+  'If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup complete")
   'Endif
   
   If bH Then 
@@ -1071,29 +1072,32 @@ End
 
 Private SubParmItems As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
 Private SubParmParser As New ParseParm(False, [","], ["(", ")", "\"", "\""])
-Public Sub ExecLocal(prog As String[]) As Boolean
+Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Boolean
   Dim newsplit As String
+  
+  If prog.count <> 1 Then Return False                            ' If it is more than one line then just return
+ 'Dim lsplit As String[] = Split(prog[0], "(,)", "\"\"", True, True)
+  Dim lsplit As String[] = Parser(prog[0], SubParmParser)
+  If lsplit.count < 1 Then Return False
   
   If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
   If UseTable.count > 0 Then Return False                         ' If this command has any kind of use parameters we can not process
-  
-  If prog.count <> 1 Then Return False
-  
-  'Dim lsplit As String[] = Split(prog[0], "(,)", "\"\"", True, True)
-  Dim lsplit As String[] = Parser(prog[0], SubParmParser)
-  
-  If lsplit.count < 1 Then Return False
   
   Dim method As String = lsplit[0]
   Dim sObject As String = "sub." & method
   lsplit.Remove(0)
   
+  If Not isLocalFunc(method) Then Return False
+  
+  If Not SubCls.Exist(sObject) Then
+      If Not Compile(sObject) Then Return False
+  Endif
+  
   If Not SubCls.Exist(sObject) Then Return False                  ' its not in the compiled list
   If SubCls.changed(sObject) Then Return False                    ' we changed it in this session so will reflect this after start
-  If SubCls.HasUse(sObject) Then Return False                     ' If it compiled with a use comp then run externally
+'  If SubCls.HasUse(sObject) Then Return False                     ' If it compiled with a use comp then run externally
   ' In the mean time we will execute this as a script until its reloaded
   ' Can only load a function once after start
- 
   ' Link Table will always have link to own code 
   linktable.Clear()
   
@@ -1121,16 +1125,22 @@ Public Sub ExecLocal(prog As String[]) As Boolean
     Next
   Endif
   
+  If nowait = True Then
+    Dim NewTask As New Localtask(sObject, Method, Parms)
+    Wait 
+    Return True
+  Endif
+  
   LocalRunning = True
   Try Object.Call(SubCls[sObject], method, parms)
   If Error Then
     LocalRunning = False
     If Error.text <> "Terminated" Then 
       If DoTrace Then
-          Error (("Local Execute error in :") & prog[0] & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+          Error (("Local Execute error in :") & Method & ":" & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
           SubCls.doListing(SharedMem["sub." & method], Split(Error.where, ".")[2])
       Endif
-      Error.Raise(("gsh local execute error :") & prog[0] & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+      Error.Raise(("gsh local execute error :") & Method & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
     Else
       Error ("[Terminated]")
     Endif
@@ -1185,13 +1195,14 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
   
   'SharedMem["$execprog"] = ExecBuffer
   
-  If Not nowait Then
-    If execlocal(Split(execbuffer, "\n", "\"\"", True, True)) Then 
+  'If Not nowait Then
+    If execlocal(Split(execbuffer, "\n", "\"\"", True, True), nowait) Then 
+      $execprog = ExecBuffer
       ExecBuffer = ""
       ContainsGlobal = False
       Return 
     Endif
-  Endif
+  'Endif
   
   ' If Not compileonly Then ' we are going to run this with gbx3 not as a script
   '                         ' otherwise we will just do the ussual
@@ -2636,10 +2647,10 @@ Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As 
       Endif
       Return True
     Endif
-  Else
-    ' If DoCompile Then
-    '   If Not Compile("sub." & sym) Then Return -1
-    ' Endif
+  Else 'If Not SubCls.Exist("sub." & sym) Then
+    'If DoCompile Then
+     ' If Not Compile("sub." & sym) Then Return -1
+    'Endif
     Return True
   Endif
   
