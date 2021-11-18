@@ -169,9 +169,10 @@ Private Sub GetLiveHelp(msymbol As String[], Title As String, Optional Summary A
   Dim helptxt As String = ""
   Dim SynText As String = ""
   For Each sText As String In msymbol
-    sText = Trim(sText)
-    If sText[0] = "'" Then Continue 
-    If Upper(sText) Like "*SUB*" Or If Upper(sText) Like "*FUNCTION*" Or If Upper(sText) Like "*PROCEDURE*" Then 
+    Dim Skey As String = Upper(Trim(sText))
+    If sKey[0] = "'" Then Continue 
+    If RegExp.Match(sKey, ".*(?:SUB|CLASS|FUNCTION|PROCEDURE|STRUCT).*", RegExp.Caseless) Then
+    'If skey Like ".*SUB.*" Or If sKey Like ".*CLASS.*" Or If skey Like ".*FUNCTION.*" Or If sKey Like ".*PROCEDURE.*" Then 
       SynText = sText
       Break
     Endif
@@ -180,7 +181,7 @@ Private Sub GetLiveHelp(msymbol As String[], Title As String, Optional Summary A
   If Summary = False Then 
      helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & SynText & "\n\nDESCRIPTION\n"
   Else
-     helptxt = msymbol[0]
+     helptxt = SynText
      Return ch.ToConsole(helptxt)
   Endif
   Dim s As String

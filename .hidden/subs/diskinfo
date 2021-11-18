@@ -1,6 +1,6 @@
+Public Sub diskinfo() ' Display Disk Info
 '' Display the information about local disks
 '' and partitions
-Public Sub diskinfo()
 'Linux
 Dim statmap As String[] = [
 "&1 = Read I / Os requests number Of Read I / Os processed",

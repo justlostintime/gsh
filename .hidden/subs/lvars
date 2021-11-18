@@ -6,6 +6,7 @@ Sub lvars(Optional varname As String = "",dumpall as boolean = false) As Boolean
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
 with sharedmem
+
 if varname <> "" and if not instr(varname,"*") then
 	if .exist(varname) then
 		print varname;"=";.[varname]
@@ -18,7 +19,7 @@ if varname <> "" and if not instr(varname,"*") then
 endif 
 
 For Each s As SharedMemSymbol In .SymbolTable
-    if dumpall or if not (s.symname like "sub.*" or s.symname like "class.*") then
+    if dumpall or if not (s.symname like "sub.*" or s.symname like "class.*" or s.symname like "struct.*") then
 	if varname <> ""  and if not (s.symname like varname) then continue 
         if s.SymType = gb.string then
             if .[s.symname].len < 50 then
