@@ -2,6 +2,9 @@
 
 Export
 'Fast Unsafe
+
+Class ScripterExecute
+
 Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String", 
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "", 
   "", "", "", "", ""]
@@ -101,6 +104,7 @@ Public DoTrace As Boolean = False
 Public TraceLevel As Integer = 1
 Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
+Public gbscomponent As Boolean = False
 
 
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel) ' this function turns on the compile tracing
@@ -734,6 +738,16 @@ Public Sub Main()
   Class.Load("gshReadLine")
   Class.Load("LocalTask")
   
+  ' Try Component.Load(System.Find("gbs" & system.Version))
+  ' If Error Then
+  '   Print "gsh requires gambas scripter be installed"
+  '   SharedMem.end()
+  ' Endif
+  ' Try Class.Load("ScripterExecute")
+  ' If Not Error Then
+    gbscomponent = True
+ ' Endif
+  
   Try chdir(Env["PWD"])
   CreateCmdProgram.InitAlias()
   
@@ -1329,6 +1343,22 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       If DoTrace Then
         Error "(Trace "; Now; ") "; ("Execute External "); ": "; ScriptName
       Endif
+      
+      $execprog = program  ' save a copy of last executed program, can be edited by "edit $execprog" on command line
+      
+      If gbscomponent And If Not NoWait Then
+         If jobctl Then RunningProcessStart = Now
+         CompileResult = ScripterExecute("lambda", program, [], cmdLineParameters)
+         If jobctl Then
+                Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
+         Endif
+         ExecBuffer = ""
+         ReturnOutputTo = ""
+         LinkTable.clear()
+         ContainsGlobal = False
+         Return
+      Endif
+      
       Try MyProg = Open ScriptName For Write Create
       If Not Error Then
         'Try rWrite(MyProg.handle, CPointer(program), Len(program))
@@ -1341,12 +1371,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             Next
           Endif
           
-          $execprog = program  ' save a copy of last executed program, can be edited by "edit $execprog" on command line
-          
-         ' If TraceLevel = 20 Then 
+          If TraceLevel = 20 Then 
                File.Save(user.home & "/vars/ExecProg.gbs", program)
                Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
-        '  Endif
+          Endif
+          
           CompileResult = ""
           CompilerOutput = ""
           eCmd = ["/usr/bin/gbs3", "-b", "-T", ScriptName]

@@ -1,7 +1,7 @@
 ' Gambas module file
 
 Extern chdir(Dest As String) As Integer In "libc:6"
-Use "westwood.sharedmem"
+'Use "/usr/share/gsh/lib/westwood.sharedmem:3"
 Private cmdBuild As New String[]
 Public mProcr4430 As Process
 Public mProcr4431 As Process
