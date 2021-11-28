@@ -1,5 +1,7 @@
 ' Gambas class file
 
+Static Property Read max As Integer
+
 Static Public Sub _get(index As Integer) As String
   Dim result As String
   Try result = Highlight.Styles[index]
@@ -11,3 +13,9 @@ Static Public Sub _get(index As Integer) As String
   
 End
 
+
+Static Private Function max_Read() As Integer
+
+  Return Highlight.Styles.max
+
+End

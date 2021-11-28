@@ -9,11 +9,6 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "", 
   "", "", "", "", ""]
   
-' Public TypeToText As String[] = ["BackGround", "Normal", "KeyWord", "Function", "Operator",
-'   "Symbol", "Number", "String", "Comment", "BreakPoint", "CurrentLine",
-'   "DataType", "", "HighLight", "", "Error", "Help", "PreProcessor", "Escape", "Label", 
-'   "Constant", "Alternate", "Custom1", "", "", "", "", "", "", "", ""]
-
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"]
 
