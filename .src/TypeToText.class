@@ -1,0 +1,13 @@
+' Gambas class file
+
+Static Public Sub _get(index As Integer) As String
+  Dim result As String
+  Try result = Highlight.Styles[index]
+  If Error Then 
+    result = "Unknown"
+  Endif
+  
+  Return result
+  
+End
+
