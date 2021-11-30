@@ -1209,6 +1209,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       $execprog = ExecBuffer
       ExecBuffer = ""
       ContainsGlobal = False
+      linktable.Clear()
       Return 
     Endif
   'Endif
@@ -1344,7 +1345,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       If gbscomponent And If Not NoWait Then
          If jobctl Then RunningProcessStart = Now
          CompileResult = ScripterExecute("lambda", program, [], cmdLineParameters)
-         If jobctl Then
+         If compileResult <> 0 Then
+           For Each err As CompileErrorMsg In ScriptCompileErrors
+             Print err.text
+           Next
+         Else If jobctl Then
                 Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
          Endif
          ExecBuffer = ""
@@ -1352,6 +1357,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
          LinkTable.clear()
          ContainsGlobal = False
          Return
+         
       Endif
       
       Try MyProg = Open ScriptName For Write Create
@@ -3165,7 +3171,12 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
     
     If Not IsClass Then
       Dim PublicCheck As Integer = IIf(syms[0] = "STATIC", 1, 0)
-      If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE") And If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
+      If (syms[PublicCheck] = "ENUM") Then
+        If Not ExternTable.Exist(Trim(OutBuf)) Then
+          ExternTable.Add(Trim(OutBuf))
+          Outbuf = "'" & OutBuf
+        Endif
+      Else If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE") And If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
         If Not ExternTable.Exist(Trim(OutBuf)) Then
           ExternTable.Add(Trim(OutBuf))
           Outbuf = "'" & OutBuf
