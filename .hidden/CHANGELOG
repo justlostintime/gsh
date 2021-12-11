@@ -1,3 +1,11 @@
+* Sat Dec 11 2021 Brian G <justlostintime@gmail.com> 1.3.92
+- Test last gambas update causing failure
+
+* Wed Dec 01 2021 Brian G <justlostintime@gmail.com> 1.3.90
+- Added to allow \ to continue line in the script input
+
+* Mon Nov 29 2021 Brian G <justlostintime@gmail.com> 1.3.90
+
 * Tue Nov 23 2021 Brian G <justlostintime@gmail.com> 1.3.88
 
 * Tue Nov 23 2021 Brian G <justlostintime@gmail.com> 1.3.86

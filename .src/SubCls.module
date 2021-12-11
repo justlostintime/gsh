@@ -67,7 +67,7 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
 
 
   If NameIn[0] = "sub" Then
-    SourceFile = RegExp.Replace(SourceFile, "(^|\n) *SUB " & cname & " *[(]", "\nPublic Sub " & cname & "(", gb.IgnoreCase)
+    SourceFile = RegExp.Replace(SourceFile, "(^|\n) *SUB " & cname & " *[(]", "\nPublic Sub " & cname & "(", regexp.caseless)
     SourceFile = "Export\n" & SourceFile
   Else
     sourcefile = Replace(sourcefile, "\nend class", "\n", gb.IgnoreCase)

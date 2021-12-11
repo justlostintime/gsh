@@ -1688,11 +1688,83 @@ Catch
   
 End
 
+Public Sub Reader(EndBlk As String[]) As String
+  Dim sInBuffer As String = ""
+   If DoTrace Then Error "(Trace "; Now; ") ";; "Source input="; source
+    If ReadQueue.count = 0 Then
+      Select Case source
+          
+        Case "BUFFER"
+          Do
+            sinBuffer = Trim(ReadBuffer())
+          Loop Until sinBuffer <> ""
+          
+          If DoTrace Then Error "(Trace "; Now; ") ";; "Read Buffer '"; sinbuffer; "'"
+          
+          If InBuffer = "QUIT" And sinBuffer <> endblk.Join("") Then
+            Error.raise("Error reading File UNEXPECTED EOF , Wanted " & endblk.Join(" "))
+          Endif
+          
+        Case "STDIN"
+          Do
+            sinbuffer = readline()
+            If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; sinbuffer; "'"
+            If Upper(sInBuffer) <> "EDIT" And If Upper(InBuffer) <> "RUN" Then
+              If BlockLevel = 0 Then 
+                 executedblock = lastexecutedblock
+                 lastexecutedblock = sinbuffer & "\n"
+              Else If blocklevel > 0 Then
+                    lastexecutedblock &= sinbuffer & "\n"
+              Endif
+            Endif
+          Loop Until sInBuffer <> ""
+          
+        Case "HISTORY"
+          sinBuffer = Trim(ReadHistory())
+          getline.add_history(sinBuffer)
+          If DoTrace Then Error "(Trace "; Now; ") ";; ("Read History '"); sinbuffer; "'"
+          
+        Case "FILE"
+          Do
+            sinBuffer = Trim(ReadFile())
+          Loop Until sinBuffer <> ""
+          'InBuffer = Trim(InBuffer)
+          If sInBuffer = "QUIT" And If sinBuffer <> endblk.Join("") Then
+            Error.raise("Error reading File UNEXPECTED EOF , Wanted " & endblk.Join(" "))
+          Endif
+          
+      End Select
+      
+      If source = "STDIN" Then ' only record keystroke entries
+      
+        If sInBuffer Like "*!!*" Then 
+           sinbuffer = Replace(inbuffer, "!!", SharedMem["$history"][SharedMem["$historycurrent"] - 1])
+        Endif
+        
+        history = SharedMem["$history"]
+        History.add(sInBuffer, sharedMem["$historycurrent"])
+        Inc SharedMem["$historycurrent"]
+        If History.count > SharedMem["$maxhistory"] Then History.remove(History.first)
+        SharedMem["$history"] = history
+      Endif
+      
+    Else
+      
+      sInBuffer = ReadQueue.pop()
+      
+    Endif
+    
+    Return Trim(sInBuffer)
+    
+End
+
+
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 Private DoAlias As Boolean = True 
+
 Public Sub IfReader(EndBlk As String[]) As Boolean
 
   Dim lastElement As String = ""
@@ -1703,74 +1775,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
   Dim filename As String
   
   With sharedmem
-    
-    If DoTrace Then Error "(Trace "; Now; ") ";; "Source input="; source
-    If ReadQueue.count = 0 Then
-      Select Case source
-          
-        Case "BUFFER"
-          Do
-            inBuffer = Trim(ReadBuffer())
-          Loop Until inBuffer <> ""
-          
-          If DoTrace Then Error "(Trace "; Now; ") ";; "Read Buffer '"; inbuffer; "'"
-          
-          If InBuffer = "QUIT" And inBuffer <> endblk.Join("") Then
-            Error ("Error reading File UNEXPECTED EOF , Wanted "); endblk.Join(" ")
-            execbuff = ""
-            Return False
-          Endif
-          
-        Case "STDIN"
-          Do
-            inbuffer = readline()
-            If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; inbuffer; "'"
-            If Upper(InBuffer) <> "EDIT" And If Upper(InBuffer) <> "RUN" Then
-              If BlockLevel = 0 Then 
-                 executedblock = lastexecutedblock
-                 lastexecutedblock = inbuffer & "\n"
-              Else If blocklevel > 0 Then
-                    lastexecutedblock &= inbuffer & "\n"
-              Endif
-            Endif
-          Loop Until InBuffer <> ""
-          
-        Case "HISTORY"
-          inBuffer = Trim(ReadHistory())
-          getline.add_history(inBuffer)
-          If DoTrace Then Error "(Trace "; Now; ") ";; ("Read History '"); inbuffer; "'"
-          
-        Case "FILE"
-          Do
-            inBuffer = Trim(ReadFile())
-          Loop Until inBuffer <> ""
-          'InBuffer = Trim(InBuffer)
-          If InBuffer = "QUIT" And inBuffer <> endblk.Join("") Then
-            Print File.err, ("Error reading File UNEXPECTED EOF , Wanted "); endblk.Join(" ")
-            execbuff = ""
-            Return False
-          Endif
-          
-      End Select
-      
-      If source = "STDIN" Then ' only record keystroke entries
-      
-        If InBuffer Like "*!!*" Then 
-           inbuffer = Replace(inbuffer, "!!", SharedMem["$history"][SharedMem["$historycurrent"] - 1])
-        Endif
-        
-        history = SharedMem["$history"]
-        History.add(InBuffer, sharedMem["$historycurrent"])
-        Inc SharedMem["$historycurrent"]
-        If History.count > SharedMem["$maxhistory"] Then History.remove(History.first)
-        SharedMem["$history"] = history
-      Endif
-      
-    Else
-      
-      InBuffer = ReadQueue.pop()
-      
-    Endif
+  ' Moved to function bellow here  
+  
+    InBuffer = Reader(EndBlk)
+    While Right(inbuffer, 1) = "\\"
+      InBuffer = Left(InBuffer, -1)
+      InBuffer &= Reader(EndBlk)
+    Wend
     
     If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
       MultyParse.allowEolToClose = True
@@ -1791,6 +1802,11 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     HTypes = Highlight.Types
     
     If HTypes[0] = Highlight.Comment Or If HTypes[0] = Highlight.Help Then Return True
+    
+    If HTypes.last = Highlight.comment Or If HTypes.last = Highlight.help Then
+      HTypes.pop()
+      InBufParse.Pop()
+    Endif
     
     If HTypes.Exist(Highlight.Error) Then ' check for what ever the error is looking for `....`
        If InBufParse.Last[0] = "`" Then
@@ -3195,6 +3211,8 @@ Catch
   Error.Propagate()
   
 End
+
+
 '' resolve the file name to a single file if possible
 '' glob it first and if its not found expand name and return it
 
