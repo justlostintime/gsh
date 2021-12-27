@@ -1,4 +1,7 @@
 * Sat Dec 11 2021 Brian G <justlostintime@gmail.com> 1.3.92
+- Updated the one error i used gb.ignorecase instead of regexp.caseless
+
+* Sat Dec 11 2021 Brian G <justlostintime@gmail.com> 1.3.92
 - Test last gambas update causing failure
 
 * Wed Dec 01 2021 Brian G <justlostintime@gmail.com> 1.3.90

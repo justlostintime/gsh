@@ -1,4 +1,7 @@
-Sub plot(pairs as variant[], optional Title as string = "Plotter", xRange as float = 0.0, yRange as float = 0.0, OriginX as float = 0.0, OriginY as float = 0.0)
+Sub plot(pairs as variant[], optional Title as string = "Plotter", xRange as float = 0.0, yRange as float = 0.0, OriginX as float = 0.0, OriginY as float = 0.0) ' PLots a set of points on a graph
+''' Plot a set of points on a 2d graph, input a variant array containing integer arrays
+''' with two points each
+
 use "gb.gui","gb.image"
 component.load("gb.gui")
 component.load("gb.image")
@@ -66,7 +69,7 @@ For each pair as float[] in PlotList
 next
 end
 
-sub PrintPlotInfo()
+sub PrintPlotInfo() '' print the plot information, size and scale of the plot
 print "MaxX,MaxY      :",MaxX,MaxY
 Print "ScaleX,ScaleY:",ScaleX,ScaleY
 Print "xSize,YSize    :",xSize,ySize
@@ -80,26 +83,26 @@ ScaleY = cInt(ySize / MaxY)
 
 end
 
-Sub ScaledX(value as float) as integer
+Sub ScaledX(value as float) as integer     '' scale the X axis to match the value size
     dim xpos as integer = xyTextWidth + cint(value * ScaleX)
     print xpos;;
     return xpos
 end
 
-Sub ScaledY(value as float) as integer
+Sub ScaledY(value as float) as integer  '' scale the Y axis to match the value size
    dim ypos as integer =  ySize - cint(value * ScaleX)
    print yPos
    return ypos 
 end
 
-sub SetAutoMax()
+sub SetAutoMax()                         '' scale the X and Y axis to match the value size
   for each f as float[] in PlotList
    if f[0] > MaxX then MaxX = f[0]
    if f[1] > MaxY then MaxY = f[1]
   next
 end
 
-sub placeticks()
+sub placeticks()  '' actually plot the data into the drawing area
 
 for counter as integer = ScaleX+xytextWidth to xSize step Scalex
     draw.line(counter,ySize,counter,ySize+4)

@@ -1,0 +1,7 @@
+Sub objname(obj As variant) As String
+	if typeof(obj) <> gb.object then
+        Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String","LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "","", "", "", "", ""]
+        	return DataTypes[typeof(obj)]
+	endif
+	return object.class(obj).name
+end

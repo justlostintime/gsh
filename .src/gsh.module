@@ -2676,7 +2676,10 @@ Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As 
 
   Dim sym As String = Lower(msym)
   
-  If Not IsLetter(sym) Then Return False
+  If Not IsLetter(sym[0]) And If Not sym[0] = "$" And If Not sym[0] = "_" Then 
+      Return False
+  Endif
+  
   If Not SharedMem.exist("sub." & sym) Then
     If Exist(User.home &/ "vars/subs" &/ sym) Then
       Try SharedMem["sub." & sym] = File.Load(user.home &/ "vars/subs" &/ sym)

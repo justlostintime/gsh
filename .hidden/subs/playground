@@ -1,4 +1,5 @@
 Sub playground(...)
+
 try component.load("gb.net")
 if error then
   print "Playground requires gb.net and gb.net.curl be installed"
@@ -16,12 +17,18 @@ if error then
   return
 endif
 
+with sharedmem
+print "\ec"
 Static Private hClient As New HttpClient
 Private BaseUrl As String
 Private STable As New String[]
 Static Private Examples As New Collection
 Static Private Choices as New string[]
 Static Private TheIndex as  new string[]
+
+sTable.clear()
+Choices.clear()
+TheIndex.clear()
 
 BaseUrl = "https://gambas.one/playground/examplesmobile.html"
 Private gClient as new httpClient as "responses"
@@ -66,17 +73,33 @@ if not exist(user.home &/ "vars/playground")
       mkdir User.home &/ "vars/playground"
 endif
 
-dim filename as string = replace(Choices[cint(answer)-1]," ","_")
+dim filename as string = lower(replace(Choices[cint(answer)-1]," ","_"))
+filename = replace(filename,"-","_")
+filename = replace(filename,"'","_")
+filename = replace(filename,"/","_")
+if isnumber(filename[0]) then filename  = "p_"&filename
 dim savepath as string = user.home &/"vars/playground" &/ filename
 
+dim editbuffer as string
 if exist(savepath) then
-   exec [sharedmem["$editor"],savepath] wait
+    editbuffer  = file.load(savepath)
+   'exec [sharedmem["$editor"],savepath] wait
+   SaveSub(filename,Editbuffer)
 else
-   editExample(Choices[cint(answer)-1])
+   editbuffer = editExample(Choices[cint(answer)-1])
 endif
 
-exec ["gbs"&system.version,savepath] wait
+SaveSub(filename,editbuffer)
 
+print "\ec"
+Print "Function loaded it may be executed by entering : ";filename
+Print " or edited by entering : edit "&filename 
+end with
+end
+
+sub SaveSub(sname as string, editbuffer as string)
+   EditBuffer = replace(editbuffer,"main()",sname&"()",gb.ignorecase)
+   sharedmem["sub."&sname] = editbuffer
 end
 
 Sub ScrapeTextLines()
@@ -107,8 +130,8 @@ Public Sub BuildExample()
   Next
 End
 
-sub editexample(index as string)
-
+sub editexample(index as string) as string
+   with sharedmem
    Dim MyUrl As String = "https://api.github.com/gists/" &/ Examples[Index]
    Dim response as string =  httpclient.download(MyUrl)
    Dim jsondb As Variant
@@ -124,9 +147,12 @@ sub editexample(index as string)
    dim filename as string = replace(index," ","_")
    dim savepath as string
    savepath = user.home &/"vars/playground" &/ filename
-   file.save(SavePath,EditBuffer)
-   exec [ sharedmem["$editor"], savepath] wait
-   Print "Saved to :";;Savepath
+   'file.save(SavePath,EditBuffer)
+   'exec [ sharedmem["$editor"], savepath] wait
+   'Print "Saved to :";;Savepath
+   'SaveSub(filename,Editbuffer)
+   return editbuffer
+   end with
 end
 
 
