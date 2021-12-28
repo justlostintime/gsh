@@ -5,6 +5,8 @@ Export
 
 Class ScripterExecute
 
+Property Read gshref As Object Use $gshref
+
 Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String", 
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "", 
   "", "", "", "", ""]
@@ -100,7 +102,6 @@ Public TraceLevel As Integer = 1
 Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
-
 
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel) ' this function turns on the compile tracing
   
@@ -693,6 +694,8 @@ Public Sub gshlogging(logname As String, msg As String)
 End
 
 Public Sub Main()
+  $gshref = Me
+  
   Dim DontExit As Boolean
   Dim i As Integer
  
