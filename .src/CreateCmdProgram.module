@@ -630,9 +630,10 @@ End
 
 Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
   
-     
+        Dim aFunction As Boolean = False
         'Check if we will from a function or some other evaluated at runtime function
         If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then 
+          aFunction = True
           Dim execStartAt As Integer = i
           Dim execBraceLevel As Integer = 0
           Dim execfunction As String = ""
@@ -655,6 +656,7 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
           CmdList[CurrentCmd][execStartAt] = Replace(execFunction, " ", "")
           CmdTypes[CurrentCmd][execStartAt] = CmdTypes[CurrentCmd][execStartAt + 1]
           CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
+          CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
           i = execStartAt
         Endif
         
@@ -662,7 +664,7 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
            CmdList[CurrentCmd][i] = "(" & CmdList[CurrentCmd][i] & ")"
         Endif
         
-        If CmdList[CurrentCmd][i][0] = "(" Then
+        If Not aFunction And If CmdList[CurrentCmd][i][0] = "(" Then
           If CmdList[CurrentCmd][i] Like "*fileexpand*" Then
              CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase) & "))") & "\n"
           Else

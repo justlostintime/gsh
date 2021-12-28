@@ -1202,7 +1202,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     execbuffer = Replace(execbuffer, "&\n", "\n")
   Endif
   
-  'SharedMem["$execprog"] = ExecBuffer
+  SharedMem["$execprog"] = ExecBuffer
   
   'If Not nowait Then
     If execlocal(Split(execbuffer, "\n", "\"\"", True, True), nowait) Then 
