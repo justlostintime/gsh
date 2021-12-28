@@ -2676,8 +2676,10 @@ Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As 
 
   Dim sym As String = Lower(msym)
   
-  If Not IsLetter(sym[0]) And If Not sym[0] = "$" And If Not sym[0] = "_" Then 
+  If Not IsLetter(sym[0]) Then
+    If Not (sym[0] = "$" Or sym[0] = "_") Then 
       Return False
+    Endif
   Endif
   
   If Not SharedMem.exist("sub." & sym) Then

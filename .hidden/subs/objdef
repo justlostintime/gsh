@@ -1,4 +1,6 @@
-Sub objname(obj As variant) As String
+Sub objdef(obj As variant) As String
+'' Returns the text class name of an object or variable type name
+'' Usage: print objdef(myclass) 
 	if typeof(obj) <> gb.object then
         Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String","LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "","", "", "", "", ""]
         	return DataTypes[typeof(obj)]

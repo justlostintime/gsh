@@ -1,3 +1,7 @@
+* Mon Dec 27 2021 Brian G <justlostintime@gmail.com> 1.3.96
+
+* Mon Dec 27 2021 Brian G <justlostintime@gmail.com> 1.3.94
+
 * Sat Dec 11 2021 Brian G <justlostintime@gmail.com> 1.3.92
 - Updated the one error i used gb.ignorecase instead of regexp.caseless
 
