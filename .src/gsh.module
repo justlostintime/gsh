@@ -1107,6 +1107,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
   
   If Not SubCls.Exist(sObject) Then Return False                  ' its not in the compiled list
   If SubCls.changed(sObject) Then Return False                    ' we changed it in this session so will reflect this after start
+  If SubCls.HasGui(sObject) Then Return False
 '  If SubCls.HasUse(sObject) Then Return False                     ' If it compiled with a use comp then run externally
   ' In the mean time we will execute this as a script until its reloaded
   ' Can only load a function once after start

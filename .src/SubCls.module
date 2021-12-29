@@ -10,6 +10,7 @@ Public Struct subload
   iFirstDef As Boolean
   iMd5 As String
   bUSEIncluded As Boolean
+  bGuiNeeded As Boolean
 End Struct
 
 Public SubsAndClasses As New Collection(gb.ignorecase)
@@ -98,7 +99,7 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
     sUse = UnQuote(sUse)
 
     cObject.bUSEIncluded = True
-
+    If sUse == "gb.gui" Then cObject.bGuiNeeded = True
     If InStr(sUse, ":") Then
       sUse = "Library=" & ProcessLibrary(sUse)
       If aComp.Exist(sUse) Then Continue
@@ -244,6 +245,14 @@ Public Sub HasUse(index As String) As Boolean
   Return SubsAndClasses[index].bUSEIncluded
 
 End
+
+Public Sub HasGui(index As String) As Boolean
+
+  index = Split(index, ".")[1]
+  If Not SubsAndClasses.exist(index) Then Return Null
+  Return SubsAndClasses[index].bGuiNeeded
+
+End 
 
 Public Sub changed(index As String) As Boolean
 

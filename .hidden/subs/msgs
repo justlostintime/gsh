@@ -3,7 +3,6 @@ Sub msgs(...) as integer ' display a popup message and return the selection
 '' returns the index of the button pressed
 '' msgs [type] message buttontxt1 buttontxt2 buttontxt3
 '' type is one of , info, warning, question, error, delete
-
 use "gb.gui","gb.form"
 dim typemessage as string = "info"
 dim baseparm as integer = 0

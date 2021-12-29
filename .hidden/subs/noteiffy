@@ -2,7 +2,8 @@ Sub noteiffy(varname as string)
 dim  s as sharedmemsymbol
      s = sharedmem.asObject(varname)
      sharedmem[varname] = "hello"
-
+     Print "testing notify functions"
+     Print "Waiting for Variable to "&  varname & "change to value = 'bye'"
      sharedmem.notifychange(varname,me,-1,"testread")
      while  s.shmRead() <> "bye"
        wait 1.3
@@ -11,5 +12,7 @@ dim  s as sharedmemsymbol
 End
 
 public sub testread(value as variant, Varname as string)
-   print Varname;;"=";;value
+   dim icon as string = "info"
+   dim summary as string = "Changed : "& varname
+   !notify-send -i {icon} {summary} {value}
 end

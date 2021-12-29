@@ -1,4 +1,4 @@
-Sub alert(Summary As String, message As String, Optional icon As String = "info") ' Display notification
+Sub alert(Summary As String,Optional message As String = "?", icon As String = "info") ' Display notification
 '' Displays a otification message on the users screen
 ''  alert "Summary/; "Message to display" "stock Icon name or filename"
 ''  the stock icons can be found on ubuntu/deb system in /usr/share/icons
