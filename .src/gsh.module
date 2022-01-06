@@ -52,8 +52,8 @@ Public HCurrentRead As Integer = -1
 'Private ReadLineVersion As Integer = -1
 
 Public PreOutBuf As New Collection
-Public BlockSize As Integer = 4512000
-Public CollectMemLen As Integer = 1512000
+Public BlockSize As Integer = 20512000
+Public CollectMemLen As Integer = 2512000
 Public AppSource As File = File.in
 Public LinkTable As New Collection
 Public UseTable As New String[]
@@ -213,8 +213,8 @@ Public Sub ProcessOptions() As String[]
   bInteractive = Args.Has("i", "interactive", ("Force Shell to be interactive"))
   bLogon = Args.Has("l", "logon", ("Start as a logon shell"))
   bH = Args.Has("m", "manual", ("Print the extended help infomation"))
-  BlockSize = Args.GetInteger("M", "memsize", ("Defines the ammount of storage needed for the In Memory Database(default 4.5m)"), "<MemLength>", 4512000)
-  CollectMemLen = Args.GetInteger("D", "disctsize", ("Size of in memory Database Dictionary and index(Default 1.5m)"), "<DictLength>", 1512000)
+  BlockSize = Args.GetInteger("M", "memsize", ("Defines the ammount of storage needed for the In Memory Database(default 20.5m)"), "<MemLength>", 20512000)
+  CollectMemLen = Args.GetInteger("D", "disctsize", ("Size of in memory Database Dictionary and index(Default 2.5m)"), "<DictLength>", 2512000)
   bCleanup = Args.Has("C", "cleanup", ("Cleanup and delete the old Shm file if it is closed and left around"))
   InLineCommand = Args.Get("c", "command", ("Command to be executed"))
   VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable"))
