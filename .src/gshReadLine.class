@@ -30,7 +30,7 @@ Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
 Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "history_expand"
 
 Private ReadLineVersion As Integer
-Public DoTrace As Boolean 
+Public DoTrace As Boolean
 Public DefaultPrompt As String
 Public UserPrompt As String
 
@@ -41,11 +41,13 @@ Public Sub _new(Optional sUserPrompt As String = Quote("$"), sDefaultPrompt As S
   ReadLineVersion = DetectReadLineVersion()
   DefaultPrompt = sDefaultPrompt
   UserPrompt = sUserPrompt
-  
+
 End
 
 Public Sub Trace(onoff As Boolean)
+
   DoTrace = onoff
+
 End
 
 Private Sub DetectReadlineVersion() As Integer
@@ -61,17 +63,17 @@ Private Sub DetectReadlineVersion() As Integer
   If Not Error Then Return 6
   Try c5_using_history()
   If Not Error Then Return 5
-  
+
   Return 4
 
 End
 
 Public Sub add_history(data As String)
 
-  If readlineversion = -1 Then 
+  If readlineversion = -1 Then
     readlineversion = DetectReadlineVersion()
   Endif
-  
+
   Select Case ReadLineVersion
     Case 9
       c9_add_history(data)
@@ -88,13 +90,13 @@ Public Sub add_history(data As String)
 End
 
 Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = False) As String
-  
+
   Dim pInput As Pointer
   Dim sInput As String
   Dim Prompt As String
 
   If DoTrace Then Error ("Begin readline")
-  
+
   If bDbaseServer Then
     If DoTrace Then Error ("Begin server mode reads")
     Dim rByte As Byte
@@ -105,16 +107,16 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
       sInput &= Chr(rbyte)
     Wend
     sInput = Trim(sInput)
-    If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput 
+    If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput
   Else
     Dim retryloop As Integer = 2
-  retryprompt: 
+  retryprompt:
     Wait
     If DoTrace Then Error ("Trying to read from terminal")
-    If retryloop = 0 Then 
+    If retryloop = 0 Then
       Error ("Unable to evaluate any prompt type")
       prompt = "$"
-    Else 
+    Else
       Try prompt = Eval(userprompt)
       If Error Then
         userprompt = DefaultPrompt
@@ -122,8 +124,8 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
         Goto retryprompt
       Endif
     Endif
-    
-    If DoTrace Then Error ("Reading From Readline Version");; readlineversion 
+
+    If DoTrace Then Error ("Reading From Readline Version");; readlineversion
     ' SetBlockIndent()
     Select Case ReadLineVersion
       Case 9
@@ -136,44 +138,46 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
         pinput = c6_readline(prompt & BlockIndent)
       Case 5
         pinput = c5_readline(prompt & BlockIndent)
-      Default 
+      Default
         Error Prompt; "%"; BlockIndent;                 ' Use input line as we cant find readline unix version
         Flush #File.err
         Line Input sInput
         sInput = Trim(sInput)
     End Select
-    
+
     If ReadlineVersion > 4 Then
-      
+
       If IsNull(pinput) Then Return "QUIT"
-      
+
       If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
       sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
       rFree(pInput)
       sInput = Trim(sInput)
-      
-       If sInput <> "" Then
-         'sInput = history_expand(sInput)
-         add_history(sInput)
-      Endif 
-      
+
+      If sInput <> "" Then
+        'sInput = history_expand(sInput)
+        add_history(sInput)
+      Endif
+
     Endif
     If DoTrace Then Error ("Readline Complete")
   Endif
-  
+
   Wait
-  
+
   Return sInput
-  
-Catch 
+
+Catch
   Error.Propagate()
+
 End
 
 Private Sub history_expand(data As String) As String
+
   Dim pExpansion As Pointer = 0
   Dim Result As Integer = 0
   Dim NewData As String = data
-  
+
   Select Case ReadLineVersion
     Case 9
       Result = c9_history_expand(data, VarPtr(pExpansion))
@@ -190,10 +194,10 @@ Private Sub history_expand(data As String) As String
     NewData = String(1, String@(pExpansion))              ' do this to force a copy of the string to our data segment
     rFree(pExpansion)
   Endif
-  
+
   Return NewData
-  
-Catch 
-   Error.Propagate()
-   
+
+Catch
+  Error.Propagate()
+
 End

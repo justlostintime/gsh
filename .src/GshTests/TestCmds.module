@@ -1,54 +1,60 @@
 ' Gambas module file
 
 ' test commit too
-' Gambas module 
+' Gambas module
 ' change
 
 Public Sub rr_Read()
-   Dim sLine As String
-   Read #Last, sLine, -256
-   SharedMem["r"] &= sLine
-   'Print "Read ="; SharedMem["r"];
-   'If Right(SharedMem["r"], 4) = "quit" Then mmProc.kill
+
+  Dim sLine As String
+
+  Read #Last, sLine, -256
+  SharedMem["r"] &= sLine
+  'Print "Read ="; SharedMem["r"];
+  'If Right(SharedMem["r"], 4) = "quit" Then mmProc.kill
+
 End
 
 Public Sub rr_Kill()
-  
+
   Print "Killed"
-  
+
 End
 
 Public Sub rr_error(merror As String)
-  
+
   Print "Error = "; merror
-  
+
 End
 
 
 
 Public Sub main()
-Dim mmProc As Process
-With sharedmem
-.BeginNamed("briangsh", 1512000)
 
-.["r"] = ""
+  Dim mmProc As Process
 
-mmProc = Exec ["cc", "xcv"] For Write As "rr"
+  With sharedmem
+    .BeginNamed("briangsh", 1512000)
 
-.["f"] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nccccccccccccccccccccccccccccccccccccc\n"
-Write #mmproc, .f
-Write #mmProc, "quit\n"
-Wait 2
-mmProc.kill()
+    .["r"] = ""
 
-While mmproc.state = process.Running
-  Wait
-Wend
+    mmProc = Exec ["cc", "xcv"] For Write As "rr"
 
-Print "recieved - \n"; .r; "\nEnd Recieve"
+    .["f"] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nccccccccccccccccccccccccccccccccccccc\n"
+    Write #mmproc, .f
+    Write #mmProc, "quit\n"
+    Wait 2
+    mmProc.kill()
 
-.end()
+    While mmproc.state = process.Running
+      Wait
+    Wend
 
-End With 
+    Print "recieved - \n"; .r; "\nEnd Recieve"
+
+    .end()
+
+  End With
+
 End
 

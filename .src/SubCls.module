@@ -252,7 +252,7 @@ Public Sub HasGui(index As String) As Boolean
   If Not SubsAndClasses.exist(index) Then Return Null
   Return SubsAndClasses[index].bGuiNeeded
 
-End 
+End
 
 Public Sub changed(index As String) As Boolean
 
@@ -265,6 +265,7 @@ End
 Public Sub DoListing(thefile As Variant, Optional errorline As Integer = 0, errorposition As Integer = 0)
 
   Dim list As String[]
+
   Print TypeOf(thefile)
   If TypeOf(thefile) = gb.string Then
     list = Split(thefile, "\n", "\"\"", True, True)

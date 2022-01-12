@@ -15,6 +15,7 @@ Sub ToStringArray(sResult As String[], ...)  'Change anything to string[]
   ''          $result contains the error text or "OK"
 
   Dim vParms As Variant[]
+
   With sharedmem
     vParms = param.all
     For Each v As Variant In vParms

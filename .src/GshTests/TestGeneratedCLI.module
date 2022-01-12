@@ -7,94 +7,104 @@ Private cmdBuild As New String[]
 Public mProcr89340 As Process
 'Private cmdBuild As String[]
 'Public mProcr89340 As Process
-Sub ToStringArray(sResult As String[], ...)  'Change anything to string[]
-''ToStringArray    Creat a string array the content of arrays or collections
-''          or objects/classes with the special _print function
-''          returns string[] if found, empty array otherwise
-''          $result contains the error text or "OK"
-Dim vParms As Variant[]
-With sharedmem
-vParms = param.all
-For Each v As Variant In vParms
-Select Case TypeOf(v)
-Case gb.object
-Select Case object.class(v).name
-Case "Variant[]"
-For Each vs As Variant In v
-sResult.insert(ToStringArray(v))
-Next
- 
-Case "String[]", "Integer[]", "Float[]", "Long[]", "Short[]", "Single[]", "Pointer[]", "Byte[]", "Date[]"
-sResult.insert(v)
- 
-Case "Boolean[]"
-For Each c As Boolean In v
-sResult.add(IIf(c = True, "True", "False"))
-Next
- 
-Case "Collection"
-For Each vs In v
-sResult.add(Quote(v.Key) & ":")
-sResult.insert(ToStringArray(sResult, v))
-Next
- 
-Case "Class"
-sresult.add("Class:" & v.name)
-sresult.add("Refs:" & v.count)
-For Each s As String In v.symbols
-sResult.add("Symbol:" & s)
-Next
-sResult.add("End Class")
- 
-Default
-If object.class(v).exist("_export") Then
-v._export()
-Else
-sResult.add("Object:" & v)
-Endif
-End Select
- 
-Case gb.class
-sresult.add("Class:" & v.name)
-sresult.add("Refs:" & v.count)
-For Each s As String In v.symbols
-sResult.add("Symbol:" & s)
-Next
-sResult.add("End Class")
- 
-Case gb.boolean
-sResult.add(IIf(c = False, "False", "True"))
- 
-Default
-Try sResult.add(v)
-If Error Then
-sResult.add(error.text)
-Endif
- 
-End Select
-Next
-End With
-End
-Public Sub mReadr89340_kill()
-With sharedmem
-End With
-End
-Public Sub Main()
-With sharedmem
-Try chdir(env["PWD"])
-SharedMem.BeginNamed("briangsh", 4512000)
-Dim xxx As String = System.Find("echo")
-For i As Integer = 0 To 1000
-CmdBuild.Clear()
-'CmdBuild.Add(i) 
-tostringarray(CmdBuild, xxx, (i))
-''#echo { ( i ) }#''
-mProcr89340 = Exec CmdBuild As "mProc89340"
-'mProcr89340.Wait() 
 
-Next
-End With
-SharedMem.end()
+Sub ToStringArray(sResult As String[], ...)  'Change anything to string[]
+  ''ToStringArray    Creat a string array the content of arrays or collections
+  ''          or objects/classes with the special _print function
+  ''          returns string[] if found, empty array otherwise
+  ''          $result contains the error text or "OK"
+
+  Dim vParms As Variant[]
+
+  With sharedmem
+    vParms = param.all
+    For Each v As Variant In vParms
+      Select Case TypeOf(v)
+        Case gb.object
+          Select Case object.class(v).name
+            Case "Variant[]"
+              For Each vs As Variant In v
+                sResult.insert(ToStringArray(v))
+              Next
+
+            Case "String[]", "Integer[]", "Float[]", "Long[]", "Short[]", "Single[]", "Pointer[]", "Byte[]", "Date[]"
+              sResult.insert(v)
+
+            Case "Boolean[]"
+              For Each c As Boolean In v
+                sResult.add(IIf(c = True, "True", "False"))
+              Next
+
+            Case "Collection"
+              For Each vs In v
+                sResult.add(Quote(v.Key) & ":")
+                sResult.insert(ToStringArray(sResult, v))
+              Next
+
+            Case "Class"
+              sresult.add("Class:" & v.name)
+              sresult.add("Refs:" & v.count)
+              For Each s As String In v.symbols
+                sResult.add("Symbol:" & s)
+              Next
+              sResult.add("End Class")
+
+            Default
+              If object.class(v).exist("_export") Then
+                v._export()
+              Else
+                sResult.add("Object:" & v)
+              Endif
+          End Select
+
+        Case gb.class
+          sresult.add("Class:" & v.name)
+          sresult.add("Refs:" & v.count)
+          For Each s As String In v.symbols
+            sResult.add("Symbol:" & s)
+          Next
+          sResult.add("End Class")
+
+        Case gb.boolean
+          sResult.add(IIf(c = False, "False", "True"))
+
+        Default
+          Try sResult.add(v)
+          If Error Then
+            sResult.add(error.text)
+          Endif
+
+      End Select
+    Next
+  End With
+
+End
+
+Public Sub mReadr89340_kill()
+
+  With sharedmem
+  End With
+
+End
+
+Public Sub Main()
+
+  With sharedmem
+    Try chdir(env["PWD"])
+    SharedMem.BeginNamed("briangsh", 4512000)
+    Dim xxx As String = System.Find("echo")
+    For i As Integer = 0 To 1000
+      CmdBuild.Clear()
+      'CmdBuild.Add(i)
+      tostringarray(CmdBuild, xxx, (i))
+      ''#echo { ( i ) }#''
+      mProcr89340 = Exec CmdBuild As "mProc89340"
+      'mProcr89340.Wait()
+
+    Next
+  End With
+  SharedMem.end()
 Catch
-Error "gsh error:" & error.text 
+  Error "gsh error:" & error.text
+
 End

@@ -18,13 +18,14 @@ Static Private Sub SymsInsert(p As ParseParm, sym As String, type As Integer)
   If sym = "" Then
     Return
   Endif
-  
+
   If p.DoFileExpand = True Then
     FileExpandInsert(p, sym, type)
   Else
     p.syms.Add(sym)
     p.types.Add(type)
   Endif
+
 End
 
 '' process the input line and split it into seperate commands
@@ -36,18 +37,18 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
   Dim OutputList As New String[]
   Dim QuoteLevel As Integer = 0
   Dim OpenQuote As String
-  
+
   If inline = "" Then Return OutputList
-  
+
   If IsNull(p) Then p = Defaultp
-  
+
   InLine = Trim(InLine)
-  
+
   p.syms = New String[]
   p.types = New Integer[]
 
   Do
-    
+
     If p.seperators.Exist(InLine[streampos]) Then
       If sym.len > 0 Then
         SymsInsert(p, sym, CurrentType)
@@ -57,10 +58,10 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Inc streampos
       Continue
     Endif
-    
-     If p.SpecialSymbols.Exist(InLine[streampos]) And If p.DoSpecial Then
+
+    If p.SpecialSymbols.Exist(InLine[streampos]) And If p.DoSpecial Then
       If CurrentType <> Highlight.added And If sym.len > 0 Then
-          SymsInsert(p, sym, CurrentType)
+        SymsInsert(p, sym, CurrentType)
       Endif
       SymsInsert(p, InLine[streampos], Highlight.added)
       sym = ""
@@ -68,10 +69,10 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Inc StreamPos
       Continue
     Endif
-    
+
     If p.braces.Exist(InLine[streampos]) Then
       If sym.len > 0 Then
-          SymsInsert(p, sym, CurrentType)
+        SymsInsert(p, sym, CurrentType)
       Endif
       SymsInsert(p, InLine[streampos], highlight.operator)
       sym = ""
@@ -79,9 +80,9 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Inc StreamPos
       Continue
     Endif
-    
-   
-    
+
+
+
     If p.operators.Exist(InLine[streampos]) Then
       If CurrentType <> Highlight.operator Then
         If sym.len > 0 Then
@@ -128,111 +129,111 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
         Endif
       Endif
     Endif
-    
+
     If p.quotes.Exist(InLine[streampos]) Then  ' check for a quote character
       If BreakOnEscape And If sym.len > 0 Then
         SymsInsert(p, sym, CurrentType)
         sym = ""
       Endif
-      
+
       If BreakOnEscape Then CurrentType = Highlight.string
-      
+
       Dim currentquote As String = InLine[StreamPos]
       Dim inquote As Integer = p.quotes.Find(currentquote)
       OpenQuote = currentquote
       Inc inquote
-      
+
       If inquote > p.quotes.max Or If inquote Mod 2 <> 1 Then
-          Error.Raise("Invalid quote character \"" & currentquote & "\"\n" & Quote(inLine) & "\n")
+        Error.Raise("Invalid quote character \"" & currentquote & "\"\n" & Quote(inLine) & "\n")
       Endif
-      
+
       currentquote = p.quotes[inquote]
       If Currentquote <> OpenQuote Then Inc QuoteLevel
-      If p.KeepQuote Then sym &= InLine[StreamPos] 
+      If p.KeepQuote Then sym &= InLine[StreamPos]
       Inc Streampos
-      
+
       While StreamPos < InLine.len
-        
+
         If InLine[StreamPos] = "\n" Then      ' end of line is as good as a close quote"
-               If p.allowEolToClose Then        ' this gets used for comment character ate end of line 
-                 sym &= InLine[StreamPos]
-                 Inc StreamPos
-                 Break
-               Else 
-                 Error.raise("Unmatched Quote Found End Of Line [" & currentquote & " ] in :" & Quote(inline))
-               Endif 
+          If p.allowEolToClose Then        ' this gets used for comment character ate end of line
+            sym &= InLine[StreamPos]
+            Inc StreamPos
+            Break
+          Else
+            Error.raise("Unmatched Quote Found End Of Line [" & currentquote & " ] in :" & Quote(inline))
+          Endif
         Endif
-        
-        If InLine[StreamPos] = OpenQuote And If OpenQuote <> CurrentQuote Then 
+
+        If InLine[StreamPos] = OpenQuote And If OpenQuote <> CurrentQuote Then
           Inc QuoteLevel
         Endif
-        
+
         If InLine[StreamPos] = currentquote Then
-          If OpenQuote <> currentquote Then 
-             Dec QuoteLevel
-             If QuoteLevel = 0 Then 
-               If p.KeepQuote Then sym &= InLine[StreamPos]
-               Inc StreamPos
-               Break
-             Else 
-               sym &= InLine[StreamPos]
-             Endif 
-          Else 
-             If p.KeepQuote Then sym &= InLine[StreamPos]
-             Inc StreamPos
-             Break
+          If OpenQuote <> currentquote Then
+            Dec QuoteLevel
+            If QuoteLevel = 0 Then
+              If p.KeepQuote Then sym &= InLine[StreamPos]
+              Inc StreamPos
+              Break
+            Else
+              sym &= InLine[StreamPos]
+            Endif
+          Else
+            If p.KeepQuote Then sym &= InLine[StreamPos]
+            Inc StreamPos
+            Break
           Endif
         Else
           sym &= InLine[StreamPos]
         Endif
-        
+
         If InLine[StreamPos] = "\\" Then
           Inc StreamPos
-          If streampos < inline.len Then 
-             sym &= InLine[StreamPos]
+          If streampos < inline.len Then
+            sym &= InLine[StreamPos]
           Else
-             Error.raise("Unmatched Quote at escape char [" & currentquote & "]  in :" & Quote(inline))
+            Error.raise("Unmatched Quote at escape char [" & currentquote & "]  in :" & Quote(inline))
           Endif
         Endif
-        
+
         Inc StreamPos
-        
-        If streampos >= InLine.len Then 
-               Error.raise("Unmatched Quote at eol [" & currentquote & "]  in :" & Quote(inline))
+
+        If streampos >= InLine.len Then
+          Error.raise("Unmatched Quote at eol [" & currentquote & "]  in :" & Quote(inline))
         Endif
-        
+
       Wend
-      
-      If BreakOnEscape Then 
+
+      If BreakOnEscape Then
         SymsInsert(p, sym, CurrentType)
         sym = ""
         CurrentType = Highlight.symbol
       Endif
       Continue
     Endif
-    
+
     If p.endofline.Exist(InLine[StreamPos]) Or If p.comments.Exist(InLine[StreamPos]) Then Break
-    
-    If CurrentType = Highlight.Operator Then 
+
+    If CurrentType = Highlight.Operator Then
       If Not p.operators.Exist(sym & InLine[StreamPos]) Then
         SymsInsert(p, sym, CurrentType)
         sym = ""
         CurrentType = Highlight.symbol
-      Endif 
+      Endif
     Endif
-    
+
     sym &= InLine[StreamPos]
     Inc StreamPos
-    
-  Loop Until StreamPos >= InLine.Len 
-  
-   If sym.len > 0 Then
+
+  Loop Until StreamPos >= InLine.Len
+
+  If sym.len > 0 Then
     SymsInsert(p, sym, CurrentType)
   Endif
-  
+
   CheckBraces(p)
   'find a way to make {} a special set
-  
+
   If p.DoSpecial = True Then
     'Divide the sets into single command lines
     Dim CurrentLine As Integer = 0
@@ -241,22 +242,22 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     Dim i As Integer = 0
     Do
       If i >= p.syms.count Then Break
-      If p.types[i] = Highlight.added 
+      If p.types[i] = Highlight.added
         If p.SpecialSymbols.Find(p.syms[i]) % 2 = 0 Then
-           Inc InSpecialSet
-        Else 
-           Dec InSpecialSet
+          Inc InSpecialSet
+        Else
+          Dec InSpecialSet
         Endif
       Endif
-      If inSpecialSet = 0 Then 
+      If inSpecialSet = 0 Then
         If p.types[i] = Highlight.operator Then
-          If lastSegmentStart < i Then 
+          If lastSegmentStart < i Then
             OutputList.Add(p.syms.Copy(lastSegmentStart, i - lastSegmentStart).Join(" "))
           Endif
           LastSegmentStart = i + 1
-         Inc CurrentLine
+          Inc CurrentLine
         Endif
-    
+
         If IncludeBreak Then
           If p.types[i] = Highlight.operator Then
             OutputList.Add(p.syms[i])
@@ -265,94 +266,96 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Endif
       Inc i
     Loop
-  
-    If LastSegmentStart <= p.syms.max Then 
-       OutputList.Add(p.syms.copy(lastSegmentStart, i - LastSegmentStart).Join(" "))
+
+    If LastSegmentStart <= p.syms.max Then
+      OutputList.Add(p.syms.copy(lastSegmentStart, i - LastSegmentStart).Join(" "))
     Endif
-    
+
     Return OutputList
-     
+
   Else
     SpecialVariables(p.syms, p.types)
-  
+
     For i As Integer = 0 To p.syms.Max
       If p.types[i] = Highlight.Symbol Then
-        If gsh.isLocalFunc(p.syms[i]) Then 
-            p.types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
-        Else If i = 0 And If sharedmem.exist(p.syms[i]) Then 
-            p.types[i] = Highlight.Label             ' well we need to make it fit in label = execute var as command
+        If gsh.isLocalFunc(p.syms[i]) Then
+          p.types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both
+        Else If i = 0 And If sharedmem.exist(p.syms[i]) Then
+          p.types[i] = Highlight.Label             ' well we need to make it fit in label = execute var as command
         Else If p.syms[0] = "!" And If i = 1 And If sharedmem.exist(p.syms[i]) Then
-            p.types[i] = Highlight.Label             ' well we need to make it fit in label = execute var as command
+          p.types[i] = Highlight.Label             ' well we need to make it fit in label = execute var as command
         Endif
       Endif
     Next
-    
+
     Return p.syms
   Endif
-  
-  Catch
-   Error.Propagate()
-    
-End 
+
+Catch
+  Error.Propagate()
+
+End
 
 Static Public Sub CheckBraces(p As ParseParm, Optional start As Integer = 0, matching As String = "") As Integer
+
   Dim index As Integer = start
-  Dim braceindex As Integer 
-  
+  Dim braceindex As Integer
+
   If p.syms.count = 0 Then Return 0
-  
+
   While index < p.syms.count
-    If p.syms[index].len > 1 Or If p.syms[index] = "" Then 
-       Inc index
-       Continue
+    If p.syms[index].len > 1 Or If p.syms[index] = "" Then
+      Inc index
+      Continue
     Endif
     braceindex = p.braces.Find(p.syms[index])
     If braceindex > -1 Then
-               If braceindex % 2 = 0 Then ' have an opening brace
-                   Inc index
-                   index = CheckBraces(p, index, p.braces[braceindex + 1])
-              Else If braceindex % 2 = 1 And If matching <> p.braces[braceindex] Then
-                   Error.Raise("Missing/mismatched Bracket/brace [ " & Quote(IIf(matching <> "", matching, p.braces[p.braces.Find(p.syms[index]) - 1])) & " ] in " & p.syms.Join(" "))
-              Else
-                  Return index
-              Endif
+      If braceindex % 2 = 0 Then ' have an opening brace
+        Inc index
+        index = CheckBraces(p, index, p.braces[braceindex + 1])
+      Else If braceindex % 2 = 1 And If matching <> p.braces[braceindex] Then
+        Error.Raise("Missing/mismatched Bracket/brace [ " & Quote(IIf(matching <> "", matching, p.braces[p.braces.Find(p.syms[index]) - 1])) & " ] in " & p.syms.Join(" "))
+      Else
+        Return index
+      Endif
     Endif
     Inc index
   Wend
   If matching = "" Then
-        Return 0
+    Return 0
   Else
     Error.Raise("Missing closing Bracket/brace [ " & Quote(matching) & "  ] in " & p.syms.Join(" "))
   Endif
+
 End
 
 Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integer) As Boolean ' return true if we expanded the value
 
-  If type = Highlight.string Then 
+  If type = Highlight.string Then
     p.syms.Add(var)
     p.types.Add(type)
     Return True
   Endif
-   
-  If Not CreateCmdProgram.IsGlob(var) Then 
+
+  If Not CreateCmdProgram.IsGlob(var) Then
     p.syms.Add(var)
     p.types.Add(type)
     Return False
   Endif
-  
+
   If p.syms.count = 0 Then                                 'this is the command to execute
-      Dim files As String[]
-     files = CreateCmdProgram.DoGlob(var)
-      If Files.count = 1 And If files[0] = var Then
-          p.syms.Add(Files[0])
-          p.types.Add(Highlight.added)
-         Return False
+    Dim files As String[]
+    files = CreateCmdProgram.DoGlob(var)
+    If Files.count = 1 And If files[0] = var Then
+      p.syms.Add(Files[0])
+      p.types.Add(Highlight.added)
+      Return False
     Else If Files.count > 1 Then
-        Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
-        Return False
+      Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
+      Return False
     Else
-        p.syms.Add(Files[0])
-        p.types.Add(Highlight.symbol)
+      p.syms.Add(Files[0])
+      p.types.Add(Highlight.symbol)
     Endif
   Else
     p.syms.add("(")
@@ -363,59 +366,60 @@ Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integ
     p.types.Add(Highlight.Operator)
   Endif
   Return True
-  
-  Catch
-    Error.Propagate()
-  
+
+Catch
+  Error.Propagate()
+
 End
 
 Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' replaces items in sline with Special functions
+
   Dim newSyms As New String[]
   Dim newTypes As New Integer[]
-  
+
   For i As Integer = 0 To syms.Max
-    
-  If syms[i] = "$" Or If syms[i][0] = "$" Then
-    If i + 1 <= syms.max And If syms[i] = "$" And syms[i + 1] = "!" Then
-      syms[i] = "$!"
-      syms[i + 1] = ""
-    Endif
-    Select Case syms[i]
-       Case "$*"
-            newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
-       Case "$#"
-            newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
-       Case "$$"  ' insert the curent pid
-            newsyms.Add(Application.id)
-       Case "$!"
-            newsyms.Add("(Application.id)")
+
+    If syms[i] = "$" Or If syms[i][0] = "$" Then
+      If i + 1 <= syms.max And If syms[i] = "$" And syms[i + 1] = "!" Then
+        syms[i] = "$!"
+        syms[i + 1] = ""
+      Endif
+      Select Case syms[i]
+        Case "$*"
+          newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
+        Case "$#"
+          newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
+        Case "$$"  ' insert the curent pid
+          newsyms.Add(Application.id)
+        Case "$!"
+          newsyms.Add("(Application.id)")
         Case "$UID"
-             newsyms.Add("(User.id)")
+          newsyms.Add("(User.id)")
         Case "$GID"
-             newsyms.Add("(User.group)")
-       Default
-            If IsNumber(Right(syms[i], -1)) Then
-              Dim argindex As Integer = Right(syms[i], -1)
-              newsyms.Add("(IIf (" & argindex & " > Args.max, \"\", Args[" & argindex & "]))")
-            Else
-              newsyms.Add(syms[i])
-            Endif
-    End Select
-    newTypes.Add(types[i])
-  Else
-    If syms[i] <> "" Then 
-      newsyms.Add(syms[i])
+          newsyms.Add("(User.group)")
+        Default
+          If IsNumber(Right(syms[i], -1)) Then
+            Dim argindex As Integer = Right(syms[i], -1)
+            newsyms.Add("(IIf (" & argindex & " > Args.max, \"\", Args[" & argindex & "]))")
+          Else
+            newsyms.Add(syms[i])
+          Endif
+      End Select
       newTypes.Add(types[i])
+    Else
+      If syms[i] <> "" Then
+        newsyms.Add(syms[i])
+        newTypes.Add(types[i])
+      Endif
     Endif
-  Endif
-  
+
   Next
-  
+
   types.Clear
   types.Insert(newTypes)
   syms.Clear
   syms.insert(newsyms)
-  
+
 End
 
 ' Gambas class file
