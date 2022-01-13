@@ -5,7 +5,7 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
  ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
  '     Return IIf(CheckOnly = True, False, Null)
  ' Endif
- 
+
 'If checkonly = True Then Return True
  Dim expandsets As String[] = Split(value, " ", "''", True, True)
  Dim FirstSet As String[]
@@ -24,16 +24,16 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
  Next
  Return IntermResults
  End
- 
- 
+
+
  Sub enumerateloop(value As String) As String[] ' loop here until completed
- 
+
  Dim finalresult As New String[]
- 
+
  Dim leftbrace, rightbrace As Integer
  leftbrace = InStr(value, "{")
  rightbrace = matchbrace(value, leftbrace)
- If leftbrace > 0 Then 
+ If leftbrace > 0 Then
    If rightbrace = 0 Then
      Error.Raise("Enumeration missing right } " & Quote(value))
    Endif
@@ -52,7 +52,7 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
    Dim newvalue As String = sleft & result[i] & sright
    If InStr(newvalue, "{") Then
      finalresult.Insert(enumerateloop(newvalue))
-   Else 
+   Else
      If Not IsNull(newvalue) Then finalresult.Add(newvalue)
    Endif
  Next
@@ -67,45 +67,63 @@ Sub matchbrace(src As String, start As Integer) As Integer
     If src[i] = "}" Then Dec level
     If level = 0 Then Return i + 1  ' we are working with strings
   Next
-  
+
   Return 0
-  
+
 End
 
 Sub getenum(enumdef As String) As String[]
   Dim toEnum As String[] = Split(enumdef, ", ", "{}", True, True)
   Dim result As New String[]
   For Each s As String In toEnum
-  If InStr(s, "{") Then
-    result.Insert(enumerate(s))
-  Else If InStr(s, "..") Then
-  Dim enumset As String[] = Split(s, ".", "", True)
-  Dim enumStart As String = enumset[0]
-  Dim enumend As String = enumset[1]
-  
-  If IsNumber(EnumStart) Then 
-   
-    Dim nStart As Integer = EnumStart
-    Dim nEnd As Integer = EnumEnd
-    Dim nStep As Integer = IIf(nStart < nEnd, 1, -1)
-    For i As Integer = nStart To nEnd Step nStep
-      result.Add(i)
-    Next
-   
-  Else
+    If InStr(s, "{") Then
+      result.Insert(enumerate(s))
+    Else If InStr(s, "..") Then
+      Dim enumset As String[] = Split(s, ".", "", True)
+      Dim enumStart As String = enumset[0]
+      Dim enumend As String = enumset[1]
+      Dim nStep As Integer = 0
+      If enumset.count = 3 Then
+         nStep = enumset[2]
+      endif
+
+      If IsNumber(EnumStart) Then
+        dim PatternLength as integer = 0                 ' we must pad with leading zeros when asked
+        dim Pattern as string = ""
+        if EnumStart[0] = "0" or if EnumEnd[0]="0" Then
+          PatternLength = max(EnumStart.len,EnumEnd.len)
+          Pattern = string(PatternLength,"0")
+        endif
+        Dim nStart As Integer = EnumStart
+        Dim nEnd As Integer = EnumEnd
+        if nstep = 0 Then
+          nStep = IIf(nStart < nEnd, 1, -1)
+        endif
     
-    Dim bStart As Byte = CByte(Asc(EnumStart, 1))
-    Dim bEnd As Byte = CByte(Asc(EnumEnd, 1))
-    Dim bStep As Integer = IIf(bStart < bEnd, 1, -1)
-    For b As Byte = bStart To bEnd Step bStep
-      result.Add(Chr(b))
-    Next
-    
-  Endif
-  Else
-    result.Add(s)
-  Endif
+        For i As Integer = nStart To nEnd Step nStep
+          if PatternLength > 0 Then
+            result.add(format(i,Pattern))
+          Else
+            result.Add(i)
+          endif
+        Next
+
+      Else
+
+        Dim bStart As Byte = CByte(Asc(EnumStart, 1))
+        Dim bEnd As Byte = CByte(Asc(EnumEnd, 1))
+        if nStep = 0 then 
+          nStep = IIf(bStart < bEnd, 1, -1)
+        endif
+        For b As Byte = bStart To bEnd Step nStep
+          result.Add(Chr(b))
+        Next
+
+      Endif
+    Else
+      result.Add(s)
+    Endif
   Next
   Return result
-  
+
 End
