@@ -699,7 +699,13 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
       CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & "expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
     Endif
   Else
-    CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , " & CmdList[CurrentCmd][i] & ")") & "\n"
+    Dim DataSource As String
+    If CmdTypes[CurrentCmd][i] = Highlight.Function Then
+      DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
+    Else
+      DataSource = CmdList[CurrentCmd][i]
+    Endif
+    CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , " & DataSource & ")") & "\n"
   Endif
   Return i
 
