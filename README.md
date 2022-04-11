@@ -1,5 +1,9 @@
 # gsh
 
+### NOTE GSH UPDATE FOR GAMBAS 3.17 and above 04/10/2022
+Version 1.3.106 or above is required for correct functionallity in 
+Gambas version 3.17 or above.
+
 ### Documentation
 [Gambas Shell Documentation](https://github.com/justlostintime/GambasShell/wiki)
 
