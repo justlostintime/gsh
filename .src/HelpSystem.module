@@ -321,7 +321,7 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
   mproc.closeinput
   mproc.wait
   ' While mproc.state = Process.Running
-  '   Wait
+  '   Wait 0
   ' Wend
   If process.LastValue <> 0 Then
     Print "Help Html conversion Failed "

@@ -198,7 +198,7 @@ Catch
   Endif
   Error.Raise("Compile completed with errors")
 
-End ' Gambas module file
+End
 
 Public Sub _get(index As String) As Object
 

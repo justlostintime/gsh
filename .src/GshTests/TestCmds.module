@@ -47,7 +47,7 @@ Public Sub main()
     mmProc.kill()
 
     While mmproc.state = process.Running
-      Wait
+      Wait 0
     Wend
 
     Print "recieved - \n"; .r; "\nEnd Recieve"

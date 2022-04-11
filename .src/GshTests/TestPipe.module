@@ -25,10 +25,10 @@ Public Sub mRead0_kill()
   'Print "Closed task pipe"
 
   Flush
-  Wait
+  Wait 0
   Write #mTaskWrite, Chr(4)
   Flush #mTaskWrite
-  Wait
+  Wait 0
   mTaskWrite.Close()
 
 End
@@ -68,13 +68,13 @@ Public Sub Main()
     mProc1 = Exec ["less"] With .["$env"] For Write As "mRead1"
     mTask0 = New TestTask As "Tasky"
     mTask0.inpipename = "/tmp/testtask"
-    Wait
+    Wait 0
     mProc0 = Exec ["cat"] With .["$env"] For Read Write As "mRead0"
     Write #mProc0, data
     mProc0.closeinput()
 
     While mProc0.state = process.running Or mProc1.state = process.running
-      Wait
+      Wait 0
     Wend
 
   End With

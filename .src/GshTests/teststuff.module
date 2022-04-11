@@ -54,7 +54,7 @@ Public Sub Main()
   x.send
   x.close
   While x.State = Process.Running
-    Wait
+    Wait 0
   Wend
 
   Print "Done process"

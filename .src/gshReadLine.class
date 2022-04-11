@@ -111,7 +111,7 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
   Else
     Dim retryloop As Integer = 2
   retryprompt:
-    Wait
+    Wait 0
     If DoTrace Then Error ("Trying to read from terminal")
     If retryloop = 0 Then
       Error ("Unable to evaluate any prompt type")
@@ -163,7 +163,7 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
     If DoTrace Then Error ("Readline Complete")
   Endif
 
-  Wait
+  Wait 0
 
   Return sInput
 

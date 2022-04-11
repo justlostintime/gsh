@@ -1,12 +1,10 @@
 # Gambas Project File 3.0
 Title=Gambas Shell
 Startup=gsh
-UseTerminal=1
 Icon=shelllogo.png
 Version=1.3.105
 Component=gb.args
 Component=gb.compress
-Component=gb.data
 Component=gb.dbus
 Component=gb.eval
 Component=gb.eval.highlight
@@ -23,7 +21,6 @@ Component=gb.util.web
 Component=westwood.sharedmem
 Description="Gambas interactive shell"
 Authors="Westwood, Brian G"
-Arguments=[["~/bin/testgsh"],["-c","nano","~/bin/testgsh"],["-C"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; x2golistsessions; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c 'echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\"; export PATH=\"/usr/local/bin:/usr/bin:/bin\";export TERM=\"dumb\"; echo \"X2GODATAEND:36f83bb7-023f-45f2-b3ac-374da1958274\";'"],["-c","bash -l -c echo \"X2GODATABEGIN:36f83bb7-023f-45f2-b3ac-374da1958274\";export PATH=\"/usr/local/bin:/usr/bin:/bin\";"],["/home/brian/vars/testscript"],["-","4","c","d"],["-S"],["-m"],["-r","varstat","$path"],["-f","$a"],["-t","3"],["-r","filter","1","2","3","4","'Hello","World'"]]
 TabSize=2
 Language=en_US
 KeepDebugInfo=0
@@ -63,3 +60,4 @@ Groups=suse:"System/Shells"
 Menus=ubuntu:"Applications/Shells"
 Groups=ubuntu:"shells"
 ExtraFiles=*:"class\t/usr/share/gsh\ndoc\t/usr/share/gsh\nexamples\t/usr/share/gsh\nstruct\t/usr/share/gsh\nsubs\t/usr/share/gsh\nprofiles\t/usr/share/gsh\nnano\t/usr/share/gsh\nvim\t/usr/share/gsh\ngambas.nanorc\t/usr/share/nano\ngambas.vim\t/usr/share/vim/vim80/syntax\neditors\t/usr/share/gsh"
+useterminal=1

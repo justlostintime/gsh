@@ -2,33 +2,35 @@
 
 Inherits Task
 Public inpipe As Stream
-Public inpipename As String 
+Public inpipename As String
 
 
 Public Sub main()
-   Dim sLine As String
+
+  Dim sLine As String
+
   inpipe = Open Pipe inpipename For Read
   inpipe.blocking = False
 
   While True
-     
-     Try Read #inpipe, sline, 1
-     If Not Error Then
-          If sLine[0] = Chr(4) Then Break
-          If sLine.len > 0 Then 
-            sLine = Upper(sLine)
-            Print sLine;
-            Flush
-          Endif
+
+    Try Read #inpipe, sline, 1
+    If Not Error Then
+      If sLine[0] = Chr(4) Then Break
+      If sLine.len > 0 Then
+        sLine = Upper(sLine)
+        Print sLine;
+        Flush
       Endif
-      
-     Wait
+    Endif
+
+    Wait
   Wend
   'Print "Tasking exiting"
   inpipe.Close()
   Quit
-  Catch 
-    Print Error.text, Error.Where
-    Flush
-    
+Catch
+  Print Error.text, Error.Where
+  Flush
+
 End

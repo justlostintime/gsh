@@ -309,7 +309,7 @@ Public Sub RunScript(cmd As String) As Boolean
     ReadQueue.clear()
     While IfReader(["QUIT"])
       ProcessProg()
-      Wait
+      Wait 0
     Wend
     ReadQueue.Insert(SaveQueue)
   Endif
@@ -678,6 +678,8 @@ Private Sub VerifyAppDepend()
     Endif
   Endif
 
+Catch
+  Print "Unable to verify depenencies : "; Error.text
 
 End
 
@@ -844,7 +846,7 @@ Public Sub Main()
           Error Error.text
           ExitProgram(1)
         Endif
-        Wait
+        Wait 0
       Wend
     Else
       Error ("Execute from Global Variable : Variable \""); VarCommandSource; ("\" Not Found")
@@ -884,7 +886,7 @@ Public Sub Main()
         Error Error.text
         Break
       Endif
-      Wait
+      Wait 0
     Wend
 
     Close AppSource
@@ -970,7 +972,7 @@ Public Sub Main()
         Error Error.text
         Break
       Endif
-      Wait
+      Wait 0
     Wend
 
     Close AppSource
@@ -1003,7 +1005,7 @@ interactive:
     Try chdir(Env["PWD"])
     If Error Then Error Error.Text
 
-    Wait
+    Wait 0
 
   Wend
 
@@ -1146,7 +1148,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
 
   If nowait = True Then
     Dim NewTask As New Localtask(sObject, Method, Parms)
-    Wait
+    Wait 0
     Return True
   Endif
 
@@ -1655,7 +1657,7 @@ Public Sub ReadHistory() As String
     Inc hCurrentRead
   Endif
 
-  Wait
+  Wait 0
   Return ValLine
 
 Catch
@@ -1672,7 +1674,7 @@ Public Sub ReadFile() As String
   If Error Then
     Return "QUIT"
   Endif
-  Wait
+  Wait 0
   Return theBuffer
 Catch
   Error.Propagate()
@@ -2671,7 +2673,7 @@ Public Sub DoBlock(EndBlk As String[])
     Inc blockLevel
     ''debug "Enter DOBLK"
     While IfReader(endBlk)
-      Wait
+      Wait 0
     Wend
     Dec BlockLevel
     ''debug "Exit DOBLK"
@@ -3477,7 +3479,7 @@ helpRetry:
     Goto helpRetry
   Endif
 
-  Wait
+  Wait 0
 
   Try Write #mproc, Helptxt
   Try Flush #mproc
