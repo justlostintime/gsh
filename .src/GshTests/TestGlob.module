@@ -1,22 +1,25 @@
 ' Gambas module file
 
 Public Struct glob_t   'The structure definition used by the glob system function
-''          Some size_t functions are implemented as prointer as size_t
-''          follows the size of the address pointer in most systems
-gl_pathc As Pointer                                      'Count Of paths matched by the pattern. *size_t use ptr as it follows address width and absolute vaue,like size_t
-gl_pathv As Pointer                                      'List Of matched pathnames.  char * * gl_pathv; * /
-gl_offs As Pointer                                          'Slots To reserve In `gl_pathv'.   __size_t gl_offs; */
-gl_flags As Integer                                      'Set To FLAGS, maybe | GLOB_MAGCHAR.  */
-gl_closedir As Pointer                                   'If the GLOB_ALTDIRFUNC flag Is Set, the following functions are used instead Of the normal file access functions.void( * gl_closedir)(void * )
-gl_readdir As Pointer                                    'Struct dirent * ( * gl_readdir)(void * );
-gl_opendir As Pointer                                    'void * ( * gl_opendir)(const char * );
-gl_lstat As Pointer                                      'Int( * gl_lstat)(const char * __restrict, struct stat * __restrict);
-gl_stat As Pointer                                       'Int( * gl_stat)(const char * __restrict, struct stat * __restrict);
+  ''          Some size_t functions are implemented as prointer as size_t
+  ''          follows the size of the address pointer in most systems
+  gl_pathc As Pointer                                      'Count Of paths matched by the pattern. *size_t use ptr as it follows address width and absolute vaue,like size_t
+  gl_pathv As Pointer                                      'List Of matched pathnames.  char * * gl_pathv; * /
+  gl_offs As Pointer                                          'Slots To reserve In `gl_pathv'.   __size_t gl_offs; */
+  gl_flags As Integer                                      'Set To FLAGS, maybe | GLOB_MAGCHAR.  */
+  gl_closedir As Pointer                                   'If the GLOB_ALTDIRFUNC flag Is Set, the following functions are used instead Of the normal file access functions.void( * gl_closedir)(void * )
+  gl_readdir As Pointer                                    'Struct dirent * ( * gl_readdir)(void * );
+  gl_opendir As Pointer                                    'void * ( * gl_opendir)(const char * );
+  gl_lstat As Pointer                                      'Int( * gl_lstat)(const char * __restrict, struct stat * __restrict);
+  gl_stat As Pointer                                       'Int( * gl_stat)(const char * __restrict, struct stat * __restrict);
 End Struct
 
 Public Sub main()
+
   Dim result As String[]
+
   result = fileexpand("~/tmp/**")
+
 End
 
 Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
@@ -24,60 +27,61 @@ Extern globfree(glob_def As Glob_t) In "libc:6"
 
 
 Sub fileexpand(path As String, Optional dironly As Boolean = False, GlobStarForce As Boolean = False) As String[] ' Calls Glob to get list of file
-'' fileexpand(Path as string, optional DirOnly as boolean) as string()
-''   Returns a list of files as expanded by the shells
-' Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
-' Extern globfree(glob_def As Glob_t) In "libc:6"
+  '' fileexpand(Path as string, optional DirOnly as boolean) as string()
+  ''   Returns a list of files as expanded by the shells
+  ' Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
+  ' Extern globfree(glob_def As Glob_t) In "libc:6"
 
-Dim GLOB_ERR As Integer = Shl(1, 0)                     ' Return On Read errors. * /
-Dim GLOB_MARK As Integer = Shl(1, 1)                    ' Append a slash To Each name. * /
-Dim GLOB_NOSORT As Integer = Shl(1, 2)                  ' Don 't sort the names.  */
-Dim GLOB_DOOFFS As Integer = Shl(1, 3)                  ' Insert PGLOB - > gl_offs NULLs. * /
-Dim GLOB_NOCHECK As Integer = Shl(1, 4)                 ' If nothing matches, Return the pattern. * /
-Dim GLOB_APPEND As Integer = Shl(1, 5)                  ' Append To results Of a previous call. * /
-Dim GLOB_NOESCAPE As Integer = Shl(1, 6)                ' Backslashes don 't quote metacharacters.  */
-Dim GLOB_PERIOD As Integer = Shl(1, 7)                  ' Leading `.' can be matched by metachars.  */
-Dim GLOB_MAGCHAR As Integer = Shl(1, 8)                 ' Set In gl_flags If any metachars seen. * /
-Dim GLOB_ALTDIRFUNC As Integer = Shl(1, 9)              ' Use gl_opendir et al functions. * /
-Dim GLOB_BRACE As Integer = Shl(1, 10)                  ' Expand "{a,b}" To "a" "b". * /
-Dim GLOB_NOMAGIC As Integer = Shl(1, 11)                ' If no magic chars, Return the pattern. * /
-Dim GLOB_TILDE As Integer = Shl(1, 12)                  ' Expand ~user and ~ to home directories. */
-Dim GLOB_ONLYDIR As Integer = Shl(1, 13)                ' Match only directories. * /
-Dim GLOB_TILDE_CHECK As Integer = Shl(1, 14)
-Dim globerrors As String[] = ["No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
-Dim Paths As New String[]
-Dim sret As New Glob_t
-Dim ReturnSet As Pointer
-Dim CallResult As Integer
-Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
-Dim GlobStar As Boolean = (path Like "*\\*\\**" Or GlobStarForce)
+  Dim GLOB_ERR As Integer = Shl(1, 0)                     ' Return On Read errors. * /
+  Dim GLOB_MARK As Integer = Shl(1, 1)                    ' Append a slash To Each name. * /
+  Dim GLOB_NOSORT As Integer = Shl(1, 2)                  ' Don 't sort the names.  */
+  Dim GLOB_DOOFFS As Integer = Shl(1, 3)                  ' Insert PGLOB - > gl_offs NULLs. * /
+  Dim GLOB_NOCHECK As Integer = Shl(1, 4)                 ' If nothing matches, Return the pattern. * /
+  Dim GLOB_APPEND As Integer = Shl(1, 5)                  ' Append To results Of a previous call. * /
+  Dim GLOB_NOESCAPE As Integer = Shl(1, 6)                ' Backslashes don 't quote metacharacters.  */
+  Dim GLOB_PERIOD As Integer = Shl(1, 7)                  ' Leading `.' can be matched by metachars.  */
+  Dim GLOB_MAGCHAR As Integer = Shl(1, 8)                 ' Set In gl_flags If any metachars seen. * /
+  Dim GLOB_ALTDIRFUNC As Integer = Shl(1, 9)              ' Use gl_opendir et al functions. * /
+  Dim GLOB_BRACE As Integer = Shl(1, 10)                  ' Expand "{a,b}" To "a" "b". * /
+  Dim GLOB_NOMAGIC As Integer = Shl(1, 11)                ' If no magic chars, Return the pattern. * /
+  Dim GLOB_TILDE As Integer = Shl(1, 12)                  ' Expand ~user and ~ to home directories. */
+  Dim GLOB_ONLYDIR As Integer = Shl(1, 13)                ' Match only directories. * /
+  Dim GLOB_TILDE_CHECK As Integer = Shl(1, 14)
+  Dim globerrors As String[] = ["No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
+  Dim Paths As New String[]
+  Dim sret As New Glob_t
+  Dim ReturnSet As Pointer
+  Dim CallResult As Integer
+  Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
+  Dim GlobStar As Boolean = (path Like "*\\*\\**" Or GlobStarForce)
+
   If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
   CallResult = glob(path, flags, Null, sret)
-  
+
   If Callresult <> 0 Then
-      Error.Raise("File Expansion Error :" & globerrors[CallResult])
+    Error.Raise("File Expansion Error :" & globerrors[CallResult])
   Endif
-  
+
   ReturnSet = sret.gl_pathv
-  
+
   For i As Integer = 0 To sret.gl_pathc - 1
-     Dim rpath As String = String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i)))
-     If rpath[rpath.len - 1] = "*" And If GlobStar = True Then
-       Continue
-     Else
-       Paths.Add(rpath)
-     Endif
-     If GlobStar = True And If rpath[rpath.len - 1] = "/" Then
-       paths.Insert(fileexpand(rpath & "*", False, True))
-     Endif
+    Dim rpath As String = String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i)))
+    If rpath[rpath.len - 1] = "*" And If GlobStar = True Then
+      Continue
+    Else
+      Paths.Add(rpath)
+    Endif
+    If GlobStar = True And If rpath[rpath.len - 1] = "/" Then
+      paths.Insert(fileexpand(rpath & "*", False, True))
+    Endif
   Next
-  
+
   globfree(sret)
-  
-  Return paths 
-  
+
+  Return paths
+
 Catch
   Error.Propagate()
-  
+
 End ' Gambas module file
 

@@ -5,20 +5,21 @@ Public SProgram As String
 
 Public Sub main()
 
-With SharedMem
-.BeginNamed()
-  .["$f"] = "hello"
-  .["$r"] = "Bye"
-  Dim a As String
-  a = "! cat < $f > $r ! cat ! less"
-  While True
-    If a = "quit" Then Break
-    'syms = Highlight.Analyze(a)
-    sProgram = CreateCmdProgram.compile(a)
-    program = Split(sProgram, "\n", "\"\"", True, True)
-    Print sProgram
-    Line Input a
-  Wend
-.end()
-End With
+  With SharedMem
+    .BeginNamed()
+    .["$f"] = "hello"
+    .["$r"] = "Bye"
+    Dim a As String
+    a = "! cat < $f > $r ! cat ! less"
+    While True
+      If a = "quit" Then Break
+      'syms = Highlight.Analyze(a)
+      sProgram = CreateCmdProgram.compile(a)
+      program = Split(sProgram, "\n", "\"\"", True, True)
+      Print sProgram
+      Line Input a
+    Wend
+    .end()
+  End With
+
 End

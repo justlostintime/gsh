@@ -27,6 +27,16 @@ Public Sub _init()
 
 End
 
+Public Sub free()
+
+  For Each ob As Variant In SubsAndClasses
+    ob.iObject = Null
+    ob.iClass = Null
+  Next
+
+End
+
+
 '' Take simple Gambas source code and create a component project from it. Load
 '' that component and return the class object of the given source file's code.
 Public Function CompileIt(sname As String, SourceFile As String, Optional CompileOnly As Boolean = False, MyClasses As Collection = Null, ExecuteProject As Boolean = False) As Variant

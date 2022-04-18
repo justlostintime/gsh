@@ -138,11 +138,12 @@ Public Sub application_signal(sig As Integer)
 
     Case Signal.SIGHUP
       If RunningProcess <> Null Then
-        Signal.send(RunningProcess.Handle, Signal.SigHup)
-        Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup" & RunningProcess.handle)
+        Signal.send(RunningProcess.Handle, Signal.SigKill)
+        Try gshlogging(User.home &/ "vars/gsh.log", "Process SigKill" & RunningProcess.handle)
         RunningProcess = Null
         Return
       Endif
+      Signal.send(0, Signal.SigKill)
       Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup" & Application.id)
       ExitProgram()
 
@@ -440,8 +441,6 @@ Private Sub SetDefaults()
   End With
 
 End
-
-
 
 Private Sub UpdateEnv()
 
@@ -1010,7 +1009,8 @@ interactive:
   Wend
 
   If Not bDbaseServer Then execlocal(["onexit()"])
-
+  Wait 0.001
+  '  Signal.send(0, Signal.SigKill)
   ExitProgram()
 
 Catch
@@ -1058,16 +1058,33 @@ End
 
 Private Sub ExitProgram(Optional ExitValue As Integer = 0)
 
+  Static HasExit As Boolean = False
+
+  Signal[Signal.sigterm].ignore
+  signal[Signal.SIGINT].ignore
+  Signal[Signal.SIGHUP].ignore
+  Signal[Signal.SIGWINCH].ignore
+
   If exitValue < 32000 Then
     If bSingleUse Then
       Try SharedMem.end()
       If Error Then Error Error.text
-    Else
+    Else If SharedMem.isActive() Then
       Try SharedMem.End(DefaultImageName)
       If Error Then Error Error.text
     Endif
   Endif
 
+  SubCls.free()
+  Wait 0.001
+
+  If Not hasExit Then
+    HasExit = True
+    Quit ExitValue
+  Endif
+
+Catch
+  Error "GSH : Error on exit "; Error.text;; Error.where
   Quit ExitValue
 
 End

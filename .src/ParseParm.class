@@ -18,36 +18,36 @@ Public syms As New String[]
 Public types As New Integer[]
 
 Public Sub _new(Optional SetDefaults As Boolean = True, ops As String[] = ["+", "-", "*", "/", "&", "%", "^"], qs As String[] = ["\"", "\""], sep As String[] = [" ", ","], Special As Boolean = False, leaveQuotes As Boolean = True)
-  
-If SetDefaults Then
- seperators = [" ", "\t", "\n"]
- operators = [":;", "&&", "||", "(", ")"]
- SpecialSymbols = ["{", "}"]
- quotes = ["\"", "\"", "`", "`"]
- braces = ["{", "}"]
- comments = ["'"]
- endofline = ["\n"]
- IgnoreChar = New String[]
- keywords = New String[]
- DoFileExpand = False
- KeepQuote = True
- DoSpecial = True
- allowEolToClose = False
-Else
- seperators = sep
- operators = ops
- SpecialSymbols = New String[]
- quotes = qs
- braces = New String[]
- comments = New String[]
- endofline = New String[]
- IgnoreChar = New String[]
- keywords = New String[]
- DoFileExpand = False
- KeepQuote = LeaveQuotes
- DoSpecial = special
- allowEolToClose = False
-Endif
+
+  If SetDefaults Then
+    seperators = [" ", "\t", "\n"]
+    operators = [":;", "&&", "||", "(", ")"]
+    SpecialSymbols = ["{", "}"]
+    quotes = ["\"", "\"", "`", "`"]
+    braces = ["{", "}"]
+    comments = ["'"]
+    endofline = ["\n"]
+    IgnoreChar = New String[]
+    keywords = New String[]
+    DoFileExpand = False
+    KeepQuote = True
+    DoSpecial = True
+    allowEolToClose = False
+  Else
+    seperators = sep
+    operators = ops
+    SpecialSymbols = New String[]
+    quotes = qs
+    braces = New String[]
+    comments = New String[]
+    endofline = New String[]
+    IgnoreChar = New String[]
+    keywords = New String[]
+    DoFileExpand = False
+    KeepQuote = LeaveQuotes
+    DoSpecial = special
+    allowEolToClose = False
+  Endif
 
 End
 
