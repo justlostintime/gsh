@@ -1,0 +1,196 @@
+Public Sub disktest(...)
+'' Version 1.0.1
+'' Test local disk performance 
+'' Pass the name of a file to create and read in the location to test
+'' It is possible to test raw devices but only read only testing is allowed
+'' this runs as a graphical popup or console test routine
+'' it defaults to graphical interface unless the -p parameter is passed
+'' 
+
+Use "gb.gui"
+
+Public progress As Window 
+Public mytext As TextArea
+Public myTime As Timer 
+Public answer As String
+Public panswer As String
+Public results As Collection 
+Public Cproc As Process
+Public Helpit As String
+Public printon As Boolean 
+
+
+Dim smsgs, nanswer As String
+Dim i As Integer
+printon = False
+
+helpit = "disktest  [-p|-print] file_or_dev_1 test2 test3....... \n"
+         " Example: disktest /dev/sda /tmp/testfile \n"
+         " To Use a /dev/..    you must sudo this command\n"
+         "    Note: Physical Devices are always tested for read performance only\n"
+         " You may test a device or a mounted directory\n"
+         " -p | -print will direct all output to stdout"
+
+'Place Code Here
+
+	'' debug "arg 0 = " & Param[0]
+	If param.count > 0 and if Left(Param[0], 1) = "-" Then
+	   debug "testing for p=" & mid(Param[0],2,1) 
+           If Mid(Param[0], 2, 1) = "p" Then printon = True
+        Endif
+        
+        '' debug "Printon =", printon
+        
+        If Not printon Then
+        	progress = New Window As "theWindow"
+        	progress.title = " Checking Disk Performance Now"
+        	progress.resize(500, 200)
+         
+        	mytext = New TextArea(progress) As "mytext"
+        	mytext.x = 1
+        	mytext.y = 1
+         
+         	mytext.text = "Starting Disk Drive Testing"
+        	 'mytext.background = 100
+         	mytext.show()
+        
+         	mytext.resize(500, 200)
+         	mytext.refresh()
+          
+        	progress.refresh()
+        	progress.show()
+        	progress.refresh()
+       	 Wait 0.1
+        Endif
+        
+      	myTime = New Timer As "TheTime"
+  	myTime.Delay = 1000
+  	myTime.Enabled = True
+  	
+       results = New Collection
+       
+	If Param.count = 0 Then
+       	If Not printon Then
+	    		message.title = "disktest help"
+	    		message.info(helpit, " OK ")
+	    	Else
+	    		Print helpit
+	    	Endif
+		Quit 0
+	End If
+	
+       For i = 0 To Param.max
+               If Left(Param[i], 1) = "-" Then
+                     If Mid(Param[i], 1, 1) = "p" Then printon = True
+                     Continue
+               Endif
+               
+       	If Left(Param[i], 5) = "/dev/" Then 
+              	''Debug "Hi its a device " & param[i]
+              	If Not printon Then
+              		mytext.text &= "\nTesting device  " & Param[i] & " Read Only Mode"
+              		mytext.refresh()
+              		progress.refresh()
+              		Wait 0.1
+              	Else
+              		Write "\nTesting device " & Param[i]
+              		Flush
+              	Endif
+              	
+              	myTime.start()
+                     answer = ""
+			Cproc = Shell "hdparm -tT " & Param[i] & " 2>&1" For Read As "ShellData"
+			
+		 ' I need to do this so that the windows from this app update while waiting for the shell to complete
+			While Cproc.state = process.running
+				Wait 0.1
+			Wend
+			
+       		myTime.Stop()
+       		
+       		answer = "hd test ->" & answer 
+       		''debug "adding ->", Param[i],  answer
+		 	results.add(answer, ARGS[i])
+		
+       	Else
+              	 ''Debug "Hi its a directory" & args[i]
+ 			If Not printon Then
+              		mytext.text &= "\nTesting File  " & Param[i] & " Read/Write Mode"
+              		mytext.refresh()
+              		progress.refresh()
+              		Wait 0.1
+              	Else
+              		Write "\nTesting File " & Param[i]
+              		Flush
+              	Endif
+              	
+              	myTime.Start()
+              	answer = ""
+       		cproc = Shell "dd conv=fdatasync if=/dev/zero of=" & Param[i] & " bs=1048576 count=2048 2>&1" For Read As "ShellData"
+
+       	        While cproc.state = process.running
+		   Wait 0.1
+                Wend
+                     
+                ''debug "adding ->", Param[i],  answer
+
+       	 	results.add(answer, "Write -> " & Param[i])
+       	 	
+                answer = ""
+              	cproc = Shell "dd iflag=direct if=" & param[i] & " of=/dev/null bs=1048576 count=2048  2>&1" For Read As "ShellData"
+                      While cproc.state = process.running
+			  	Wait 0.1
+                     Wend
+                     
+                     ''debug "adding ->", Param[i],  answer
+               	results.add(answer, "Read-> " & param[i])
+               	
+                     ''debug "removing file "& param[i]
+                     answer = ""
+               	cproc = Shell "rm " & param[i] & " 2>&1" For Read As "ShellData"
+               	While cproc.state = process.running
+			  	Wait 0.1
+                     Wend
+                      ''debug "file removed"
+                      
+               	results.add(answer, "Removed file -> " & Param[i])
+                      myTime.Stop()
+       	Endif
+
+       Next
+       
+ 	For Each nanswer In results
+ 		smsgs &= results.key & "<br>" & nanswer & "\n"
+ 	Next
+ 	
+ 	If Not printon Then
+ 		message.title = "---------------------------------------- Disk Performance test results -----------------------------------------------------------"
+ 		message.info(smsgs, "OK")
+ 		progress.close()
+ 	Else
+ 	       Print "\n\n" & smsgs
+ 	Endif
+ 	
+Quit 0
+Catch
+message(error.text & "\n" & error.where)
+End
+
+Public Sub TheTime_Timer()
+  '''' ''debug "Entered timer function !"
+  If Not printon Then
+   	myText.text &= "."
+   	progress.refresh()
+   Else
+   	Write "."
+  	 Flush
+   
+   Endif
+   
+End
+
+Public Sub ShellData_read()
+            ''''debug "entered read function"
+            answer &= Read #Last, -2048
+            '''''Debug "answer =>" & answer & " <"
+End

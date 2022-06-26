@@ -609,7 +609,7 @@ Private Sub Compile(sym As String, Optional componly As Boolean = False) As Bool
   Dim proc As String = SharedMem[Lower(sym)]
   Dim result As Boolean
 
-  Dim saveDiective As String[] = CompilerDirectiveTable
+  Dim saveDirective As String[] = CompilerDirectiveTable
   Dim saveLinks As Collection = linktable
   Dim saveuse As String[] = UseTable
   Dim saveextern As String[] = ExternTable
@@ -628,7 +628,7 @@ Private Sub Compile(sym As String, Optional componly As Boolean = False) As Bool
   usetable = saveuse
   externtable = saveextern
   structtable = savestruct
-  CompilerDirectiveTable = saveDiective
+  CompilerDirectiveTable = saveDirective
   Return result
 
 End
@@ -691,8 +691,8 @@ Public Sub gshlogging(logname As String, msg As String)
   If Error Then
     Error "Unable to open log file "; logname
   Endif
-  Print #sfile, Format(Now, "yyyy/mm/dd hh:nn:ss.uu");; msg
-  Close sfile
+  Try Print #sfile, Format(Now, "yyyy/mm/dd hh:nn:ss.uu");; msg
+  Try Close sfile
 
 End
 
