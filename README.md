@@ -1,5 +1,15 @@
 # gsh
 
+Gambas 3.17 is now available as a backport for debian and ubuntu, even available for Raspberry OS!
+
+## Update - Ubuntu/Debian installation packages available to add to apt source list
+
+```
+curl -s --compressed "https://raw.githubusercontent.com/justlostintime/ppa/main/ubuntu/KEY.gpg" | sudo apt-key add -
+sudo curl -s --compressed -o /etc/apt/sources.list.d/gsh.list "https://raw.githubusercontent.com/justlostintime/ppa/main/ubuntu/gsh.list"
+sudo apt update
+```
+
 ### NOTE GSH UPDATE FOR GAMBAS 3.17 and above 04/10/2022
 Version 1.3.106 or above is required for correct functionallity in 
 Gambas version 3.17 or above.
