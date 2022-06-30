@@ -2837,7 +2837,7 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
+Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "<<", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
 Private ParmParser As New ParseParm(False, ["'"], ["\"", "\"", "[", "]"], [","])
 
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
@@ -2936,7 +2936,7 @@ End
 
 Private AutoGenSub As Integer = 0
 
-Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As String ' MaxGlobSize As 0 mean unlimited
+Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As String             ' MaxGlobSize As 0 means unlimited
 
   Dim OutBuf As String = ""
   Dim Syms As String[]
