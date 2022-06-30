@@ -454,6 +454,15 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateInlineInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
 
+        Case "<<<"   'inline input the following string
+          Inc i
+
+          If i > CmdList[CurrentCmd].max Then
+            Error.Raise("Missing input string < [" & CmdList[CurrentCmd].join(" ") & " ...]")
+          Endif
+
+          i = GenerateStringInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
+
 
         Case "!>" ' Write the return value from the exec to this variable
           Inc i
@@ -895,6 +904,59 @@ Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As 
 
 End
 
+Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
+
+  Dim aFunction As Boolean = False
+  Dim DataSource As String
+
+  'Check if we will from a function or some other evaluated at runtime function
+  If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
+    aFunction = True
+    Dim execStartAt As Integer = i
+    Dim execBraceLevel As Integer = 0
+    Dim execfunction As String = ""
+    While i < CmdList[CurrentCmd].count
+      If CmdList[CurrentCmd][i] = "{" Then CmdList[CurrentCmd][i] = "("
+      If CmdList[CurrentCmd][i] = "}" Then CmdList[CurrentCmd][i] = ")"
+      If CmdList[CurrentCmd][i] = "(" Then
+        Inc execBraceLevel
+      Endif
+      execFunction &= CmdList[CurrentCmd][i]
+
+      If CmdList[CurrentCmd][i] = ")" Then
+        Dec execBraceLevel
+      Endif
+      If execBraceLevel = 0 Then Break
+      Inc i
+    Wend
+    'we could id an unbalance brace error, but let compiler find it for us instead
+    Inc i
+    CmdList[CurrentCmd][execStartAt] = Replace(execFunction, " ", "")
+    CmdTypes[CurrentCmd][execStartAt] = CmdTypes[CurrentCmd][execStartAt + 1]
+    CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
+    CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
+    i = execStartAt
+  Endif
+
+  If CmdTypes[CurrentCmd][i] = Highlight.string Then
+    CmdList[CurrentCmd][i] = "(" & CmdList[CurrentCmd][i] & ")"
+  Endif
+
+  If CmdTypes[CurrentCmd][i] = Highlight.Function Then
+    DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
+  Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
+    DataSource = CmdList[CurrentCmd][i]
+  Else
+    DataSource = Quote(CmdList[CurrentCmd][i])
+  Endif
+
+  CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " ,  " & DataSource & ")") & "\n"
+
+  Return i
+
+End
+
+
 
 Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As String
 
@@ -989,7 +1051,7 @@ Public ShelliParse As ParseParm
 
 Public Sub _init()
 
-  ShellParse = New ParseParm(False, ["&", ">", ">>", "<", "<<", "&>", "&>>", "|", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
+  ShellParse = New ParseParm(False, ["&", ">", ">>", "<", "<<", "<<<", "&>", "&>>", "|", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
   ShellParse.braces = []
   ShellParse.seperators = [" ", "\t", "\n"]
   ShellParse.DoFileExpand = True

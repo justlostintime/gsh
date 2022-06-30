@@ -2837,7 +2837,7 @@ Catch
 
 End
 
-Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "<<", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
+Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "<<", "<<<", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
 Private ParmParser As New ParseParm(False, ["'"], ["\"", "\"", "[", "]"], [","])
 
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
