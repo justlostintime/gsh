@@ -1,7 +1,7 @@
 Sub lsclasses(Optional classname As String = "",...)' List Loaded classes - from classes object
-''lsclasses  List all the classes in the current environment
-''if classname is set to filter=used  then only list classes refrenced by application
-''Else all loaded classes will be displayed
+'' lsclasses  List all the classes in the current environment
+'' if classname is set to filter=used  then only list classes refrenced by application
+'' Else all loaded classes will be displayed
 dim bUsed as boolean = false
 dim s as  string
 dim ss as class
@@ -24,14 +24,14 @@ if classname = "" then
 
     print sClass.count
 
-    sClass.sort()
+    sClass.sort(gb.ignorecase)
 
     for each s in sClass
        if bUsed and if classes[s].count = 0 then continue
 
        try print left(s&space(MaxLength+1),MaxLength+1);; "Ref=";format(classes[s].count,"##0");" Symbols ";iif(classes[s].symbols.count = 0,"None","[");
        if error then 
-		print left(s&Space(MaxLength+1),MaxLength+1)
+		print left(s&Space(MaxLength+1),MaxLength+1);;error.text
                 continue
        endif
 
