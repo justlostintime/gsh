@@ -1,36 +1,75 @@
-Sub lsclasses(Optional classname As String = "")' List Loaded classes - from classes object
+Sub lsclasses(Optional classname As String = "",...)' List Loaded classes - from classes object
 ''lsclasses  List all the classes in the current environment
-dim s as class
+''if classname is set to filter=used  then only list classes refrenced by application
+''Else all loaded classes will be displayed
+dim bUsed as boolean = false
+dim s as  string
+dim ss as class
+dim sClass as new string[]
+Dim MaxLength as integer = 0
+
+if classname == "filter=used" then
+  bUsed = true
+  classname = ""
+endif
+
 if classname = "" then
-    print "Listing of";;classes.count;;"classes.
-    for each s in classes
-       try print left(s.name,20)&string(21-s.name.len," ");; "Ref=";format(s.count,"##0");" Symbols [";
+    print "Listing of";;classes.count;;"classes, Sorted Count ";
+    for each ss in classes
+        sClass.add(ss.name)
+        if ss.name.len > MaxLength then
+             MaxLength = ss.name.len
+        endif
+    next
+
+    print sClass.count
+
+    sClass.sort()
+
+    for each s in sClass
+       if bUsed and if classes[s].count = 0 then continue
+
+       try print left(s&space(MaxLength+1),MaxLength+1);; "Ref=";format(classes[s].count,"##0");" Symbols ";iif(classes[s].symbols.count = 0,"None","[");
        if error then 
-		print s.name
+		print left(s&Space(MaxLength+1),MaxLength+1)
                 continue
        endif
+
        dim jj as integer = 0
-       for each m as string in s.symbols
-          if jj > 10 then break
-          print m;",";
+       dim m as string
+       Dim sSym as string[] = classes[s].symbols
+       sSym.sort()
+       for jj = 0 to ssym.max
+          m = sSym[jj]
+          if jj > 0 and jj mod 10 = 0 then
+            print "\n"; space(maxlength+19);
+          endif 
+          print m;iif(jj< ssym.max, ",","");
           flush
-          inc jj
        next
-       print "]..."
+       print "]"
     next
-print 
+print
+ 
 else
-    s = classes[classname]
-    if s = null then
+
+    ss = classes[classname]
+    if ss = null then
        print "Class ";classname; " not found"
     else
-       Print Left(s.name, 20) & String(21 - s.name.len, " ");; "Ref="; Format(s.count, "##0")
+       Print Left(ss.name, 20) & String(21 - ss.name.len, " ");; "Ref="; Format(ss.count, "##0")
        print "Public sysmbols for";; classname
-       dim table as string[] = s.symbols
+       dim table as string[] = ss.symbols
        table = table.sort()
        for each m as string in table
           print classname&"."&m
        next
     endif
+
 endif
+Catch
+  flush
+  print  error.text,error.where
+  flush
+  print
 End
