@@ -947,7 +947,7 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
   Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
     DataSource = CmdList[CurrentCmd][i]
   Else
-    DataSource = Quote(CmdList[CurrentCmd][i])
+    DataSource = Quote(gsh.PreProcesses(CmdList[CurrentCmd][i]))
   Endif
 
   CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " ,  " & DataSource & ")") & "\n"
@@ -955,7 +955,6 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
   Return i
 
 End
-
 
 
 Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As String
