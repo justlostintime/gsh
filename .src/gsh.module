@@ -1623,11 +1623,28 @@ Catch
 End
 
 Private ReadFromBuffer_buffer As New String[]
-Private ReadFromBuffer_readPtr As Integer = 0
 Private savedSourcebuffer As String = ""
 Private saveSource As Boolean = False
 
 Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
+
+  Dim CapturedSource As String[] = Split(data, "\n", "\"\"", True, True)
+  Dim ValidLines As Integer = 0
+
+  If IsNull(CapturedSource) Or If CapturedSource.count = 0 Then
+    Return
+  Endif
+
+  For Each s As String In CapturedSource
+    If s <> Space(s.len) Then
+      ReadFromBuffer_buffer.Add(s)
+      Inc ValidLines
+    Endif
+  Next
+
+  If ValidLines = 0 Then
+    Return
+  Endif
 
   savesource = inSaveSource
 
@@ -1639,9 +1656,6 @@ Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
     Source = "BUFFER"
   Endif
 
-  ReadFromBuffer_buffer = Split(data, "\n", "\"\"", True, True)
-  ReadFromBuffer_readptr = 0
-
 End
 
 
@@ -1649,15 +1663,15 @@ Public Sub ReadBuffer() As String
 
   Dim nextline As String
 
-  If ReadFromBuffer_ReadPtr > ReadFromBuffer_buffer.max Then
+  If ReadFromBuffer_Buffer.count = 0 Then
     Source = savedsourcebuffer
     Return "QUIT"
   Endif
 
-  nextline = ReadFromBuffer_buffer[ReadFromBuffer_ReadPtr]
-  Inc ReadFromBuffer_ReadPtr
+  nextline = ReadFromBuffer_buffer[0]                               ' Get the top ot the read stack
+  ReadFromBuffer_buffer.Remove(0)                                   ' pop the line from the top of the stack
 
-  If ReadFromBuffer_ReadPtr > ReadFromBuffer_buffer.max Then
+  If ReadFromBuffer_buffer.count = 0 Then
     Source = savedsourcebuffer
   Endif
 
@@ -1749,7 +1763,7 @@ Public Sub Reader(EndBlk As String[]) As String
         Do
           sinbuffer = readline()
           If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; sinbuffer; "'"
-          If Upper(sInBuffer) <> "EDIT" And If Upper(InBuffer) <> "RUN" Then
+          If Upper(sInBuffer) <> "EDIT" And If Upper(sInBuffer) <> "RUN" Then
             If BlockLevel = 0 Then
               executedblock = lastexecutedblock
               lastexecutedblock = sinbuffer & "\n"
@@ -2144,6 +2158,11 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
 
           Case "RUN"
+            If lastexecutedblock == "run\n" Then
+              execBuffer = ""
+              Return True
+            Endif
+
             If inBufParse.count > 1 Then
               execbuffer = ""
               Dim sfilename As String = Trim(Replace(InBuffer, "run", "", gb.ignorecase))

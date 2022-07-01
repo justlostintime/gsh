@@ -127,6 +127,10 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
 
     If DoTrace Then Error ("Reading From Readline Version");; readlineversion
     ' SetBlockIndent()
+    If gsh.BlockLevel = 0 Then    ' reach out to the gsh class to see what block level we are reading
+      Print "\n";                                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
+      Flush                                          ' Make sure it is printed
+    Endif
     Select Case ReadLineVersion
       Case 9
         pinput = c9_readline(Prompt & BlockIndent)
