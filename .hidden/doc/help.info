@@ -37,30 +37,35 @@
  gsh is started.
   
  Gambas Shell Overview
-            gsh  is an in memory shell all global variables are kept in an in memory database image. 
+            gsh  is an in-memory shell all global variables are kept in an in-memory database image. 
             Functions, Subs, Procudures, Functions, Classes, Structures are considered as global variables.
             This image is saved when a new variable is created. or when the shell exits. It is reloaded when the shell is started.
             This in memory data base is shared by all GSH shells started by a single user. That is to say that a variable
             created by one instance is accessible by every other instance of the GSH running for that user.
             Objects, Functions and classes are part of this database. One task can update an object and have it
-            available to another task. ETC. The can be overridden by the --single option.
+            available to another task. ETC.
+            
+	    This can be overridden by the --single option. Making the instance private.
             
             It is possible to have a single database shared by any combination of users through the command line
             parameters. Or have each gsh instance have a private in memory database. Shared only be tasks.
             
-            Configure gsh as your login and default shell.
+            To Configure gsh as your login and default shell.
             First add an entry /usr/bin/gsh to the /etc/shells file this enabled gsh as a login shell.
             Gsh can replace your current shell by changing the default shell in your /etc/passwd file. 
             To do this use chsh command.
+            
             NAME
                 chsh - change login shell
 
             SYNOPSIS
                 chsh [options] [LOGIN]
+                
+                chsh -s /usr/bin/gsh brian
             
             
- Command Line Parameters
-            --help Display the help pages
+ Command Line Parameters for gsh shell
+            --help       Display the help pages
             -a --about   Display information about gsh
             -C --cleanup Force the close of the named in_memory database, if present on system.
             -c --command Used by the remote ssh or other access for Posix compliance, not used in other cases
@@ -98,29 +103,33 @@
             Will be updated when any new revision of the gsh shell is installed.
             
  .gshrc     Is the users startup definitions and aliases etc. Updated at startup in image only when changed by user
-            otherwise it just uses the image.
+            otherwise it just uses the image version.
   
  onstart    is read from ~/vars/subs when gsh starts and the user has changed it since the version in the image was
             defined. It defines the onstart() function called at the start of an interactive session.
   
  onstart()  This function is run when the Gambas shell starts in interactive mode
             it may be changed using 'edit onstart' any valid Gambas code may be used here.
+            Then use 'savesubs "onstart"' to write it to onstart file.
             
  onexit     Is read from ~/vars/subs when gsh starts and the user has changed it since the version in the image was
             defined. It defines the onexit() function called at the end of an interactive session.
   
  onexit()   This function is run when the Gambas shell exits an interactive mode
-            it may be changed using 'edit onstart' any valid Gambas code may be used here.
+            it may be changed using 'edit onexit' any valid Gambas code may be used here.
+	    Then use 'Savesubs "onexit"' to write it to onexit file.
 
- Global variables start with $ for example $history .. Case matters 
-            These Variables are not dim'd. Data Type is assigned at first Use.
-            The data type may not change after the first assignment unless the variable is deleted first.
+ Global variables start with $ for example $history .. Case is ignored!
+            These Variables are not dim'd they are created in shared memory the Data Type is assigned by the value
+            of the assigned value type.
+            The data type is changed if the value type changes unless there is a chnage value notification outstanding
+            for the Variable. In this case assigning any other value type will create an error.
             Global variables persist and are saved at the time of closing the gsh shell.
             Global variables may be used the same way regular variables are used except for iteration.
             Not allowed: for $i = 0 to 100 .....
             Global Variables can be referenced in any process or sub process of gsh. They are system wide.
-            Remember to vardel("varname") at the end of a session if you dont want it to appear when you next start
-            gsh.
+            Remember to 'vardel("varname")' at the end of a session if you dont want it to appear when you next start
+            gsh. A shortcut is 'vardel' by itself, this will delete all user created variables.
             
  $0 to $n   This is reserved as parameters passed to a gsh script
  $#         This is the number of parameters passed tp a script
@@ -137,21 +146,22 @@
  Traceon   Turn on or off shell script tracing. Writes line to stderr as they are executed.
  Traceoff  This Is not Global And will not affect system wide scripts.
            
- $prompt :  The prompt, it is displays as 'print eval($prompt);;' so can be edited with any valid eval statement
+ $prompt :  The prompt, it is displays as 'print eval($prompt);;' so can be created with any valid evalatable statement
             to change the prompt just 'edit $prompt'. The change is apparent when the editor closes. 
             Be warned if the expression fails the prompt will be reset to the default.
-            The default prompt is - 
-               "\x1b[31m"&user.name&"@"&system.host&":\x1b[32m]"&env["PWD"]&"$\x1b[0m]"&gsh.blockindent
+            The default prompt is defined as : 
+                "\x01\x1b[31m\x02" & application.id & "." & user.name & "@" & system.host & ":\x01\x1b[32m\x02" & env["PWD"] & "\x01\x1b[0m\x1b[0K\x02 > "
 
  At Startup gsh loads the environment from the default image ~/vars/gsh.image if it is exists.
             Any specific image may be loaded explicitly with the --image startup parameter
   
- gsh.image  This file is created/updated when ever the gsh shell exits or save is called with no parameters.
+ gsh.image  This default image file is created/updated when ever the gsh shell exits or save is called with no parameters.
             It is stored at ~/vars/gsh.image.
             The gsh.image and ~/vars directory will be created if they do not exist upon first startup of GSH.
   
- $VarName = <value> : Global Variables Definition, The Valur type sets the data type and can change except if 
+ $VarName = <value> : Global Variables Definition, The Value type sets the data type and can change except if 
                       a change notification request is pending for the global variable.
+                      
  .Varname = <value> : Same as above inside script files
  
  !                  : Is used at the beginning of a line to define an external command or force a function to be executed as a process
@@ -161,6 +171,8 @@
                       In Some Cases It will be required to access the cli command
                       for example chmod and !chmod are both very different chmod is a gambas command
                       and !chmod will cause the linux cli command to be executed. So be aware of these conflicts
+                      !lvars > $b  - will execute gsh command lvars as a seperate process rather that as an internal plugin and place the output
+                                     into $b global variable.
 
  | &|               : | may only be used between commands not at the beginning of a line. it denotes a pipe between tasks
                       that is it will send the output of the task on the left to the task on the right.
@@ -203,13 +215,21 @@
                         &&  is used to execute the next command if the first work correctly eg  'true && ps' will print the ps output, 'false && ps' will print nothing
                         ||  is used to execute the next command if the first one fails  eg ' true || ps ' will print no output , 'false || ps' will print ps
                         && and || are alway executed left to right and all operators are evaluated in the same way bash or sh evaluates them.
-                        :; always execute the next command when the previous one completes.
+                        :; always execute the next command when the previous one completes.(bash uses ; but gambas uses ; for print)
                         () may be used to manage the order of operation, inside brackets are always evaluated first.
                                                      
 <                   : Direct content of global variable,function or file  into external command CLI or function()
                       It is allowed to have multiple inputs to a command
                       for example
                       eg ' cat < $f < ~/vars/profile.gsh | cat < $r | cat > $b | cat > $s' is quite valid
+
+<<                  : Read line input from stdin until the provided text string is encounterd   from 1.3.104
+                       example: cat << theeof
+                       he case of the termination string is ignored
+                       
+<<<                 : Input the following string into the command                               from 1.3.104
+                      example cat <<< "this string"
+                      The string is sent as if it was entered thru stdin.
                       
 >  >>               : Direct Output from an external command to a global variable,function or file
                       It is allowed to write the output to multiple variables and also pipe to next external command
@@ -275,7 +295,7 @@
  
 
                          
-$"Expansion Expr":    This will expand the enclosed expansion expression following the same expansion rulles
+$"Expansion Expr":    This will expand the enclosed expansion expression following the same expansion rules
                       as Bash or csh. See BASH or csh expansion for more details.
                       Example:
                          echo $"This{1..10}"
@@ -290,7 +310,7 @@ $"Expansion Expr":    This will expand the enclosed expansion expression followi
                        Gsh Code blocks lambda functions with parameters:      
                              {...} lambda..end Begin..end
                              
-                       Gsh Alias based code blocks, These are not lambda expressions:
+                       Gsh Alias based code blocks, These are not lambda expressions: prefered
                              do .. done   is the same as:  do .. loop until true
  
  { } or Lambda..end : are used to create a block of executable code.
@@ -310,8 +330,8 @@ $"Expansion Expr":    This will expand the enclosed expansion expression followi
                       as one block. By default gsh executes each line as it is entered.
                       If used in gsh scripts { to }  execute  after the closing brace, local variables(inside {}) are lost.
                       
-{..} in cli expression : When used inside a cli expression then the gambas/shell variables are inserted at runtime, if surrounded in ()
-                        inside the {} then the expresin is evaluated at runtime and inserted.
+{..} in cli expression : When used inside a linux cli expression then the gambas/shell variables are inserted at runtime, 
+                        if surrounded in () inside the {} then the expression is evaluated at runtime and inserted.
                         Example:
                         echo {application.id} {system.version} {(user.name&" "&User.id)}
                         outputs:
@@ -327,13 +347,14 @@ $"Expansion Expr":    This will expand the enclosed expansion expression followi
                          $a = "Hello World"
                          echo $a
                      
-quit                : End of execution or close gsh session.  
+quit <Exit Value>   : End of execution or close gsh session.  
                       gsh shells/scripts return values in global variables
-exit                : Alias for quit
+                      
+exit <Exit Value>   : Alias for quit
 
 Global Commands/Functions/Classes : These commands are built into the gambas shell
  
- Get <Command> <Command> ...  A List of additional commands  to be loaded as plugins these are complete modules having many functions
+Get <Command> <Command> ...  A List of additional commands  to be loaded as plugins these are complete modules having many functions
                               only the provided command name may be called from the command line.
                               Command may be a file name or filename and path
                               as a file "/usr/bin/mycommand" or CommandName which is loaded from ~/vars
@@ -358,6 +379,7 @@ Global Commands/Functions/Classes : These commands are built into the gambas she
  run "Scriptname"             Execute an external gsh script immediately. Scripts should return information in global variables.
                               This is a  shell script not a gambas script. See also runscript() in profile.rc this function
                               is the preferred method of executing an external scripts.
+                              
  run                          Re-execute the last code block.
                                         
  list                         This will list the code of the last executed block or line of Gambas code.
@@ -394,6 +416,12 @@ Global Commands/Functions/Classes : These commands are built into the gambas she
  end [compile | program]      The default program name if not specified is script.out
                               In terms of functional programming. You may compile and test each function and then
                               after the final test. Create a function which is a main and compile it.
+                              When creating a gambas script using compile, any refrene to a function, Class or
+                              Structure will cause it to be added to the script. Only refrenced classes, functions
+                              or Structures are actually added to the script. The Source for any builtin commands
+                              may also be added as required by the script being generated.
+                              Scripts generatedin this way are standalone and do not require that gsh be available.
+                              
                               AS an Example:
                                            define a sub a
                                                sub a() 
@@ -427,10 +455,10 @@ Global Commands/Functions/Classes : These commands are built into the gambas she
                                             More From The Script
                                             Bye
  
- Sub,Function,Procedure,Class,Struct  Each are compiled immediately after creation. If used as a command then they are executed
-                              in the context of the current shell they are loaded as plugins to the shell.
-                              If used as functions then they execute in the context of the block or app executed.
-                              functions and classes may be edited with the edit command.
+ Sub,Function,Procedure,    : Each are compiled immediately after creation. If used as a command then they are executed
+ Class,Struct                   in the context of the current shell they are loaded as plugins to the shell.
+                                If used as functions then they execute in the context of the block or app executed.
+                                functions and classes may be edited with the edit command.
                                        
                                        
 *************************************************************************************************
