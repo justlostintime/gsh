@@ -1,6 +1,13 @@
 # gsh
 
 Gambas 3.17 is now available as a backport for debian and ubuntu, even available for Raspberry OS!
+```
+  for pi os:
+  Add this line to the beginning of /etc/apt/sources.list
+  deb http://deb.debian.org/debian/ bullseye-backports main contrib non-free
+  
+  install like this debian all os and pi os :
+  apt -t bullseye-backports install gambas3
 
 ## Update - Ubuntu/Debian installation packages available to add to apt source list
 
