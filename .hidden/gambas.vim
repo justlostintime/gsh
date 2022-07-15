@@ -138,7 +138,7 @@ syn keyword	gambasUserInput		GETJOYSTICK GETKEY GETMOUSE INKEY INPUT MULTIKEY SE
 "	types of identifiers like functions, basic commands and
 "	such. MEM 9/9/2006
 "
-syn match	gambasIdentifier		"\<[a-zA-Z_][a-zA-Z0-9_]*\>"
+syn match	gambasIdentifier	"\<[a-zA-Z_][a-zA-Z0-9_]*\>"
 syn match	gambasGenericFunction	"\<[a-zA-Z_][a-zA-Z0-9_]*\>\s*("me=e-1,he=e-1
 "
 "	Function list

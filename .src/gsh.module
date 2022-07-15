@@ -2023,6 +2023,11 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               Error.Raise(InBufParse[0] & (" requires a class name !"))
               execbuffer = ""
             Else
+              ' If BlockLevel > 0 Then
+              '   lambdaSubFuncClass(["END", "CLASS"])
+              '   Return True
+              ' Endif
+
               If Not SharedMem.exist("class." & Lower(InBufParse[1])) Then
                 LastElement = "class." & Lower(InBufParse[1])
                 SharedMem[LastElement] = "Class " & Lower(InBufParse[1])
@@ -2051,11 +2056,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               AutoCompile = True
               SharedMem[LastElement] = ExecBuffer
               ExecBuffer = ""
+
+              SharedMem.Sync(".", DefaultImageName)
+              Debug "class compile "; lastelement
+              compile(lastelement)
             Endif
 
-            SharedMem.Sync(".", DefaultImageName)
-            Debug "class compile "; lastelement
-            compile(lastelement)
+
 
           Case "STRUCT"
             Dim data As String = getlastline(execbuffer) & "\n"
