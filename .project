@@ -26,6 +26,7 @@ Language=en_US
 KeepDebugInfo=0
 ControlPublic=1
 ModulePublic=1
+ForceBytecodeVersion=3.18
 SourcePath=/home/brian/Projects/Distribution/Archive
 Maintainer=Brian G
 Vendor=WESTWOOD
