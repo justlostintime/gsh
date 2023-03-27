@@ -7,27 +7,27 @@ Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
 Extern c9_using_history() In "libreadline:9" Exec "using_history"
 Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
 Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
-Extern c9_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:9" Exec "history_expand"
+Extern c9_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:9" Exec "history_expand"
 
 Extern c8_using_history() In "libreadline:8" Exec "using_history"
 Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
 Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
-Extern c8_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:8" Exec "history_expand"
+Extern c8_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:8" Exec "history_expand"
 
 Extern c7_using_history() In "libreadline:7" Exec "using_history"
 Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
 Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
-Extern c7_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:7" Exec "history_expand"
+Extern c7_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:7" Exec "history_expand"
 
 Extern c6_using_history() In "libreadline:6" Exec "using_history"
 Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
 Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
-Extern c6_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:6" Exec "history_expand"
+Extern c6_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:6" Exec "history_expand"
 
 Extern c5_using_history() In "libreadline:5" Exec "using_history"
 Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
 Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
-Extern c5_history_expand(Item As String, Expansion As Pointer) As Integer In "libreadline:5" Exec "history_expand"
+Extern c5_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:5" Exec "history_expand"
 
 Private ReadLineVersion As Integer
 Public DoTrace As Boolean
@@ -76,14 +76,19 @@ Public Sub add_history(data As String)
 
   Select Case ReadLineVersion
     Case 9
+      Try c9_using_history()
       c9_add_history(data)
     Case 8
+      Try c8_using_history()
       c8_add_history(data)
     Case 7
+      Try c7_using_history()
       c7_add_history(data)
     Case 6
+      Try c6_using_history()
       c6_add_history(data)
     Case 5
+      Try c5_using_history()
       c5_add_history(data)
   End Select
 
@@ -96,6 +101,10 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
   Dim Prompt As String
 
   If DoTrace Then Error ("Begin readline")
+
+  'Debug Line * * * *
+  'Dim tprompt As String = "cdate(now)"
+  'Print "starting "; Eval("CDate(Now)");; Eval(tprompt);; " Readline _Call"
 
   If bDbaseServer Then
     If DoTrace Then Error ("Begin server mode reads")
@@ -117,6 +126,10 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
       Error ("Unable to evaluate any prompt type")
       prompt = "$"
     Else
+
+      'Debug Line * * * *
+      'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
+
       Try prompt = Eval(userprompt)
       If Error Then
         userprompt = DefaultPrompt
@@ -153,10 +166,14 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
 
       If IsNull(pinput) Then Return "QUIT"
 
+      sInput = Trim(history_expand(pinput))
+
       If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
-      sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
+
+      ' sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
+
       rFree(pInput)
-      sInput = Trim(sInput)
+      ' sInput = Trim(sInput)
 
       If sInput <> "" Then
         'sInput = history_expand(sInput)
@@ -176,11 +193,13 @@ Catch
 
 End
 
-Private Sub history_expand(data As String) As String
+Private Sub history_expand(data As Pointer) As String
 
   Dim pExpansion As Pointer = 0
   Dim Result As Integer = 0
-  Dim NewData As String = data
+  Dim NewData As String = Trim(String(1, String@(data)))
+
+  If SharedMem["history_expand"] = False Then Return NewData
 
   Select Case ReadLineVersion
     Case 9
@@ -194,7 +213,7 @@ Private Sub history_expand(data As String) As String
     Case 5
       Result = c5_history_expand(data, VarPtr(pExpansion))
   End Select
-  If Result = 1 Then
+  If Result = 1 Or If Result = 0 Then
     NewData = String(1, String@(pExpansion))              ' do this to force a copy of the string to our data segment
     rFree(pExpansion)
   Endif

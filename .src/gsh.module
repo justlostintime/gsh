@@ -375,7 +375,7 @@ End
 
 Private SysVars As String[] = ["profile", "globstar", "alias", "$blockindent", "$execprog", "lastexecutedblock", "prompt", "$result", "$maxhistory", "$historycurrent",
   "$history", "$editor", "$hexeditor", "$helpdisplay", "$home", "$hosttype", "$hostname", "$term", "newprofile", "$path", "$env",
-  "lambda", "helpuseshtml"]
+  "lambda", "helpuseshtml", "history_expand"]
 
 Private Sub SetDefaults()
 
@@ -393,7 +393,8 @@ Private Sub SetDefaults()
     Endif
 
     If Not .exist("$blockindent") Or If .["$blockindent"] = "" Then .["$blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
-    If Not .exist("helpuseshtml") Then .helpuseshtml = False                                         ' Help will do a popup help when html is found
+    If Not .Exist("history_expand") Then .["history_expand"] = False                                ' turns on bash style history expansion using the system readline call
+    If Not .exist("helpuseshtml") Then .helpuseshtml = False                                        ' Help will do a popup help when html is found
     If Not .exist("$execprog") Then .["$execprog"] = "print \"Gambas Shell \""                      ' Used for debugging only
     If Not .exist("lastexecutedblock") Then .lastexecutedblock = "print \"hello world\""            ' Used for debugging only
     If Not .exist("executedblock") Then .lastexecutedblock = "print \"hello world\""                ' Used for debugging only
@@ -700,6 +701,9 @@ Public Sub Main()
 
   $gshref = Me
 
+  'Debug line ****
+  'Print "starting "; CDate(Now)
+
   Dim DontExit As Boolean
   Dim i As Integer
 
@@ -751,6 +755,10 @@ Public Sub Main()
   ' Endif
 
   Try chdir(Env["PWD"])
+
+  'Debug line ****
+  'Print "starting "; CDate(Now); " Init Alias"
+
   CreateCmdProgram.InitAlias()
 
   gshrcdate = Stat(User.home &/ ".gshrc").lastmodified
@@ -980,6 +988,10 @@ Public Sub Main()
 
   If DoTrace Then Error "(Trace "; Now; ") ";; ("Enter interactive mode!")
   Dim InteractiveErrorCount As Integer = 0
+
+  'Debug Line * * * *
+  'Print "starting "; CDate(Now); " Interactive Begin If reader loop"
+
 interactive:
 
   While True
@@ -1731,6 +1743,9 @@ Public Sub readline() As String
 
   getline.DoTrace = DoTrace
   getline.UserPrompt = SharedMem["prompt"]
+  'Debug Line * * * *
+  'Print "starting "; Eval("CDate(Now)"); " ReadLine()"
+
   sbuffer = getline(SetBlockIndent(), bDbaseServer)
   SharedMem["prompt"] = getline.UserPrompt
   Return sBuffer
@@ -1761,6 +1776,9 @@ Public Sub Reader(EndBlk As String[]) As String
 
       Case "STDIN"
         Do
+          'Debug Line * * * *
+          'Print "starting "; CDate(Now); " Reader Stdin"
+
           sinbuffer = readline()
           If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; sinbuffer; "'"
           If Upper(sInBuffer) <> "EDIT" And If Upper(sInBuffer) <> "RUN" Then
@@ -1820,6 +1838,9 @@ Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", 
 Private DoAlias As Boolean = True
 
 Public Sub IfReader(EndBlk As String[]) As Boolean
+
+  'Debug Line * * * *
+  'Print "starting "; CDate(Now); " If Reader "; Quote(EndBlk.join())
 
   Dim lastElement As String = ""
   Dim i As Integer
