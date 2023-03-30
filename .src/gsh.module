@@ -235,7 +235,8 @@ Public Sub ProcessOptions() As String[]
   Endif
 
   If br Then
-    Print ("Rev:") & Application.Version
+    Print ("gsh    Rev:") & Application.Version
+    Print ("ShmMem Rev:") & SharedMem.Version
     Quit 0
   Endif
 
@@ -259,6 +260,10 @@ Public Sub ProcessOptions() As String[]
   Endif
 
   Return sC
+
+Catch
+  Error "gsh Invalid Option "; Error.text;; Error.Where
+  Quit 0
 
 End
 
