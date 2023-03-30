@@ -236,7 +236,8 @@ Public Sub ProcessOptions() As String[]
 
   If br Then
     Print ("gsh    Rev:") & Application.Version
-    Print ("ShmMem Rev:") & SharedMem.Version
+    Print ("Script Rev:") & SharedMem.Version
+    Print ("Shared Mem Rev:") & Script.Version
     Quit 0
   Endif
 
