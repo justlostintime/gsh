@@ -1,11 +1,11 @@
 # gsh
 
-Gambas 3.17 is now available as a backport for debian and ubuntu, even available for Raspberry OS!
+Gambas 3.18 is now available as a backport for debian and ubuntu, even available for Raspberry OS!
 ```
   for pi os:
   Add this line to the beginning of /etc/apt/sources.list
   deb http://deb.debian.org/debian/ bullseye-backports main contrib non-free
-  
+
   install like this debian all os and pi os :
   apt -t bullseye-backports install gambas3
 
@@ -16,6 +16,11 @@ curl -s --compressed "https://raw.githubusercontent.com/justlostintime/ppa/main/
 sudo curl -s --compressed -o /etc/apt/sources.list.d/gsh.list "https://raw.githubusercontent.com/justlostintime/ppa/main/ubuntu/gsh.list"
 sudo apt update
 ```
+
+### NOTE GSH UPDATE FOR GAMBAS 3.18 and above 03/30/2023
+Current gsh version is now 1.4.2
+Updated to new byte code for gambas3
+Many bug fixes and extensions
 
 ### NOTE GSH UPDATE FOR GAMBAS 3.17 and above 04/10/2022
 Version 1.3.106 or above is required for correct functionallity in 
