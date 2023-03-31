@@ -8,6 +8,7 @@ dim ss as class
 dim sClass as new string[]
 dim scClass as new collection(gb.ignorecase)
 Dim MaxLength as integer = 0
+Dim cmodule as class
 
 if classname == "filter=used" then
   bUsed = true
@@ -29,8 +30,14 @@ if classname = "" then
 
     for each s in sClass
        if bUsed and if scclass[s].count = 0 then continue
-
-       try print left(s&space(MaxLength+1),MaxLength+1);; "Ref=";format(scclass[s].count,"##0");" Symbols ";iif(scclass[s].symbols.count = 0,"None","[");
+       try cmodule = classes[s]
+       if error then
+          print "\e[31m";
+       else
+          print "\e[32m"
+       endif
+       
+       try print left(s&space(MaxLength+1),MaxLength+1);; "Hidden=";left(str(scclass[s].hidden),1) ;;"Ref=";format(scclass[s].count,"##0");" Symbols ";iif(scclass[s].symbols.count = 0,"None","[");
        if error then
           print left(s&Space(MaxLength+1),MaxLength+1);;error.text
           continue
@@ -50,7 +57,7 @@ if classname = "" then
        next
        print "]"
     next
-print
+print "\e[0m"
 
 else
 
