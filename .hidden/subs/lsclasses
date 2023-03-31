@@ -6,6 +6,7 @@ dim bUsed as boolean = false
 dim s as  string
 dim ss as class
 dim sClass as new string[]
+dim scClass as new collection(gb.ignorecase)
 Dim MaxLength as integer = 0
 
 if classname == "filter=used" then
@@ -13,47 +14,47 @@ if classname == "filter=used" then
   classname = ""
 endif
 
+for each ss in classes
+    sClass.add(ss.name)
+    scclass.add(ss,ss.name)
+    if ss.name.len > MaxLength then
+      MaxLength = ss.name.len
+    endif
+next
+
 if classname = "" then
-    print "Listing of";;classes.count;;"classes, Sorted Count ";
-    for each ss in classes
-        sClass.add(ss.name)
-        if ss.name.len > MaxLength then
-             MaxLength = ss.name.len
-        endif
-    next
-
+    print "Listing of";;scclass.count;;"classes, Sorted Count ";
     print sClass.count
-
     sClass.sort(gb.ignorecase)
 
     for each s in sClass
-       if bUsed and if classes[s].count = 0 then continue
+       if bUsed and if scclass[s].count = 0 then continue
 
-       try print left(s&space(MaxLength+1),MaxLength+1);; "Ref=";format(classes[s].count,"##0");" Symbols ";iif(classes[s].symbols.count = 0,"None","[");
-       if error then 
-		print left(s&Space(MaxLength+1),MaxLength+1);;error.text
-                continue
+       try print left(s&space(MaxLength+1),MaxLength+1);; "Ref=";format(scclass[s].count,"##0");" Symbols ";iif(scclass[s].symbols.count = 0,"None","[");
+       if error then
+          print left(s&Space(MaxLength+1),MaxLength+1);;error.text
+          continue
        endif
 
        dim jj as integer = 0
        dim m as string
-       Dim sSym as string[] = classes[s].symbols
+       Dim sSym as string[] = scclass[s].symbols
        sSym.sort()
        for jj = 0 to ssym.max
           m = sSym[jj]
           if jj > 0 and jj mod 10 = 0 then
             print "\n"; space(maxlength+19);
-          endif 
+          endif
           print m;iif(jj< ssym.max, ",","");
           flush
        next
        print "]"
     next
 print
- 
+
 else
 
-    ss = classes[classname]
+    ss = scclass[classname]
     if ss = null then
        print "Class ";classname; " not found"
     else
