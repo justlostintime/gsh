@@ -4,7 +4,7 @@ Sub lsclasses(Optional classname As String = "",...)' List Loaded classes - from
 '' Else all loaded classes will be displayed
 dim bUsed as boolean = false
 dim s as  string
-dim ss as class
+dim css as class
 dim sClass as new string[]
 dim scClass as new collection(gb.ignorecase)
 Dim MaxLength as integer = 0
@@ -15,11 +15,11 @@ if classname == "filter=used" then
   classname = ""
 endif
 
-for each ss in classes
-    sClass.add(ss.name)
-    scclass.add(ss,ss.name)
-    if ss.name.len > MaxLength then
-      MaxLength = ss.name.len
+for each css in classes
+    sClass.add(css.name)
+    scclass.add(css,css.name)
+    if css.name.len > MaxLength then
+      MaxLength = css.name.len
     endif
 next
 
@@ -36,7 +36,7 @@ if classname = "" then
        else
           print "\e[32m"
        endif
-       
+
        try print left(s&space(MaxLength+1),MaxLength+1);; "Hidden=";left(str(scclass[s].hidden),1) ;;"Ref=";format(scclass[s].count,"##0");" Symbols ";iif(scclass[s].symbols.count = 0,"None","[");
        if error then
           print left(s&Space(MaxLength+1),MaxLength+1);;error.text
@@ -60,14 +60,14 @@ if classname = "" then
 print "\e[0m"
 
 else
-
-    ss = scclass[classname]
-    if ss = null then
+    css = scclass[classname]
+    print "Process Class ";classname
+    if css = null then
        print "Class ";classname; " not found"
     else
-       Print Left(ss.name, 20) & String(21 - ss.name.len, " ");; "Ref="; Format(ss.count, "##0")
+       Print Left(css.name&space(MaxLength+1),MaxLength+1 ) ;; "Ref="; Format(css.count, "##0")
        print "Public sysmbols for";; classname
-       dim table as string[] = ss.symbols
+       dim table as string[] = css.symbols
        table = table.sort()
        for each m as string in table
           print classname&"."&m
@@ -75,6 +75,7 @@ else
     endif
 
 endif
+
 Catch
   flush
   print  error.text,error.where
