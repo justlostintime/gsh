@@ -238,17 +238,17 @@ End
 
 Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
 
-  Dim CurrentCmd As Integer     ' Index of the command we are processing
-  Dim i As Integer              ' Index of current symbol within the command
-  Dim j As Integer              ' Index general
-  Dim sym As String             ' The currently processed symbol
-  Dim type As Integer           ' The Current Symbol type
-  Dim CmdExec As String[]       ' this will contain the exec line for each command
-  Dim CmdIo As String[]         ' this will contain the read functions for each command or rd wr if inside pipe stream
-  Dim CmdErr As String[]        ' Function if errors are captured
-  Dim CmdWrite As String[]      ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
-  Dim CmdKill As String[]       ' This will have the close io functions when the task ends
-  Dim CmdBeforeExec As String[] ' list of things to do before starteing execs
+  Dim CurrentCmd As Integer         ' Index of the command we are processing
+  Dim i As Integer                  ' Index of current symbol within the command
+  Dim j As Integer                  ' Index general
+  Dim sym As String                 ' The currently processed symbol
+  Dim type As Integer               ' The Current Symbol type
+  Dim CmdExec As String[]           ' this will contain the exec line for each command
+  Dim CmdIo As String[]             ' this will contain the read functions for each command or rd wr if inside pipe stream
+  Dim CmdErr As String[]            ' Function if errors are captured
+  Dim CmdWrite As String[]          ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
+  Dim CmdKill As String[]           ' This will have the close io functions when the task ends
+  Dim CmdBeforeExec As String[]     ' list of things to do before starteing execs
   Dim CmdFinal As String = ""       ' This will contain the finished program segment and functions
   Dim CmdCount As Integer = 0       ' the number of the command we are processing
   Dim CmdList As String[][]         ' The first pass of command line collecting pipe connections
@@ -454,11 +454,11 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateInlineInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
 
-        Case "<<<"   'inline input the following string
+        Case "<<<"   'inline input the following string of global Variable
           Inc i
 
           If i > CmdList[CurrentCmd].max Then
-            Error.Raise("Missing input string < [" & CmdList[CurrentCmd].join(" ") & " ...]")
+            Error.Raise("Missing input string/Variable < [" & CmdList[CurrentCmd].join(" ") & " ...]")
           Endif
 
           i = GenerateStringInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
@@ -722,6 +722,8 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
     If CmdTypes[CurrentCmd][i] = Highlight.Function Then
       DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
       CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , " & DataSource & ")") & "\n"
+    Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
+      CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & "expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
     Else
       CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & "expandfn(" & Quote(CmdList[CurrentCmd][i]) & ")))") & "\n"
     Endif
@@ -774,7 +776,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
     CmdList[CurrentCmd][i] = "(expandfn(" & CmdList[CurrentCmd][i] & "))"
   Endif
 
-  If CmdList[CurrentCmd][i][0] = "(" And InStr(CmdList[CurrentCmd][i], "...") = 0 Or If IsGlob(CmdList[CurrentCmd][i]) Then
+  If (CmdList[CurrentCmd][i][0] = "(" And InStr(CmdList[CurrentCmd][i], "...") = 0) Or If IsGlob(CmdList[CurrentCmd][i]) Then
     notfile = False
     If CmdList[CurrentCmd][i][0] = "(" Then                  ' allow any expression to be source of file name
       fullname = gsh.preprocesses(Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase))
@@ -891,6 +893,8 @@ Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As 
     DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
   Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
     DataSource = CmdList[CurrentCmd][i]
+  Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
+    DataSource = gsh.preprocesses(CmdList[CurrentCmd][i])
   Else
     DataSource = Quote(CmdList[CurrentCmd][i])
   Endif
@@ -946,8 +950,10 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
     DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
   Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
     DataSource = CmdList[CurrentCmd][i]
+  Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
+    DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
   Else
-    DataSource = Quote(gsh.PreProcesses(CmdList[CurrentCmd][i]))
+    DataSource = Quote(gsh.PreProcesses(CmdList[CurrentCmd][i]))                               ' what ever else we find turn it into a string
   Endif
 
   CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " ,  " & DataSource & ")") & "\n"
