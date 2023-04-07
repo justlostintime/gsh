@@ -28,29 +28,37 @@ For Each v As Variant In vParms
         Case gb.object
             Select Case object.class(v).name
                 Case "String[]"
-                    For Each s as string In v
-                        sendchunks(mFile, s)
-                        print #mfile
-                        flush #mfile
+                    For Each svs as variant In v
+                        fprint(mfile,svs)
                     Next
 
                 Case "Date[]"
-                     for each da as date in v
-                        Print #mFile, str(da)
+                     for each da as variant in v
+                        fprint(mfile,da)
                      next
 
                 Case "Byte[]"
-                    sendchunks(mfile,v.tostring())
+                    if v.dim = 1 then
+                        sendchunks(mfile,v.tostring())
+                    else
+                        fprint(mfile,v)
+                    endif
 
-                Case "Variant[]", "Object[]"
+                Case "Variant[]", "Object[]", "Collection[]"
                     for each vs as Variant in v
                         fprint(mfile,vs)
                     next
 
                 case "Integer[]","Long[]","Short[]","Float[]","Boolean[]","Null[]","Single[]","Pointer[]"
-                    for each i as variant in v
-                        print #mFile, i;;
-                    next
+                    if v.dim = 1 then
+                      for each iv as variant in v
+                        print #mFile, iv;;
+                      next
+                    else
+                      for each iv as variant in v
+                        fprint(mFile, iv)
+                      next
+                    endif
                     print #mfile
 
                 Case "Collection"
@@ -74,9 +82,9 @@ For Each v As Variant In vParms
                     flush #mfile
 
                 Default
-                    if right(typeof(v),2) = "[]" then
-                        for each i in v
-                          fprint (mFile,i)
+                    if right(object.class(v).name,2) = "[]" then
+                        for each ivi as variant in v
+                          fprint (mFile,ivi)
                         next
                     else
                     	If object.class(v).exist("_print") Then
@@ -90,23 +98,33 @@ For Each v As Variant In vParms
                     	Endif
                     endif
             End Select
-            
+
         case gb.string
             sendchunks(mfile, v)
             print #mfile
             flush #mfile
-            
+
         case gb.class
             print  #mFile,"Class :"; v.name;; "Refs=";v.count
             print  #mFile,"  Symbols :";;
-            for each s as string in v.symbols
-                print  #mFile,s;;
+            for each rs as string in v.symbols
+                print  #mFile,rs;;
             next
             print #mFile
+
+        case gb.date
+            Print #mFile, str(da)  ' cause date to display in local time
+            flush #mfile
+
         Default
             Print  #mFile,v
+            flush #mfile
+
         End Select
 Next
+
+flush #mfile
+
 .["$result"] = "OK"
 End With
 if typeof(filename) = gb.string then close mfile
@@ -121,7 +139,7 @@ Sub sendchunks(sink As Variant, buffer As String)
  if buffer.len < 2048 then
   write #sink, buffer, buffer.len
   return
- endif 
+ endif
 
 ' this is a lot slower but since pipes block, we need to send small chunks at a time
  For i As Integer = 0 To buffer.len Step 256
@@ -130,5 +148,5 @@ Sub sendchunks(sink As Variant, buffer As String)
    Flush #sink
    Wait
  Next
- 
+
 End
