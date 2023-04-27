@@ -1,0 +1,16 @@
+sub SubComp(LocalSubName as string) as integer 'Compare and report diffrence in local cpoy of system subroutines
+''subcomp  "SystemSubName" - comper personal copy of System Subroutine to Personal copy if exists
+   dim mySource as string = "~/vars/subs" &/ LocalSubName
+   dim sysSub as string = "/usr/share/gsh/subs" &/ LocalSubName
+   if not exist(sysSub) then
+     print "Unkown System Subroutine "&quote(sysSub) & " found"
+     return 1
+   else if not exist(mySource) then
+     print "No Private copy of "&quote(mySource) &" Found"
+     return 1
+   endif
+   dim mproc as process
+   mproc = shell "diff -s "&mySource&" "&sysSub wait
+   return mproc.value
+   
+end

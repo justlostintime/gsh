@@ -1,17 +1,27 @@
-Sub toclipboard(fileName as string) '' copy a file into the clipboard
+Sub toclipboard(fileName as string,optional source as string = "") '' copy a file into the clipboard
 '' Copies a file into the clipboard
+'' if a second string parameter is included then the string 
+'' is copied to the clipboard
 '' it uses the xclip cli to do this
 '' alias tcb='toclipboard'
 
-dim lookfor as string = expandfn(filename)
+dim lookfor as string 
 
-if not exist(lookfor) then
-  print "file not found :"&Filename
-  return
+if source =  "" then
+  lookfor = expandfn(filename)
+  if not exist(lookfor) then
+    print "file not found :"&Filename
+    return
+  endif
+else
+  lookfor = temp("xclip")
+  file.save(lookfor,source)
 endif
+
 if not system.exist("xclip") then
   print "xclip must be installed to use this functionallity"
   return
 endif
-exec ["xclip","-sel","clip",lookfor] 
+
+exec ["xclip","-sel","clip",lookfor] wait
 End

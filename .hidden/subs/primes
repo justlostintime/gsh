@@ -1,0 +1,49 @@
+Sub primes()
+dim mem as byte[]
+dim n as integer
+print " Enter highest number >";
+flush
+input n
+
+mem = new byte[n+1]
+print mem.max, mem.count
+for i as integer = 0 to mem.max
+  mem[i] = 1
+next
+
+for i = 4 to mem.max step 2
+   mem[i] = 0
+next
+
+dim starttime as float = timer
+print "Begin scan loop through from 2 to ";n;" and mark numbers, initialized  ";n;" Entries"
+dim a as integer = 3 
+dim b as integer = 6
+
+loop1:
+mem[b] = 0 
+b = b + a 
+if b <= mem.max then goto loop1
+
+loop2:
+inc a
+if a+a > mem.max  then  goto  completed
+if mem[a] = 0 then goto loop2
+b = a + a
+goto loop1
+
+completed:
+print "Completed scan in ";timer-starttime;" seconds"
+dim counter as integer = 0
+'400 Rem now print out the
+for i  = 2 to mem.max
+  if mem[i]=1 then
+    print i,
+    inc counter
+  endif
+next
+print "total primes = ";counter
+catch 
+  print error.text, error.where
+
+end

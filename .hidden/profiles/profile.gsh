@@ -38,6 +38,8 @@ alias exit='Quit 0'
 alias tcb='toclipboard'
 alias fcb='fromclipboard'
 alias done='loop until true'
+alias clearsub='clearsubs'
+alias clearvars='clearvar'
 
 
 

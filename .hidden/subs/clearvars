@@ -12,7 +12,7 @@ dim gshClass as object = classes["gsh"]
 dim SysVars as string[] = object.call(gshclass,"SystemVariables")
 
 if varname <> "" and if not instr(varname,"*") then
-	if not Sysvars.exist(varname) and if varname.exist(varname) then
+	if not Sysvars.exist(varname) and if SymbolList.exist(varname) then
 		.free(varname)
 		return true
 	else
@@ -25,7 +25,7 @@ if varname <> "" and if not instr(varname,"*") then
 		return false
 	endif
 endif
- 
+
 
 For Each s As string In SymbolList
     if (s like "sub.*" or s like "class.*" or s like "struct.*") then continue
@@ -38,7 +38,7 @@ Next
 end with
 return true
 
-catch 
-   print error.text
+catch
+   print error.text,error.where
    error.propagate()
 End

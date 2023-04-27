@@ -16,14 +16,14 @@ if varname <> "" and if not instr(varname,"*") then
 		print #file.err, .["$result"]
 		return false
 	endif
-endif 
+endif
 
 For Each s As SharedMemSymbol In .SymbolTable
     if dumpall or if not (s.symname like "sub.*" or s.symname like "class.*" or s.symname like "struct.*") then
-	if varname <> ""  and if not (s.symname like varname) then continue 
+        if varname <> ""  and if not (s.symname like varname) then continue
         if s.SymType = gb.string then
             if .[s.symname].len < 50 then
-                Print left(sharedmem.SymbolTable.key&space(25),25); "="; quote(.[s.symname])
+                Print left(sharedmem.SymbolTable.key&space(25),25);"="; quote(.[s.symname])
             else
                 Print left(sharedmem.SymbolTable.key&space(25),25);"="; quote(left(.[s.symname],50));"..."
             endif
@@ -31,7 +31,7 @@ For Each s As SharedMemSymbol In .SymbolTable
             Print left(sharedmem.SymbolTable.key&space(25),25); "=";.[s.symname]
         endif
     endif
-    
+
 Next
 
 .["$result"] = "OK"

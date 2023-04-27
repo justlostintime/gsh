@@ -1,10 +1,51 @@
-Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant ' process a text value with enumeration
- '' Will return an enumerated text value as an array of string values
- '' much like the bash braced enumeration
+Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant  ' Bash Style enumeration
+'' Will return an enumerated text value as an array of string values
+'' much like the bash braced enumeration
+'' Example :
+'' for each a as integer in $"0..10..2"
+''   print a
+'' next
+'' outputs:
+''0
+''2
+''4
+''6
+''8
+''10
+''
+'' for each s as string in $"route\t{0..10}\ttimet{0000..1200..1000}"
+''   print s
+'' next
+'' outputs:
+''route	00	time	0000
+''route	00	time	0100
+''route	00	time	0200
+''route	00	time	0300
+''route	02	time	0000
+''route	02	time	0100
+''route	02	time	0200
+''route	02	time	0300
+''route	04	time	0000
+''route	04	time	0100
+''route	04	time	0200
+''route	04	time	0300
+''route	06	time	0000
+''route	06	time	0100
+''route	06	time	0200
+''route	06	time	0300
+''route	08	time	0000
+''route	08	time	0100
+''route	08	time	0200
+''route	08	time	0300
+''route	10	time	0000
+''route	10	time	0100
+''route	10	time	0200
+''route	10	time	0300
 
- ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
- '     Return IIf(CheckOnly = True, False, Null)
- ' Endif
+
+' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
+'     Return IIf(CheckOnly = True, False, Null)
+' Endif
 
 'If checkonly = True Then Return True
  Dim expandsets As String[] = Split(value, " ", "''", True, True)
