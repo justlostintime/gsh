@@ -19,7 +19,7 @@ if typeof(filename) = gb.string and param.count > 0 then
         print #file.err, "fprint :";error.text
         return false
     endif
-else if typeof(filename) = gb.file then
+else if typeof(filename) = gb.file or if typeof(filename) = gb.object and object.class(filename).name = "File" then
     mFile = filename
 else
     mFile = FILE.out

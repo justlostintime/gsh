@@ -2606,8 +2606,10 @@ Public Sub toJson(cvId As Variant) As String '' this is special as it will add c
         cvReturned &= "\n" & Chr(cvJson[i]) & "\n" & Space(indent)
 
       Case ","
+        cvReturned &= Chr(cvJson[i])
         If level = 1 Then
-          cvReturned &= Chr(cvJson[i]) & "\n" & Space(indent)
+          cvReturned &= "\n" & Space(indent)
+
         Endif
 
       Case "["

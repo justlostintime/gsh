@@ -1,0 +1,45 @@
+Public Sub toJsonformatted(cvId As Variant) As String ' Format the passed object as formatted json string
+'' ToJsonFormatted  Return an object as a nicely formatted editable json string
+''                  inserts the cr after the {} and level one ,
+
+  use "gb.util.web"
+  
+  Dim cvJSON As Byte[] = Byte[].FromString(JSON.Encode(cvID))
+  Dim i As Integer
+  Dim level As Integer = 0
+  Dim cvReturned As String = ""
+  Dim Indent As Integer = 0
+
+  For i = 0 To cvJson.max
+    Select Case Chr(cvJson[i])
+      Case "{"
+        Inc level
+        Inc indent
+        cvReturned &= Chr(cvJson[i]) & "\n" & Space(indent)
+
+      Case "}"
+        Dec level
+        Dec Indent
+        cvReturned &= "\n" & Chr(cvJson[i]) & "\n" & Space(indent)
+
+      Case ","
+        cvReturned &= Chr(cvJson[i])
+        If level = 1 Then
+          cvReturned &= "\n" & Space(indent)
+        Endif
+
+      Case "["
+        Inc level
+        cvReturned &= Chr(cvJson[i])
+
+      Case "]"
+        Dec level
+        cvReturned &= Chr(cvJson[i])
+
+      Default
+        cvReturned &= Chr(cvJson[i])
+    End Select
+  Next
+  Return cvReturned
+
+End
