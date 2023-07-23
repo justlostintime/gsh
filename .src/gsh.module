@@ -2568,8 +2568,14 @@ Sub editanything(funclass As String) As Boolean
             sharedMem[funclass] = cvString
 
           Default
-            Error.raise(("Error : May not edit objects of type ") & Object.Class(cvString).name)
-            Return False
+            Try cvBufferString = toJson(cvString)
+            If Not Error Then
+              cvString = JSON.FromString(editbuffer(cvBufferString))
+              sharedMem[funclass] = cvString
+            Else
+              Error.raise(("Error : May not edit objects of type ") & Object.Class(cvString).name)
+              Return False
+            Endif
 
         End Select
 
