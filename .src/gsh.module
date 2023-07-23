@@ -2501,6 +2501,7 @@ Sub editanything(funclass As String) As Boolean
       Case gb.Null
         Error.raise(("Error : Edit of null object/Not Found"))
         Return False
+
       Case gb.Boolean
         cvBufferString = Str(cvstring)
         cvString = editbuffer(cvString)
@@ -2518,10 +2519,11 @@ Sub editanything(funclass As String) As Boolean
 
       Case gb.Object
 
-        If Object.Class(cvString).Symbols.Exist("_edit") Then ' check if the object by some strange chance can edit itsself
+        If Object.Class(cvString).Symbols.Exist("_edit") Then ' check if the object by some strange chance can edit it's self
           SharedMem[funclass] = cvString._edit()
           Return True
         Endif
+
         Select Case Object.Class(cvString).name
           Case "String[]"
             cvBuffer = cvString
@@ -2576,6 +2578,7 @@ Sub editanything(funclass As String) As Boolean
         Return False
     End Select
   Endif
+
   Return True
 Catch
   Error.Propagate()
