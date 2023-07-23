@@ -2264,10 +2264,10 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               OpenBuffer(lastexecutedblock, True)
               execbuffer = ""
               Return True
-            Else If InBufParse.count = 2 And If InBufParse[1] = "$execprog" Then
-              $execprog = editbuffer($execprog)
+            Else If InBufParse.count = 2 And If InBufParse[1] = "$execprog" Or InBufParse[1] = "execprog" Then
+              SharedMem["$execprog"] = editbuffer(SharedMem["$execprog"])
               execbuffer = ""
-              Return False
+              Return True
             Else If inbufParse.count >= 2 Then
               If HTypes[1] = highlight.symbol Then
                 funclass = "class." & inBufParse[1]
@@ -2483,12 +2483,24 @@ Sub editanything(funclass As String) As Boolean
   Dim cvVariantBuffer As Variant
   Dim cvLine As String
   Dim cvLineSet As String[]
+  Dim cvString As Variant
 
   If funclass <> "" Then
-    If funclass[0] = "$" Then funclass = Right(funclass, -1)
-    Dim cvString As Variant = sharedmem[funclass]
     If funclass Like "sub.*" Or If funclass Like "class.*" Or If funclass Like "struct.*" Then cvString = Trim(cvString)
+    If funclass[0] = "$" Then
+      cvString = sharedmem[funclass]
+      If cvString = Null Then
+        funclass = Right(funclass, -1)
+        cvString = sharedmem[funclass]
+      Endif
+    Else
+      cvString = sharedmem[funclass]
+    Endif
+
     Select Case TypeOf(cvString)
+      Case gb.Null
+        Error.raise(("Error : Edit of null object/Not Found"))
+        Return False
       Case gb.Boolean
         cvBufferString = Str(cvstring)
         cvString = editbuffer(cvString)
@@ -2502,7 +2514,7 @@ Sub editanything(funclass As String) As Boolean
       Case gb.String
         cvString = editbuffer(cvString)
         If funclass Like "sub.*" Or If funclass Like "class.*" Then cvString = Trim(cvString)
-        sharedMem[funclass] = cvString
+        sharedMem[funclass] = RTrim(cvString)
 
       Case gb.Object
 
@@ -2541,39 +2553,24 @@ Sub editanything(funclass As String) As Boolean
               cvBufferString &= Str(s) & "\n"
             Next
             cvBufferString = editbuffer(cvBufferString)
-            cvString.clear()
+            cvString.clear()                         ' use this to keep same datatype on return
             cvArray = Split(cvBufferString, "\n", "", True, False)
             For Each s In cvArray
               cvString.add(Val(s))
             Next
             sharedMem[funclass] = cvString
 
-          Case "Collection"
-            cvBufferString = ""
-            For Each cvVariantBuffer In cvString
-              If TypeOf(cvVariantBuffer) = gb.string Then
-                cvBufferString &= cvString.key & "=" & Quote(cvVariantBuffer) & "\n"
-              Else
-                cvBufferString &= cvString.key & "=" & cvVariantBuffer & "\n"
-              Endif
-            Next
-            cvBufferString = editbuffer(cvBufferString)
-            cvBuffer = Split(cvBufferString, "\n", "\"\"", True, True)
-            For Each cvLine In cvBuffer
-              cvLineSet = Split(cvLine, "=", "\"\"", True, True)
-              Dim localkey As String = cvLine[0]
-              If cvString.exist(localkey) Then
-                cvString[localkey] = cvLineSet[1]
-              Else
-                cvString.add(IIf(IsNumber(cvLineSet[1]), Val(cvLineSet[1]), cvLineSet[1]), cvLineSet[0])
-              Endif
-            Next
+          Case "Collection"   ' updated to use json format for collections
+            cvBufferString = toJson(cvString)
+            cvString = JSON.FromString(editbuffer(cvBufferString))
             sharedMem[funclass] = cvString
 
           Default
             Error.raise(("Error : May not edit objects of type ") & Object.Class(cvString).name)
             Return False
+
         End Select
+
       Default
         Error.raise(("Error : May only edit strings and some objects"))
         Return False
@@ -2582,6 +2579,47 @@ Sub editanything(funclass As String) As Boolean
   Return True
 Catch
   Error.Propagate()
+
+End
+
+Public Sub toJson(cvId As Variant) As String '' this is special as it will add carrage return at the end of each entry
+
+  Dim cvJSON As Byte[] = Byte[].FromString(JSON.Encode(cvID))
+  Dim i As Integer
+  Dim level As Integer = 0
+  Dim cvReturned As String = ""
+  Dim Indent As Integer = 0
+
+  For i = 0 To cvJson.max
+    Select Case Chr(cvJson[i])
+      Case "{"
+        Inc level
+        Inc indent
+        cvReturned &= Chr(cvJson[i]) & "\n" & Space(indent)
+
+      Case "}"
+        Dec level
+        Dec Indent
+        cvReturned &= "\n" & Chr(cvJson[i]) & "\n" & Space(indent)
+
+      Case ","
+        If level = 1 Then
+          cvReturned &= Chr(cvJson[i]) & "\n" & Space(indent)
+        Endif
+
+      Case "["
+        Inc level
+        cvReturned &= Chr(cvJson[i])
+
+      Case "]"
+        Dec level
+        cvReturned &= Chr(cvJson[i])
+
+      Default
+        cvReturned &= Chr(cvJson[i])
+    End Select
+  Next
+  Return cvReturned
 
 End
 

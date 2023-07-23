@@ -5,24 +5,27 @@ Sub fprint(filename As Variant, ...) As Boolean ' print anything to a file
 ''          command  lprint filename .....  prints the variables
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
-Dim vParms As Variant[]
+Dim vParms As Variant[] = param.all
 Dim mFile as variant
 With sharedmem
-if typeof(filename) = gb.string then
-    if file.dir(filename) = "" then
-        filename = user.home &/ "vars"&/ filename
-    endif
+if typeof(filename) = gb.string and param.count > 0 then
+'    if file.dir(filename) = "" then
+'        filename = user.home &/ "vars"&/ filename
+'    endif
+    if file.dir(filename)="" then filename = sharedmem["$pwd"] &/ filename
     try mFile = open filename for write create
     if error then
         .["$result"] = error.text
         print #file.err, "fprint :";error.text
         return false
     endif
-else
+else if typeof(filename) = gb.file then
     mFile = filename
+else
+    mFile = FILE.out
+    vParms.add(filename,0)
 endif
 
-vParms = param.all
 For Each v As Variant In vParms
     Select Case TypeOf(v)
         Case gb.object
@@ -65,6 +68,7 @@ For Each v As Variant In vParms
                     For Each vs In v
                         'Print #mFile, v.key; "="; vs
                          print #mFile, quote(v.Key);;":";;
+                         flush #mFile
                         fprint(mfile, vs)
                     next
 

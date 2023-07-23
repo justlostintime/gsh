@@ -713,7 +713,7 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
 
   If CmdList[CurrentCmd][i] Like "*fileexpand*" Or If (Not aFunction And CmdList[CurrentCmd][i][0] = "(") Then
     If CmdList[CurrentCmd][i] Like "*fileexpand*" Then
-      CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase) & "))") & "\n"
+      CmdWrite[CurrentCmd] &= gsh.preprocesses("(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase) & "))") & "\n"
     Else
       CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & "expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
     Endif
