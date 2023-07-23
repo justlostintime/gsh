@@ -1,4 +1,4 @@
-Sub fprint(filename As Variant, ...) As Boolean ' print anything to a file
+Sub fprint(optional filename As Variant=File.out, ...) As Boolean ' print anything to a file
 ''fPrint    print to a file the content of arrays or collections
 ''          or objects/classes with the special _print function
 ''          function fprint(filename,...) print the valiables
@@ -7,7 +7,9 @@ Sub fprint(filename As Variant, ...) As Boolean ' print anything to a file
 ''          $result contains the error text or "OK"
 Dim vParms As Variant[] = param.all
 Dim mFile as variant
+Dim DoClose as boolean = false
 With sharedmem
+
 if typeof(filename) = gb.string and param.count > 0 then
 '    if file.dir(filename) = "" then
 '        filename = user.home &/ "vars"&/ filename
@@ -19,11 +21,12 @@ if typeof(filename) = gb.string and param.count > 0 then
         print #file.err, "fprint :";error.text
         return false
     endif
-else if typeof(filename) = gb.file or if typeof(filename) = gb.object and object.class(filename).name = "File" then
-    mFile = filename
-else
+    DoClose = true
+else if typeof(filename) = gb.string and param.count = 0 then
     mFile = FILE.out
     vParms.add(filename,0)
+else
+    mFile = filename
 endif
 
 For Each v As Variant In vParms
@@ -131,7 +134,7 @@ flush #mfile
 
 .["$result"] = "OK"
 End With
-if typeof(filename) = gb.string then close mfile
+if DoClose then close mfile
 Return True
 End
 
