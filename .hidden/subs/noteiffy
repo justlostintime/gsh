@@ -1,30 +1,29 @@
+use "gb.gui"
+
 Sub noteiffy(varname as string, optional InitValue as variant = "", termvalue as variant = "bye")
-dim  s as sharedmemsymbol
-     s = sharedmem.asObject(varname)
      sharedmem[varname] = InitValue
      Print "Waiting for Variable to change to value = ";termvalue
      sharedmem.notifychange(varname,me,-1,"testread")
-    if typeof(lastval) = gb.string then
-    	 while  s.shmRead() <>  termvalue
-      		 wait 1.3
-     	wend
-    else
-      sharedmem.notifycancel(varname,me)
-    endif
-    
+     while  sharedmem[varname] <>  termvalue
+         wait 0.1
+     wend
+     wait 0.5
+     print "Variable changed to completion value";;termvalue
+     sharedmem.notifycancel(varname,me)
+
 End
 
-lastval as variant
- 
+lastval as variant = "Pending"
+
 public sub testread(value as variant, Varname as string)
 
-  if typeof(value) = typeof(lastval) and if value = lastval then 
+  if typeof(value) = typeof(lastval) and if value = lastval then
      return
   else
      lastval = value
   endif
 
   dim icon as string = "info"
-  dim summary as string = "Changed : " & Varname
-  !notify-send -i {icon} {summary} {value}
+  dim summary as string = "Changed : " & Varname & " = "& value
+  message.info(summary,"ok" )
 end

@@ -78,7 +78,10 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
 
 
   If NameIn[0] = "sub" Then
-    SourceFile = RegExp.Replace(SourceFile, "(^|\n) *SUB " & cname & " *[(]", "\nPublic Sub " & cname & "(", regexp.caseless)
+    Dim pattern As String = "(^|\n) *SUB " & cname & " *[(]"
+    Dim a As New RegExp(SourceFile, pattern, RegExp.caseless)
+    Dim Subvalue As String = "\nPublic Sub " & cname & "("
+    SourceFile = a.Replace(SourceFile, pattern, SubValue, regexp.caseless)
     SourceFile = "Export\n" & SourceFile
   Else
     sourcefile = Replace(sourcefile, "\nend class", "\n", gb.IgnoreCase)
