@@ -1,11 +1,11 @@
 ' Gambas module file
 
-Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki/cat",
+Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki",
+  "https://gambaswiki.org/wiki/cat",
   "https://gambaswiki.org/wiki/lang",
-  "https://gambaswiki.org/wiki/comp/gb",
   "https://gambaswiki.org/wiki/comp",
+  "https://gambaswiki.org/wiki/comp/gb",
   "https://gambaswiki.org/wiki/comp/gb.qt4",
-  "https://gambaswiki.org/wiki",
   "https://gambaswiki.org/wiki/def",
   "https://gambaswiki.org/wiki/error"]
 
@@ -27,6 +27,7 @@ Public Sub LoadHelp()
     For Each s In GambasHelpUrls
       Result = GetHtmlListAsText(s)
       AppendCollection(GambasHelpList, result)
+      Wait 0.1
     Next
     For Each s In GambasHelpList
       GambasHelpIndex.Add(GambasHelpList.key)
