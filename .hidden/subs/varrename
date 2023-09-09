@@ -1,0 +1,15 @@
+Sub VarRename(OldName as string, NewName as string) as boolean
+'' Rename a Variable from one symbol name to another
+'' Input the old name, and the new name
+
+  with sharedmem
+    try  .rename(oldname,newname)
+      if error then
+       print error.text
+       return false
+      else
+       return true
+      endif
+  end with
+
+end
