@@ -222,7 +222,7 @@ Public Sub ProcessOptions() As String[]
   CollectMemLen = Args.GetInteger("D", "disctsize", ("Size of in memory Database Dictionary and index(Default 2.5m)"), "<DictLength>", 2512000)
   bCleanup = Args.Has("C", "cleanup", ("Cleanup and delete the old Shm file if it is closed and left around"))
   InLineCommand = Args.Get("c", "command", ("Command to be executed"))
-  VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable"))
+  VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independant script, returns output"))
   LocalFunRun = Args.Get("r", "runline", ("Execute the following command line"))
   sC = Args.End()
 
@@ -851,6 +851,7 @@ Public Sub Main()
       ' Endif
 
       codebuffer &= "\n" & SharedMem[VarCommandSource] & "\n" '& "end\n"
+
       If DoTrace Then Print "(Trace "; Now; ") ";; ("***********************************\nVariable program call defined as \n ");; codebuffer;; "\n*********************\n"
       OpenBuffer(codebuffer)
       While IfReader(["QUIT"])
@@ -3265,9 +3266,11 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
 
         Case Highlight.Operator
           If syms.max >= tcount + 1 Then
-            If syms[tcount] = "@" And types[tcount + 1] = Highlight.symbol Then
-              If SharedMem.exist(syms[tcount + 1]) Or If SharedMem.exist("$" & syms[tcount + 1]) Then
-                Dim svarname As String = IIf(SharedMem.exist(syms[tcount + 1]) = True, syms[tcount + 1], "$" & syms[tcount + 1])
+            If syms[tcount] = "@" And types[tcount + 1] = Highlight.symbol Then                   ' we are going to execute a variable
+              'If SharedMem.exist(syms[tcount + 1]) Or If SharedMem.exist("$" & syms[tcount + 1]) Then ' remove the extra check for var with $
+              If SharedMem.exist(syms[tcount + 1]) Then
+                'Dim svarname As String = IIf(SharedMem.exist(syms[tcount + 1]) = True, syms[tcount + 1], "$" & syms[tcount + 1])  ' remove adjust with $
+                Dim svarname As String = syms[tcount + 1]
                 If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess before @"); ": "; syms[tcount + 1]
                 'Syms[tcount + 1] = execvar(svarname, parm)
                 Syms[tCount] = "runvar"
