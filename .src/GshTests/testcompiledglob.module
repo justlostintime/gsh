@@ -26,7 +26,7 @@ Sub lprint(...) As Boolean  ' Print Anything to stdout
   ''          function lprint(...) print the valiables
   ''          command  lprint .....  prints the variables
   ''          returns true if found, false otherwise
-  ''          $result contains the error text or "OK"
+  ''          result contains the error text or "OK"
 
   Dim vParams As Variant = param.all
 
@@ -160,7 +160,7 @@ Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
   ''          function fprint(filename,...) print the valiables
   ''          command  lprint filename .....  prints the variables
   ''          returns true if found, false otherwise
-  ''          $result contains the error text or "OK"
+  ''          result contains the error text or "OK"
 
   Dim vParms As Variant[]
   Dim mFile As Variant
@@ -172,7 +172,7 @@ Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
       Endif
       Try mFile = Open filename For Write Create
       If Error Then
-        .["$result"] = error.text
+        .["result"] = error.text
         Print #file.err, "fprint :"; error.text
         Return False
       Endif
@@ -236,7 +236,7 @@ Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
           Print #mFile, v
       End Select
     Next
-    .["$result"] = "OK"
+    .["result"] = "OK"
   End With
   If TypeOf(filename) = gb.string Then Close mfile
   Return True

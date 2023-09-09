@@ -38,7 +38,7 @@ With sharedmem
 '      print tolist.key;;"=";;sp[1];;"in";;sp[0]
 '    next
 
-.["$result"] = "OK"
+.["result"] = "OK"
 
 End With
 

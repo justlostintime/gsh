@@ -142,7 +142,7 @@ Public Sub glob(path As String, Optional directoryonly As Boolean = False) As St
 
     If Not Exist("/" & pwd.join("/")) Then
       Print #file.err, "Directory Not Found :["; "/" & pwd.join("/"); "]"
-      '.["$result"] = "Error : Directory Not Found :[" & "/" & pwd.join("/") & "]"
+      '.["result"] = "Error : Directory Not Found :[" & "/" & pwd.join("/") & "]"
       Return
     Endif
 

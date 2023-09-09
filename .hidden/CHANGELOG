@@ -1,3 +1,9 @@
+* Sat Sep 09 2023 Brian G <justlostintime@gmail.com> 1.5.1
+- * BUG : Issue with old memory variables starting with $ in database, removed all $ from variable names
+
+* Thu Sep 07 2023 Brian G <justlostintime@gmail.com> 1.4.3
+- Updated The list of system variables so profile dates are not deleted
+
 * Thu Sep 07 2023 Brian G <justlostintime@gmail.com> 1.4.3
 - Add a small timeout to help fetch
 

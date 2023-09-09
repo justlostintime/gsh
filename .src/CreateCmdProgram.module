@@ -549,7 +549,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
     Next
 
-    'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"$env\"] "
+    'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"env\"] "
     CmdExec[CurrentCmd] &= ")\n"
     CmdExec[CurrentCmd] &= "\n''#" & CmdList[currentcmd].Join(" ") & "#''\n"
     Dim ExportedEnv As String = "with [\"PWD=\"&env[\"PWD\"]] "
@@ -821,7 +821,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
       Endif
     Else
       If cmdlist[CurrentCmd][i][0] = "$" Then ' if it is not there just make it
-        If Not SharedMem.exist(cmdlist[CurrentCmd][i]) Then SharedMem[cmdlist[CurrentCmd][i]] = ""
+        If Not SharedMem.exist(cmdlist[CurrentCmd][i]) Then SharedMem[Right(cmdlist[CurrentCmd][i], -1)] = ""
       Endif
 
       If WriteError Then

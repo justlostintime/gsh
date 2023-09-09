@@ -65,11 +65,11 @@ Public Sub Main()
   SharedMem.BeginNamed("briangsh", 1512000)
   With Sharedmem
     mTaskWrite = Open Pipe "/tmp/testtask" For Write
-    mProc1 = Exec ["less"] With .["$env"] For Write As "mRead1"
+    mProc1 = Exec ["less"] With .["env"] For Write As "mRead1"
     mTask0 = New TestTask As "Tasky"
     mTask0.inpipename = "/tmp/testtask"
     Wait 0
-    mProc0 = Exec ["cat"] With .["$env"] For Read Write As "mRead0"
+    mProc0 = Exec ["cat"] With .["env"] For Read Write As "mRead0"
     Write #mProc0, data
     mProc0.closeinput()
 

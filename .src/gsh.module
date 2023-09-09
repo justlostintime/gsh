@@ -11,6 +11,10 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "",
   "", "", "", "", ""]
 
+Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
+  "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd"
+"lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate"]
+
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"]
 
@@ -379,10 +383,6 @@ Public Sub SystemVariables() As String[]
 
 End
 
-Private SysVars As String[] = ["profile", "globstar", "alias", "$blockindent", "$execprog", "lastexecutedblock", "prompt", "$result", "$maxhistory", "$historycurrent",
-  "$history", "$editor", "$hexeditor", "$helpdisplay", "$home", "$hosttype", "$hostname", "$term", "newprofile", "$path", "$env",
-  "lambda", "helpuseshtml", "history_expand"]
-
 Private Sub SetDefaults()
 
   With sharedmem
@@ -398,39 +398,39 @@ Private Sub SetDefaults()
       .["alias"] = New Collection
     Endif
 
-    If Not .exist("$blockindent") Or If .["$blockindent"] = "" Then .["$blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
+    If Not .exist("blockindent") Or If .["blockindent"] = "" Then .["blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
     If Not .Exist("history_expand") Then .["history_expand"] = False                                ' turns on bash style history expansion using the system readline call
     If Not .exist("helpuseshtml") Then .helpuseshtml = False                                        ' Help will do a popup help when html is found
-    If Not .exist("$execprog") Then .["$execprog"] = "print \"Gambas Shell \""                      ' Used for debugging only
+    If Not .exist("execprog") Then .["execprog"] = "print \"Gambas Shell \""                      ' Used for debugging only
     If Not .exist("lastexecutedblock") Then .lastexecutedblock = "print \"hello world\""            ' Used for debugging only
     If Not .exist("executedblock") Then .lastexecutedblock = "print \"hello world\""                ' Used for debugging only
     If Not .exist("prompt") Then .["prompt"] = DefaultPrompt
-    If Not .exist("$result") Then .["$result"] = "OK"
-    If Not .exist("$maxhistory") Then .["$maxhistory"] = 300                                        ' define the max history length
-    If Not .exist("$historycurrent") Then .["$historycurrent"] = 0                                  ' defines the current history level
-    If Not .exist("$history") Then .["$history"] = New Collection
-    If Not .exist("$editor") Then .["$editor"] = "/bin/nano"
-    If Not .exist("$hexeditor") Then .["$hexeditor"] = "/usr/bin/hexedit"
-    If Not .exist("$helpdisplay") Then .["$helpdisplay"] = DefaultHelp
-    If Not .exist("$home") Then .["$home"] = user.home
-    If Not .exist("$hosttype") Then .["$hosttype"] = system.Architecture
-    If Not .exist("$hosthame") Then .["$hostname"] = system.host
-    If Not .exist("$term") Then .["$term"] = "xterm-256color"
+    If Not .exist("result") Then .["result"] = "OK"
+    If Not .exist("maxhistory") Then .["maxhistory"] = 300                                        ' define the max history length
+    If Not .exist("historycurrent") Then .["historycurrent"] = 0                                  ' defines the current history level
+    If Not .exist("history") Then .["history"] = New Collection
+    If Not .exist("editor") Then .["editor"] = "/bin/nano"
+    If Not .exist("hexeditor") Then .["hexeditor"] = "/usr/bin/hexedit"
+    If Not .exist("helpdisplay") Then .["helpdisplay"] = DefaultHelp
+    If Not .exist("home") Then .["home"] = user.home
+    If Not .exist("hosttype") Then .["hosttype"] = system.Architecture
+    If Not .exist("$hosthame") Then .["hostname"] = system.host
+    If Not .exist("term") Then .["term"] = "xterm-256color"
     If Not .exist("newprofile") Then .["newprofile"] = False
-    If Not .exist("$lambda") Then .["$lambda"] = "print application.name"
-    If Not .exist("$path") Then .["$path"] = User.home &/ ".local/bin:" & User.home &/ "bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
-    If Not .exist("$env") Then .["$env"] = ["PWD=" & .["$pwd"], "PATH=" & .["$path"], "HOME=" & .["$home"], "TERM=" & .["$term"], "HOSTTYPE=" & .["$hosttype"], "HOSTHAME=" & .["$hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
+    If Not .exist("lambda") Then .["lambda"] = "print application.name"
+    If Not .exist("path") Then .["path"] = User.home &/ ".local/bin:" & User.home &/ "bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
+    If Not .exist("env") Then .["env"] = ["PWD=" & .["pwd"], "PATH=" & .["path"], "HOME=" & .["home"], "TERM=" & .["term"], "HOSTTYPE=" & .["hosttype"], "HOSTHAME=" & .["hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
 
-    If bLogon Then Env["PATH"] = SharedMem["$path"]
+    If bLogon Then Env["PATH"] = SharedMem["path"]
 
-    .["$pwd"] = Env["PWD"]
+    .["pwd"] = Env["PWD"]
 
-    If .["$pwd"] = "" Then
+    If .["pwd"] = "" Then
       Env["PWD"] = User.Home
-      .["$pwd"] = Env["PWD"]
+      .["pwd"] = Env["PWD"]
     Endif
 
-    .["$baseenv"] = ["PWD=" & .["$pwd"], "PATH=" & .["$path"], "HOME=" & .["$home"], "TERM=" & .["$term"], "HOSTTYPE=" & .["$hosttype"], "HOSTHAME=" & .["$hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
+    .["baseenv"] = ["PWD=" & .["pwd"], "PATH=" & .["path"], "HOME=" & .["home"], "TERM=" & .["term"], "HOSTTYPE=" & .["hosttype"], "HOSTHAME=" & .["hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
 
     ' If Not .exist("jobctl") Then .["jobctl"] = False
 
@@ -457,13 +457,13 @@ End
 
 Public Sub getenv() As String[]
 
-  SharedMem["$pwd"] = Env["PWD"]
+  SharedMem["pwd"] = Env["PWD"]
 
   Dim senv As New String[]
   For Each s As String In Application.env
     senv.add(s & "=" & Application.Env[s])
   Next
-  SharedMem["$env"] = senv
+  SharedMem["env"] = senv
   Return senv
 
 End
@@ -739,7 +739,7 @@ Public Sub Main()
 
   If SharedMem.exist("sub.update") Then SharedMem.Free("sub.update")              ' this must always be read from the latest system install
 
-  SharedMem["$pwd"] = Env["PWD"]
+  SharedMem["pwd"] = Env["PWD"]
   SetDefaults()
 
   Class.Load("SubCls")
@@ -943,12 +943,12 @@ Public Sub Main()
       execbuffer = ""
     Endif
 
-    If SharedMem.exist("$history") Then
-      history = SharedMem["$history"]
+    If SharedMem.exist("history") Then
+      history = SharedMem["history"]
       If history.count > 0 Then
-        SharedMem["$historycurrent"] = CInteger(history.Last)
+        SharedMem["historycurrent"] = CInteger(history.Last)
       Else
-        SharedMem["$historycurrent"] = 1
+        SharedMem["historycurrent"] = 1
       Endif
     Endif
 
@@ -1221,7 +1221,7 @@ End
 Private CompileResult As String = ""
 Private CompilerOutput As String = ""
 Private Const chdirextern As String = "Extern chdir(Dest As String) As Integer In \"libc:6\""
-Private $execprog As String = ""          ' the last executed gbs script
+Private execprog As String = ""          ' the last executed gbs script
 
 Public Sub ProcessProg(Optional NoWait As Boolean = False)
   'Dim ProgramCommand, Result As String
@@ -1249,11 +1249,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     execbuffer = Replace(execbuffer, "&\n", "\n")
   Endif
 
-  SharedMem["$execprog"] = ExecBuffer
+  SharedMem["execprog"] = ExecBuffer
 
   'If Not nowait Then
   If execlocal(Split(execbuffer, "\n", "\"\"", True, True), nowait) Then
-    $execprog = ExecBuffer
+    execprog = ExecBuffer
     ExecBuffer = ""
     ContainsGlobal = False
     linktable.Clear()
@@ -1380,14 +1380,14 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     Endif
     Program &= ExecBuffer
     Program &= "end with\nSharedMem.end()\n Catch\nError \"gsh error:\" & error.text \nquit 2\nend\n"
-    'SharedMem["$execprog"] = ExecBuffer
+    'SharedMem["execprog"] = ExecBuffer
     If Not CompileOnly Then
       Dim ScriptName As String = Temp("gsh_") & ".gsh"
       If DoTrace Then
         Error "(Trace "; Now; ") "; ("Execute External "); ": "; ScriptName
       Endif
 
-      $execprog = program  ' save a copy of last executed program, can be edited by "edit $execprog" on command line
+      execprog = program  ' save a copy of last executed program, can be edited by "edit execprog" on command line
 
       If gbscomponent And If Not NoWait Then
         If jobctl Then RunningProcessStart = Now
@@ -1509,11 +1509,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     'Shell ProgramCommand Wait
     If Not CompileOnly Then
       If ReturnOutputTo <> "" Then
-        'MyProcess = Exec cmd With SharedMem["$env"] For Read As "SystemRead"
+        'MyProcess = Exec cmd With SharedMem["env"] For Read As "SystemRead"
         MyProcess = Exec cmd With getenv() For Read As "SystemRead"
       Else
         MyProcess = Exec cmd With getenv()
-        'MyProcess = Exec cmd With SharedMem["$env"]
+        'MyProcess = Exec cmd With SharedMem["env"]
       Endif
 
       If Not nowait Then
@@ -1736,7 +1736,7 @@ Sub SetBlockIndent() As String
     If blocklevel = 0 Then
       blockindent = "\x00"
     Else
-      blockindent = String(blocklevel, .["$blockindent"]) & "\x00"
+      blockindent = String(blocklevel, .["blockindent"]) & "\x00"
     Endif
   End With
   Return blockindent
@@ -1816,14 +1816,14 @@ Public Sub Reader(EndBlk As String[]) As String
     If source = "STDIN" Then ' only record keystroke entries
 
       If sInBuffer Like "*!!*" Then
-        sinbuffer = Replace(inbuffer, "!!", SharedMem["$history"][SharedMem["$historycurrent"] - 1])
+        sinbuffer = Replace(inbuffer, "!!", SharedMem["history"][SharedMem["historycurrent"] - 1])
       Endif
 
-      history = SharedMem["$history"]
-      History.add(sInBuffer, sharedMem["$historycurrent"])
-      Inc SharedMem["$historycurrent"]
-      If History.count > SharedMem["$maxhistory"] Then History.remove(History.first)
-      SharedMem["$history"] = history
+      history = SharedMem["history"]
+      History.add(sInBuffer, sharedMem["historycurrent"])
+      Inc SharedMem["historycurrent"]
+      If History.count > SharedMem["maxhistory"] Then History.remove(History.first)
+      SharedMem["history"] = history
     Endif
 
   Else
@@ -2206,9 +2206,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                 Error ("Error running script");; sfilename;; Error.text
               Endif
               If scriptexit Then
-                SharedMem["$result"] = "OK"
+                SharedMem["result"] = "OK"
               Else
-                SharedMem["$result"] = "ERROR"
+                SharedMem["result"] = "ERROR"
               Endif
             Else If inBufParse.count = 1 Then
               LinkTable.Clear()
@@ -2216,7 +2216,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               execbuffer = ""
               Return True
             Else
-              SharedMem["$result"] = ("Error : No Script named")
+              SharedMem["result"] = ("Error : No Script named")
               Error.Raise(("file not found.. Did you forget quotes"))
             Endif
             execbuffer = ""
@@ -2228,7 +2228,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               PrintHelp()
             Endif
 
-            SharedMem["$result"] = "OK"
+            SharedMem["result"] = "OK"
             execbuffer = ""
 
           Case "LIST"              ' list the last executed program or any program
@@ -2238,7 +2238,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               DoListing("")
             Endif
 
-            SharedMem["$result"] = "OK"
+            SharedMem["result"] = "OK"
             execbuffer = ""
 
           Case "GET"     ' load a plugin into memory for use in the local command shell
@@ -2251,7 +2251,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Else
               Error.Raise("Nothing to get")
             Endif
-            SharedMem["$result"] = "OK"
+            SharedMem["result"] = "OK"
             execbuffer = ""
 
             'edit it
@@ -2264,8 +2264,8 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               OpenBuffer(lastexecutedblock, True)
               execbuffer = ""
               Return True
-            Else If InBufParse.count = 2 And If InBufParse[1] = "$execprog" Or InBufParse[1] = "execprog" Then
-              SharedMem["$execprog"] = editbuffer(SharedMem["$execprog"])
+            Else If InBufParse.count = 2 And If InBufParse[1] = "execprog" Or InBufParse[1] = "execprog" Then
+              SharedMem["execprog"] = editbuffer(SharedMem["execprog"])
               execbuffer = ""
               Return True
             Else If inbufParse.count >= 2 Then
@@ -2295,7 +2295,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                   If System.Keywords.Exist(inBufParse[1]) Or If LocalKeyWords.Exist(inBufParse[1]) Then
                     If Upper(inBufParse[1]) <> "LAMBDA" And If Upper(inBufParse[1]) <> "BEGIN" Then
                       Error.Raise(("Error Keywords can not be redefined :") & inBufParse[1])
-                      SharedMem["$result"] = ("Error : Keywords can not be redefined :") & inBufParse[1]
+                      SharedMem["result"] = ("Error : Keywords can not be redefined :") & inBufParse[1]
                       execbuffer = ""
                       Return True
                     Else
@@ -2345,7 +2345,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                     compile(funclass)
                   Endif
 
-                  SharedMem["$result"] = "OK"
+                  SharedMem["result"] = "OK"
                   execbuffer = ""
                   SharedMem.Sync(".", DefaultImageName)
                 Endif
@@ -2359,9 +2359,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       Case Highlight.Number
         If inBufParse.count = 2 Then
           If inBufParse[1] = "!" Then
-            Dec sharedMem["$historycurrent"]
-            History.remove(sharedMem["$historycurrent"])
-            sharedmem["$history"] = history
+            Dec sharedMem["historycurrent"]
+            History.remove(sharedMem["historycurrent"])
+            sharedmem["history"] = history
             Return ExecFromHistory(CInteger(inBufParse[0]))
           Endif
         Endif
@@ -2371,9 +2371,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
           Case "-"
             If inBufParse.count = 3 Then
               If HTypes[1] = highlight.number And inBufParse[2] = "!" Then
-                Dec sharedMem["$historycurrent"]
-                History.remove(sharedMem["$historycurrent"])
-                sharedmem["$history"] = history
+                Dec sharedMem["historycurrent"]
+                History.remove(sharedMem["historycurrent"])
+                sharedmem["history"] = history
                 Return ExecFromHistory(-CInteger(inBufParse[1]))
               Endif
             Endif
@@ -2381,9 +2381,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
           Case "["    ' use this to recall a history and change its content
             If inBufParse.count >= 3 Then
               If HTypes[1] = highlight.number And inBufParse[2] = "]" Then
-                Dec sharedMem["$historycurrent"]
-                History.remove(sharedMem["$historycurrent"])
-                sharedmem["$history"] = history
+                Dec sharedMem["historycurrent"]
+                History.remove(sharedMem["historycurrent"])
+                sharedmem["history"] = history
                 editHistory(inBufParse[1])
                 execbuffer = ""
               Endif
@@ -2442,7 +2442,7 @@ Sub lambdaExpression(eblk As String[])
   Endif
   Execbuffer &= ")\n"
 
-  SharedMem["$lambda"] = LambdaBuffer
+  SharedMem["lambda"] = LambdaBuffer
 
 Catch
   NoPreProcess = False
@@ -2676,10 +2676,10 @@ Public Sub editbuffer(thebuffer As String) As String
 
   Shell "clear" Wait
 
-  'Dim cmd As String = sharedMem["$editor"] & " " & workfile
+  'Dim cmd As String = sharedMem["editor"] & " " & workfile
   Dim mProc As Process
-  'mProc = Exec [SharedMem["$editor"], workfile] With SharedMem["$env"]
-  mProc = Exec [SharedMem["$editor"], "-l", workfile] With getenv()
+  'mProc = Exec [SharedMem["editor"], workfile] With SharedMem["env"]
+  mProc = Exec [SharedMem["editor"], "-l", workfile] With getenv()
 
   RunningProcess = mProc
   mProc.Wait()
@@ -2709,10 +2709,10 @@ Public Sub editHex(thebuffer As Byte[]) As Byte[]
 
   Shell "clear" Wait
 
-  'Dim cmd As String = sharedMem["$editor"] & " " & workfile
+  'Dim cmd As String = sharedMem["editor"] & " " & workfile
   Dim mProc As Process
-  'mProc = Exec [SharedMem["$hexeditor"], workfile] With SharedMem["$env"]
-  mProc = Exec [SharedMem["$hexeditor"], workfile] With getenv()
+  'mProc = Exec [SharedMem["hexeditor"], workfile] With SharedMem["env"]
+  mProc = Exec [SharedMem["hexeditor"], workfile] With getenv()
 
   RunningProcess = mProc
   mProc.Wait()
@@ -2732,7 +2732,7 @@ End
 
 Public Sub editHistory(index As Integer) As Boolean
 
-  Dim MaxEdit As Integer = sharedMem["$historycurrent"] - 1
+  Dim MaxEdit As Integer = sharedMem["historycurrent"] - 1
   Dim EditNum As Integer = 0
   Dim EditParts As String[]
   Dim EditParms As String
@@ -2754,7 +2754,7 @@ Public Sub editHistory(index As Integer) As Boolean
   Dim resultbuf As String = regexp.replace(history[Str(editnum)], EditParts[0], EditParts[1])
   Error Eval(sharedMem["prompt"]); "["; editnum; "]";; resultBuf
   history[Str(editnum)] = resultBuf
-  sharedmem["$history"] = history
+  sharedmem["history"] = history
 Catch
   Error.Propagate()
 
@@ -2764,7 +2764,7 @@ End
 Public Sub ExecFromHistory(Count As Integer) As Boolean
 
   Dim bi As Boolean
-  Dim readpos As Integer = If(count < 0, sharedMem["$historycurrent"] + count, count)
+  Dim readpos As Integer = If(count < 0, sharedMem["historycurrent"] + count, count)
 
   If history.Exist(READPOS) Then
     HCurrentRead = readpos
@@ -2999,7 +2999,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   Dim DataTypePos As Integer = 0
   If Not interface.Exist("...")
     If CmdLine.count - 1 < MinCount Or If CmdLine.max > interface.count Then
-      SharedMem["$result"] = Subst(("&4 : Bad Parameter Count : Got &2, wanted &3,for [&1]"), funcdef, CmdLine.Count - 1, interface.count, CmdLine[0])
+      SharedMem["result"] = Subst(("&4 : Bad Parameter Count : Got &2, wanted &3,for [&1]"), funcdef, CmdLine.Count - 1, interface.count, CmdLine[0])
       Return ""
     Endif
   Endif
@@ -3122,7 +3122,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             types = highlight.types
 
             If NewLineDef = "" Then
-              Error SharedMem["$result"]
+              Error SharedMem["result"]
               Return ""
             Endif
           Endif
@@ -3593,7 +3593,7 @@ helpRetry:
   'Try Exec ["clear"] Wait
   Try mproc = Exec ["/usr/bin/less", "-R", "-C", "-"] For Write
   If Error Then
-    SharedMem["$helpdisplay"] = DefaultHelp
+    SharedMem["helpdisplay"] = DefaultHelp
     Inc helpRetryCount
     Goto helpRetry
   Endif
@@ -3619,7 +3619,7 @@ Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collec
   ''          function lsub/lclass(<subname>)
   ''          Command lsub/lcalss <subname>
   ''          returns true if found, false otherwise
-  ''          $result contains the error text or "OK"
+  ''          result contains the error text or "OK"
 
   With sharedmem
 
@@ -3702,7 +3702,7 @@ Private Sub doListing(Command As String)
     Endif
   Else
     ListProg = LambdaBuffer & "\n"
-    ListProg &= $execprog
+    ListProg &= execprog
   Endif
 
   Print ConsoleHighlight.ToConsole(ListProg)

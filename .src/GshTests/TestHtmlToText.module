@@ -1,9 +1,10 @@
 ' Gambas module file
 
 Public Sub main()
+
   Dim libraryList As New Collection(gb.IgnoreCase)
   Dim Result As Collection
-  
+
   Result = GetHtmlListAsText("https://gambaswiki.org/wiki/cat")
   AppendCollection(libraryList, result)
   Result = GetHtmlListAsText("https://gambaswiki.org/wiki/lang")
@@ -12,51 +13,54 @@ Public Sub main()
   AppendCollection(libraryList, result)
   Result = GetHtmlListAsText("https://gambaswiki.org/wiki/comp")
   AppendCollection(libraryList, result)
-  
+
 End
 
 Public Sub AppendCollection(Dest As Collection, src As Collection)
+
   For Each s As String In src
     Dest.Add(s, src.key)
   Next
+
 End
 
 
 
 
 Public Sub GetHtmlListAsText(TheUrl As String) As Collection
+
   Dim mproc As Process
   Dim sSource As New HttpClient As "hclient"
   Dim buffer As String
   Dim aTmps, aSets As String[]
   Dim result As New Collection(gb.ignorecase)
-  
+
   sSource.url = TheUrl
   sSource.async = False
   sSource.timeout = 5
   sSource.Get
 
   If sSource.status < 0 Then Return ""
-  If Lof(sSource) Then 
-     buffer = Read #sSource, Lof(sSource)
+  If Lof(sSource) Then
+    buffer = Read #sSource, Lof(sSource)
   Else
     buffer = ""
   Endif
   '"<a href=\"/wiki/cat/bit\">Bits Manipulation Functions</a><br>"
   If buffer <> "" And If Not (buffer Like "*This page does not exist*") Then
-      atmps = Split(buffer, "\n\r", "\"\"", True, True)
-      For Each s As String In atmps
-        If s Begins "<a href=" Then
-          Print s
-          aSets = Split(s, "<>=", "\"\"", True, True)
-          If aSets[2] = "span class" Then
-            aSets[2] = File.Name(UnQuote(aSets[1]))
-          Endif
-          result.Add(UnQuote(aSets[1]), Replace(aSets[2], "amp;", ""))
+    atmps = Split(buffer, "\n\r", "\"\"", True, True)
+    For Each s As String In atmps
+      If s Begins "<a href=" Then
+        Print s
+        aSets = Split(s, "<>=", "\"\"", True, True)
+        If aSets[2] = "span class" Then
+          aSets[2] = File.Name(UnQuote(aSets[1]))
         Endif
-      Next
+        result.Add(UnQuote(aSets[1]), Replace(aSets[2], "amp;", ""))
+      Endif
+    Next
   Endif
-           
+
   Return Result
 
 End
@@ -64,8 +68,11 @@ End
 Public ReadBuffer As String = ""
 
 Public Sub mProcget_read()
-Dim buffer As String
+
+  Dim buffer As String
+
   buffer = Read #Last, -256
   ReadBuffer &= buffer
+
 End
 
