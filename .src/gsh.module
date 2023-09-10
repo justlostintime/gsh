@@ -2588,6 +2588,7 @@ Sub editanything(funclass As String) As Boolean
   Endif
 
   Return True
+
 Catch
   Error.Propagate()
 
@@ -2677,11 +2678,22 @@ Public Sub editbuffer(thebuffer As String) As String
   Close wfile
 
   Shell "clear" Wait
-
-  'Dim cmd As String = sharedMem["editor"] & " " & workfile
-  Dim mProc As Process
-  'mProc = Exec [SharedMem["editor"], workfile] With SharedMem["env"]
-  mProc = Exec [SharedMem["editor"], "-l", workfile] With getenv()
+  With sharedmem
+    'Dim cmd As String = sharedMem["editor"] & " " & workfile
+    Dim mProc As Process
+    'mProc = Exec [SharedMem["editor"], workfile] With SharedMem["env"]
+    Dim cmd As String[]
+    If TypeOf(!Editor) = gb.string Then
+      cmd = [!editor]
+      If !editor = "vi" Or If !editor = "nano" Then
+        cmd.Add("-l")
+      Endif
+    Else
+      cmd = !editor
+    Endif
+  End With
+  cmd.Add(workfile)
+  mProc = Exec cmd With getenv()
 
   RunningProcess = mProc
   mProc.Wait()

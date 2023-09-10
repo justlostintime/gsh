@@ -30,13 +30,26 @@ for each symbols as string in varlist
 
   if display then
     print left(x.symname&space(sp),sp);;"Type[";left(sharedmem.datatypes[x.symtype]&space(8),8);"]";;
+    flush
+    print "Pool:";hex(.usermem.RootAddress,8);;
+    flush
+    print "Address:";hex(x.DataAddress,8);;
+    flush
+    print "TimeStamp :";x.LastWriteTime;;
+    flush
     if x.symtype = gb.object then
       print "Class[";x.classname;"] \n"&space(sp+16)&"Interface[";;
+      dim aCount as integer = 0
       for each s as string in classes[x.classname].symbols
         print s;;
+        inc aCount
+        if aCount = 6 then
+           aCount = 0
+           print "\n";space(40);
+        endif
       next
-      print "]";
-      print
+      
+      print "]"
     else if x.symtype = gb.string then
       print "Len[";.[x.symname].len;"]"
     else

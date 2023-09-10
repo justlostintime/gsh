@@ -1,4 +1,18 @@
 * Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
+
+* Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
+
+* Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
+
+* Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
+
+* Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
+
+* Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
+
+* Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
+
+* Sun Sep 10 2023 Brian G <justlostintime@gmail.com> 1.5.1
 - Added Version file for more detailed version id
 - Updated all Internal variabled to drop the $
 - Added automatic update process for all database variabes containing a leading $
