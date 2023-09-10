@@ -9,18 +9,18 @@ sub UpdateVarNames()  ' updates all var names to new standards
     for each s as string in sharedmem
      
       print "Checking";; s;;":";;
-      if s = "$" then
+      if s[0] = "$" then
         dim newname as string = right(s,-1)
         if not .Exist(newname) then
-           print "Renaming";;s ;;"to";;newname
+           print "Renaming";;s ;;"to";;newname;;
            .rename(s,newname)
         else 
-           print "Replacing existing";;newname;;"With Contents of";;s
+           print "Replacing existing";;newname;;"With Contents of";;s;;
            .[newname] = .[s]
            .free(s)
         endif
       endif
-      
+      print
     next
     
   end with
