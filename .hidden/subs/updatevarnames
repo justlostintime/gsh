@@ -5,20 +5,23 @@ sub UpdateVarNames()  ' updates all var names to new standards
 '' This function renames all variables in the image to the new standardized
 '' it is called by update once to convert the names
   with sharedmem
+  
     for each s as string in sharedmem
-      print "Checking";; s
+     
+      print "Checking";; s;;":";;
       if s = "$" then
-        print "Renaming";;s ;;"to";;right(s,-1)
-        try .rename(s,right(s,-1))
-        if error then 
-           print "Replacing existing";;right(s,-1);;"With Contents of";;s
-           .[right(s,-1)] = .[s]
-           try .free(s)
-           if error then
-              print "Warning Removal of";;s;;"failed!"
-           endif
+        dim newname as string = right(s,-1)
+        if not .Exist(newname) then
+           print "Renaming";;s ;;"to";;newname
+           .rename(s,newname)
+        else 
+           print "Replacing existing";;newname;;"With Contents of";;s
+           .[newname] = .[s]
+           .free(s)
         endif
       endif
+      
     next
+    
   end with
 end
