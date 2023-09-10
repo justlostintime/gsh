@@ -1,0 +1,11 @@
+sub UpdateVarNames()  ' updates all var names to new standards
+  with sharedmem
+    for each s as variant in sharedmem
+      print "Checking";;.key
+      if .key[0] = "$" then
+        print "Renaming";;.key ;;"to";;right(.key,-1)
+        .rename(.key,right(.key,-1))
+      endif
+    next
+  end with
+end
