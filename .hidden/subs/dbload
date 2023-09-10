@@ -9,15 +9,15 @@ Sub dbload(Optional FileName As String = ".") As Boolean 'Load Memory DB from fi
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
 With sharedmem
-.Free("$result")
+.Free("result")
 .clearmem()
 Try .merge(filename)
 If Error Then
-    .["$result"] = error.text
+    .["result"] = error.text
     Print #file.err, error.text
     Return False
 Endif
-.["$result"] = "OK"
+.["result"] = "OK"
 End With
 Return True
 End

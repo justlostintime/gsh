@@ -14,7 +14,7 @@ dim pwds as new string[]
 Dim newdir as string
 Dim OldPWD as string = env["PWD"]
 
-if CDToDir = "-" then 
+if CDToDir = "-" then
     newdir = env["OLDPWD"]  'check if we swap for the old PWD
     if isnull(newdir) then
       error "OLDPWD not set"
@@ -56,7 +56,7 @@ for each Sdir as string in sPathSplit
 
     if not truth then
         Print #file.err, "Directory Not Found :["; iif(pwds[0][0] <> "~","/",""); pwds.join("/") ;"]"
-        .["$result"] = "Error : Directory Not Found :[" & iif(pwds[0][0] <> "~","/","")&pwds.join("/") &"]"
+        .["result"] = "Error : Directory Not Found :[" & iif(pwds[0][0] <> "~","/","")&pwds.join("/") &"]"
         return false
     endif
 
@@ -67,16 +67,16 @@ dim finaldestination as string = "/" &/ pwds.join("/")
 if pwds.count > 0 then
     if not isdir(finaldestination) then
       error "CD :";;finaldestination;;"is not a directory"
-      .["$result"] = "Not a directory"
+      .["result"] = "Not a directory"
       return false
     endif
     env["PWD"] = finaldestination
     env["OLDPWD"] = OldPWD
-    sharedmem["$pwd"] = "/"&/ pwds.join("/")
+    sharedmem["pwd"] = "/"&/ pwds.join("/")
 else
     env["PWD"] = "/"
     env["OLDPWD"] = OldPWD
-    sharedmem["$pwd"] = "/"
+    sharedmem["pwd"] = "/"
 endif
     Extern chdir(Dest As String) As Integer In "libc:6"
     try chdir(finaldestination)

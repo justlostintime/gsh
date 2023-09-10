@@ -10,10 +10,10 @@ Sub vardel(optional varname As String = "", noerrorreport As Boolean = False) As
 with sharedmem
 if varname <> "" and if .exist(varname) Then
 .free(varname)
-.["$result"] = "OK"
+.["result"] = "OK"
 return true
 else
-.["$result"] = "Error : \""&varname&"\" not found"
+.["result"] = "Error : \""&varname&"\" not found"
 if not noerrorreport then
 print #file.err, .["$result"]
 endif

@@ -9,12 +9,12 @@ if file.dir(filename) = "" then
 filename = user.home &/ "vars" &/ filename
 if not exist(filename) then
 print #file.err, "File not found"
-.["$result"] = "File Not Found"
+.["result"] = "File Not Found"
 return false
 endif
 else
 print #file.err, "File not found"
-.["$result"] = "File Not Found"
+.["result"] = "File Not Found"
 return false
 endif
 endif
@@ -23,7 +23,7 @@ try mfile = open filename for read
 dim x as new byte[lof(mfile)]
 x.read(mfile)
 .[symbol] = x
-.["$result"] = "OK"
+.["result"] = "OK"
 end with
 return true
 end

@@ -19,37 +19,37 @@ With sharedmem
 print #file.err, "Clearing history Keeping ";;tokeep
 if ToKeep = 0 then
 
-    .["$history"] = New Collection
-    .["$historycurrent"] = 1
+    .["history"] = New Collection
+    .["historycurrent"] = 1
     clear_history()
-    .["$result"] = "OK"
+    .["result"] = "OK"
 else
-    dim history as collection = .["$history"]
+    dim history as collection = .["history"]
     dim lastentry as integer = history.last
     lastentry = lastentry - (ToKeep + 1)
-    
+
     if lastentry <= 0 then
-        .["$result"] = "OK"
+        .["result"] = "OK"
     else
-       
+
         for i as integer = history.first to lastentry
             print "remove ";history[i]
             history.remove(i)
         next
-        
+
         dim histnew as new collection
         dim j as integer = 1
         clear_history()
-   
+
         for i = i to history.last
             histnew.add(history[i],j)
             add_history(histnew[j])
             inc j
         next
-        
-        .["$history"] = histnew
-        .["$historycurrent"] = j
-        
+
+        .["history"] = histnew
+        .["historycurrent"] = j
+
     endif
 endif
 
@@ -90,7 +90,7 @@ private sub add_history(data as string)
 end
 
 Private Sub DetectReadlineVersion() As Integer
-  
+
   Try c9_add_history("")
   If Not Error Then Return 0
   Try c8_add_history("")
@@ -102,5 +102,5 @@ Private Sub DetectReadlineVersion() As Integer
   Try c5_add_history("")
   If Not Error Then Return 4
   Return 5
-  
+
 End

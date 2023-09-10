@@ -54,12 +54,12 @@ select case upper(varname)
         If .exist("pid." & varname) Then
             Print .["pid." & varname]
         Else
-            .["$result"] = "Error : Process ID Not found [" & varname & "]"
+            .["result"] = "Error : Process ID Not found [" & varname & "]"
             Print #file.err, .["$result"]
             Return False
         Endif
 end select
-.["$result"] = "OK"
+.["result"] = "OK"
 End With
 Return True
 End

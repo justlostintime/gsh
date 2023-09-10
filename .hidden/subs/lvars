@@ -12,7 +12,7 @@ if varname <> "" and if not instr(varname,"*") then
 		print varname;"=";.[varname]
 		return true
 	else
-		.["$result"] = "Error : Global variable Not found ["&varname&"]"
+		.["result"] = "Error : Global variable Not found ["&varname&"]"
 		print #file.err, .["$result"]
 		return false
 	endif
@@ -34,7 +34,7 @@ For Each s As SharedMemSymbol In .SymbolTable
 
 Next
 
-.["$result"] = "OK"
+.["result"] = "OK"
 end with
 return true
 End

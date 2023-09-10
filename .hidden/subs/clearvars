@@ -17,11 +17,11 @@ if varname <> "" and if not instr(varname,"*") then
 		return true
 	else
 	  if SysVars.exist(varname) then
-	    .["$result"] = "Error : System Variables may not be deleted ["&varname&"]"
+	    .["result"] = "Error : System Variables may not be deleted ["&varname&"]"
 	  else
-		  .["$result"] = "Error : Global variable Not found ["&varname&"]"
+		  .["result"] = "Error : Global variable Not found ["&varname&"]"
 		endif
-		print #file.err, .["$result"]
+		print #file.err, .["result"]
 		return false
 	endif
 endif

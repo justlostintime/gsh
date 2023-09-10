@@ -4,6 +4,6 @@ Sub clear() As Boolean ' clear the screen see the alias cls as well
 ''          $result contains the error text or "OK"
 print "\x1bc";
 flush
-sharedmem["$result"] = "OK"
+sharedmem["result"] = "OK"
 return true
 end

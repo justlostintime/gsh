@@ -1,9 +1,9 @@
 Public Sub toJsonformatted(cvId As Variant) As String ' Format the passed object as formatted json string
 '' ToJsonFormatted  Return an object as a nicely formatted editable json string
-''                  inserts the cr after the {} and level one ,
+''                  inserts the cr after the {} on level one
 
   use "gb.util.web"
-  
+
   Dim cvJSON As Byte[] = Byte[].FromString(JSON.Encode(cvID))
   Dim i As Integer
   Dim level As Integer = 0

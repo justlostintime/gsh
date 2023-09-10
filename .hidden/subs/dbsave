@@ -7,13 +7,13 @@ Sub dbsave(Optional FileName As String = ".") As Boolean ' Save InMemory databas
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
 With sharedmem
-.Free("$result")
+.Free("result")
 Try .Sync(".", FileName)
 If Error Then
-.["$result"] = error.text
+.["result"] = error.text
 Return False
 Endif
-.["$result"] = "OK"
+.["result"] = "OK"
 End With
 Return True
 End

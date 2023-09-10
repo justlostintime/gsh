@@ -1,4 +1,5 @@
 Sub ref(SrcObj As Variant, method as string, ... ) As Variant
+'' Function to call an objects method 
 object.call(SrcObj,method,param.all)
 return SrcObj
 end

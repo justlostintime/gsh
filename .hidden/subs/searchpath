@@ -1,4 +1,4 @@
-Sub searchpath()
+Sub searchpath() ' list all search paths for libraries
 Print "Begin library Search list"
 
 dim gbsver as string = "gambas"&system.version
@@ -30,7 +30,7 @@ Endif
 If Env["PATH"] <> "" Then
     aDataPaths = Split(Env["PATH"], ":", "", True)
     For i = 0 To aDataPaths.Max
-      print aDataPaths[i] 
+      print aDataPaths[i]
     Next
 Endif
 

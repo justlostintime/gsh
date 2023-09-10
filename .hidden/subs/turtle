@@ -1,4 +1,5 @@
-Sub turtle()
+Sub turtle() ' incomplete turtle graphics
+'' this is not working yet
 use "gb.gui"
 
 'public DrawBoard as new form

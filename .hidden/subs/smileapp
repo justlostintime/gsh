@@ -1,5 +1,5 @@
 sub smileapp() ' fun app to print a smile
-
+'' print a smile!
 print "Its is always a good day to smile"
 print "      ********************     "
 print "     *                    *    "

@@ -1,7 +1,7 @@
-Sub resetdefaults() As Boolean ' reset in global variables to default values
+Sub resetdefaults() As Boolean ' reset all global variables to default values
 ''resetdefaults  resets the system variables to thier default value
-''          this is no destructive and will change all needed variables to
-''          thier default valiables
+''          this is non destructive and will change all needed variables to
+''          thier default valiables.
 with sharedmem
 .["$execprog"] = "print \"Gambas Shell \""
 .["$alias"] = new collection

@@ -17,7 +17,7 @@ if typeof(filename) = gb.string and param.count > 0 then
     if file.dir(filename)="" then filename = sharedmem["$pwd"] &/ filename
     try mFile = open filename for write create
     if error then
-        .["$result"] = error.text
+        .["result"] = error.text
         print #file.err, "fprint :";error.text
         return false
     endif
@@ -132,7 +132,7 @@ Next
 
 flush #mfile
 
-.["$result"] = "OK"
+.["result"] = "OK"
 End With
 if DoClose then close mfile
 Return True

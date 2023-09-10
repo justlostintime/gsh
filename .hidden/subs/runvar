@@ -1,5 +1,7 @@
-public sub runvar(varname as string,...) as variant
-dim mOutput as string 
+public sub runvar(varname as string,...) as variant ' execute variable content as script
+'' Execute the content of a variable as an
+'' independent script
+dim mOutput as string
 dim errorresult as new string[]
 dim cmd as string[] = ["/usr/bin/gsh","-f"]
 if sharedmem.exist(varname) then
@@ -9,7 +11,7 @@ if sharedmem.exist(varname) then
     next
     try exec cmd to mOutput
 
-    if error then 
+    if error then
         errorResult.add("Error:"&Error.text)
         return ErrorResult
     endif
@@ -17,7 +19,7 @@ if sharedmem.exist(varname) then
     return iif(sOutput.count = 1,sOutput[0],sOutput)
 else
     ErrorResult.add("Variable Not found : "&varname)
-    return 
+    return
 endif
 
 catch
