@@ -1431,6 +1431,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
           eCmd = ["/usr/bin/gbs3", "-b", "-T", ScriptName]
 
           Try Exec ecmd Wait For Read As "compileread"
+
           If CompileResult <> "" And Left(Compileresult, 5) <> "Class" And If Error Or CompileResult <> "" Then
             If Error Then
               Error "Generated Script ="; ScriptName;; ":";; Error.text

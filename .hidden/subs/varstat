@@ -35,7 +35,7 @@ for each symbols as string in varlist
     flush
     print "Address:";hex(x.DataAddress,8);;
     flush
-    print "TimeStamp :";x.LastWriteTime;;
+    print "LastWrite:";x.LastWriteTime;;
     flush
     if x.symtype = gb.object then
       print "Class[";x.classname;"] \n"&space(sp+16)&"Interface[";;
