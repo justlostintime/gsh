@@ -1,4 +1,9 @@
 sub UpdateVarNames()  ' updates all var names to new standards
+'' In old versions of gsh internal variables included the $ names
+'' names have been standardized to remove the need for the $ at
+'' the start of variable names internally
+'' This function renames all variables in the image to the new standardized
+'' it is called by update once to convert the names
   with sharedmem
     for each s as variant in sharedmem
       print "Checking";;.key
