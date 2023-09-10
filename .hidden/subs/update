@@ -18,7 +18,7 @@ answer = upper(trim(answer))
 
 if answer = "" or if answer[0] = "Y" then
 
-   UpdateVarNames()                                           ' remove/rename all old style variables
+   if not sharedmem!GshVarConverted then  UpdateVarNames()       ' remove/rename all old style variables
 
    if exist(user.home &/ "vars/profile.gsh.old") then
       kill user.home &/ "vars/profile.gsh.old"

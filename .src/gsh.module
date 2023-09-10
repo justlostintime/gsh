@@ -13,7 +13,7 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
   "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd"
-"lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate"]
+"lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"]
@@ -398,6 +398,7 @@ Private Sub SetDefaults()
       .["alias"] = New Collection
     Endif
 
+    If Not .Exist("gshvarconverted") Then .["gshvarconverted"] = False                    ' indicate that the variables are not yet converted
     If Not .exist("blockindent") Or If .["blockindent"] = "" Then .["blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
     If Not .Exist("history_expand") Then .["history_expand"] = False                                ' turns on bash style history expansion using the system readline call
     If Not .exist("helpuseshtml") Then .helpuseshtml = False                                        ' Help will do a popup help when html is found
@@ -414,7 +415,7 @@ Private Sub SetDefaults()
     If Not .exist("helpdisplay") Then .["helpdisplay"] = DefaultHelp
     If Not .exist("home") Then .["home"] = user.home
     If Not .exist("hosttype") Then .["hosttype"] = system.Architecture
-    If Not .exist("$hosthame") Then .["hostname"] = system.host
+    If Not .exist("hosthame") Then .["hostname"] = system.host
     If Not .exist("term") Then .["term"] = "xterm-256color"
     If Not .exist("newprofile") Then .["newprofile"] = False
     If Not .exist("lambda") Then .["lambda"] = "print application.name"
