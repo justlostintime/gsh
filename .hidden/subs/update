@@ -10,7 +10,7 @@ endif
 print "Update gsh";application.version
 print "Clearing all in memory subs/classes/structs, prompting to save user subs"
 print "Update must exit the shell and you must restart it for changes to take effect"
-print "Other running shells must be exited before running this update"
+print "Other running shells must be exited before running this update."
 error "Run update now Y/n?";
 dim answer as string = ""
 line input answer
@@ -18,7 +18,13 @@ answer = upper(trim(answer))
 
 if answer = "" or if answer[0] = "Y" then
 
-   if not sharedmem!GshVarConverted then  UpdateVarNames()       ' remove/rename all old style variables
+   clearclass()
+   clearsubs()
+   
+   if not sharedmem!GshVarConverted then  
+       UpdateVarNames()       ' remove/rename all old style variables
+       sharedmem!GshVarConverted = true
+   endif
 
    if exist(user.home &/ "vars/profile.gsh.old") then
       kill user.home &/ "vars/profile.gsh.old"
@@ -26,9 +32,6 @@ if answer = "" or if answer[0] = "Y" then
 
    move user.home &/ "vars/profile.gsh" to user.home &/ "vars/profile.gsh.old"
    move user.home &/ "vars/profile.gsh.new" to user.home &/ "vars/profile.gsh"
-
-   clearclass()
-   clearsubs()
 
    dim cGsh as class = classes["gsh"]
    sharedmem["profile"] = false

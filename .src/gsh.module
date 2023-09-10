@@ -387,7 +387,7 @@ Private Sub SetDefaults()
 
   With sharedmem
 
-    .["gshversion"] = Application.Version                                ' Use this later on to do version update stuff and veriy all running versions are compatable
+    .["gshversion"] = File.Load("version")  ' ;Application.Version                                         ' Use this later on to do version update stuff and verify all running versions are compatable
 
     If Not .exist("profile") Then .["profile"] = False
     If Not .exist("globstar") Then .["globstar"] = False                  ' set to cause fileexpansion to see ** as meaning recurse, it dangerous

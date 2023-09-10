@@ -1,4 +1,4 @@
-﻿ Gambas Shell V1.4.2
+﻿ Gambas Shell V1.5.1
 
  help [<command name>]  command name will print a more detailed description
                       of the external commands found in the ~/vars/subs directory
@@ -83,17 +83,17 @@
                          the in memory database Default  4.5MB
             -m --manual  Print the detailed extended help information
             -n --noload  Do Not load the image, Its already loaded.
-                         This is used mainly if you are not using the 
-                         default image. Mostly gsh will detect if the 
+                         This is used mainly if you are not using the
+                         default image. Mostly gsh will detect if the
                          image is already loaded.
             -p --port    Any of the following integer port number,
                          devicename example USBtty, Unix named pipe path
             -r --runline Execute the following command line
-            -s --shmname The name of the in memory database to use 
+            -s --shmname The name of the in memory database to use
                          defaults to username
-                         Two in memory files are created, data segment 
+                         Two in memory files are created, data segment
                          and collection segment
-            -S --single  Use a private in memory database and share 
+            -S --single  Use a private in memory database and share
                          only with tasks
             -v --version Display the version information
             -V --version Same as v - version number
@@ -129,10 +129,10 @@
  Global variables start with $ for example $history .. Case is ignored!
             These Variables are not dim'd they are created in shared memory the Data Type is assigned by the value
             of the assigned value type.
-            The data type is changed if the value type changes unless there 
+            The data type is changed if the value type changes unless there
             is a change value notification outstanding for the Variable.
             In this case assigning any other value type will create an error.
-            Global variables persist and are saved at the time of closing 
+            Global variables persist and are saved at the time of closing
             the gsh shell.
             Global variables may be used the same way regular variables are
             used except for iteration.
@@ -141,59 +141,59 @@
             of gsh. They are system wide.
             Remember to 'vardel("varname")' at the end of a session if you
             don't want it to appear when you next start
-            gsh. A shortcut is 'vardel' by itself, this will delete 
+            gsh. A shortcut is 'vardel' by itself, this will delete
             all user created variables.
 
  $0 to $n   This is reserved as parameters passed to a gsh script
  $#         This is the number of parameters passed tp a script
- $$	    Linux cli only Process ID of the executing script on Linux 
+ $$	    Linux cli only Process ID of the executing script on Linux
           command lines(only on Linux cli lines otherwise use application.id)
  $*       A list of all parameters passed to the shell as comma separated string
  $@       A list of all parameters passed to the shell as a gambas list
  $UID     Linux cli only User Id of the executing script on UNIX command
           lines(only on Linux cli lines otherwise use user.id)
- $GID     Linux cli only PID of the executing script on Linux command 
+ $GID     Linux cli only PID of the executing script on Linux command
           lines(only on Linux cli lines otherwise use user.group)
- $result  This reserved variable will have the returned value after each 
+ $result  This reserved variable will have the returned value after each
           builtin function is called
           This may be used by your functions to return values.
-          Note, $result type is set upon assignment to the type of the 
+          Note, $result type is set upon assignment to the type of the
           value assigned.
 
- Traceon  Turn on or off shell script tracing. Writes line to stderr as 
+ Traceon  Turn on or off shell script tracing. Writes line to stderr as
           they are executed.
  Traceoff This Is not Global And will not affect system wide scripts.
 
- $prompt  The prompt, it is displays as 'print eval($prompt);;' so can 
+ $prompt  The prompt, it is displays as 'print eval($prompt);;' so can
           be created with any valid evalatable statement
-          to change the prompt just 'edit $prompt'. The change is apparent 
-          when the editor closes. Be warned if the expression fails the 
+          to change the prompt just 'edit $prompt'. The change is apparent
+          when the editor closes. Be warned if the expression fails the
           prompt will be reset to the default.
           The default prompt is defined as :
                 "\x01\x1b[31m\x02" & application.id & "." & user.name & "@" &
-                 system.host & ":\x01\x1b[32m\x02" & env["PWD"] & 
+                 system.host & ":\x01\x1b[32m\x02" & env["PWD"] &
                 "\x01\x1b[0m\x1b[0K\x02 > "
 
- At Startup gsh loads the environment from the default 
-             image ~/vars/gsh.image 
- if it is exists. Any specific image may be loaded explicitly with the 
+ At Startup gsh loads the environment from the default
+             image ~/vars/gsh.image
+ if it is exists. Any specific image may be loaded explicitly with the
              --image startup parameter
 
- gsh.image  This default image file is created/updated when ever the 
+ gsh.image  This default image file is created/updated when ever the
             gsh shell exits or save is called with no parameters.
             It is stored at ~/vars/gsh.image.
-            The gsh.image and ~/vars directory will be created if they do 
+            The gsh.image and ~/vars directory will be created if they do
             not exist upon first startup of GSH.
 
- $VarName = <value> : Global Variables Definition, The Value type sets 
+ $VarName = <value> : Global Variables Definition, The Value type sets
                       the data type and can change except if
-                      a change notification request is pending for the 
+                      a change notification request is pending for the
                       global variable.
 
  .Varname = <value> : Same as above inside script files
 
- !                  : Is used at the beginning of a line to define an 
-                      external command or force a function to be executed 
+ !                  : Is used at the beginning of a line to define an
+                      external command or force a function to be executed
                       as a process
                       In Many cases the shell will detect an external command.
                       But using ! forces it to execute as a command
@@ -201,18 +201,18 @@
                       For example '!ls or 'ls' to list a directory.
                       In Some Cases It will be required to access the cli
                       command for example chmod and !chmod are both very
-                      different chmod is a gambas command and !chmod will 
-                      cause the linux cli command to be executed. So be aware 
+                      different chmod is a gambas command and !chmod will
+                      cause the linux cli command to be executed. So be aware
                       of these conflicts.
-                      !lvars > $b  - will execute gsh command lvars as a 
-                      separate process rather that as an internal plugin and 
+                      !lvars > $b  - will execute gsh command lvars as a
+                      separate process rather that as an internal plugin and
                       place the output into $b global variable.
  | &|               : | may only be used between commands not at the beginning
                       of a line. it denotes a pipe between tasks
-                      That is it will send the output of the task on the left 
+                      That is it will send the output of the task on the left
                       to the task on the right.
                       &| pipes both std err and stdout to the next process
-                      !ls > $a or just ls -1 > $a  will store the returned 
+                      !ls > $a or just ls -1 > $a  will store the returned
                       value into the global value $a,
                       if a local variable is used it needs to be dim'd first and
                       Will only persist during the command execution
@@ -221,27 +221,27 @@
                       eg  'cat < $f | cat | cat | cat > $r'
 
                       This will send output from first to second command and
-                      so on. The ! is not needed for the first command as gsh 
+                      so on. The ! is not needed for the first command as gsh
                       checks the first symbol to see if its external
                       so from eg above '!cat < $f | cat | cat | cat > $r' will
                       also work
 
-                      Any function that reads or writes to stdin, stderr or 
+                      Any function that reads or writes to stdin, stderr or
                       stdout may be used in the pipe string
 
                       Examples see sample functions at end of help
 
  cat < $f | SampleFilter() < $f | tr [a-z] [A-Z] | SampleReciever()
-                     In the above case SampleFilter get input from $f and cat 
+                     In the above case SampleFilter get input from $f and cat
                      at the same time
 
  !SampleInjector | cat > $r | tr [a-z][A-Z] | SampleReceiver()
-                     The ! before the function is required to force the line 
+                     The ! before the function is required to force the line
                      to be treated as a pipe fitting. Without it the shell will
                      pass this line to the Gambas compiler directly.
 
  `cat < DataSource() | less`
-                     Functions may be used as an input to a command/function 
+                     Functions may be used as an input to a command/function
                      as long as it returns a string
 
  `sub Datasource() as string
@@ -258,18 +258,18 @@
   ' process data
  end
 
- &&, ||, :;, ()      Used to control the flow of a unix CLI line 
+ &&, ||, :;, ()      Used to control the flow of a unix CLI line
                      eg. ls && ps || echo "failed" :: echo "do this anyway"
    &&                is used to execute the next command if the first work
-                     correctly 
-                     eg  'true && ps' will print the ps output, 
+                     correctly
+                     eg  'true && ps' will print the ps output,
                          'false && ps' will print nothing
-   ||                is used to execute the next command if the first one fails 
-                     eg 'true || ps ' will print no output , 
+   ||                is used to execute the next command if the first one fails
+                     eg 'true || ps ' will print no output ,
                         'false || ps' will print ps
-   && and ||         are always executed left to right and all operators are 
+   && and ||         are always executed left to right and all operators are
                      evaluated in the same way bash or sh evaluates them.
-   :;                always executes the next command when the previous one 
+   :;                always executes the next command when the previous one
                      completes.(bash uses ; but gambas uses ; for print)
    ()                may be used to manage the order of operation, inside
                      brackets are always evaluated first.
@@ -290,29 +290,29 @@
                      example cat <<< "this string"
                      The string is sent as if it was entered thru stdin.
 
- >  >>               Direct Output from an external command to a global 
-                     variable,function or file. It is allowed to write the 
-                     output to multiple variables and also pipe to next 
+ >  >>               Direct Output from an external command to a global
+                     variable,function or file. It is allowed to write the
+                     output to multiple variables and also pipe to next
                      external command
  `cat < $f < $t > $g > ~/vars/mylog | cat < $u > toupper() | cat | cat > $z`
                      is quite valid.
    >>                appends to output stream.
    >                 clears output stream first.
 
- &>  &>>             Direct stderr to a global variable, function or file. 
-                     It is allowed to send it to many variables,funtions or 
+ &>  &>>             Direct stderr to a global variable, function or file.
+                     It is allowed to send it to many variables,funtions or
                      files as needed
  `cc "myprog.c" < $f < $t > $g > $d &> $cerr &>> ~/vars/myerrors | cat < $u >
   $s | cat | cat > $z`
                      is quite valid
-   &>>               appends to error stream. 
+   &>>               appends to error stream.
    &>                clears error stream first.
 
- |< |>               These allow more that one input/output function or 
+ |< |>               These allow more that one input/output function or
                      task to feed a command or one command to feed many tasks
-  `cat |< NetConnect1() |< NetConnect2() |> netforward() | cat >> $logger >> 
+  `cat |< NetConnect1() |< NetConnect2() |> netforward() | cat >> $logger >>
    ~/vars/netlog`
-                     In this example network traffic is received by cat 
+                     In this example network traffic is received by cat
                      from NetConnect 1 and 2, cat's output goes to netforward
                      and Cat and finally into $logger
  &|> &|<             Same as above only error and stdout are piped to next
@@ -321,7 +321,7 @@
  !>                  Assign the result code from a Linux command or process
                      to a variable example :
   `ls :>$a | tr [A-Z] [a-z] :> $b | less :> $c`
-                     well store the exit code of each cli into the 
+                     well store the exit code of each cli into the
                      variable specified
 
  :;                  Statement separator
@@ -329,13 +329,13 @@
  <number>!           Will re-execute the command from history for example :
                      `3!`
 
- [0]findpattern/replacepattern 
+ [0]findpattern/replacepattern
                      Allows to edit the history lines using the regular
                      expression function regex.replace()
 
- `Cli commands`      Back Ticks Execute the Linux shell cli and return the 
-                     last exit code. May be used anywhere a gambas function 
-                     may be called. This is a little different than 
+ `Cli commands`      Back Ticks Execute the Linux shell cli and return the
+                     last exit code. May be used anywhere a gambas function
+                     may be called. This is a little different than
                      Bash `` they return the output so be aware
                      Example:
                       if `ls -l > $a` = 0 then
@@ -344,30 +344,30 @@
                         echo this ls failed
                       endif
 
- "#{expression}"     evaluate the expression immediately and replace 
+ "#{expression}"     evaluate the expression immediately and replace
                      text with evaluated expression. Example:
   "#{'print'}" application.name; "stuff"
                      inside expressions use single quote instead of double
                      quote. This example will be evaluated to :
   print application.name; "stuff"
-                     after the evaluation the line will be executed. Another 
-                     Example of the default prompt 
+                     after the evaluation the line will be executed. Another
+                     Example of the default prompt
   print "#{'\''&Sharedmem['$pwd']&'->'&sharedmem['$blockindent']&'\''}"
                      remember the evaluation is executed in this context, the
                      line is executed in its own context
                      This allows to pass values from this context to the next.
-                     For example :  
+                     For example :
   print "#{'\''&application.name'\''}"    '
                      this will output "gsh" the context of the shell as opposed
                      to this example:
   print application.name
-                     this will print "execgbs". 
-                     The Context name of the executed block. They happen in 
+                     this will print "execgbs".
+                     The Context name of the executed block. They happen in
                      different contexts, A global variables will span contexts.
 
- @<gsh variable>     Will execute the content of a variable as a program and 
-                     return the result as an array string[] of the newline 
-                     separated strings returned by the program. If only one 
+ @<gsh variable>     Will execute the content of a variable as a program and
+                     return the result as an array string[] of the newline
+                     separated strings returned by the program. If only one
                      string is returned then String is returned instead.
                      Notice that the @ replaces the $ in the reference.
                      For Example:
@@ -375,7 +375,7 @@
   ? @j                        ' we expect only one line returned
                      This outputs "hello"
                      Parameters may be passed to the program using the notation.
-                     $0-$n and $# 
+                     $0-$n and $#
                      These will contain all the parameters passed to the
                      @variable call. For Example :
   $j = "Print quote($0);;\"\\n\";;quote($0)"
@@ -386,15 +386,15 @@
 
  ?                   at the beginning of a line will print what ever follows
                      Same as scripts. Just an alias for Print.
-                     For example 
-  ? $a;$b,c,d -- 
+                     For example
+  ? $a;$b,c,d --
                      will print the content of these variables.
 
  &                   Place this after the last line of your command to execute
                      the command as an independent process
 
  $"Expansion Expr"   This will expand the enclosed expansion expression
-                     following the same expansion rules as Bash or csh. 
+                     following the same expansion rules as Bash or csh.
                      See bash or csh expansion for more details.
                       Example 1:
   echo $"This{1..10}"
@@ -416,20 +416,20 @@
                      using the following notation:
   {..} or lambda..end or Begin..end
 
- Gsh Alias blocks    These are not lambda expressions and preferred if no 
+ Gsh Alias blocks    These are not lambda expressions and preferred if no
                      parameters are required
-  do..done           is the same as:  do..loop...until true. 
+  do..done           is the same as:  do..loop...until true.
                      done is just an alias. alias done='loop until true'
 
  Lambda expressions Definitions:
   {...}, Lambda...end, Begin...End
                      { and begin are alias for lambda
                      example:
-  [ { or lambda or begin ] Parm1 Parm2 ... 
+  [ { or lambda or begin ] Parm1 Parm2 ...
    <function content>
   [ } or end    or end]
                      this is useful in a for next loop example:
-  lambda 
+  lambda
     Dim i As String
     i = "this\nthat"
     dim j as string[]
@@ -438,9 +438,9 @@
   end <optionally include '&' to execute in background>
 
                      The preferred method of creating a block is using the
-  do..done 
+  do..done
                      block expression when no parameters are being passed into
-                     the expression. Example of both types of gsh code block 
+                     the expression. Example of both types of gsh code block
                      in use follow.
   do
     dim a as integer=10
@@ -466,7 +466,7 @@
 
     print a, " All done"
   done
-                     A lambda expression is declared by first use, then can 
+                     A lambda expression is declared by first use, then can
                      be used until the end of the block it is declared in.
                      They are referenced in order starting at 0
                      You may edit and execute the last lambda expression by
@@ -479,7 +479,7 @@
                      This is basically a syntactic trick to let the shell know
                      your entering code that should be executed as one block.
                      By default gsh executes each line as it is entered.
-                     If used in gsh scripts do..done are execute  after the 
+                     If used in gsh scripts do..done are execute  after the
                      closing done, local variables(inside do..done) are lost.
 
  {} in cli lines     When used inside a Linux cli expression then the
@@ -500,7 +500,7 @@
     echo "hello" {(a)} {replace(a,"bye","Wonderful")} {application.id}
   done
 
- $GambasShellVarName Reference a shell/Global variable or pass a shell 
+ $GambasShellVarName Reference a shell/Global variable or pass a shell
                      variable to a Linux CLI.
                      Example: notice that a code block is not needed.
   $a = "bye World"
@@ -515,8 +515,8 @@
                      These commands are built into the gambas shell
 
  Get <Command name> <Command name> …
-                     A List of additional commands  to be loaded as plugins 
-                     These are complete functions only the provided command 
+                     A List of additional commands  to be loaded as plugins
+                     These are complete functions only the provided command
                      name may be called from the command line.
                      Command name may be a file name or filename and path
                      as a file "/usr/bin/mycommand" or CommandName which is
@@ -524,8 +524,8 @@
                      The interface entry point is the function with the same
                      name as file/command.
 
- Edit class|function|variable|Lambda   
-                     Edit or create a class,function,string or string[] 
+ Edit class|function|variable|Lambda
+                     Edit or create a class,function,string or string[]
                      variable for your environment
                      Starts the editor defined in the $editor global variable.
                      Classes and functions become part of the image and are
@@ -537,21 +537,21 @@
                      variables.
 
                      Examples:
-  sub test()         Is defined then 
+  sub test()         Is defined then
  'edit test'
                      will allow you to change this function, it is compiled and
                      loaded as soon as the editor exits.
-  class test2        Is defined then 
+  class test2        Is defined then
   'edit test2'       will allow you to change this class. It is compiled and
                      loaded as soon as the editor exits.
 
-  $h = ["ddd","dddd"] 
+  $h = ["ddd","dddd"]
                     then edit this like 'edit $h'
-  $h = "djjdjdjddj" 
-                    then edit this like 'edit $h' 
-                    The shell knows the base type and will save it in the same 
+  $h = "djjdjdjddj"
+                    then edit this like 'edit $h'
+                    The shell knows the base type and will save it in the same
                     format.
-  $h = new byte[]         
+  $h = new byte[]
                     when you 'edit $h' then the hex editor will open
   $h = [1,2,3,4,5,6]
                     Then the 'edit $h' the editor open with a value on each
@@ -560,19 +560,19 @@
 
  run "Scriptname"   Execute an external gsh script immediately. Scripts should
                     return information in global variables.
-                    This is a  shell script not a gambas script. 
+                    This is a  shell script not a gambas script.
                     See also runscript() in profile.rc this function is the
                     preferred method of executing an external scripts.
 
  run                Re-execute the last code block.
 
- list               This will list the code of the last executed block or 
+ list               This will list the code of the last executed block or
                     line of Gambas code.
 
  alias              Alias replace a command at run time with the alias.
                     These are defined in much the same way as Posix shell
                     aliases.
-			  As Examples these aliases are included in the default 
+			  As Examples these aliases are included in the default
                     profile.gsh provided with the shell
                                  alias fgrep='fgrep --color=auto'
                                  alias grep='grep --color=auto'
@@ -588,32 +588,32 @@
                                  alias path='? env["PATH"]'
                                  alias exit='Quit 0'
 
-                    Aliases must be enclosed in ' single quotes and are 
-                    applied only to command lines not program code. You may 
+                    Aliases must be enclosed in ' single quotes and are
+                    applied only to command lines not program code. You may
                     not have a comment on these lines to remove an alias simply
                     assign with no content
                     Example   alias home=
                     This will remove the home alias
 
  [Compile | Program] <program name>
-                    This will not execute the script entered but will produce 
+                    This will not execute the script entered but will produce
                     an executable Gambas script.
-  .....             The script is standalone and may be executed directly 
-                    from the command line. The Output is placed into 
+  .....             The script is standalone and may be executed directly
+                    from the command line. The Output is placed into
                     the ~/bin folder and marked as executable.
 
- end [compile | program]      
+ end [compile | program]
                     The default program name if not specified is script.out
-                    In terms of functional programming. You may compile and 
-                    test each function and then after the final test. Create 
-                    a function which is a main and compile it. When creating 
+                    In terms of functional programming. You may compile and
+                    test each function and then after the final test. Create
+                    a function which is a main and compile it. When creating
                     a gambas script using compile, any refrecne to a function,
                     Class or Structure will cause it to be added to the script.
-                    Only referenced classes, functions or Structures are 
+                    Only referenced classes, functions or Structures are
                     actually added to the script. The Source for any builtin
                     commands may also be added as required by the script being
                     generated.
-                    Scripts generated in this way are standalone and do not 
+                    Scripts generated in this way are standalone and do not
                     require that gsh be available.
 
                     AS an Example:
@@ -627,7 +627,7 @@
      ? "Bye"
    end
 
-                    Now test interactively each function by just entering 
+                    Now test interactively each function by just entering
                     as a command
    b
    output : Bye
@@ -651,11 +651,11 @@
             More From The Script
             Bye
 
- Sub, Function, Procedure, Class, Struct 
-                    Each are compiled immediately after creation. If used as 
+ Sub, Function, Procedure, Class, Struct
+                    Each are compiled immediately after creation. If used as
                     a command then they are executed
-                    In the context of the current shell they are loaded as 
-                    plugins to the shell. If used as functions then they 
+                    In the context of the current shell they are loaded as
+                    plugins to the shell. If used as functions then they
                     execute in the context of the block or app executed.
                     Functions and classes may be edited with the edit command.
 
