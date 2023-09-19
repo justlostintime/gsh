@@ -3,17 +3,29 @@ public sub runvar(varname as string,...) as variant ' execute variable content a
 '' independent script
 dim mOutput as string
 dim errorresult as new string[]
+
 dim cmd as string[] = ["/usr/bin/gsh","-f"]
-if sharedmem.exist(varname) then
+with sharedmem
+if .exist(varname) then
     cmd.add(varname)
     for each s as variant in param
      cmd.add(s)
     next
+    if .["DoTrace"] then
+       print "(RunVar "&now&") Exec [";
+       for each ss as string in cmd
+         print quote(ss);;
+       next
+       print "]"  
+    endif
+    
     try exec cmd to mOutput
 
     if error then
         errorResult.add("Error:"&Error.text)
         return ErrorResult
+    else if .["DoTrace"] then
+      print "(RunVar "&now&") Output";;quote(mOutput)
     endif
     dim sOutput as string[] = split(mOutput,"\n","\"\"",true)
     return iif(sOutput.count = 1,sOutput[0],sOutput)
@@ -22,7 +34,9 @@ else
     return
 endif
 
+end with
+
 catch
- error "runsub error: ";error.text;;error.where
+ error "RunVar error:";;quote(varname);;":";;error.text;;error.where
 
 end

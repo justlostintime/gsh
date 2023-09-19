@@ -1,13 +1,13 @@
 Sub traceoff() As Boolean ' turn the tracing of scripts off
 ''TraceOff  Turns off shell command tracing
-''          Will cause the printing of each input line with time stamp 
+''          Will cause the printing of each input line with time stamp
 ''          and required terminator to stop
 ''          terminator is the current block termination string
 ''          command traceoff
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
 dim traceif as object = classes["gsh"]
-object.call(traceif,"settrace",[false])
+object.call(traceif,"settrace",[false,1])
 sharedmem.result = "OK"
 return true
 end

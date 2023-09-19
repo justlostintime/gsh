@@ -12,8 +12,9 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
   "", "", "", "", ""]
 
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
-  "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd"
-"lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted"]
+  "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
+  "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
+  "tracelevel", "dotrace"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"]
@@ -65,18 +66,20 @@ Public ExternTable As New String[]
 Public StructTable As New String[]
 Public CompilerDirectiveTable As New String[]
 
-Public bCleanup As Boolean = False
-Public bN As Boolean = False
-Public bSingleUse As Boolean = False
-Public bH As Boolean = False                                 'display the manual
-Public bDbaseServer As Boolean = False                       'Run as a service
-Public bInteractive As Boolean = False                       'Force the interface to be interactive
-Public bLogon As Boolean = False                             'Force to act as logon shell
-Public sPortNumber As String = ""                            'Port number/name to read and write to in service mode
+Public bCleanup As Boolean = False                           ' Cleanup any open Shared named database before starting
+Public bN As Boolean = False                                       ' Don't load the image file, already loaded by another task, from forked process
+Public bSingleUse As Boolean = False                      ' Do not used a names shared segment, private segment only
+Public bH As Boolean = False                                       ' display the manual
+Public bDbaseServer As Boolean = False                 ' Run as a service
+Public bInteractive As Boolean = False                      ' Force the interface to be interactive
+Public bLogon As Boolean = False                               ' Force to act as logon shell
+Public sPortNumber As String = ""                              ' Port number/name to read and write to in service mode
+Property TraceState As Integer Use $iTraceSet    ' state of tracing level at this time
 
 Public Source As String = "STDIN"
 Public DefaultSharedMem As String = user.name & "gsh"
 Public DefaultImageName As String = "gsh.image"
+Public $Version As String = ""
 
 Private RunningProcess As Process = Null
 Private RunningProcessStart As Date
@@ -107,10 +110,12 @@ Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
 
-Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel) ' this function turns on the compile tracing
+Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel)    ' this function turns on the compile tracing
 
   DoTrace = setting
+  SharedMem["DoTrace"] = setting
   TraceLevel = level
+  sharedmem["TraceLevel"] = level
 
 End
 
@@ -201,7 +206,6 @@ End
 Public Sub ProcessOptions() As String[]
 
   Dim bA, bR As Boolean
-  Dim iT As Integer
   Dim sC As String[]
   Dim sS, sI As String
 
@@ -210,7 +214,7 @@ Public Sub ProcessOptions() As String[]
   sPortNumber = Args.Get("p", "port", ("I/O Port number/name to use else  Defaults to stdin/stdout/stderr"))
   bA = Args.Has("a", "about", ("Display About ") & Application.Name)
   bR = Args.Has("v", "version", ("Display version number"))
-  iT = Args.GetInteger("t", "trace", ("Turn on tracing Parm s 0, off, 1 = user, 3 = -r and -f -4 = all"))
+  $iTraceset = Args.GetInteger("t", "trace", ("Turn on tracing Parms 0 = off, 1 = user, 3 = -r and -f , 4 = all, 20 = create execprog.gsh in vars"), -1)
   sS = Args.Get("s", "shmname", ("Shared Memory Name for application"))
   bSingleUse = Args.has("S", "Single", ("Do not use shared memory"))
   bN = Args.Has("n", "noload", ("Do Not Load gsh Image - already loaded by another process"))
@@ -239,15 +243,16 @@ Public Sub ProcessOptions() As String[]
   Endif
 
   If br Then
-    Print ("gsh    Rev:") & Application.Version
+    Print ("gsh    Rev:") & $Version
     Print ("Script Rev:") & SharedMem.Version
     Print ("Shared Mem Rev:") & Script.Version
     Quit 0
   Endif
 
-  TraceLevel = iT
-
-  If TraceLevel > 3 Then DoTrace = True
+  If $iTraceSet >= 0 Then
+    TraceLevel = $iTraceSet
+    If TraceLevel > 3 Then DoTrace = True
+  Endif
 
   If bDbaseServer Then Error ("GSH in service mode");; Now;; Application.Version
 
@@ -387,7 +392,7 @@ Private Sub SetDefaults()
 
   With sharedmem
 
-    .["gshversion"] = File.Load("version")  ' ;Application.Version                                         ' Use this later on to do version update stuff and verify all running versions are compatable
+    .["gshversion"] = $version                 ' ;Application.Version                                         ' Use this later on to do version update stuff and verify all running versions are compatable
 
     If Not .exist("profile") Then .["profile"] = False
     If Not .exist("globstar") Then .["globstar"] = False                  ' set to cause fileexpansion to see ** as meaning recurse, it dangerous
@@ -419,6 +424,19 @@ Private Sub SetDefaults()
     If Not .exist("term") Then .["term"] = "xterm-256color"
     If Not .exist("newprofile") Then .["newprofile"] = False
     If Not .exist("lambda") Then .["lambda"] = "print application.name"
+
+    If Not .exist("DoTrace") Then               'the memory value always takes precidence
+      .["DoTrace"] = DoTrace
+    Else
+      If $iTraceSet = -1 Then DoTrace = .["DoTrace"]
+    Endif
+
+    If Not .Exist("TraceLevel") Then
+      .["TraceLevel"] = TraceLevel
+    Else
+      If $iTraceSet = -1 Then TraceLevel = .["TraceLevel"]
+    Endif
+
     If Not .exist("path") Then .["path"] = User.home &/ ".local/bin:" & User.home &/ "bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
     If Not .exist("env") Then .["env"] = ["PWD=" & .["pwd"], "PATH=" & .["path"], "HOME=" & .["home"], "TERM=" & .["term"], "HOSTTYPE=" & .["hosttype"], "HOSTHAME=" & .["hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
 
@@ -691,23 +709,11 @@ Catch
 End
 
 
-Public Sub gshlogging(logname As String, msg As String)
-
-  Dim sfile As File
-
-  Try sfile = Open logname For Write Append
-  If Error Then
-    Error "Unable to open log file "; logname
-  Endif
-  Try Print #sfile, Format(Now, "yyyy/mm/dd hh:nn:ss.uu");; msg
-  Try Close sfile
-
-End
-
 Public Sub Main()
 
   $gshref = Me
-
+  $version = File.Load("version")
+  Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
   'Debug line ****
   'Print "starting "; CDate(Now)
 
@@ -720,7 +726,7 @@ Public Sub Main()
 
   VerifyAppDepend()
 
-  Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
+  If DoTrace Then Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
 
   If bSingleUse Then
     SharedMem.CollectMemLen = CollectMemLen
@@ -750,16 +756,9 @@ Public Sub Main()
   Class.Load("HelpSystem")
   Class.Load("gshReadLine")
   Class.Load("LocalTask")
+  Class.Load("gshlogging")
 
-  ' Try Component.Load(System.Find("gbs" & system.Version))
-  ' If Error Then
-  '   Print "gsh requires gambas scripter be installed"
-  '   SharedMem.end()
-  ' Endif
-  ' Try Class.Load("ScripterExecute")
-  ' If Not Error Then
   gbscomponent = True
-  ' Endif
 
   Try chdir(Env["PWD"])
 
@@ -810,7 +809,10 @@ Public Sub Main()
   ' Check if we have a one line command
   ' Posix says we must execute this command then exit
   ' we provide the environment for this execution in our shell
-  If TraceLevel > 2 Then DoTrace = True
+  If TraceLevel > 2 Then
+    DoTrace = True
+    SharedMem["dotrace"] = DoTrace
+  Endif
 
   'Check if we have request to execute a local function
 
@@ -909,7 +911,10 @@ Public Sub Main()
   Endif
 
   getline = New GshReadLine
-  If TraceLevel > 0 Then DoTrace = True
+  If TraceLevel > 0 Then
+    DoTrace = True
+    SharedMem["DoTrace"] = DoTrace
+  Endif
   ' Then assume it is an interactive session
   If Not bDbaseServer Then ' dont do this if in service mode
 
@@ -1037,9 +1042,17 @@ Catch
   Dim errorText As String = Error.text & ";" & Error.where
   Try gshlogging(User.home &/ "vars/gsh.log", "GSH Aborted with " & errorText & "(" & Error.where & ")")
 
-  If LocalFunRun <> "" Or If VarCommandSource <> "" Then
+  Dim exitcode As Integer = 1
 
-    ExitProgram(1)
+  If Left(ErrorText, 6) = "Abort:" Or If LocalFunRun <> "" Or If VarCommandSource <> "" Then
+
+    If Left(ErrorText, 6) = "Abort:" Then
+      Try exitcode = Split(errortext, ":")[1]
+      If Error Then exitcode = 2
+    Endif
+
+    Error "GSH aborted with error:";; errorText
+    ExitProgram(exitcode)
 
   Endif
 
@@ -1119,7 +1132,7 @@ End
 
 Public Sub SetTitle()
 
-  Print "\x1b]0;gsh " & Application.Version & "-" & User.name & "@" & System.host & ":" & Env["PWD"] & "\x07";
+  Print "\x1b]0;gsh " & $Version & "-" & User.name & "@" & System.host & ":" & Env["PWD"] & "\x07";
   Flush
 
 End
@@ -1457,7 +1470,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             ContainsGlobal = False
             Return
           Endif
-          'If DoTrace Then ecmd.Add("-t", 1)
+          'If DoTrace Then ecmd.Add("-t", TraceLevel)
           eCmd = ["/usr/bin/gbs3", "-T", ScriptName]
           eCmd.Insert(cmdLineParameters)
           If nowait Then
@@ -1879,7 +1892,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Endif
 
     If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed
-
     If DoAlias Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)
 
     InBufParse = Highlight.Analyze(InBuffer)
