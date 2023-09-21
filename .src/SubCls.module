@@ -209,7 +209,7 @@ Catch
     DoListing(SourceFile, s[1], s[2])
     Print
   Endif
-  Error.Raise("Compile completed with errors")
+  Error.Raise("Compile completed with errors : " & cname)
 
 End
 

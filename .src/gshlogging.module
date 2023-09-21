@@ -9,6 +9,8 @@ Public Sub _Call(logname As String, msg As String)
     Try locker = Lock "/tmp/gshlogger_lock"
     If Error Then
       Wait 0.001
+    Else
+      Break
     Endif
   Wend
 

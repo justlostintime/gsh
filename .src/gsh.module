@@ -160,11 +160,11 @@ Public Sub application_signal(sig As Integer)
     Case Signal.SIGTERM
       If RunningProcess <> Null Then
         Signal.send(RunningProcess.Handle, Signal.SigTerm)
-        Try gshlogging(User.home &/ "vars/gsh.log", "Process SigTerm" & RunningProcess.handle)
+        Try gshlogging(User.home &/ "vars/gsh.log", "Process Send SigTerm to child " & RunningProcess.handle)
         RunningProcess = Null
         Return
       Endif
-
+      Try gshlogging(User.home &/ "vars/gsh.log", " Gsh got SigTerm " & application.handle)
       ExitProgram()
 
     Case Signal.SIGINT
@@ -183,10 +183,10 @@ Public Sub application_signal(sig As Integer)
       Return
 
     Case Signal.SIGCHLD
-      Try gshlogging(User.home &/ "vars/gsh.log", "Process SigChld" & RunningProcess.handle)
-      If LocalRunning Then
-        LocalRunning = False
-      Endif
+      ' gshlogging(User.home &/ "vars/gsh.log", "Process SigChld" & RunningProcess.handle)
+      ' If LocalRunning Then
+      '   LocalRunning = False
+      ' Endif
       Return
   End Select
 
