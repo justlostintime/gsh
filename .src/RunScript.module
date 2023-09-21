@@ -1,0 +1,61 @@
+' Gambas module file
+
+Public Sub _call(cmd As String) As Boolean
+
+  Dim oldCommandMode As Boolean = gsh.CommandMode
+  Dim OldSource As String = gsh.Source
+  Dim oldAppSource As File = gsh.AppSource
+
+  cmd = Trim(Replace(cmd, "\"", ""))
+  Dim fPath As String = cmd
+
+  If File.Dir(fPath) = "" Then
+    fPath = User.home &/ "vars" &/ cmd
+    If Not Exist(fpath) Then
+      fpath = System.Find(cmd)
+      If IsNull(fPath) Then
+        fpath = cmd
+      Endif
+    Endif
+  Endif
+
+  fpath = CreateCmdProgram.getfullpath(fpath)
+
+  gsh.CommandMode = True
+  gsh.Source = "FILE"
+
+  Try gsh.AppSource = Open fpath For Read
+  If Error Then
+    Error ("Error : Gsh script: "); cmd; " -  "; Error.text
+    gsh.appSource = oldAppSource
+    gsh.Source = OldSource
+    gsh.CommandMode = OldCommandMode
+    Return False
+  Else
+    Dim SaveQueue As String[] = gsh.ReadQueue.Copy()
+    gsh.ReadQueue.clear()
+    While gsh.IfReader(["QUIT"])
+      gsh.ProcessProg()
+      Wait 0
+    Wend
+    gsh.ReadQueue.Insert(SaveQueue)
+  Endif
+
+  Close gsh.AppSource
+  gsh.appSource = oldAppSource
+  gsh.Source = OldSource
+  gsh.CommandMode = OldCommandMode
+  Return IIf(gsh.ReadQueue.count > 0, False, True)
+
+Catch
+
+  Close gsh.AppSource
+  gsh.appSource = oldAppSource
+  gsh.Source = OldSource
+  gsh.CommandMode = OldCommandMode
+  Error "gsh Script :";; Error.Text
+  Return IIf(gsh.ReadQueue.count > 0, False, True)
+
+End
+
+
