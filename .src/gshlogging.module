@@ -2,15 +2,24 @@
 
 Public Sub _Call(logname As String, msg As String)
 
+  Dim locker As Stream
   Dim sfile As File
+
+  While True
+    Try locker = Lock "/tmp/gshlogger_lock"
+    If Error Then
+      Wait 0.001
+    Endif
+  Wend
 
   Try sfile = Open logname For Write Append
   If Error Then
     Error "Unable to open log file "; logname
   Endif
-  Try Print #sfile, Format(Now, "yyyy/mm/dd hh:nn:ss.uu");; msg
+  Try Print #sfile, Format(Application.id, "#######0");; Format(Now, " yyyy/mm/dd hh:nn:ss.uuu");; msg
   Try Flush #sfile
   Try Close sfile
+  Unlock locker
 
 End
 
