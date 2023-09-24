@@ -180,10 +180,17 @@ Public Sub application_signal(sig As Integer)
         LocalRunning = False
         Error.Raise("Terminated")
       Endif
-      Return
+
+      If Not CommandMode Then
+        Return
+      Else
+        Try gshlogging(User.home &/ "vars/gsh.log", "Command Mode recieved Process Sigint(" & CStr(sig) & "):PID=" & Application.id)
+        'Signal.send(0, Signal.SigKill)
+        ExitProgram()
+      Endif
 
     Case Signal.SIGCHLD
-      ' gshlogging(User.home &/ "vars/gsh.log", "Process SigChld" & RunningProcess.handle)
+      'gshlogging(User.home &/ "vars/gsh.log", "Process SigChld")
       ' If LocalRunning Then
       '   LocalRunning = False
       ' Endif
@@ -899,8 +906,11 @@ Public Sub Main()
     CommandMode = True
     Source = "FILE"
     Dim runcmder As String = cmdLineParameters[0]
+    If File.Dir(runcmder) = "" Or If runcmder[0] <> "/" Then
+      runcmder = Env["PWD"] &/ runcmder
+    Endif
 
-    If DoTrace Then Error "(Trace "; Now; ") ";; ("Execite gsh script file");; runcmder
+    If DoTrace Then Error "(Trace "; Now; ") ";; ("Execute gsh script file");; runcmder
     Try AppSource = Open runcmder For Read
     If Error Then
       Error "Gsh script not found : "; runcmder
@@ -925,6 +935,7 @@ Public Sub Main()
     DoTrace = True
     SharedMem["DoTrace"] = DoTrace
   Endif
+
   ' Then assume it is an interactive session
   If Not bDbaseServer Then ' dont do this if in service mode
 
@@ -1110,6 +1121,10 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
   Signal[Signal.SIGABRT].ignore
 
   Try gshlogging(User.home &/ "vars/gsh.log", "GSH Exits program PID= " & Application.Id & ",Exit code=" & ExitValue)
+
+  gshlogging.EndLog
+  gshlogging.logrotate()
+
 
   If exitValue < 32000 Then
     If bSingleUse Then
@@ -1416,6 +1431,10 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       Endif
 
       execprog = program  ' save a copy of last executed program, can be edited by "edit execprog" on command line
+      If TraceLevel >= 20 Then
+        File.Save(user.home & "/vars/ExecProg.gbs", program)
+        Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
+      Endif
 
       If gbscomponent And If Not NoWait Then
         If jobctl Then RunningProcessStart = Now
@@ -1445,11 +1464,6 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             For Each sdf As String In Split(program, "\n", "\"\"")
               Error "(Trace "; Now; ") "; ("Execute External "); ": "; sdf
             Next
-          Endif
-
-          If TraceLevel = 20 Then
-            File.Save(user.home & "/vars/ExecProg.gbs", program)
-            Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
           Endif
 
           CompileResult = ""

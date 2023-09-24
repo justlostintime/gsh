@@ -123,8 +123,8 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
     Wait 0
     If DoTrace Then Error ("Trying to read from terminal")
     If retryloop = 0 Then
-      Error ("Unable to evaluate any prompt type")
-      prompt = "$"
+      Error ("Unable to evaluate any prompt type using ' $ '")
+      prompt = " $ "
     Else
 
       'Debug Line * * * *

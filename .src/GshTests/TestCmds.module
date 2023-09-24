@@ -17,7 +17,7 @@ End
 
 Public Sub rr_Kill()
 
-  Print "Killed"
+  Print "Test command Killed"
 
 End
 

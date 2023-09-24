@@ -203,13 +203,14 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
 
 Catch
   Dim s As String[] = Split(Error.text, ":", "", True)
-  Error "\n\x1b[33mCompiler Error -";; Error.Text;; "\x1b[0m";; If(s.count < 3, Error.where, "")
+  Dim emsg As String = "\n\x1b[33mCompiler Error - " & Error.Text & " \x1b[0m " & If(s.count < 3, Error.where, "")
+  Error emsg
   If Not compileonly And cObject.iFirstDef Then SubsAndClasses.Remove(cname)
   If s.count > 2 Then
     DoListing(SourceFile, s[1], s[2])
     Print
   Endif
-  Error.Raise("Compile completed with errors : " & cname)
+  Error.Raise("Compile completed with errors : " & cname & " : " & emsg)
 
 End
 
