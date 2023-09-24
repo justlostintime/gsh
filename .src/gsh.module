@@ -32,7 +32,7 @@ Public CompileOnly As Boolean = False
 Public InBuffer As String
 Public NoPreProcess As Boolean = False
 Public NoLinkCheck As Boolean = False
-Public CommandMode As Boolean = True
+Public CommandMode As Boolean = False
 Public InLineCommand As String = ""
 Public VarCommandSource As String = ""
 Public LocalFunRun As String = ""
