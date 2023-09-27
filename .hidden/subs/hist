@@ -7,7 +7,7 @@ Sub hist(Optional StartingAt As Integer = 0, numberShown As Integer = 0) As Bool
 ''          $result contains the error text or "OK"
 ''
 with sharedmem
-dim cH as collection = .["$history"]
+dim cH as collection = .["history"]
 dim s as string
 if StartingAt = 0 then
 StartingAt = cint(ch.first)
