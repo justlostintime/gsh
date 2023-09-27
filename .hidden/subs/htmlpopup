@@ -1,6 +1,12 @@
 Sub htmlpopup(htmltext As String,optional Title as string = "HTML PAGE") as window           '' Display an html page in a popup window
 
+extern dup(oldCode as integer) as integer in "libc:6"
+extern dup2(newid as integer, replaceid as integer) as integer in "libc:6"
+Public StdOut as integer = 1
+Public StdErr as integer = 2
+
 use "gb.form","gb.image","gb.gui","gb.form.htmlview","gb.settings","gb.gui.webview"
+
     dim iHeight as integer = 500
     dim iWidth as integer  = 500
 
@@ -13,8 +19,15 @@ use "gb.form","gb.image","gb.gui","gb.form.htmlview","gb.settings","gb.gui.webvi
 
     dim efile as file
     efile = open "/dev/null" for write
-    error to efile
-    output to efile
+    Public OldStdout as integer
+    OldStdout = dup(StdOut)                ' save the old handle
+    Public OldStderr as integer
+    OldStderr = dup(StdErr)                ' save the old handle
+    dup2(efile.handle,StdOut)              ' Replace with our handle
+    dup2(efile.handle,StdErr)              ' Replace with our handle
+    close efile
+
+    env["NODE_NO_WARNINGS"] = 1
 
     Public MainWIndow as window
         MainWindow = new window as "MyWin"
@@ -60,6 +73,8 @@ public sub MyWin_close()
     settings["htmlpopup/width"] =  MainWindow.Width
     settings["htmlpopup/left"]  =  MainWindow.left
     settings["htmlpopup/top"]   =  MainWindow.top
+    dup2(OldStderr,StdOut)                            ' restore the system default
+    dup2(oldStderr,StdErr)                            ' restore the system default
 end
 
 Public sub MyWin_Resize()
