@@ -226,6 +226,14 @@ Public Sub _init()
   Try Class.Load("gshlogging")
   Try Class.Load("RunScript")
 
+  Try Component.Load("westwood.gb.scripter")
+  If Error Then
+    Error "gb.scripter not found, default to internal build"
+    gbscomponent = False
+  Else
+    gbscomponent = True
+  Endif
+
   SharedMem.DoInit()
 
 End
@@ -273,6 +281,9 @@ Public Sub ProcessOptions() As String[]
     Print ("gsh :");; $Version
     Print ("SharedMem :");; SharedMem.Version
     Print ("Script :");; Script.Version
+    For Each c As Component In components
+      Print c.name;; ":";; c.version
+    Next
     Quit 0
   Endif
 
@@ -805,17 +816,7 @@ Public Sub Main()
   SharedMem["pwd"] = Env["PWD"]
   SetDefaults()
 
-  ' Class.Load("SubCls")
-  ' Class.Load("CreateCmdProgram")
-  ' Class.Load("Parser")
-  ' Class.Load("ServiceMode")
-  ' Class.Load("HelpSystem")
-  ' Class.Load("gshReadLine")
-  ' Class.Load("LocalTask")
-  ' Class.Load("gshlogging")
-  ' Class.Load("RunScript")
 
-  gbscomponent = True
 
   Try chdir(Env["PWD"])
 
