@@ -110,6 +110,7 @@ Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
 
+'' Set the trace level while running the script
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel)    ' this function turns on the compile tracing
 
   DoTrace = setting
@@ -119,13 +120,15 @@ Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel) 
 
 End
 
+'' turn on or off the job control system
+'' Causes the shell to track all jobs, keep job history
 Public Sub setjobctl(setting As Boolean)
 
   jobctl = setting
 
 End
 
-
+'' Function the catches the system signals
 Public Sub application_signal(sig As Integer)
   ' Signal[Signal.sigtstp].Ignore
   '   Signal[Signal.sigterm].catch
@@ -199,6 +202,8 @@ Public Sub application_signal(sig As Integer)
 
 End
 
+'' called to veirify that a loaded module can
+'' access the shell interface
 Public Sub TestModuleAccess() As Boolean
 
   Return True
@@ -207,11 +212,19 @@ End
 
 Public Sub _init()
 
-  Component.Load("gb.signal")
-  Class.Load("Signal")
-  Class.Load("SubCls")
-  Class.Load("CreateCmdProgram")
-  Class.Load("gshReadLine")
+  Dim result As Integer
+
+  Try Component.Load("gb.signal")
+  Try Class.Load("Signal")
+  Try Class.Load("SubCls")
+  Try Class.Load("CreateCmdProgram")
+  Try Class.Load("Parser")
+  Try Class.Load("ServiceMode")
+  Try Class.Load("HelpSystem")
+  Try Class.Load("gshReadLine")
+  Try Class.Load("LocalTask")
+  Try Class.Load("gshlogging")
+  Try Class.Load("RunScript")
 
   SharedMem.DoInit()
 
@@ -257,9 +270,9 @@ Public Sub ProcessOptions() As String[]
   Endif
 
   If br Then
-    Print ("gsh    Rev:") & $Version
-    Print ("Script Rev:") & SharedMem.Version
-    Print ("Shared Mem Rev:") & Script.Version
+    Print ("gsh :");; $Version
+    Print ("SharedMem :");; SharedMem.Version
+    Print ("Script :");; Script.Version
     Quit 0
   Endif
 
@@ -361,7 +374,10 @@ Catch
 
 End
 
-
+'' Find the location of a plugin subroutine
+'' Load the script as a string variable with name sub.Name
+'' Check if it has changed and if we need to compile and load the
+'' Plugin class. The class must have a function by the same name
 Public Sub GetSub(cmd As String) As Boolean
 
   Dim fpath As String
@@ -396,12 +412,17 @@ Public Sub GetSub(cmd As String) As Boolean
 
 End
 
+'' Return a list of all the system variables
+'' These variables are not cleared or deleted
+'' by any of the system functions
 Public Sub SystemVariables() As String[]
 
   Return SysVars
 
 End
 
+'' Sets the defaults for all of the system variables
+'' Uses values found in the system image if present
 Private Sub SetDefaults()
 
   With sharedmem
@@ -482,12 +503,15 @@ Private Sub SetDefaults()
 
 End
 
+'' Updates the environment variables used by the exec
+'' function when running scripts
 Private Sub UpdateEnv()
 
   getenv()
 
 End
 
+'' Get the env variables into the gsh.image variable
 Public Sub getenv() As String[]
 
   SharedMem["pwd"] = Env["PWD"]
@@ -501,7 +525,10 @@ Public Sub getenv() As String[]
 
 End
 
-
+'' Used to compile and load all plugin classes
+'' that are part of the loaded gsh.image file
+'' Called after the shared memory has been initialized.
+'' the compile function checks the cache
 Public Sub compileClassOnStart()
 
   Dim Syms As String[] = SharedMem.Variables("class.*")
@@ -519,6 +546,9 @@ Public Sub compileClassOnStart()
 End
 
 
+'' Load and compile all sub/func that are a part
+'' of the gsh.image at startup.
+'' the compile function checks the cache
 Public Sub compileFunctionsOnStart()
 
   Dim Syms As String[] = SharedMem.Variables("sub.*")
@@ -534,6 +564,9 @@ Public Sub compileFunctionsOnStart()
 
 End
 
+'' compile and load the sub/func in a buffer
+'' convert the sub into a class with an entry point equal to the sub name
+'' checks if already compiled and in cache.
 Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As Boolean = False) As Boolean
 
   Dim proc As String = ""
@@ -592,6 +625,9 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
 
 End
 
+'' Create a project And optionally execute it
+'' Will build the gambas app structure from the contents of a shared mem symbol
+'' Once compiled can be executed immeadiatly.
 Private Sub CreateProject(sym As String, buffer As String, Optional componly As Boolean = False, ExecuteProject As Boolean = False) As String
 
   Dim proc As String = ""
@@ -644,6 +680,9 @@ Private Sub CreateProject(sym As String, buffer As String, Optional componly As 
 End
 
 
+'' Compile the content of a shared memory sysmbol
+'' loads the class created and compiled into memory
+'' ready for execution
 Private Sub Compile(sym As String, Optional componly As Boolean = False) As Boolean
 
   Dim proc As String = SharedMem[Lower(sym)]
@@ -673,6 +712,9 @@ Private Sub Compile(sym As String, Optional componly As Boolean = False) As Bool
 
 End
 
+'' Create all of the directories  required directories needed by gsh
+'' set the default onstart and onexit functions in ~/vars
+'' set the default profile.gsh in ~vars. Make executable
 Private Sub VerifyAppDepend()
 
   If Not Exist(User.home &/ "vars") Then
@@ -763,15 +805,15 @@ Public Sub Main()
   SharedMem["pwd"] = Env["PWD"]
   SetDefaults()
 
-  Class.Load("SubCls")
-  Class.Load("CreateCmdProgram")
-  Class.Load("Parser")
-  Class.Load("ServiceMode")
-  Class.Load("HelpSystem")
-  Class.Load("gshReadLine")
-  Class.Load("LocalTask")
-  Class.Load("gshlogging")
-  Class.Load("RunScript")
+  ' Class.Load("SubCls")
+  ' Class.Load("CreateCmdProgram")
+  ' Class.Load("Parser")
+  ' Class.Load("ServiceMode")
+  ' Class.Load("HelpSystem")
+  ' Class.Load("gshReadLine")
+  ' Class.Load("LocalTask")
+  ' Class.Load("gshlogging")
+  ' Class.Load("RunScript")
 
   gbscomponent = True
 

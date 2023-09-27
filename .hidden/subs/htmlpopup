@@ -73,7 +73,7 @@ public sub MyWin_close()
     settings["htmlpopup/width"] =  MainWindow.Width
     settings["htmlpopup/left"]  =  MainWindow.left
     settings["htmlpopup/top"]   =  MainWindow.top
-    dup2(OldStderr,StdOut)                            ' restore the system default
+    dup2(OldStdout,StdOut)                            ' restore the system default
     dup2(oldStderr,StdErr)                            ' restore the system default
 end
 
