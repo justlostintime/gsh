@@ -1143,11 +1143,11 @@ DoAliasAgain:
     akey = Replace(akey, "$", "\\$")
 
     If Not used.Exist(akey) Then
-      If InStr(aKey, "()") > 0 Then
+      If InStr(aKey, "()") > 0 Then                                                    ' check if this is a parameterized alias aKey is alias name
         'If MyReg.Match(data, "^.*" & Left(aliaslist.key, aliaslist.Key.len - 1) & "([(]+.*+[)])") Then
-        MyReg.compile("^" & Left(aKey, aKey.len - 2) & "([(].*[)])", RegExp.MultiLine)
-        MyReg.Exec(data)
-        If MyReg.Count > 0 Then
+        MyReg.compile("^" & Left(aKey, aKey.len - 2) & "([(].*[)])", RegExp.MultiLine)                 ' find the parameters after removing the ()
+        MyReg.Exec(data)                                                                                                                              ' Do the matching on the data for parameters
+        If MyReg.Count > 0 Then                                                                                                                 ' if any present then stick into replace value up to 20 parameters
           'Print MyReg[0].text
           Dim params As New String[]
           Dim BreakPos As Integer = InStr(MyReg[0].text, "(")
@@ -1164,15 +1164,15 @@ DoAliasAgain:
         Endif
 
       Else If aliaslist.key = Trim(data) Then
-        data = s.Join(" ") & " "
+        data = Replace(data, aliaslist.key, s.Join(" "), gb.ignorecase)
 
       Else If RegExp.Match(data, "^" & akey & "[ <>|!&\n\t]") Then
-        data = RegExp.replace(data, "^" & aKey & "[ <>|!&\n\t]", s.Join(" ") & " ")
+        data = RegExp.replace(data, "^" & aKey & "([ <>|!&\n\t])", s.Join(" ") & "&1 ")
         used.Add(aliaslist.key)
         Goto DoAliasAgain
 
-      Else If RegExp.Match(data, "[ !|><&]" & akey & "[ <>|!&\n\t]") Then
-        data = RegExp.replace(data, "[^!| ]" & aKey & "[ <>|!&\n\t]", s.Join(" ") & " ")
+      Else If RegExp.Match(data, "[ `!|><&]" & akey & "[ `<>|!&\n\t]") Then
+        data = RegExp.replace(data, "([`!|><& ])" & aKey & "([ `<>|!&\n\t])", "&1" & s.Join(" ") & "&2")
         used.Add(akey)
         Goto DoAliasAgain
       Endif
