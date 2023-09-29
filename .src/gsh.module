@@ -2019,7 +2019,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Select Case HTypes[hstart]
       Case Highlight.Keyword
         Select Case Upper(InBufParse[parsepos])
-          Case "PUBLIC", "PRIVATE"
+          Case "PUBLIC", "PRIVATE", "CONST"
             If HTypes.count > 3 And If hstart = 0 And If HTypes[hstart + 1] = Highlight.Symbol And If HTypes[hstart + 2] = Highlight.Keyword And If Upper(InBufParse[parsepos + 2]) = "AS" Then
               ' If DoTrace Then Error "(Trace "; Now; ") "; ("\x1b[32mDefined Public to Extern table");; ExecBuffer;; "\x1b[0m"
               ' Dim publicdef As String = getlastline(execbuffer)
@@ -3453,10 +3453,17 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
           ExternTable.Add(Trim(OutBuf))
           Outbuf = "'" & OutBuf
         Endif
-      Else If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE") And If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
-        If Not ExternTable.Exist(Trim(OutBuf)) Then
-          ExternTable.Add(Trim(OutBuf))
-          Outbuf = "'" & OutBuf
+      Else If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE" Or syms[PublicCheck] = "CONST") Then
+        If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
+          If Not ExternTable.Exist(Trim(OutBuf)) Then
+            ExternTable.Add(Trim(OutBuf))
+            Outbuf = "'" & OutBuf
+          Endif
+        Else If syms.count > (4 + PublicCheck) And If syms[PublicCheck + 1] = "CONST" And If types[2 + PublicCheck] = Highlight.symbol And If types[3 + PublicCheck] = Highlight.keyword And syms[3 + PublicCheck] = "AS" Then
+          If Not ExternTable.Exist(Trim(OutBuf)) Then
+            ExternTable.Add(Trim(OutBuf))
+            Outbuf = "'" & OutBuf
+          Endif
         Endif
       Endif
     Endif
