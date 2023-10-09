@@ -1153,14 +1153,14 @@ Public Sub AliasReplace(Data As String) As String
 
 DoAliasAgain:
   For Each s In aliaslist
-    Dim akey As String = aliaslist.key
-    If InStr(data, akey) = 0 Then Continue
+    Dim akey As String = aliaslist.Key
 
     akey = Replace(akey, "?", "\\?")
     akey = Replace(akey, "$", "\\$")
 
     If Not used.Exist(akey) Then
       If InStr(aKey, "()") > 0 Then                                                    ' check if this is a parameterized alias aKey is alias name
+        If InStr(data, Left(akey, -2)) = 0 Then Continue
         'If MyReg.Match(data, "^.*" & Left(aliaslist.key, aliaslist.Key.len - 1) & "([(]+.*+[)])") Then
         Dim searchstr As String = "(.*[^\\w]?)" & Left(akey, -2) & "[(](.*)[)](.*$)"
         MyReg.compile(searchStr, RegExp.MultiLine)                 ' find the parameters after removing the ()
@@ -1182,6 +1182,9 @@ DoAliasAgain:
         'Endif
         used.Add(aliaslist.key)
         Goto DoAliasAgain
+      Else If InStr(data, akey) = 0 Then
+        Continue
+
       Else If aliaslist.key = Trim(data) Then
         data = Replace(data, aliaslist.key, s.Join(" "), gb.ignorecase)
         used.Add(aliaslist.key)
