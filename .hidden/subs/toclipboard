@@ -1,11 +1,13 @@
 Sub toclipboard(fileName as string,optional source as string = "") '' copy a file into the clipboard
 '' Copies a file into the clipboard
-'' if a second string parameter is included then the string 
+'' if a second string parameter is included then the string
 '' is copied to the clipboard
 '' it uses the xclip cli to do this
 '' alias tcb='toclipboard'
 
-dim lookfor as string 
+use "gb.gui","gb.image"
+class.load("clipboard")
+dim lookfor as string
 
 if source =  "" then
   lookfor = expandfn(filename)
