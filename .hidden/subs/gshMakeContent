@@ -1,0 +1,78 @@
+' Gsh Library content builder
+' This builds the content file for online gsh script repositories
+'
+' Copyright (C)  Brian G
+'
+' This program is free software; you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation; either version 2 of the License, or
+' (at your option) any later version.
+'
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License
+' along with this program; if not, write to the Free Software
+' Foundation, Inc., 51 Franklin St, Fifth Floor,
+' Boston, MA  02110-1301  USA
+'
+
+Public Sub gshmakecontent()
+
+    use ""
+    Dim execOutput As String
+    Dim BaseDir As String = Application.dir
+    Dim ContentFile As String = BaseDir &/ "content"
+    Dim FileInfo As Stat
+    Dim MemContent As String[]
+    Dim CurrentDirectory As String = BaseDir
+    Dim filename As String
+    Dim FIle_Types As String[] = ["*", "=", ">", "@", "|"]
+    Dim outText As String
+
+    Print "Build the Content for "; BaseDir
+    Env["PWD"] = BaseDir
+    Exec ["/bin/ls", "-1", "-R", "--file-type", "."] With Env.copy() To execOutput
+    MemContent = Split(execOutput, "\n", "\"\"", True, True)
+    Dim OutContent As New String[]
+
+    Print "Processing "; MemContent.count;; "Entries"
+    Dim Counter As Integer = 0
+    
+    For Each filename As String In Memcontent
+        If FIle_Types.Exist(Right(filename, 1)) Then
+            filename = Left(filename, -1)
+        Endif
+
+        Inc counter
+
+        If filename[0] = "." Then
+            outText = filename & ","&str(now)&",DirectoryTitle"
+            OutContent.add(outText)
+            CurrentDirectory = BaseDir &/ Mid(filename, 2, filename.len - 2)
+            Continue
+        Endif
+
+        Dim StatFIleName As String = CurrentDirectory &/ filename
+        fileinfo = Stat(StatFileName)
+
+        Print Format(counter, "######0");; "File : ";; Statfilename;;
+
+        If fileinfo.type = gb.Directory Or If fileinfo.type = gb.link Then
+            outText = Filename & "," & CStr(fileinfo.LastModified) & ",directory"
+        Else If fileinfo.type = gb.file Then
+            Dim md5sum As String
+            Exec ["md5sum", StatFileName] To md5sum
+            md5sum = Split(Trim(md5sum), " ")[0]
+            outText = FileName & "," & CStr(fileinfo.lastModified) & "," & md5sum
+        Endif
+        
+        OutContent.add(outText)
+        Print OutText
+    Next
+
+    File.Save(ContentFile, outContent.join("\n"))
+
+End

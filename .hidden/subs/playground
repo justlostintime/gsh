@@ -65,7 +65,7 @@ flush
 line input answer
 if answer = 0 or if answer == "q" then return
 if not isnumber(answer) or if cint(answer) > Choices.count or if cint(answer) < 1 then
-    print "Invalid Selection" 
+    print "Invalid Selection"
     goto retryAnswer
 endif
 
@@ -93,7 +93,7 @@ SaveSub(filename,editbuffer)
 
 print "\ec"
 Print "Function loaded it may be executed by entering : ";filename
-Print " or edited by entering : edit "&filename 
+Print " or edited by entering : edit "&filename
 end with
 end
 
@@ -111,12 +111,12 @@ Next
 End
 
 Sub FindText(g As String)
-  
+
   Dim sBlock As String
   sBlock = RegExp.Replace(g, "<.*>", "")
   sBlock = Trim(sBlock)
   STable.Add(sblock)
-  
+
 End
 
 Public Sub BuildExample()
@@ -143,7 +143,7 @@ sub editexample(index as string) as string
            error Error.text;; ":" ;; Error.where
       Endif
    Next
-  
+
    dim filename as string = replace(index," ","_")
    dim savepath as string
    savepath = user.home &/"vars/playground" &/ filename
@@ -160,6 +160,7 @@ Public sub DisplayListing(AllIndex as string[])
 
   Dim colcount As Integer = 0
   Dim colwidth As Integer = 0
+  Dim termWidth as integer = 80
   Dim colperiod As Integer = 0
   Dim CurrentElement As Integer = 0
   Dim PrtText as string
@@ -170,7 +171,8 @@ Public sub DisplayListing(AllIndex as string[])
 
   colwidth += 2
 
-  colcount = CInteger(env["COLUMNS"]) / colwidth
+  termWidth = file.out.term.width
+  colcount = termWidth / colwidth
   colperiod = allindex.count / colcount
   colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
   For i As Integer = 0 To colperiod - 1
@@ -180,7 +182,7 @@ Public sub DisplayListing(AllIndex as string[])
            PrtText = Left(allindex[CurrentElement] & Space(colwidth), colwidth)
        else
            Prttext = Space(ColWidth)
-       endif 
+       endif
        Try Print PrtText;
      Next
      Print

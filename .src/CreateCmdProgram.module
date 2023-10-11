@@ -1154,35 +1154,19 @@ Public Sub AliasReplace(Data As String) As String
 DoAliasAgain:
   For Each s In aliaslist
     Dim akey As String = aliaslist.Key
-
     akey = Replace(akey, "?", "\\?")
     akey = Replace(akey, "$", "\\$")
-
     If Not used.Exist(akey) Then
-      If InStr(aKey, "()") > 0 Then                                                    ' check if this is a parameterized alias aKey is alias name
-        If InStr(data, Left(akey, -2)) = 0 Then Continue
-        'If MyReg.Match(data, "^.*" & Left(aliaslist.key, aliaslist.Key.len - 1) & "([(]+.*+[)])") Then
+      If InStr(aliasList.key, "()") > 0 Then                                                                                 ' check if this is a parameterized alias aKey is alias name
+        If InStr(data, Left(aliasList.key, -2)) = 0 Then Continue
+
         Dim searchstr As String = "(.*[^\\w]?)" & Left(akey, -2) & "[(](.*)[)](.*$)"
-        MyReg.compile(searchStr, RegExp.MultiLine)                 ' find the parameters after removing the ()
-        data = multiSub(akey, data, MyReg)                                                                                                                              ' Do the matching on the data for parameters
-        ' If MyReg.Count > 0 Then                                                                                                                 ' if any present then stick into replace value up to 20 parameters
-        'Print MyReg[0].text
-        ' Dim params As New String[]
-        ' Dim BreakPos As Integer = InStr(MyReg[0].text, "(")
-        ' Params.Add(Left(MyReg[0].text, BreakPos - 1)) ' add the alias name
-        ' Dim Parameters As String = Mid(MyReg[0].text, BreakPos + 1, MyReg[0].text.len - BreakPos - 1)
-        ' Params.Insert(Parser(Parameters, AliasParms))
-        ' MyParams = New String[]
-        ' For i As Integer = 1 To IIf(params.count - 1 > 20, 19, params.max)
-        '   If Params[i] = "," Then Continue
-        '   MyParams.Add(IIf(params[i][0] = "'", Mid(params[i], 2, params[i].len - 2), Params[i]))
-        ' Next
-        ' MyParams.Insert(MyParmsDummy)
-        ' data = Replace(data, MyReg[0].text, Subst(s.Join(" ") & " ", MyParams[0], MyParams[1], MyParams[2], MyParams[3], MyParams[4], MyParams[5], MyParams[6], MyParams[7], MyParams[8], MyParams[9], MyParams[10], MyParams[11], MyParams[12], MyParams[13], MyParams[14], MyParams[15], MyParams[16], MyParams[17], MyParams[18], MyParams[19]))
-        'Endif
+        MyReg.compile(searchStr, RegExp.MultiLine)                                             ' find the parameters after removing the ()
+        data = multiSub(aliasList.key, data, MyReg)                                                              ' Do the matching on the data for parameters
         used.Add(aliaslist.key)
         Goto DoAliasAgain
-      Else If InStr(data, akey) = 0 Then
+
+      Else If InStr(data, aliaslist.key) = 0 Then
         Continue
 
       Else If aliaslist.key = Trim(data) Then

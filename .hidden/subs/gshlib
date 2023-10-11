@@ -1,0 +1,417 @@
+' gsh plugin script
+
+Sub gshlib(...) As Collection  'manage the gsh online library
+    '' this allows the user to search and retrieve programs from
+    '' the online gsh library
+    '' called with an indicator to just return the library
+    '' to be used within another script
+
+    Dim noselect As Boolean = False
+    Dim Searchfor As String = ""
+
+    If param.count > 0 Then
+        For Each p As Variant In param.all
+            If TypeOf(p) = gb.boolean Then
+                noselect = p
+            Else If TypeOf(p) = gb.string Then
+                SearchFor = p
+            Else
+                error.raise("gshlib : invalid parameter passed : " & CStr(p))
+            Endif
+        Next
+    Endif
+
+    Use "westwood.sharedmem", "gb.net", "gb.net.curl", "gb.term", "gb.util", "gb.eval.highlight"
+    Extern chdir(Dest As String) As Integer In "libc:6"
+    Private BaseUrl As String
+    Private sMainIndex As Collection
+
+    Private FlatIndex As Variant[]
+    Private FlatNames As String[]
+    Private FlatDates As Date[]
+    Private FlatMd5sum As String[]
+
+    Private hClient As Httpclient
+
+    BaseUrl = "https://raw.githubusercontent.com/justlostintime/gshlibrary/master"
+    sMainIndex = New Collection(gb.ignorecase)
+    FlatIndex = New Variant[]
+    FlatNames = New String[]
+
+
+    Try class.load("httpClient")
+    If Error Then
+        Print "Gsh Examples was unable to load the class httpClient"
+        Return
+    Endif
+
+    If hclient = Null Then
+        hclient = New HttpClient
+        hclient.Async = False
+    Endif
+
+    With sharedmem
+        Print "\ec"
+        Dim strJson As String
+        Try strJson = hclient.Download(BaseUrl &/ "content")
+        If Error Or If strjson = "" Then
+            Error ("Error fetching content Index")
+            Return
+        Else
+            Print "Retrieved Index"
+        Endif
+
+        BuildIndex(strjson)
+
+        If noSelect Then
+            hclient.close()
+            Return sMainIndex
+        Endif
+
+        Dim indexStack As New Collection[]
+        indexStack.Push(sMainIndex)
+
+        Dim reply As Variant = ""
+        Dim ReplyIndex As Integer = 0
+        Dim helptext As String = "*  Enter the number or name of the script/directory in current directory to install it\n"
+            "*    include the / when using directory names\n"
+            "*  q to Quit, U to move up a level\n"
+            "*  i ## or Name from current directory to get info about a script\n"
+            "*  p ## or name from current directory to see a listing of the script\n"
+            "*  s name(May be regular expression) to search for a script\n"
+            "*  c Clear screen"
+            "*  h or ? to display this text\n"
+
+        Print helptext
+
+        While reply <> "Q"
+            BuildFlatIndex(indexStack.last)
+            PrintFlatIndex()
+        retryAnswer:
+            Print "*  H for help   %> ";
+            Flush
+            Line Input reply
+            reply = Trim(Lower(reply))
+            Select Case Trim(Left(reply, 2))
+                Case ""
+                    Goto retryAnswer
+
+                Case "c"
+                    Print "\ec"
+
+                Case "h", "?"
+                    Print HelpText
+
+                Case "q"
+                    Break
+
+                Case "u"
+                    If indexStack.count > 1 Then indexstack.pop()
+
+                Case "s"
+                    Dim sValue As String = Trim(Right(reply, -1))
+                    Dim searchCol As Collection
+                    SearchCol = SearchMain(sValue)
+                    If SearchCol.count = 0 Then
+                        Print "*  GSHLIB : No Matches Found"
+                        Continue
+                    Endif
+                    indexStack.push(SearchCol)
+
+                Case "i"
+                    Dim value As Integer
+                    Try value = CInt(Right(reply, -1))
+                    If Error Then
+                        reply = Trim(Right(reply, -1))
+                        Print "*  GSHLIB : Looking for information for";; reply
+                        If Flatnames.exist(reply, gb.ignorecase) Then
+                            value = FlatNames.find(reply, gb.ignorecase) + 1
+                        Else
+                            Print "GHSLIB : invalid information request format";; reply
+                            Goto retryAnswer
+                        Endif
+                    Endif
+
+                    displayInfo(value)
+
+                Case "p"
+
+                    Try value = CInt(Right(reply, -1))
+                    If Error Then
+                        reply = Trim(Right(reply, -1))
+                        Print "*  GSHLIB : Display Listing  for";; reply
+                        If Flatnames.exist(reply, gb.ignorecase) Then
+                            value = FlatNames.find(reply, gb.ignorecase) + 1
+                        Else
+                            Print "GHSLIB : invalid listing  request format";; reply
+                            Goto retryAnswer
+                        Endif
+                    Endif
+
+                    ScriptListing(value)
+
+                Default
+
+                    If Not IsInteger(reply)
+                        reply = Trim(reply)
+                        Print "*  GSHLIB : Looking for name :";; reply
+                        If Flatnames.exist(reply, gb.ignorecase) Then
+                            replyindex = FlatNames.find(reply, gb.ignorecase)
+                        Else
+                            Print "*  GHSLIB : invalid script name for installation request";; reply
+                            Print "*  enter a,u,i,s,c,h,?,number or script/directory name"
+                            Goto retryAnswer
+                        Endif
+                    Else
+                        ReplyIndex = CInt(reply) - 1
+                    Endif
+
+
+
+                    If replyIndex < 0 And replyIndex > FlatNames.max Then
+
+                        Print "Invalid selection Possible values are : 1-"; FlatNames.count
+                        Goto retryAnswer
+                    Endif
+
+                    Dim index As String = FlatNames[replyIndex]
+                    If index[0] = "/" Then
+                        indexStack.Push(FlatIndex[ReplyIndex])
+                    Else
+                        Dim Program As String = hclient.Download(BaseUrl &/ FlatIndex[replyIndex])
+                        Dim filename As String = User.home &/ "vars" &/ FlatIndex[replyIndex]
+
+                        If Not Exist(file.dir(filename)) Then shell.mkdir(file.dir(filename))
+
+                        Print "Saving";; Quote(FlatIndex[replyIndex]);; "to :";; Filename
+                        File.Save(filename, Program)
+                    Endif
+
+            End Select
+
+        Wend
+
+    End With
+
+    hclient.Close()
+    hclient = Null
+    Return sMainIndex
+
+Catch
+    Error error.text;; error.where
+    Try hclient.Close()
+
+End
+
+Sub searchMain(key As String) As Collection
+
+    Dim results As New Collection
+
+    Print "*  Searching for "; Quote(key)
+    dosearch(results, smainIndex, key)
+    Return results
+
+End
+
+Sub dosearch(results As Collection, Source As Collection, key As String, Optional prolog As String = "")
+
+    For Each value As Variant In Source
+        If Source.key Like key Then
+            results.add(value, Prolog &/ Source.key)
+        Endif
+        If Source.key[0] = "/" Then
+            dosearch(results, value[0], key, Source.key)
+        Endif
+    Next
+
+End
+
+Sub ScriptListing(index As Integer)
+
+    Dim ConsoleHighlight As New gshHighlight
+
+    index = index - 1
+    If index < 0 Or index > FlatNames.max Then
+        Print "GSHLIB : Invalid index value provided must be : 1 and "; flatnames.count
+        Return
+    Endif
+
+    Dim ref As String = FlatNames[index]
+    If ref[0] = "/" And If TypeOf(FlatIndex[index]) = gb.object Then
+        Print "Directory, I can't list a directory file!"
+        Return
+    Endif
+
+    Dim Program As String[]
+    Dim InText As String = hclient.Download(BaseUrl &/ FlatIndex[Index])
+
+    Print ConsoleHighlight.ToConsole(InText)
+
+End
+
+Sub displayInfo(index As Integer)
+
+    index = index - 1
+    If index < 0 Or index > FlatNames.max Then
+        Print "GSHLIB : Invalid index value provided must be : 1 and "; flatnames.count
+        Return
+    Endif
+
+    Dim ref As String = FlatNames[index]
+    If ref[0] = "/" And If TypeOf(FlatIndex[index]) = gb.object Then
+        Print "Directory"
+        Return
+    Endif
+
+    Dim Program As String[]
+    Dim InText As String = hclient.Download(BaseUrl &/ FlatIndex[Index])
+    Program = Split(intext, "\n", "\"\"", True, True)
+
+    Dim InfoPool As New String[]
+    Dim DocuPool As New String[]
+    Dim Title As String = ""
+    For Each sline As String In Program
+        sline = Trim(sline)
+        If Left(sline, 2) = "''" Then
+            InfoPool.push(Right(sline, -2))
+        Else If Left(sline, 2) = "'''" Then
+            Docupool.push(Right(sline, -3))
+        Else If RegExp.Match(sline, ".*(?:SUB|CLASS|FUNCTION|PROCEDURE|STRUCT).*", RegExp.Caseless) And If title = "" Then
+            Title = sline
+        Endif
+    Next
+
+    Print "\n Name\n   "; Flatnames[index]
+    If Title <> "" Then
+        Print " Definition\n   "; Title
+    Else
+        Print " Definition\n   Not Found"
+    Endif
+
+    If InfoPool.count > 0 Then
+        Print "  Description"
+        For Each sd As String In infopool
+            Print "   "; sd
+        Next
+    Endif
+
+    If DocuPool.count > 0 Then
+        Print "  Details"
+        For Each sd In Docupool
+            Print "   "; sd
+        Next
+    Endif
+
+    Print
+
+End
+
+
+Sub PrintFlatIndex()
+
+    Dim PrintList As New String[]
+    Dim index As Integer = 1
+
+    For Each s As String In FlatNames
+        PrintList.push(Subst("&1) &2", Format(index, "##0"), s))
+        Inc index
+    Next
+    DIsplayListing(PrintList)
+
+End
+
+Public Sub DisplayListing(AllIndex As String[])
+
+    Dim colcount As Integer = 0
+    Dim colwidth As Integer = 0
+    Dim TermWidth As Integer = 132
+    Dim colperiod As Integer = 0
+    Dim CurrentElement As Integer = 0
+    Dim PrtText As String
+
+    For Each ss As String In allindex
+        If ss.len > colwidth Then colwidth = ss.len
+    Next
+
+    colwidth += 2
+    termWidth = File.Out.Term.width
+    colcount = termwidth / colwidth
+    colperiod = allindex.count / colcount
+    colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
+    For i As Integer = 0 To colperiod - 1
+        For j As Integer = 0 To colcount - 1
+            CurrentElement = i + (j * colperiod)
+            If CurrentElement < AllIndex.count Then
+                PrtText = Left(allindex[CurrentElement] & Space(colwidth), colwidth)
+            Else
+                Prttext = Space(ColWidth)
+            Endif
+            Try Print PrtText;
+        Next
+        Print
+    Next
+
+End
+
+Sub BuildFlatIndex(indexing As Collection) As String[]
+
+    FlatNames = New String[]
+    flatIndex = New Variant[]
+    FlatDates = New Date[]
+    FlatMd5sum = New String[]
+
+    For Each s As Variant In indexing
+        FlatNames.Add(indexing.key)
+    Next
+
+    FlatNames.Sort()
+
+    For Each s In FlatNames
+        FlatIndex.Add(indexing[s][0])
+        Dim aDate As Date = CDate(indexing[s][1])
+        FlatDates.add(aDate)
+        FlatMd5sum.Add(indexing[s][2])
+    Next
+
+End
+
+Sub BuildIndex(content As String)
+
+    Dim Index As String[] = Split(content, "\n", "\"\"", True, True)
+    Dim CurrentDirectory As Collection = sMainIndex
+    Dim CurrentDirectoryName As String
+    Dim NewDirectory As Collection
+    Dim sFields As String[]
+
+    For Each s As String In Index
+        sFields = Split(s, ",", "\"\"", True, True)
+        If sFields[0][0] = "." Then
+            CurrentDirectory = sMainIndex
+            If sFields[0] = ".:" Then Continue
+            CurrentDirectoryName = Mid(sFields[0], 2, sFields[0].Len - 2)
+            If Not CurrentDirectory.Exist(CurrentDirectoryName) Then
+                newDirectory = New Collection
+                CurrentDirectory.Add([NewDirectory, sFields[1], sFields[2]], CurrentDirectoryName)
+                CurrentDirectory = newDirectory
+            Endif
+            Continue
+        Endif
+        If Right(sFields[0], 1) = "/" Then Continue
+        CurrentDirectory.Add([CurrentDirectoryName &/ sFields[0], sFields[1], sFields[2]], sFields[0])
+    Next
+
+End
+
+Public Sub Main()
+
+    Try chdir(env["PWD"])
+    SharedMem.BeginNamed("briangsh", 20512000)
+    With Sharedmem
+        gshlib()
+    End With
+    SharedMem.end()
+Catch
+    Error "gsh error:" & error.text
+    Quit 2
+
+End
