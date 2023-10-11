@@ -1,5 +1,3 @@
-' gsh plugin script
-
 Sub gshlib(...) As Collection  'manage the gsh online library
     '' this allows the user to search and retrieve programs from
     '' the online gsh library
