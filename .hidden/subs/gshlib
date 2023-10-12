@@ -19,7 +19,7 @@ Sub gshlib(...) As Collection  'manage the gsh online library
         Next
     Endif
 
-    Use "westwood.sharedmem", "gb.net", "gb.net.curl", "gb.term", "gb.util", "gb.eval.highlight"
+    Use "westwood.sharedmem", "gb.net", "gb.net.curl", "gb.term", "gb.util", "gb.eval.highlight", "gb.pcre"
     Extern chdir(Dest As String) As Integer In "libc:6"
     Private BaseUrl As String
     Private sMainIndex As Collection
@@ -39,7 +39,7 @@ Sub gshlib(...) As Collection  'manage the gsh online library
 
     Try class.load("httpClient")
     If Error Then
-        Print "Gsh Examples was unable to load the class httpClient"
+        error.raise("GSHLIB : was unable to load the class httpClient")
         Return
     Endif
 
@@ -49,14 +49,12 @@ Sub gshlib(...) As Collection  'manage the gsh online library
     Endif
 
     With sharedmem
-        Print "\ec"
+
         Dim strJson As String
         Try strJson = hclient.Download(BaseUrl &/ "content")
         If Error Or If strjson = "" Then
             Error ("Error fetching content Index")
             Return
-        Else
-            Print "Retrieved Index"
         Endif
 
         BuildIndex(strjson)
@@ -65,6 +63,9 @@ Sub gshlib(...) As Collection  'manage the gsh online library
             hclient.close()
             Return sMainIndex
         Endif
+
+        Print "\ec"
+        Print "Retrieved Content Index from :";;BaseUrl &/ "content"
 
         Dim indexStack As New Collection[]
         indexStack.Push(sMainIndex)
