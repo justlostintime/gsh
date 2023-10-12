@@ -1,0 +1,10 @@
+'' This file is a model that may be used to create
+'' a system wide structure which will be automatically
+'' included into your script as a refrence is seen in
+'' a script being executed.
+
+public struct README_struct
+	body as string
+end struct
+
+'' this directory contains all structures defined in your shell

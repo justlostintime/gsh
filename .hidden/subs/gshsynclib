@@ -1,0 +1,68 @@
+' Gsh Library content builder
+' This builds the content file for online gsh script repositories
+'
+' Copyright (C)  Brian G
+'
+' This program is free software; you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation; either version 2 of the License, or
+' (at your option) any later version.
+'
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License
+' along with this program; if not, write to the Free Software
+' Foundation, Inc., 51 Franklin St, Fifth Floor,
+' Boston, MA  02110-1301  USA
+'
+Public Sub gshsynclib()
+   Use "gb.util"
+
+    Dim source As String = env["gshproject"]
+    Dim dest As String = env["gshlibrary"]
+    Dim FileText As String
+    Dim directories As String[] = ["subs", "class", "struct", "examples", "doc", "editors", "profiles"]
+
+    Print "GSH_synclib : ";; Quote(source);; "to";; Quote(dest)
+
+    If source = "" Or If dest = "" Then
+        Print "GSH_synclib : gshproject or gshlibrary directory is not defined"
+        Quit 2
+    Endif
+
+    If Not Exist(source) Then
+        Print "GSH_synclib : Projects directory not found"
+        Quit 3
+    Endif
+
+    If Not Exist(dest) Then
+        Print "GSH_synclib : Library  directory not found"
+        Quit 3
+    Endif
+
+
+    For Each s As String In directories
+        Dim CurrentDir As String = source &/ ".hidden" &/ s
+        Dim DestDir As String = Dest &/ s
+        For Each sd As String In Dir(CurrentDir, "*[^~]", gb.file)
+            Print "Moving "; CurrentDir &/ sd;; "To";; DestDir &/ sd
+            Try filetext = file.load(CurrentDir &/ sd)
+            If Error Then
+                Print "GSH_synclib : error reading file :";; CurrentDir &/ sd;; "Error :";; Error.text
+            Endif
+            shell.mkdir(DestDir)
+            Try file.save(Destdir &/ sd, filetext)
+            If Error Then
+                Print "GSH_synclib : error writing file :";; DestDir &/ sd;; "Error :";; Error.text
+            Endif
+        Next
+    Next
+
+    Quit 0
+Catch
+    Error "Script Error >";; error.text & "\n" & error.where
+
+End

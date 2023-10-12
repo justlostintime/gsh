@@ -1,0 +1,11 @@
+'' # Sub or subroutine directory
+'' This directory contains the gsh basic scripts
+'' in the /usr/share/gsh/subs   ' this is the system global sub/functions
+'' or     user.home &/ "vars/subs" this contains the user personal sub/functions
+''                                the user can also override the system subs by
+''                                placing an override copy here
+public sub README_SUB()
+
+  Print "hello world"
+  
+end
