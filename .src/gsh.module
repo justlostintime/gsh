@@ -3359,7 +3359,12 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
                     Endif
                   Endif
                 Endif
-                Syms[varbase] = "SharedMem[\"" & Lower(varlookup) & "\"]"
+                If tcount + 3 < syms.count And If syms[tcount + 1] = "[" Then
+                  syms[tcount] = "Sharedmem["
+                  syms[tcount + 1] = Quote(Lower(varlookup)) & ","
+                Else
+                  Syms[varbase] = "SharedMem[\"" & Lower(varlookup) & "\"]"
+                Endif
               Endif
             Endif
           Endif
