@@ -399,17 +399,3 @@ Sub BuildIndex(content As String)
     Next
 
 End
-
-Public Sub Main()
-
-    Try chdir(env["PWD"])
-    SharedMem.BeginNamed("briangsh", 20512000)
-    With Sharedmem
-        gshlib()
-    End With
-    SharedMem.end()
-Catch
-    Error "gsh error:" & error.text
-    Quit 2
-
-End
