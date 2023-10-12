@@ -779,7 +779,11 @@ End
 Public Sub Main()
 
   $gshref = Me
-  $version = File.Load("version")
+  Try $version = File.Load("VERSION")
+  If Error Then
+    Print "GSH : VERSION file is missing, defaulting to application version"
+    $version = Application.version
+  Endif
   Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
   'Debug line ****
   'Print "starting "; CDate(Now)
