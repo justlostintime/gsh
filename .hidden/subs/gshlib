@@ -241,7 +241,6 @@ Sub ScriptListing(index As Integer)
         Return
     Endif
 
-    Dim Program As String[]
     Dim InText As String = hclient.Download(BaseUrl &/ FlatIndex[Index])
 
     Print ConsoleHighlight.ToConsole(InText)

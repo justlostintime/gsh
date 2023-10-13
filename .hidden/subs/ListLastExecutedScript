@@ -1,0 +1,9 @@
+Sub ListLastExecutedScript()
+
+    Dim ConsoleHighlight As New gshHighlight
+
+    Dim InText As  string = sharedmem.execprog
+
+    Print ConsoleHighlight.ToConsole(InText)
+
+End 

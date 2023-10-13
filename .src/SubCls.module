@@ -36,7 +36,6 @@ Public Sub free()
 
 End
 
-
 '' Take simple Gambas source code and create a component project from it. Load
 '' that component and return the class object of the given source file's code.
 Public Function CompileIt(sname As String, SourceFile As String, Optional CompileOnly As Boolean = False, MyClasses As Collection = Null, ExecuteProject As Boolean = False) As Variant
@@ -90,6 +89,7 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
     isClass = True
   Endif
 
+  SharedMem.LastCompiledScript = "Compiled on " & Str(Now) & "\n" & SourceFile
   ' Create component
   sPath = $sPluginPath &/ sName
   If Exist(sPath) Then Shell "rm -r " & spath Wait

@@ -1179,7 +1179,7 @@ DoAliasAgain:
         used.Add(aliaslist.key)
         Goto DoAliasAgain
 
-      Else If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "[^_[:alpha:]]") Then
+      Else If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "[^_[:alnum:]]") Then
         data = RegExp.replace(data, "(^[`!]?[\\s]*)" & aKey & "(.*)", "&1" & s.Join(" ") & "&2")
         used.Add(akey)
         Goto DoAliasAgain

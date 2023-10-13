@@ -1,0 +1,9 @@
+Sub ListLastCompile()
+
+    Dim ConsoleHighlight As New gshHighlight
+
+    Dim InText As  string = sharedmem.LastCompiledScript
+
+    Print ConsoleHighlight.ToConsole(InText)
+
+End 
