@@ -4,9 +4,7 @@
 Public Sub _call(scriptname As String, type As String) As String
 
   Dim Paths As String[] = Split(SharedMem[type & "path"], ";")
-  Dim fullName As String
 
-  If Exist(SharedMem.pwd &/ Scriptname) Then Return SharedMem.pwd &/ ScriptName
   If File.Dir(scriptname) <> "" Then
     Return scriptname
   Endif
@@ -16,6 +14,10 @@ Public Sub _call(scriptname As String, type As String) As String
       Return s &/ scriptname
     Endif
   Next
+
+  '  If Exist(SharedMem.pwd &/ Scriptname) And If VerifyMimeType(SharedMem.pwd &/ Scriptname) Then
+  '    Return SharedMem.pwd &/ ScriptName
+  '  Endif
 
   Return ""
 

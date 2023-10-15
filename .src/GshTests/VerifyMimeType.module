@@ -1,0 +1,29 @@
+' Gambas module file
+
+ValidMimeTypes As String[] = ["'#!gsh", "#!/usr/bin/gsh", "/usr/bin/env gsh"]
+
+Public Sub _call(FullFileName As String) As Boolean
+
+  Dim result As Boolean = False
+
+  If File.Ext(FullFileName) == "gsh" Then Return True
+  Dim rfile As File
+  Try rfile = Open fullfilename For Read
+  If Error Then Return False
+  Dim buffer As String
+  Try buffer = Read #rfile, 16
+  If Error Then Goto exiterror
+  For Each s As String In ValidMimeTypes
+    If s == Left(buffer, s.len) Then
+      result = True
+      Break
+    Endif
+  Next
+
+exiterror:
+  Close rfile
+  Return result
+
+End
+
+
