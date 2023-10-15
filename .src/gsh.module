@@ -14,7 +14,7 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
   "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
   "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
-  "tracelevel", "dotrace", "noalias", "nopreprocess"]
+  "tracelevel", "dotrace", "noalias", "nopreprocess", "subpath", "classpath", "structpath"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"]
@@ -228,6 +228,7 @@ Public Sub _init()
   Try Class.Load("LocalTask")
   Try Class.Load("gshlogging")
   Try Class.Load("RunScript")
+  Try Class.Load("FindScript")
 
   Try Component.Load("westwood.gb.scripter")
   If Error Then
@@ -329,65 +330,6 @@ Public Sub RunFromExtern(ScriptName As String, ...)
 
 End
 
-
-Public Sub RunScript(cmd As String) As Boolean
-
-  Dim oldCommandMode As Boolean = CommandMode
-  Dim OldSource As String = Source
-  Dim oldAppSource As File = AppSource
-
-  cmd = Trim(Replace(cmd, "\"", ""))
-  Dim fPath As String = cmd
-
-  If File.Dir(fPath) = "" Then
-    fPath = User.home &/ "vars" &/ cmd
-    If Not Exist(fpath) Then
-      fpath = System.Find(cmd)
-      If IsNull(fPath) Then
-        fpath = cmd
-      Endif
-    Endif
-  Endif
-
-  fpath = CreateCmdProgram.getfullpath(fpath)
-
-  CommandMode = True
-  Source = "FILE"
-
-  Try AppSource = Open fpath For Read
-  If Error Then
-    Error ("Error : Gsh script: "); cmd; " -  "; Error.text
-    appSource = oldAppSource
-    Source = OldSource
-    CommandMode = OldCommandMode
-    Return False
-  Else
-    Dim SaveQueue As String[] = ReadQueue.Copy()
-    ReadQueue.clear()
-    While IfReader(["QUIT"])
-      ProcessProg()
-      Wait 0
-    Wend
-    ReadQueue.Insert(SaveQueue)
-  Endif
-
-  Close AppSource
-  appSource = oldAppSource
-  Source = OldSource
-  CommandMode = OldCommandMode
-  Return IIf(ReadQueue.count > 0, False, True)
-
-Catch
-
-  Close AppSource
-  appSource = oldAppSource
-  Source = OldSource
-  CommandMode = OldCommandMode
-  Error "gsh Script :";; Error.Text
-  Return IIf(ReadQueue.count > 0, False, True)
-
-End
-
 '' Find the location of a plugin subroutine
 '' Load the script as a string variable with name sub.Name
 '' Check if it has changed and if we need to compile and load the
@@ -401,25 +343,13 @@ Public Sub GetSub(cmd As String) As Boolean
   Dim SubName As String = "sub." & File.Name(Lower(cmd))
   If SharedMem.exist(SubName) Then Return True
 
-  fpath = cmd
-  If File.Dir(fPath) = "" Then
-    fpath = User.home &/ "vars/subs" &/ cmd
-    If Not Exist(fPath) Then
-      fpath = "/usr/share/gsh/subs" &/ cmd
-      If Not Exist(fPath) Then
-        Error.Raise(("Get Error: Command not found ") & cmd)
-        Return False
-      Endif
-    Endif
-  Else
-    If Not Exist(fPath) Then
-      Error.Raise(("Get Error: Command not found ") & cmd)
-      Return False  ' never gets here but reminds us what happens up the chain
-    Endif
+  fpath = FindScript(cmd, "subs")
+  If Not Exist(fPath) Then
+    Error.Raise(("Get Error: Command not found ") & cmd)
+    Return False  ' never gets here but reminds us what happens up the chain
   Endif
 
   SharedMem[SubName] = File.Load(fPath)
-
   'If IsNull(SubCls.CompileIt(SubName, SharedMem[subname])) Then Return False
   If Not compile(SubName) Then Return False
   Return True
@@ -2868,19 +2798,15 @@ Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As 
     Endif
   Endif
 
-  If Not SharedMem.exist("sub." & sym) Then
-    If Exist(User.home &/ "vars/subs" &/ sym) Then
-      Try SharedMem["sub." & sym] = File.Load(user.home &/ "vars/subs" &/ sym)
-      If Error Then Error.Raise("IsLocalFunc:" & Error.text)
+  Dim fullSymName As String = "sub." & sym
+  If Not SharedMem.exist(fullSymName) Then
+    Dim LocalPath As String = FindScript(sym, "subs")
+
+    If Exist(LocalPath) And If Stat(localpath).type = gb.file Then
+      Try SharedMem[fullSymName] = File.Load(localpath)
+      If Error Then Error.Raise("IsLocalFunc : " & fullSymName & Error.text)
       If docompile Then
-        If Not compile("sub." & sym) Then Return -1
-      Endif
-      Return True
-    Else If Exist("/usr/share/gsh/subs" &/ sym) Then                ' check for a plugin
-      Try SharedMem["sub." & sym] = File.Load("/usr/share/gsh/subs" &/ sym)
-      If Error Then Error.Raise("IsLocalFunc:" & Error.text)
-      If docompile Then
-        If Not Compile("sub." & sym) Then Return -1
+        If Not compile(fullSymName) Then Return -1
       Endif
       Return True
     Endif
@@ -2918,28 +2844,25 @@ Private Sub isLocalClass(msym As String, Optional docompile As Boolean = True, d
   Dim sym As String = Lower(msym)
 
   If Not IsLetter(sym) And If Not (sym Like "*_*") Then Return False
-  If SharedMem.exist("class." & sym) Then Return True
 
-  If Exist(User.home &/ "vars/class" &/ sym) Then
-    Try SharedMem["class." & sym] = File.Load(user.home &/ "vars/class" &/ sym)
+  Dim FullName As String = "class." & sym
+  If SharedMem.exist(fullname) Then Return True
+
+  Dim localPath As String = FindScript(sym, "class")
+  If Exist(localPath) And If Stat(localpath).type = gb.file Then
+    Try SharedMem[fullName] = File.Load(localPath)
     If Error Then Error.Raise("IsLocalClass:" & Error.text)
     If docompile Then
-      If Not compile("class." & sym) Then Return -1
-    Endif
-    Return True
-
-  Else If Exist("/usr/share/gsh/class" &/ sym) Then                ' check for a plugin
-    Try SharedMem["class." & sym] = File.Load("/usr/share/gsh/class" &/ sym)
-    If Error Then Error.Raise("IsLocalClass:" & Error.text)
-    If docompile Then
-      If Not Compile("class." & sym) Then Return -1
+      If Not compile(FullName) Then Return -1
     Endif
     Return True
   Endif
+
   If doclasscheck Then
     Try c = Classes[sym]
     If Not Error Then Return True
   Endif
+
   Return False
 
 Catch
@@ -2948,30 +2871,25 @@ Catch
 End
 
 Private Sub isLocalstruct(msym As String, Optional docompile As Boolean = True) As Integer
-  'Dim c As Class
 
   Dim sym As String = Lower(msym)
 
   If Not IsLetter(sym) And If Not (sym Like "*_*") Then Return False
-  If SharedMem.exist("struct." & sym) Then Return True
+  Dim FullName As String = "struct." & sym
+  If SharedMem.exist(FullName) Then Return True
 
-  If Exist(User.home &/ "vars/struct" &/ sym) Then
-    Try SharedMem["struct." & sym] = File.Load(user.home &/ "vars/struct" &/ sym)
+  Dim localPath As String = FindScript(sym, "struct")
+
+  If Exist(localPath) And If Stat(localpath).type = gb.file Then
+    Try SharedMem[FullName] = File.Load(localPath)
     If Error Then Error.Raise("IsLocalStruct:" & Error.text)
     If docompile Then
-      If Not compile("struct." & sym) Then Return -1
-    Endif
-    Return True
-  Else If Exist("/usr/share/gsh/struct" &/ sym) Then                ' check for a plugin
-    Try SharedMem["struct." & sym] = File.Load("/usr/share/gsh/struct" &/ sym)
-    If Error Then Error.Raise("IsLocalStruct:" & Error.text)
-    If docompile Then
-      If Not Compile("struct." & sym) Then Return -1
+      If Not compile(FullName) Then Return -1
     Endif
     Return True
   Endif
 
-  'Try c = Classes[sym]
+  'Try dim c as class = Classes[sym]
   'If Not Error Then Return True
 
   Return False
@@ -3669,7 +3587,7 @@ Catch
 
 End
 
-Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collection
+Public Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collection
   ''lany(TypeOfFile,basDirectoryName,[filename] - prints a list of global functions, Subs, Procs,classes
   ''          prints the content of functuon if name is provided
   ''          function lsub/lclass(<subname>)
@@ -3681,35 +3599,61 @@ Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collec
 
     Dim tolist As New Collection
     Dim globdir As String[] = Dir("/usr/share/gsh" &/ dirbase, "*", gb.file)
-    Dim locdir As String[] = Dir(user.home &/ "vars" &/ dirbase, "*", gb.file)
     Dim loadeddir As New String[]
+
+    '   Get list of all the subroutines/scripts already loaded into memory
+
     For Each sSyms As SharedMemSymbol In .SymbolTable
       If sSyms.symname Like sType & ".*" Then
         Try loadeddir.add(Split(sSyms.symname, ".")[1])
         If Error Then Error "lany " & error.text
       Endif
     Next
+
+    '   Get a list of all the default subroutines /scripts in the /usr/share/gsh installed suite
+
     For Each s As String In globdir
       If Not tolist.exist(s) Then tolist.add("", s)
-      tolist[s] = [("Defaut"), "/usr/share/gsh/" &/ dirbase &/ s]
+      tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s, "Default"]
     Next
 
-    For Each s In locdir
-      tolist[s] = [("Personal"), user.home &/ "vars" &/ dirbase &/ s]
+    '   Get a list of all the local user scripts
+
+    Dim privateList As String[] = Split(sharedmem[dirbase & "Path"], ";")
+    For Each sp As String In privateList
+      Dim shortlist As String[]
+      If Left(sp, 14) == "/usr/share/gsh" Then Continue
+      shortlist = Dir(sp, "*", gb.file)
+      For Each s In shortlist
+        tolist[s] = ["Personal", sp &/ s, s, "Personal"]
+      Next
     Next
+
+    '   Go through each script identify source and status
 
     For Each s In loadeddir
-      tolist[s] = [("In Mem"), sType & "." & s]
+      If tolist.exist(s) Then
+        tolist[s][3] = "In-Mem"
+      Else
+        tolist[s] = ["In-Mem", sType & "." & s, s, "In-Mem"]
+      Endif
     Next
+
+    '    for each sp as string[] in tolist
+    '      print tolist.key;;"=";;sp[1];;"in";;sp[0]
+    '    next
+
+    .["result"] = "OK"
 
   End With
 
   Return tolist
 
 Catch
-  Error.Propagate()
+  Error "List Any ";; sp;; Error.where;; error.text
 
 End
+
 
 
 Sub helpgetfile(path As String) As String[]

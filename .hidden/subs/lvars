@@ -18,7 +18,13 @@ if varname <> "" and if not instr(varname,"*") then
 	endif
 endif
 
+dim sortlist as new string[]
 For Each s As SharedMemSymbol In .SymbolTable
+sortlist.add(.SymbolTable.key)
+Next
+sortlist.sort(gb.ignorecase)
+for each ss as string in sortlist
+    s = .symbolTable[ss]
     if dumpall or if not (s.symname like "sub.*" or s.symname like "class.*" or s.symname like "struct.*") then
         if varname <> ""  and if not (s.symname like varname) then continue
         if s.SymType = gb.string then

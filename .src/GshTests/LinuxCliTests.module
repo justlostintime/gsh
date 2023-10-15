@@ -1,13 +1,16 @@
 ' Gambas module file
 
 Public Sub main()
+
   Dim command As String = ""
+
   SharedMem.Begin(1280000)
   While True
     'Line Input command
     command = "echo  \"hello\" {a} {subst(a,\"100\")}"
     Print CreateCmdProgram(command)
-    
+
   Wend
   SharedMem.end()
+
 End

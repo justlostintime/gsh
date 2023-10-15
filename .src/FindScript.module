@@ -1,0 +1,26 @@
+' Gambas module file
+
+'' Find and load a type of script subroutine to load
+Public Sub _call(scriptname As String, type As String) As String
+
+  Dim Paths As String[] = Split(SharedMem[type & "path"], ";")
+  Dim fullName As String
+
+  If Exist(SharedMem.pwd &/ Scriptname) Then Return SharedMem.pwd &/ ScriptName
+  If File.Dir(scriptname) <> "" Then
+    Return scriptname
+  Endif
+
+  For Each s As String In Paths
+    If Exist(s &/ ScriptName) Then
+      Return s &/ scriptname
+    Endif
+  Next
+
+  Return ""
+
+Catch
+  Stop
+
+End
+

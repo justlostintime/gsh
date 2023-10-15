@@ -42,6 +42,9 @@ Public Sub _Call()
     If Not .exist("lambda") Then .lambda = "print application.name"
     If Not .Exist("noalias") Then .noalias = False
     If Not .Exist("noPreProcess") Then .noPreProcess = False
+    If Not .Exist("subsPath") Then .subspath = user.home &/ "vars/subs;" & user.home &/ "vars/games;/usr/share/gsh/subs"
+    If Not .exist("classPath") Then .classpath = user.home &/ "vars/class;/usr/share/gsh/class"
+    If Not .Exist("structPath") Then .structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
 
     If Not .exist("DoTrace") Then               'the memory value always takes precidence
       .DoTrace = gsh.DoTrace

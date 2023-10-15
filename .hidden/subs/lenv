@@ -7,8 +7,12 @@ Sub lenv() As Boolean ' list all environment variables
 ''          $result contains the error text or "OK"
 ''
 with sharedmem
-
+dim sortlist as new string[]
 for each sI as string in env
+  sortlist.add(sI)
+next
+sortlist.sortlist
+for each sI in sortlist
 print  sI;"=";env[sI]
 next
 end with

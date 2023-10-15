@@ -4,6 +4,7 @@ if system.exist("fortune") then
 	shell "fortune" wait
 	print
 endif
-env["EDITOR"] = "/usr/bin/kate"
+env["EDITOR"] = "/usr/bin/nano"
+$editor = "/usr/bin/nano"
 return true
 end

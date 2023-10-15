@@ -5,16 +5,19 @@ Public Sub _call(cmd As String) As Boolean
   Dim oldCommandMode As Boolean = gsh.CommandMode
   Dim OldSource As String = gsh.Source
   Dim oldAppSource As File = gsh.AppSource
+  Dim fPath As String
 
   cmd = Trim(Replace(cmd, "\"", ""))
-  Dim fPath As String = cmd
 
   If File.Dir(fPath) = "" Then
-    fPath = User.home &/ "vars" &/ cmd
+    fpath = Env["PWD"] &/ cmd
     If Not Exist(fpath) Then
-      fpath = System.Find(cmd)
-      If IsNull(fPath) Then
-        fpath = cmd
+      fPath = User.home &/ "vars" &/ cmd
+      If Not Exist(fpath) Then
+        fpath = System.Find(cmd)
+        If IsNull(fPath) Then
+          fpath = cmd
+        Endif
       Endif
     Endif
   Endif

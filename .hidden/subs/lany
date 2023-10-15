@@ -7,24 +7,37 @@ With sharedmem
 
     Dim tolist As New Collection
     Dim globdir As String[] = Dir("/usr/share/gsh" &/ dirbase, "*", gb.file)
-    Dim locdir As String[] = Dir(user.home &/ "vars" &/ dirbase, "*", gb.file)
     Dim loadeddir As New String[]
+
+'   Get list of all the subroutines/scripts already loaded into memory
 
     For Each sSyms As SharedMemSymbol In .SymbolTable
         If sSyms.symname Like sType & ".*" Then
             Try loadeddir.add(Split(sSyms.symname, ".")[1])
-		If Error Then Error "lany " & error.text
+            If Error Then Error "lany " & error.text
         Endif
     Next
 
+'   Get a list of all the default subroutines /scripts in the /usr/share/gsh installed suite
+
     For Each s As String In globdir
-	If Not tolist.exist(s) Then tolist.add("", s)
+        If Not tolist.exist(s) Then tolist.add("", s)
         tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s,"Default"]
     Next
 
-    For Each s In locdir
-        tolist[s] = ["Personal", user.home &/ "vars" &/ dirbase &/ s, s,"Personal"]
+'   Get a list of all the local user scripts
+
+    dim privateList as string[] = split(sharedmem[dirbase&"Path"],";")
+    for each sp as string in privateList
+       dim shortlist as string[]
+       if left(sp,14) == "/usr/share/gsh" then continue
+       shortlist = Dir(sp, "*", gb.file)
+       For Each s In shortlist
+          tolist[s] = ["Personal", sp &/ s, s,"Personal"]
+       next
     Next
+
+'   Go through each script identify source and status
 
     For Each s In loadeddir
         if tolist.exist(s) then
@@ -45,5 +58,5 @@ End With
 Return tolist
 
 Catch
-	Error Error.where;; error.text
+	Error "List Any ";;sp;;Error.where;; error.text
 End
