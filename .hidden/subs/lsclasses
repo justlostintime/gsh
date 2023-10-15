@@ -2,7 +2,7 @@ Sub lsclasses(Optional classname As String = "",...)' List Loaded classes - from
 '' lsclasses  List all the classes in the current environment
 '' if classname is set to filter=used  then only list classes refrenced by application
 '' Else all loaded classes will be displayed.
-'' Red Line are internal objects, Green are Gambas Classes 
+'' Red Line are internal objects, Green are Gambas Classes
 dim bUsed as boolean = false
 dim s as  string
 dim css as class
@@ -76,6 +76,8 @@ else
     endif
 
 endif
+
+print "Green = Gambas class, Red are internal objects, anything with ^ to start is overlayed by inheratance"
 
 Catch
   flush
