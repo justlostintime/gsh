@@ -28,7 +28,7 @@ Public Sub _call(scriptname As String, type As String) As String
 
   If scriptid <> "" Then
     result = VerifyFileType(scriptid)
-    Print "File type discovered for :";; Left(scriptid & Space(35), 35);; "type :";; VerifyFileType.FileTypes(result)
+    If gsh.tracelevel > 2 Then Error "FindScript - File type discovered for :";; Left(scriptid & Space(35), 35);; "type :";; VerifyFileType.FileTypes(result)
   Endif
 
 fastVerify:
@@ -36,7 +36,7 @@ fastVerify:
 
 Catch
   Dim msg As String = Error.text & Error.where
-  Stop
+  Error.Raise(msg)
 
 End
 
