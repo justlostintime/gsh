@@ -31,7 +31,8 @@ With sharedmem
     for each sp as string in privateList
        dim shortlist as string[]
        if left(sp,14) == "/usr/share/gsh" then continue
-       shortlist = Dir(sp, "*", gb.file)
+       try shortlist = Dir(sp, "*", gb.file)
+       if error then continue                                ' if the directory does not exsist then ignore it
        For Each s In shortlist
           tolist[s] = ["Personal", sp &/ s, s,"Personal"]
        next

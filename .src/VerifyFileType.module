@@ -1,0 +1,70 @@
+' Gambas module file
+
+Export
+Public Const script_file As Integer = 0
+Public Const class_file As Integer = 1
+Public Const struct_file As Integer = 2
+Public Const Exec_file As Integer = 3
+Public Const unknown As Integer = 4
+
+ValidExecTypes As String[] = ["!gshp", "!gshc", "!gshs", "/usr/bin/gsh", "/usr/bin/env gsh"]
+ValidExtensions As String[] = ["gshp", "gshc", "gshs"]
+SystemDirectories As String[] = ["/usr/share/gsh/subs", "/usr/share/gsh/class", "/usr/share/gsh/struct",
+  User.home & "vars/subs", User.home & "vars/class", User.home & "vars/struct"]
+String2index As Collection = ["subs": script_file, "class": class_file, "struct": struct_file]
+$FileTypes As String[] = ["Script plugin file", "Script class file", "Script structure file", "Executable gsh script file", "Unknown file type"]
+
+'' gshp -> plugin script files
+'' gshc -> plugin class files
+'' gshs -> plugin structure files
+
+Public Sub _call(FullFileName As String) As Integer
+
+  Dim result As Integer = unknown
+
+  result = ValidExtensions.find(File.Ext(FullFileName), gb.ignorecase)               ' check for good extension
+  If result >= 0 Then Return result                                                                                  ' return the type of file found
+  If SystemDirectories.find(File.Dir(FullFileName), gb.ignorecase) >= 0 Then  'files in the special directories are assumed to be exectuable
+    Return String2index[Split(File.Dir(FullFileName), "/").last]
+  Endif
+
+  ' check if the file is executable
+  Dim mystat As Stat = Stat(FullFileName)
+  Dim pstr As String = ""
+  If mystat.User = User.id Then
+    pstr = mystat.Perm.user
+  Else If mystat.group = User.group Then
+    pstr = mystat.Perm.Group
+  Else
+    pstr = mystat.Perm.other
+  Endif
+
+  ' If it Is Not executable Then just Return unknown
+  If InStr(pstr, "x") Then Return unknown
+
+  Dim rfile As File
+  Try rfile = Open fullfilename For Read
+  If Error Then Goto exiterror
+  If Lof(rfile) < 5 Then Goto exiterror
+
+  Dim buffer As String
+  Try buffer = Read #rfile, 2
+  If Error Or If buffer <> "#!" Or If buffer <> "'#" Then Goto exiterror
+  Try Line Input #rfile, buffer
+  result = ValidExecTypes.find(buffer)
+  If result < 0 Then Goto exiterror
+  If result > struct_File Then result = exec_file
+
+exiterror:
+  Try Close rfile
+  If result = -1 Then result = unknown
+  Return result
+
+End
+
+Public Function FileTypes(index As Integer) As String
+
+  If index > $FileTypes.max Or index < 0 Then Return "Invalid gsh script Type Specified " & Str(index)
+  Return $FileTypes[index]
+
+End

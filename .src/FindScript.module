@@ -1,27 +1,41 @@
 ' Gambas module file
 
-'' Find and load a type of script subroutine to load
+'' Find and identify  the  type of script  to load
+extensions As Collection = ["sub": "gshp", "struct": "gshs", "class": "gshc"]
+
 Public Sub _call(scriptname As String, type As String) As String
 
   Dim Paths As String[] = Split(SharedMem[type & "path"], ";")
+  Dim ext As String = extensions[type]
+  Dim result As Integer = VerifyFileType.unknown
+  Dim ScriptId As String = ""
 
   If File.Dir(scriptname) <> "" Then
-    Return scriptname
+    If Exist(scriptname) Then
+      scriptid = scriptname
+    Else If Exist(ScriptName & "." & ext)
+      scriptid = ScriptName & "." & ext
+      Goto fastVerify
+    Endif
+  Else
+    For Each s As String In Paths
+      Dim fullpath As String = s &/ ScriptName
+      If Exist(fullpath) Then
+        scriptid = fullpath
+      Endif
+    Next
   Endif
 
-  For Each s As String In Paths
-    If Exist(s &/ ScriptName) Then
-      Return s &/ scriptname
-    Endif
-  Next
+  If scriptid <> "" Then
+    result = VerifyFileType(scriptid)
+    Print "File type discovered for :";; Left(scriptid & Space(35), 35);; "type :";; VerifyFileType.FileTypes(result)
+  Endif
 
-  '  If Exist(SharedMem.pwd &/ Scriptname) And If VerifyMimeType(SharedMem.pwd &/ Scriptname) Then
-  '    Return SharedMem.pwd &/ ScriptName
-  '  Endif
-
-  Return ""
+fastVerify:
+  Return scriptid
 
 Catch
+  Dim msg As String = Error.text & Error.where
   Stop
 
 End

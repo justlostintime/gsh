@@ -229,6 +229,7 @@ Public Sub _init()
   Try Class.Load("gshlogging")
   Try Class.Load("RunScript")
   Try Class.Load("FindScript")
+  Try Class.Load("VerfyFileType")
 
   Try Component.Load("westwood.gb.scripter")
   If Error Then
@@ -2192,8 +2193,11 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             execbuffer = ""
 
           Case "LIST"              ' list the last executed program or any program
-            If InBufParse.count = 2 Then
-              DoListing(InBufParse[1])
+            If InBufParse.count >= 2 Then
+              For parscount As Integer = 1 To inbufparse.max
+                If inbufParse[parscount][0] = "\"" Then inbufParse[parscount] = UnQuote(inbufParse[parscount])
+                DoListing(InBufParse[parscount])
+              Next
             Else
               DoListing("")
             Endif
@@ -3486,56 +3490,43 @@ Public Sub GetDataTypeAsText(intype As Integer) As String
 
 End
 
+Public Sub UseScript(ScriptName As String) As Object
+
+  Dim Name As String = "sub." & ScriptName
+
+  GetSub(ScriptName)
+  If Not SubCls.Exist(Name) Then
+    If Not compile(name) Then
+      Error.Raise("UseScript Compile failed for :" & ScriptName)
+    Endif
+  Endif
+
+  Return SubCls[name]
+
+End
+
+
+
 Public Sub GetAllThings() As Collection
 
   Dim AllCollection As Collection
 
-  AllCollection = lany()
-  Dim tClassStruct As Collection = lany("class", "class")
+  Dim lany As Object = UseScript("lany")
+
+
+  AllCollection = lany.lany("sub", "subs")                               'lany defaults to subs when no parameters given
+
+  Dim tClassStruct As Collection = lany.lany("class", "class")
   For Each sv As String[] In tClassStruct
     AllCollection.Add(sv, tClassStruct.key)
   Next
-  tClassStruct = lany("struct", "struct")
+  tClassStruct = lany.lany("struct", "struct")
   For Each sv As String[] In tClassStruct
     AllCollection.Add(sv, tClassStruct.key)
   Next
   Return AllCollection
 
 End
-
-
-' Public Sub SortedInCol(AList As String[]) As String
-'
-'   Dim colcount As Integer = 0
-'   Dim colwidth As Integer = 0
-'   Dim colperiod As Integer = 0
-'   Dim CurrentElement As Integer = 0
-'   Dim allIndex As String[] = aList
-'   Dim Result As String = ""
-'
-'   allindex.Sort()
-'
-'   For Each ss As String In allindex
-'     If ss.len > colwidth Then colwidth = ss.len
-'   Next
-'
-'   colwidth += 2
-'
-'   colcount = CInteger(env["COLUMNS"]) / colwidth
-'   colperiod = allindex.count / colcount
-'   colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
-'   For i As Integer = 0 To colperiod - 1
-'      For j As Integer = 0 To colcount - 1
-'        CurrentElement = i + (j * colperiod)
-'        If currentelement < allindex.count Then
-'             Result &= Left(allindex[CurrentElement] & Space(colwidth), colwidth)
-'        Endif
-'      Next
-'      Result &= "\n"
-'   Next
-'
-'   Return Result
-' End
 
 Public Sub printHelp(Optional command As String = "")
 
@@ -3587,75 +3578,6 @@ Catch
 
 End
 
-Public Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collection
-  ''lany(TypeOfFile,basDirectoryName,[filename] - prints a list of global functions, Subs, Procs,classes
-  ''          prints the content of functuon if name is provided
-  ''          function lsub/lclass(<subname>)
-  ''          Command lsub/lcalss <subname>
-  ''          returns true if found, false otherwise
-  ''          result contains the error text or "OK"
-
-  With sharedmem
-
-    Dim tolist As New Collection
-    Dim globdir As String[] = Dir("/usr/share/gsh" &/ dirbase, "*", gb.file)
-    Dim loadeddir As New String[]
-
-    '   Get list of all the subroutines/scripts already loaded into memory
-
-    For Each sSyms As SharedMemSymbol In .SymbolTable
-      If sSyms.symname Like sType & ".*" Then
-        Try loadeddir.add(Split(sSyms.symname, ".")[1])
-        If Error Then Error "lany " & error.text
-      Endif
-    Next
-
-    '   Get a list of all the default subroutines /scripts in the /usr/share/gsh installed suite
-
-    For Each s As String In globdir
-      If Not tolist.exist(s) Then tolist.add("", s)
-      tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s, "Default"]
-    Next
-
-    '   Get a list of all the local user scripts
-
-    Dim privateList As String[] = Split(sharedmem[dirbase & "Path"], ";")
-    For Each sp As String In privateList
-      Dim shortlist As String[]
-      If Left(sp, 14) == "/usr/share/gsh" Then Continue
-      shortlist = Dir(sp, "*", gb.file)
-      For Each s In shortlist
-        tolist[s] = ["Personal", sp &/ s, s, "Personal"]
-      Next
-    Next
-
-    '   Go through each script identify source and status
-
-    For Each s In loadeddir
-      If tolist.exist(s) Then
-        tolist[s][3] = "In-Mem"
-      Else
-        tolist[s] = ["In-Mem", sType & "." & s, s, "In-Mem"]
-      Endif
-    Next
-
-    '    for each sp as string[] in tolist
-    '      print tolist.key;;"=";;sp[1];;"in";;sp[0]
-    '    next
-
-    .["result"] = "OK"
-
-  End With
-
-  Return tolist
-
-Catch
-  Error "List Any ";; sp;; Error.where;; error.text
-
-End
-
-
-
 Sub helpgetfile(path As String) As String[]
 
   Dim func As String
@@ -3691,14 +3613,17 @@ Private Sub doListing(Command As String)
   If Command <> "" Then
     If AllList.Exist(command) Then
       Dim listpath As String = AllList[command][1]
-      If listpath[0] = "/" Then
+      If listpath[0] = "/" Or If Left(listpath, 2) = "./" Or If Left(listpath, 2) = "~/" Then
         listprog = File.Load(listpath)
       Else
         listprog = SharedMem[listpath]
       Endif
     Else
       Try listprog = File.Load(CreateCmdProgram.MakeAbs(listpath))
-      If Error Then Error.Raise(("List: Unable to find ") & InBufParse[1])
+      If Error Then
+        Error ("List: Unable to find ") & command
+        Return
+      Endif
     Endif
   Else
     ListProg = LambdaBuffer & "\n"
