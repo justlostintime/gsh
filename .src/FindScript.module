@@ -22,6 +22,7 @@ Public Sub _call(scriptname As String, type As String) As String
       Dim fullpath As String = s &/ ScriptName
       If Exist(fullpath) Then
         scriptid = fullpath
+        Break
       Endif
     Next
   Endif

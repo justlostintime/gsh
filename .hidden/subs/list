@@ -1,0 +1,89 @@
+sub list(...)
+           If param.count > 0 Then
+              For parscount As Integer = 0 To param.max
+                If param[parscount][0] = "\"" Then param[parscount] = UnQuote(param[parscount])
+                DoListing(param[parscount])
+              Next
+            Else
+              DoListing("")
+            Endif
+
+            SharedMem["result"] = "OK"
+end
+
+'Sub listing(optional Text as string = "") ' print a listing of a subroutine/class/struct
+'
+'  dim txthigh as new gshhighlight
+'  dim allList as collection = GetAllThings()
+'  dim listprog as string = ""
+'
+'  if text <> "" and if alllist.exist(text) then
+'    Dim listpath As String = AllList[text][1]
+'    If listpath[0] = "/" Then
+'        listprog = File.Load(listpath)
+'    Else
+'        listprog = SharedMem[listpath]
+'    Endif
+'  else if text = ""
+'    listprog = sharedmem["$lambda"]
+'  else
+'    Try listprog = File.Load(expandfn(text))
+'    If Error Then Error.Raise(("List: Unable to find ") & text)
+'  endif
+'
+'  dim lines as string [] = split(listprog,"\n","\"\"",true,true)
+'  for each s as string in lines
+'   	print  txthigh.ToConsole(s);
+'  next
+'
+'End
+
+Public Sub GetAllThings() As Collection
+
+  Dim AllCollection As Collection
+
+  AllCollection = lany()
+  Dim tClassStruct As Collection = lany("class", "class")
+  For Each sv As String[] In tClassStruct
+    AllCollection.Add(sv, tClassStruct.key)
+  Next
+  tClassStruct = lany("struct", "struct")
+  For Each sv As String[] In tClassStruct
+    AllCollection.Add(sv, tClassStruct.key)
+  Next
+  Return AllCollection
+
+End
+
+Private Sub doListing(Command As String)
+
+  dim txthigh as new gshhighlight
+  Dim ListProg As String
+  Dim AllList As Collection = GetAllThings()
+
+
+
+  If Command <> "" Then
+    If AllList.Exist(command) Then
+      Dim listpath As String = AllList[command][1]
+      If listpath[0] = "/" Or If Left(listpath, 2) = "./" Or If Left(listpath, 2) = "~/" Then
+        listprog = File.Load(expandfn(listpath))
+      Else
+        listprog = SharedMem[listpath]
+      Endif
+    Else
+      Try listprog = File.Load(expandfn(listpath))
+      If Error Then
+        Error ("List: Unable to find ") & command
+        Return
+      Endif
+    Endif
+  Else
+    ListProg = sharedmem.Lambda & "\n"
+    ListProg &= sharedmem.execprog
+  Endif
+
+  'print "Listing for ";;quote(command);;"from";;listpath
+  Print txthigh.ToConsole(ListProg)
+
+End

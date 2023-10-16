@@ -17,7 +17,7 @@ Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "e
   "tracelevel", "dotrace", "noalias", "nopreprocess", "subpath", "classpath", "structpath"]
 
 ''Why are repeat and do in this list..?
-Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "list", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"]
+Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
 
 Public ConsoleHighlight As New ConsoleHighlight
 Public ReadQueue As New String[]     ' Used to push items to be read first
@@ -1192,7 +1192,6 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
   'If Not nowait Then
   If execlocal(Split(execbuffer, "\n", "\"\"", True, True), nowait) Then
     execprog = ExecBuffer
-    SharedMem["execprog"] = "Executed on :" & Str(Now) & "\n" & ExecBuffer
     ExecBuffer = ""
     ContainsGlobal = False
     linktable.Clear()
@@ -1313,6 +1312,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
 
     Program = ProgPart1 & Program
 
+
     If bSingleUse Then
       Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
     Else
@@ -1328,7 +1328,8 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       Endif
 
       execprog = program  ' save a copy of last executed program, can be edited by "edit execprog" on command line
-      SharedMem["execprog"] = "Executed on :" & Str(Now) & "\n" & ExecBuffer
+      SharedMem.prevexecprog = SharedMem.execprog
+      SharedMem.execprog = "Executed on :" & Str(Now) & "\n" & ExecProg
 
       If TraceLevel >= 20 Then
         File.Save(user.home & "/vars/ExecProg.gbs", program)
@@ -1349,6 +1350,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         ReturnOutputTo = ""
         LinkTable.clear()
         ContainsGlobal = False
+        SharedMem["execprog"] = "Executed on :" & Str(Now) & "\n" & ExecProg
         Return
 
       Endif
@@ -2192,18 +2194,18 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             SharedMem["result"] = "OK"
             execbuffer = ""
 
-          Case "LIST"              ' list the last executed program or any program
-            If InBufParse.count >= 2 Then
-              For parscount As Integer = 1 To inbufparse.max
-                If inbufParse[parscount][0] = "\"" Then inbufParse[parscount] = UnQuote(inbufParse[parscount])
-                DoListing(InBufParse[parscount])
-              Next
-            Else
-              DoListing("")
-            Endif
-
-            SharedMem["result"] = "OK"
-            execbuffer = ""
+            ' Case "LIST"              ' list the last executed program or any program
+            '   If InBufParse.count >= 2 Then
+            '     For parscount As Integer = 1 To inbufparse.max
+            '       If inbufParse[parscount][0] = "\"" Then inbufParse[parscount] = UnQuote(inbufParse[parscount])
+            '       DoListing(InBufParse[parscount])
+            '     Next
+            '   Else
+            '     DoListing("")
+            '   Endif
+            '
+            '   SharedMem["result"] = "OK"
+            '   execbuffer = ""
 
           Case "GET"     ' load a plugin into memory for use in the local command shell
             LinkTable.Clear()
@@ -3605,34 +3607,34 @@ Private Sub getSubdef(func As String[]) As String
 
 End
 
-Private Sub doListing(Command As String)
-
-  Dim ListProg As String
-  Dim AllList As Collection = GetAllThings()
-
-  If Command <> "" Then
-    If AllList.Exist(command) Then
-      Dim listpath As String = AllList[command][1]
-      If listpath[0] = "/" Or If Left(listpath, 2) = "./" Or If Left(listpath, 2) = "~/" Then
-        listprog = File.Load(listpath)
-      Else
-        listprog = SharedMem[listpath]
-      Endif
-    Else
-      Try listprog = File.Load(CreateCmdProgram.MakeAbs(listpath))
-      If Error Then
-        Error ("List: Unable to find ") & command
-        Return
-      Endif
-    Endif
-  Else
-    ListProg = LambdaBuffer & "\n"
-    ListProg &= execprog
-  Endif
-
-  Print ConsoleHighlight.ToConsole(ListProg)
-
-End
+' Private Sub doListing(Command As String)
+'
+'   Dim ListProg As String
+'   Dim AllList As Collection = GetAllThings()
+'
+'   If Command <> "" Then
+'     If AllList.Exist(command) Then
+'       Dim listpath As String = AllList[command][1]
+'       If listpath[0] = "/" Or If Left(listpath, 2) = "./" Or If Left(listpath, 2) = "~/" Then
+'         listprog = File.Load(listpath)
+'       Else
+'         listprog = SharedMem[listpath]
+'       Endif
+'     Else
+'       Try listprog = File.Load(CreateCmdProgram.MakeAbs(listpath))
+'       If Error Then
+'         Error ("List: Unable to find ") & command
+'         Return
+'       Endif
+'     Endif
+'   Else
+'     ListProg = LambdaBuffer & "\n"
+'     ListProg &= execprog
+'   Endif
+'
+'   Print ConsoleHighlight.ToConsole(ListProg)
+'
+' End
 
 Public Sub lambda() As String
 

@@ -39,7 +39,7 @@ Public Sub _Call()
     If Not .exist("hosthame") Then .hostname = system.host
     If Not .exist("term") Then .term = "xterm-256color"
     If Not .exist("newprofile") Then .newprofile = False
-    If Not .exist("lambda") Then .lambda = "print application.name"
+    If Not .exist("lambda") Then .lambda = ""
     If Not .Exist("noalias") Then .noalias = False
     If Not .Exist("noPreProcess") Then .noPreProcess = False
     If Not .Exist("subsPath") Then .subspath = user.home &/ "vars/subs;" & user.home &/ "vars/games;/usr/share/gsh/subs"
