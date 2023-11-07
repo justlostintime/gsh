@@ -67,7 +67,7 @@ else
        print "Class ";classname; " not found"
     else
        Print Left(css.name&space(MaxLength+1),MaxLength+1 ) ;; "Ref="; Format(css.count, "##0")
-       print "Public sysmbols for";; classname
+       print "Public symbols for";; classname
        dim table as string[] = css.symbols
        table = table.sort()
        for each m as string in table
@@ -77,7 +77,7 @@ else
 
 endif
 
-print "Green = Gambas class, Red are internal objects, anything with ^ to start is overlayed by inheratance"
+print "Green = Gambas class, Red are internal objects, anything with ^ to start is overlayed by inheritance"
 
 Catch
   flush

@@ -27,7 +27,6 @@ alias l='ls -CF'
 alias la='ls -A'
 alias ll='ls -alF'
 alias ls='ls --color=auto'
-alias cls='clear'
 alias home='cd ~'
 alias pkill='!kill'
 alias ??='lprint'
@@ -40,6 +39,7 @@ alias fcb='fromclipboard'
 alias done='loop until true'
 alias clearsub='clearsubs'
 alias clearvar='clearvars'
+alias pwd='/bin/pwd'
 
 
 

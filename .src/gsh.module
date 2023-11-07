@@ -1136,7 +1136,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
         Error (("Local Execute error in :") & Method & ":" & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
         SubCls.doListing(SharedMem["sub." & method], Split(Error.where, ".")[2])
       Endif
-      Error.Raise(("gsh local execute error :") & Method & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+      Error.Raise(("gsh local execute error :") & Method & " at line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
     Else
       Error ("[Terminated]")
     Endif
@@ -2194,19 +2194,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             SharedMem["result"] = "OK"
             execbuffer = ""
 
-            ' Case "LIST"              ' list the last executed program or any program
-            '   If InBufParse.count >= 2 Then
-            '     For parscount As Integer = 1 To inbufparse.max
-            '       If inbufParse[parscount][0] = "\"" Then inbufParse[parscount] = UnQuote(inbufParse[parscount])
-            '       DoListing(InBufParse[parscount])
-            '     Next
-            '   Else
-            '     DoListing("")
-            '   Endif
-            '
-            '   SharedMem["result"] = "OK"
-            '   execbuffer = ""
-
           Case "GET"     ' load a plugin into memory for use in the local command shell
             LinkTable.Clear()
             If inbufparse.count >= 2 Then
@@ -2866,7 +2853,7 @@ Private Sub isLocalClass(msym As String, Optional docompile As Boolean = True, d
 
   If doclasscheck Then
     Try c = Classes[sym]
-    If Not Error Then Return True
+    If Not Error And If c <> Null Then Return True
   Endif
 
   Return False
