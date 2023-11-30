@@ -1823,9 +1823,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     ' Moved to function bellow here
 
     InBuffer = Reader(EndBlk)
-    While Right(inbuffer, 1) = "\\"
-      InBuffer = Left(InBuffer, -1)
-      InBuffer &= Reader(EndBlk)
+    While Right(inbuffer, 1) = "\\"                        ' allow line to be continued with a \ at the end of the line
+      InBuffer = Left(InBuffer, -1)                          ' we want to read the entire line into a single buffer for processing
+      InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
     Wend
 
     If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
