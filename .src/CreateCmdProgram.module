@@ -238,36 +238,36 @@ End
 
 Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
 
-  Dim CurrentCmd As Integer         ' Index of the command we are processing
-  Dim i As Integer                  ' Index of current symbol within the command
-  Dim j As Integer                  ' Index general
-  Dim sym As String                 ' The currently processed symbol
-  Dim type As Integer               ' The Current Symbol type
-  Dim CmdExec As String[]           ' this will contain the exec line for each command
-  Dim CmdIo As String[]             ' this will contain the read functions for each command or rd wr if inside pipe stream
-  Dim CmdErr As String[]            ' Function if errors are captured
-  Dim CmdWrite As String[]          ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
-  Dim CmdKill As String[]           ' This will have the close io functions when the task ends
-  Dim CmdBeforeExec As String[]     ' list of things to do before starteing execs
-  Dim CmdFinal As String = ""       ' This will contain the finished program segment and functions
-  Dim CmdCount As Integer = 0       ' the number of the command we are processing
-  Dim CmdList As String[][]         ' The first pass of command line collecting pipe connections
-  Dim CmdTypes As Integer[][]       ' the list of types for each value
-  Dim CmdWriteTo As Integer[]       ' This is the proc the command writes to
-  Dim CmdReadFrom As Integer[]      ' This is the proc the command reads from
-  Dim CmdWriters As Integer[][]     ' the list of writers to each command
-  Dim WaitCompletion As Boolean = True ' wait for command to finish
+  Dim CurrentCmd As Integer                             ' Index of the command we are processing
+  Dim i As Integer                                                    ' Index of current symbol within the command
+  Dim j As Integer                                                    ' Index general
+  Dim sym As String                                               ' The currently processed symbol
+  Dim type As Integer                                            ' The Current Symbol type
+  Dim CmdExec As String[]                                  ' this will contain the exec line for each command
+  Dim CmdIo As String[]                                       ' this will contain the read functions for each command or rd wr if inside pipe stream
+  Dim CmdErr As String[]                                     ' Function if errors are captured
+  Dim CmdWrite As String[]                                ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
+  Dim CmdKill As String[]                                     ' This will have the close io functions when the task ends
+  Dim CmdBeforeExec As String[]                    ' list of things to do before starteing execs
+  Dim CmdFinal As String = ""                             ' This will contain the finished program segment and functions
+  Dim CmdCount As Integer = 0                         ' the number of the command we are processing
+  Dim CmdList As String[][]                                 ' The first pass of command line collecting pipe connections
+  Dim CmdTypes As Integer[][]                         ' the list of types for each value
+  Dim CmdWriteTo As Integer[]                         ' This is the proc the command writes to
+  Dim CmdReadFrom As Integer[]                     ' This is the proc the command reads from
+  Dim CmdWriters As Integer[][]                        ' the list of writers to each command
+  Dim WaitCompletion As Boolean = True      ' wait for command to finish
   Dim InBlock As Boolean = False
-  Dim BuildBlock As String             ' used to construct block a exec parameters
+  Dim BuildBlock As String                                   ' used to construct block a exec parameters
   Dim NoOutRedirect As Boolean = True
   Dim NoErrRedirect As Boolean = True
   Dim NeedsSTDIOWrite As Boolean = False
   Dim NeedsSTDERRWrite As Boolean = False
   Dim BaseName As String
-  Dim CurrentRead As Integer         ' The proc to read from
+  Dim CurrentRead As Integer                            ' The proc  to read from
   Dim x As String[]
   Dim y As Integer[]
-  Dim z As Integer[] ' Gambas class file
+  Dim z As Integer[]                                                 ' Gambas class file
 
   CmdExec = New String[]       ' this will contain the exec line for each command
   CmdIo = New String[]         ' this will contain the read functions for each command or rd wr if inside pipe stream
@@ -414,7 +414,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
             Error.Raise(" & not last symbol in command for background request")
           Endif
 
-        Case "&>", "&>>"
+        Case "&>", "&>>"   ' redirect error stream to object or file, clear or append
           Inc i
           If i > CmdList[CurrentCmd].max Then
             Error.Raise("Missing Error redirection destination &> &>> [" & CmdList[CurrentCmd].join(" ") & " ... ]")
@@ -454,7 +454,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateInlineInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
 
-        Case "<<<"   'inline input the following string of global Variable
+        Case "<<<"   'inline input the following string or global Variable
           Inc i
 
           If i > CmdList[CurrentCmd].max Then

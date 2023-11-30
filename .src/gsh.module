@@ -2636,7 +2636,7 @@ Public Sub editbuffer(thebuffer As String) As String
     Dim cmd As String[]
     If TypeOf(!Editor) = gb.string Then
       cmd = [!editor]
-      If !editor = "vi" Or If !editor = "nano" Then
+      If File.BaseName(!editor) == "vi" Or If File.BaseName(!editor) == "nano" Then
         cmd.Add("-l")
       Endif
     Else
