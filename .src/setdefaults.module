@@ -31,7 +31,15 @@ Public Sub _Call()
     If Not .exist("maxhistory") Then .maxhistory = 300                                        ' define the max history length
     If Not .exist("historycurrent") Then .historycurrent = 0                                  ' defines the current history level
     If Not .exist("history") Then .history = New Collection
-    If Not .exist("editor") Then .editor = "/bin/nano"
+    If Not .exist("editor") Then
+      Try .editor = System.Find("nano")
+      If Error Then
+        Try .editor = System.Find("vi")
+        If Error Then
+          .editor = "/bin/ed"
+        Endif
+      Endif
+    Endif
     If Not .exist("hexeditor") Then .hexeditor = "/usr/bin/hexedit"
     If Not .exist("helpdisplay") Then .helpdisplay = gsh.DefaultHelp
     If Not .exist("home") Then .home = user.home
