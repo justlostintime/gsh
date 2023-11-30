@@ -28,7 +28,6 @@ alias la='ls -A'
 alias ll='ls -alF'
 alias ls='ls --color=auto'
 alias home='cd ~'
-alias pkill='!kill'
 alias ??='lprint'
 alias ps='ps -l'
 alias hh='hist(-10)'
@@ -40,6 +39,8 @@ alias done='loop until true'
 alias clearsub='clearsubs'
 alias clearvar='clearvars'
 alias pwd='/bin/pwd'
+alias foreach() = 'do:;for each value as variant in &1:;&2:;next:;done'
+alias ifor()    = 'for i as integer = &1 to &2:;&3:;next
 
 
 

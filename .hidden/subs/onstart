@@ -4,7 +4,7 @@ if system.exist("fortune") then
 	shell "fortune" wait
 	print
 endif
-env["EDITOR"] = "/usr/bin/nano"
-$editor = "/usr/bin/nano"
+env["EDITOR"] = system.find("nano")
+$editor = system.find("nano")
 return true
 end
