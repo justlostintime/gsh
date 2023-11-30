@@ -2629,12 +2629,16 @@ Public Sub editbuffer(thebuffer As String) As String
   Close wfile
 
   Shell "clear" Wait
+
   With sharedmem
     'Dim cmd As String = sharedMem["editor"] & " " & workfile
     Dim mProc As Process
     'mProc = Exec [SharedMem["editor"], workfile] With SharedMem["env"]
     Dim cmd As String[]
     If TypeOf(!Editor) = gb.string Then
+      If System.Find(!editor) = Null Then
+        Error.Raise("No valid text editor specified :" & Quote(!editor))
+      Endif
       cmd = [!editor]
       If File.BaseName(!editor) == "vi" Or If File.BaseName(!editor) == "nano" Then
         cmd.Add("-l")
