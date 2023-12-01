@@ -3,6 +3,7 @@
 Property LogActive As Boolean Use $LogActive = True
 Property Read LogFile As File Use $LogFile = Null
 
+
 Public Sub _Call(logname As String, msg As String)
 
   Dim locker As Stream
@@ -10,13 +11,19 @@ Public Sub _Call(logname As String, msg As String)
   If Not $Logactive Then Return
 
   If $LogFile = Null Then
-    Try $LogFile = Open logname For Write Append
+    If Exist(logname) Then
+      Try $LogFile = Open logname For Write Append
+    Else
+      Try $LogFile = Open logname For Write Create
+    Endif
+
     If Error Then
       Error "Unable to open log file "; logname
     Endif
   Endif
 
   Try locker = Lock "/tmp" &/ User.id & "_gshlogger_lock" Wait 1.5
+
   If Error Then
     Error ("Log lock failed : timed out : " & msg)
   Endif
