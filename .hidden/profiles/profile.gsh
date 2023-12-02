@@ -39,39 +39,5 @@ alias done='loop until true'
 alias clearsub='clearsubs'
 alias clearvar='clearvars'
 alias pwd='/bin/pwd'
-alias foreach() = 'do:;for each value as variant in &1:;&2:;next:;done'
-alias ifor()    = 'for i as integer = &1 to &2:;&3:;next'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+alias foreach()='do:;for each value as variant in &1:;&2:;next:;done'
+alias ifor()='for i as integer = &1 to &2:;&3:;next'

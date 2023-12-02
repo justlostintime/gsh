@@ -2,7 +2,7 @@ Public Sub StringParse(InLine As String, Optional p As ParseInfo = Null, Include
 '' process the input line and split it into seperate commands
 '' be careful this is used internally
 
-use "gb.eval.highlight"
+use "gb.eval","gb.highlight"
 Public defaultp As New ParseInfo(True)
 
   Dim CurrentType As Integer = highlight.Symbol

@@ -1,20 +1,22 @@
-Public Sub GetHtmlAsText(TheUrl as string) as string[]
+Public Sub GetHtmlAsText(TheUrl as string) as string[] ' turn html into text string
+'' Read a web page and return the page converted to text
+'' uses html2text linux app to do the conversion
   Dim mproc As Process
   Dim sSource As New HttpClient As "hclient"
   Dim buffer As String
   dim aTmps as string[]
-  
+
   sSource.url = TheUrl
   sSource.async = False
   sSource.timeout = 5
   sSource.Get
   If sSource.status < 0 Then Return ""
-  If Lof(sSource) Then 
+  If Lof(sSource) Then
      buffer = Read #sSource, Lof(sSource)
   Else
     buffer = ""
   Endif
-  
+
   If buffer <> "" And If Not (buffer Like "*This page does not exist*") Then
       ReadBuffer = ""
       mproc = Exec ["html2text", "-ascii", "-width", "200"] For Read Write As "mProcget"
@@ -23,7 +25,7 @@ Public Sub GetHtmlAsText(TheUrl as string) as string[]
       mproc.wait
       atmps = Split(Replace(ReadBuffer, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
   Endif
-           
+
   Return sTemps
 end
 

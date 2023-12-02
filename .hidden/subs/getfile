@@ -1,23 +1,24 @@
-Sub getfile(filename As String, symbol As String) As Boolean 'Load Binary file into a global variable
+Sub getfile(filename As String, symbol As String) As Boolean 'Load Binary file into a byte[] global variable
 ''getfile  loads a binary copy of the file into a global variable
 ''         Defaults to ~/vars/filename
 ''         loaded file may be dumped using fprint
-''         used a byte[] as the medium edit will hex edit this type
+''         used a byte[] as the medium, edit will call hex edit for this type
 with sharedmem
 if not exist(filename) then
-if file.dir(filename) = "" then
-filename = user.home &/ "vars" &/ filename
-if not exist(filename) then
-print #file.err, "File not found"
-.["result"] = "File Not Found"
-return false
+    if file.dir(filename) = "" then
+        filename = user.home &/ "vars" &/ filename
+        if not exist(filename) then
+            print #file.err, "File not found"
+            .["result"] = "File Not Found"
+            return false
+        endif
+    else
+        print #file.err, "File not found"
+        .["result"] = "File Not Found"
+        return false
+    endif
 endif
-else
-print #file.err, "File not found"
-.["result"] = "File Not Found"
-return false
-endif
-endif
+
 dim mfile as file
 try mfile = open filename for read
 dim x as new byte[lof(mfile)]

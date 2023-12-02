@@ -1,3 +1,4 @@
+'nopreprocess
 Sub lvars(Optional varname As String = "",dumpall as boolean = false) As Boolean ' list all variables and content
 ''lVars  <$GlobalVarName> - list all varables or specific variable with content
 ''          function lvars(<varname>)

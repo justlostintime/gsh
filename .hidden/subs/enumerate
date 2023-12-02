@@ -140,7 +140,7 @@ Sub getenum(enumdef As String) As String[]
         if nstep = 0 Then
           nStep = IIf(nStart < nEnd, 1, -1)
         endif
-    
+
         For i As Integer = nStart To nEnd Step nStep
           if PatternLength > 0 Then
             result.add(format(i,Pattern))
@@ -153,7 +153,7 @@ Sub getenum(enumdef As String) As String[]
 
         Dim bStart As Byte = CByte(Asc(EnumStart, 1))
         Dim bEnd As Byte = CByte(Asc(EnumEnd, 1))
-        if nStep = 0 then 
+        if nStep = 0 then
           nStep = IIf(bStart < bEnd, 1, -1)
         endif
         For b As Byte = bStart To bEnd Step nStep

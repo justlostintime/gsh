@@ -1,0 +1,49 @@
+#!/usr/bin/env gsh
+do
+   print "Test Speed to Access script Variables using $varname access method, locking"
+   dim starttime as float = timer
+   $i = 0
+   for i as integer = 0 to 1000000
+     if i % 100000 = 0 then print $i
+     inc $i
+   next
+   print "Total time ";timer - starttime
+done
+
+do
+   print "Test Speed to Access script Variables using Symbol object access method, locking"
+   dim starttime as float = timer
+   $i = 0
+   dim a as variant = sharedmem.symboltable["i"]
+   for i as integer = 0 to 1000000
+      if i % 100000 = 0 then print a.value
+      inc a.value
+   next
+   print "Total time ";timer - starttime
+done
+
+do
+   print "Test Speed to Access script Variables using mem access interface, no locking"
+   dim starttime as float = timer
+   $i = 0
+   dim a as variant = sharedmem._varptr("i")
+   for i as integer = 0 to 1000000
+      if i % 100000 = 0 then print sharedmem.usermem[a]
+      sharedmem.usermem[a] += sharedmem.usermem[a]
+   next
+   print "Total time ";timer - starttime
+done
+
+do
+   print "Test Speed to Access script Variables using integer@ptr access method, no locking"
+   dim starttime as float = timer
+   $i = 0
+   dim a as variant = sharedmem.symboltable["i"]
+   dim aptr as pointer = a.Dataptr()
+   print aptr, integer@(aptr)
+   for i as integer = 0 to 1000000
+      if i % 100000 = 0 then print integer@(aptr)
+      integer@(aptr) = integer@(aptr) + 1
+   next
+   print "Total time ";timer - starttime
+done

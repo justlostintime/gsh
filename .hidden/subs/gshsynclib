@@ -1,5 +1,5 @@
-' Gsh Library content builder
-' This builds the content file for online gsh script repositories
+' Gsh Library content builder, adds the default content to the
+' local copy of the gshlibrary
 '
 ' Copyright (C)  Brian G
 '
@@ -24,7 +24,7 @@ Public Sub gshsynclib()
     Dim source As String = env["gshproject"]
     Dim dest As String = env["gshlibrary"]
     Dim FileText As String
-    Dim directories As String[] = ["subs", "class", "struct", "examples", "doc", "editors", "profiles"]
+    Dim directories As String[] = ["subs", "class", "struct", "examples", "doc", "editors", "profiles","scripts"]
 
     Print "GSH_synclib : ";; Quote(source);; "to";; Quote(dest)
 
@@ -42,7 +42,6 @@ Public Sub gshsynclib()
         Print "GSH_synclib : Library  directory not found"
         Quit 3
     Endif
-
 
     For Each s As String In directories
         Dim CurrentDir As String = source &/ ".hidden" &/ s

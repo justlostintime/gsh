@@ -1,3 +1,4 @@
+'nopreprocess
 Sub ToStringArray(sResult as string[],...) 'Change anything to string[]
 ''ToStringArray    Creat a string array the content of arrays or collections
 ''          or objects/classes with the special _print function
@@ -22,7 +23,7 @@ For Each v As Variant In vParms
 
                 case "String[]","Integer[]","Float[]","Long[]","Short[]","Single[]","Pointer[]","Byte[]","Date[]"
                        sResult.insert(v)
-                       
+
                 case "Date[]"
                     for each ds as date in v
                         sResult.add(str(ds))
@@ -46,7 +47,7 @@ For Each v As Variant In vParms
                         sResult.add("Symbol:"&s)
                     next
                     sResult.add("End Class")
-                    
+
                 case "String"
                     sResult.add(v)
 
@@ -75,7 +76,7 @@ For Each v As Variant In vParms
 
         Default
             try sResult.add(v)
-            if error then 
+            if error then
               sResult.add(quote("\"{\"&error.text&\"}\""))
             endif
 

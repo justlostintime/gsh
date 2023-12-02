@@ -14,11 +14,14 @@ Public Sub _Call(logname As String, msg As String)
     If Exist(logname) Then
       Try $LogFile = Open logname For Write Append
     Else
+      If Not Exist(File.Dir(logname)) Then
+        Shell.MkDir(File.Dir(logname))
+      Endif
       Try $LogFile = Open logname For Write Create
     Endif
 
     If Error Then
-      Error "Unable to open log file "; logname
+      Error "Unable to open log file "; Quote(logname); " : "; Error.text
     Endif
   Endif
 

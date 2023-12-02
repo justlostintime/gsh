@@ -1,4 +1,4 @@
-Sub set(vArray as variant, Value as variant, ... ) as variant ' Update ghs shell array value
+Sub set(vArray as variant, Value as variant, ... ) as variant ' Update gsh shell array value
 '' Update the content of an array or collection  that is stored in memory database - gsh shell variable
 '' returns the updated array or collection
 '' usage : $a = set($a,myvalue,subscript1,....) ' up to 3 subscripts
