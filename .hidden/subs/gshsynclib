@@ -60,7 +60,7 @@ Public Sub gshsynclib()
         Next
     Next
 
-    Quit 0
+    return
 Catch
     Error "Script Error >";; error.text & "\n" & error.where
 
