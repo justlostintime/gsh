@@ -374,6 +374,7 @@ Sub SymsInsert(p As ParseInfo, sym As String, type As Integer)
   If p.DoFileExpand = True Then
     FileExpandInsert(p, sym, type)
   Else
+    if p.keywords.exist(sym) then type = highlight.keyword
     p.syms.Add(sym)
     p.types.Add(type)
   Endif
