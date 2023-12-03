@@ -2,7 +2,7 @@
 
 Export
 
-Static Property Read syncvars As Collection Use $syncvars
+Property Read syncvars As Collection Use $syncvars
 
 Public Sub _new(Optional Variables As Collection = ["path": "PATH"])
 
@@ -21,7 +21,7 @@ Public Sub _free()
 
 End
 
-Static Public Sub Add(VarName As String, envEntry As String) As Boolean
+Public Sub Add(VarName As String, envEntry As String) As Boolean
 
   $syncvars.Add(envEntry, VarName)
   Try SharedMem.NotifyChange(Varname, Me, -1, "varchanged")
@@ -37,7 +37,7 @@ Catch
 
 End
 
-Static Public Sub Remove(varname As String) As Boolean
+Public Sub Remove(varname As String) As Boolean
 
   If Not $syncvars.Exist(varname) Then Return False
 

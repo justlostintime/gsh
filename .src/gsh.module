@@ -113,7 +113,7 @@ Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
 
-Private EnvSync As SyncEnv
+Public EnvSync As SyncEnv
 
 '' Set the trace level while running the script
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel)    ' this function turns on the compile tracing

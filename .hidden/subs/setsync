@@ -1,11 +1,11 @@
-Class SyncEnv
+Class gsh
 public sub setsync(VarName as string, EnvEntryName as string) ' Sync an environment entry with the gsh variable value
 '' SetSync(Variable, EnvEntryName)
 '' Syncronize the value of a gsh variable with an entry in the environment variable list
-   dim syncit as SyncEnv
+
    if not sharedmem.exist(VarName) then 
           if isnull(application.env[EnvEntryName]) then
-              error "create new env variable"
+              error "creating new env variable"
               application.env[EnvEntryName] = ""
           endif
           sharedmem[Varname]= env[EnvEntryName]
@@ -13,6 +13,6 @@ public sub setsync(VarName as string, EnvEntryName as string) ' Sync an environm
           env[EnvEntryName] =  sharedmem[Varname]
    endif
    
-   SyncEnv.Add(VarName,envEntryName)
+   gsh.EnvSync.Add(VarName,envEntryName)
 
 end
