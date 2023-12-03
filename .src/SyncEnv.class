@@ -1,0 +1,62 @@
+' Gambas class file
+
+Export
+
+Static Property Read syncvars As Collection Use $syncvars
+
+Public Sub _new(Optional Variables As Collection = ["path": "PATH"])
+
+  $syncvars = New Collection(gb.ignorecase)
+  For Each s As String In Variables
+    Add(Variables.key, s)
+  Next
+
+End
+
+Public Sub _free()
+
+  For Each s As String In $syncvars
+    Remove($syncvars.key)
+  Next
+
+End
+
+Static Public Sub Add(VarName As String, envEntry As String) As Boolean
+
+  $syncvars.Add(envEntry, VarName)
+  Try SharedMem.NotifyChange(Varname, Me, -1, "varchanged")
+  If Error Then
+    Error "SyncEnv Error:";; Error.Text
+    Return False
+  Endif
+  Return True
+
+Catch
+  Error "SyncEnv Error:";; Error.Text;; Error.where
+  Return False
+
+End
+
+Static Public Sub Remove(varname As String) As Boolean
+
+  If Not $syncvars.Exist(varname) Then Return False
+
+  Try SharedMem.NotifyCancel(Varname, Me)
+  If Error Then
+    Try $syncvars.Remove(varname)
+    Error "SyncEnv Error:";; Error.text
+    Return False
+  Endif
+  Try $syncvars.Remove(varname)
+  Return True
+
+End
+
+
+Public Sub varchanged(Value As Variant, Variable As String)
+
+  Env[$syncvars[Variable]] = Value
+
+End
+
+

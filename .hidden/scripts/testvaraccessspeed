@@ -1,5 +1,7 @@
 #!/usr/bin/env gsh
 do
+   print "Test each of the methods for access/updating a gsh variable, this can take a while"
+   print "The test for each type is execute 1,000,000 times\n"
    print "Test Speed to Access script Variables using $varname access method, locking"
    dim starttime as float = timer
    $i = 0

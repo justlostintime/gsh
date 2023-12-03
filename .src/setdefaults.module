@@ -6,6 +6,8 @@
 ''  perform any conversion for new release database updates
 Public Sub _Call()
 
+  Dim tmpstring As String
+
   With sharedmem
 
     .["gshversion"] = gsh.$version                 ' ;Application.Version                                         ' Use this later on to do version update stuff and verify all running versions are compatable
@@ -53,6 +55,7 @@ Public Sub _Call()
     If Not .Exist("subsPath") Then .subspath = user.home &/ "vars/subs;" & user.home &/ "vars/games;/usr/share/gsh/subs"
     If Not .exist("classPath") Then .classpath = user.home &/ "vars/class;/usr/share/gsh/class"
     If Not .Exist("structPath") Then .structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
+    If Not .Exist("scriptpath") Then .scriptpath = user.home &/ "vars/struct;/usr/share/gsh/scripts"
 
     If Not .exist("DoTrace") Then               'the memory value always takes precidence
       .DoTrace = gsh.DoTrace
@@ -66,11 +69,26 @@ Public Sub _Call()
       gsh.TraceLevel = .TraceLevel
     Endif
 
-    If Not .exist("path") Then .["path"] = User.home &/ ".local/bin:" & User.home &/ "bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
-    If Not .exist("env") Then .["env"] = ["PWD=" & .["pwd"], "PATH=" & .["path"], "HOME=" & .["home"], "TERM=" & .["term"], "HOSTTYPE=" & .["hosttype"], "HOSTHAME=" & .["hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
+    Dim tmppath As String[] = Split(Env["PATH"], ":", "\"", True, True)
+    Dim newpath As String[] = Split(.["path"], ":", "\"", True, True)
 
-    If gsh.bLogon Then Env["PATH"] = .path
+    For Each tmpstring In newpath
+      If Not tmppath.Exist(tmpstring) Then
+        tmppath.Add(tmpstring, 0)
+      Endif
+    Next
+    If Not tmppath.Exist("/usr/share/gsh/scripts") Then tmppath.add("/usr/share/gsh/scripts", 0)
+    If Not tmppath.Exist(User.home &/ "vars/scripts") Then tmppath.add(User.home &/ "vars/scripts", 0)
 
+    .["path"] = tmppath.Join(":")
+
+    If Not .exist("env") Then
+      .["env"] = ["PWD=" & .["pwd"], "PATH=" & .["path"], "HOME=" & .["home"], "TERM=" & .["term"], "HOSTTYPE=" & .["hosttype"], "HOSTHAME=" & .["hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
+    Endif
+
+    '   If gsh.bLogon Then
+    Env["PATH"] = .path
+    ' Endif
     .pwd = Env["PWD"]
 
     If .pwd = "" Then
@@ -92,9 +110,11 @@ Public Sub _Call()
     Endif
 
     .Sync(".", gsh.DefaultImageName)
+
   Catch
     Dim etext As String = Error.text & Error.where
     Error.Propagate()
   End With
 
 End
+

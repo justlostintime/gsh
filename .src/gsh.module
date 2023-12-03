@@ -113,6 +113,8 @@ Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
 
+Private EnvSync As SyncEnv
+
 '' Set the trace level while running the script
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel)    ' this function turns on the compile tracing
 
@@ -672,6 +674,7 @@ Public Sub Main()
   SharedMem["pwd"] = Env["PWD"]
   SetDefaults()
 
+
   Try chdir(Env["PWD"])
 
   'Debug line ****
@@ -719,6 +722,11 @@ Public Sub Main()
   Signal[Signal.SIGWINCH].catch
   Signal[Signal.SIGABRT].catch
   Signal[Signal.SIGCHLD].catch
+
+  Try EnvSync = New SyncEnv
+  If Error Then
+    envSync = Null
+  Endif
 
   ' Check if we have a one line command
   ' Posix says we must execute this command then exit
@@ -1011,6 +1019,9 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
 
   Static HasExit As Boolean = False
 
+  EnvSync._free()
+  EnvSync = Null
+
   Signal[Signal.sigterm].ignore
   signal[Signal.SIGINT].ignore
   Signal[Signal.SIGHUP].ignore
@@ -1290,7 +1301,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       ProgPart1 &= sInsert & "\n"
     Next
 
-    ProgPart1 &= "Use \"westwood.sharedmem\""
+    If Component.IsLoaded("westwood.sharedmem") Then
+      ProgPart1 &= "Use \"westwood.sharedmem\""
+    Else If Component.IsLoaded("sharedmem") Then
+      ProgPart1 &= "Use \"sharedmem\""
+    Endif
 
     For Each sinsert In UseTable
       ProgPart1 &= "," & sinsert
