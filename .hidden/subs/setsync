@@ -3,7 +3,7 @@ public sub setsync(VarName as string, EnvEntryName as string) ' Sync an environm
 '' SetSync(Variable, EnvEntryName)
 '' Syncronize the value of a gsh variable with an entry in the environment variable list
 
-   if not sharedmem.exist(VarName) then 
+   if not sharedmem.exist(VarName) then
           if isnull(application.env[EnvEntryName]) then
               error "creating new env variable"
               application.env[EnvEntryName] = ""
@@ -12,7 +12,8 @@ public sub setsync(VarName as string, EnvEntryName as string) ' Sync an environm
    else
           env[EnvEntryName] =  sharedmem[Varname]
    endif
-   
-   gsh.EnvSync.Add(VarName,envEntryName)
 
+   if not gsh.EnvSync.Add(VarName,envEntryName) then
+     error.raise("SetSync Binding failed between "&varname&" and "& EnvEntryName)
+   endif
 end

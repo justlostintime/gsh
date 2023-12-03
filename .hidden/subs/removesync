@@ -1,0 +1,14 @@
+Class gsh
+public sub removesync(VarName as string) ' stop Syncing an environment entry with the gsh variable value
+'' RemoveSync(Variable)
+'' remove binding between gsh var and env var
+
+   if not sharedmem.exist(VarName) then
+      error.raise( "RemoveSync unknow variable "&varname)
+   endif
+   
+   if not gsh.EnvSync.remove(VarName)
+     error.raise("RemoveSync No such binding "&varname)
+   endif
+
+end

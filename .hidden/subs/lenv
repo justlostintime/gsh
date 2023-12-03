@@ -11,7 +11,7 @@ dim sortlist as new string[]
 for each sI as string in env
   sortlist.add(sI)
 next
-sortlist.sortlist
+sortlist.sort
 for each sI in sortlist
 print  sI;"=";env[sI]
 next
