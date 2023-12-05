@@ -1,6 +1,33 @@
-public filename as string = ""
-public mfile as file
-Sub tofile(optional data As String) ' write the string to a file
-    if filename = ""  then filename = data
-    print data;
+Sub tofile(fname As String, optional atEnd as boolean = false) 'tee write to the file and stdout
+'' Take the std in and tee's it to a file and to std out
+'' take a copy of a pipeline !!!
+    public filename as string = ""
+    public mfile as file
+
+    filename = fname
+    if atEnd then
+       try mfile = open fname for write append
+       if error then
+         try mfile = open fname for write create
+         if error then
+           error "tofile : Unable to open file for append"
+         endif
+       endif
+    else
+       try mfile = open fname for write create
+       if error then
+           error "tofile : Unable to open file for new file"
+       endif
+    endif
+  dim buffer as string
+
+	while not eof()
+			try line input buffer
+			if error then break
+			print buffer
+			flush
+	wend
+
+  close #mfile
+  
 end

@@ -1,4 +1,4 @@
-Sub lshm(optional shortreport as boolean = true)
+Sub lshm(optional shortreport as boolean = true) ' list of used shared memory and values
 with sharedmem
 ._print(shortreport)
 end with

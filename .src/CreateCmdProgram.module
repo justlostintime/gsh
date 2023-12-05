@@ -332,6 +332,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         Inc CmdCount
         CurrentRead = CmdCount
         Inc i
+        NeedsSTDERRWrite = False
+        NoOutRedirect = True
         Continue
 
       Case "|>"
@@ -350,6 +352,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdWriters.add(z)
         Inc CmdCount
         Inc i
+        NeedsSTDERRWrite = False
+        NoOutRedirect = True
         Continue
 
       Case "|<"
@@ -368,6 +372,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdWriters.add(z)
         Inc CmdCount
         Inc i
+        NeedsSTDERRWrite = False
+        NoOutRedirect = True
         Continue
 
       Default
@@ -433,8 +439,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, False)
 
-          NeedsSTDERRWrite = True
-          NoOutRedirect = False
+          NeedsSTDERRWrite = False
+          NoOutRedirect = True
 
         Case "<" 'input features
           Inc i
@@ -579,7 +585,9 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
     Endif
 
     If NoOutRedirect And NeedsSTDIOWrite Then CmdIo[CurrentCmd] &= "write #File.out, sInput, sInput.len\n"
-    If NoErrRedirect And NeedsSTDERRWrite Then CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
+    If NoErrRedirect And NeedsSTDERRWrite Then
+      CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
+    Endif
     If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"   ' do this only on first, allows to inject data to stream
   Next
 

@@ -1,5 +1,6 @@
 'nopreprocess
-public sub cls()
+sub cls() 'clear the screen buffer and the screen
+'' Clear the screen and the screen buffer
    print "\e[H\ec";
    flush
 end

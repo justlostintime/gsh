@@ -81,8 +81,6 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
       Continue
     Endif
 
-
-
     If p.operators.Exist(InLine[streampos]) Then
       If CurrentType <> Highlight.operator Then
         If sym.len > 0 Then
@@ -421,5 +419,3 @@ Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' repla
   syms.insert(newsyms)
 
 End
-
-' Gambas class file

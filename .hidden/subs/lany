@@ -22,7 +22,7 @@ With sharedmem
 
     For Each s As String In globdir
         If Not tolist.exist(s) Then tolist.add("", s)
-        tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s,"Default"]
+        tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s,"Default",stype]
     Next
 
 '   Get a list of all the local user scripts
@@ -34,7 +34,7 @@ With sharedmem
        try shortlist = Dir(sp, "*", gb.file)
        if error then continue                                ' if the directory does not exsist then ignore it
        For Each s In shortlist
-          tolist[s] = ["Personal", sp &/ s, s,"Personal"]
+          tolist[s] = ["Personal", sp &/ s, s,"Personal",stype]
        next
     Next
 
@@ -44,7 +44,7 @@ With sharedmem
         if tolist.exist(s) then
           tolist[s][3] = "In-Mem"
         else
-          tolist[s] = ["In-Mem", sType & "." & s, s,"In-Mem"]
+          tolist[s] = ["In-Mem", sType & "." & s, s,"In-Mem",stype]
         endif
     Next
 

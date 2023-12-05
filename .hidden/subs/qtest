@@ -1,7 +1,26 @@
-Sub qtest()
-$a=0
-while $a < 5
-echo  (classes["gsh"].symbols[$a])
-inc $a
-wend
+Sub qtest() '' test access an internal class information
+
+  dim css as class
+  dim sClass as new string[]
+  dim scClass as new collection(gb.ignorecase)
+  dim sym as string[]
+  dim b as string
+
+  for each css in classes
+    sClass.add(css.name)
+    scclass.add(css,css.name)
+  next
+
+  css = scclass["gsh"]
+
+  $a=0
+
+  echo hello world
+
+  while $a < 5
+     b = css.symbols[$a]
+     print b ;; 
+     echo $a = {b}
+     inc $a
+  wend
 end

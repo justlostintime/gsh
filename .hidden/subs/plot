@@ -1,4 +1,4 @@
-Sub plot(pairs as variant[], optional Title as string = "Plotter", xRange as float = 0.0, yRange as float = 0.0, OriginX as float = 0.0, OriginY as float = 0.0) ' PLots a set of points on a graph
+Sub plot(pairs as variant[], optional Title as string = "Plotter", xRange as float = 0.0, yRange as float = 0.0, OriginX as float = 0.0, OriginY as float = 0.0) ' Plots a set of points on a graph
 ''' Plot a set of points on a 2d graph, input a variant array containing integer arrays
 ''' with two points each
 
@@ -11,9 +11,9 @@ class.load("drawingarea")
 Public xytextwidth  as integer = 20
 Public WindowWidth  as integer = 600
 Public WindowHeight as integer = 600
-Public MaxX         as float 
+Public MaxX         as float
 MaxX = xRange
-Public MaxY         as float 
+Public MaxY         as float
 Maxy = yRange
 Public OrigX        as float
 OrigX = OriginX
@@ -23,7 +23,7 @@ Public ScaleX       as float = 1.0
 Public ScaleY       as float = 1.0
 
 Public PlotList as variant[]
- 
+
 PlotList = Pairs               '' contains the list of pairs of x,y positions to plot
 
 if MaxX = 0.0 or Maxy = 0.0 then
@@ -64,7 +64,7 @@ draw.foreground = &h00ff00
 draw.line(xytextwidth,PlotArea.height - xytextwidth ,xytextwidth,xytextwidth)
 draw.line(xytextwidth,PlotArea.width - xytextwidth ,PlotArea.Height - xytextwidth ,plotarea.width - xytextwidth)
 placeTicks()
-For each pair as float[] in PlotList  
+For each pair as float[] in PlotList
    draw.circle(ScaledX(pair[0]) , ScaledY(pair[0]),2)
 next
 end
@@ -92,7 +92,7 @@ end
 Sub ScaledY(value as float) as integer  '' scale the Y axis to match the value size
    dim ypos as integer =  ySize - cint(value * ScaleX)
    print yPos
-   return ypos 
+   return ypos
 end
 
 sub SetAutoMax()                         '' scale the X and Y axis to match the value size

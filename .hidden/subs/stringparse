@@ -1,4 +1,4 @@
-Public Sub StringParse(InLine As String, Optional p As ParseInfo = Null, IncludeBreak As Boolean = False) As String[]
+Sub StringParse(InLine As String, Optional p As ParseInfo = Null, IncludeBreak As Boolean = False) As String[]
 '' process the input line and split it into seperate commands
 '' be careful this is used internally
 

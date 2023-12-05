@@ -1,5 +1,11 @@
 ' Gambas module file
 
+Public Sub RunScript(cmd As String) As Boolean
+
+  Return _call(cmd)
+
+End
+
 Public Sub _call(cmd As String) As Boolean
 
   Dim oldCommandMode As Boolean = gsh.CommandMode
@@ -56,7 +62,7 @@ Catch
   gsh.appSource = oldAppSource
   gsh.Source = OldSource
   gsh.CommandMode = OldCommandMode
-  Error "gsh Script :";; Error.Text
+  Error "gsh RunScript :";; Error.Text;; Error.where
   Return IIf(gsh.ReadQueue.count > 0, False, True)
 
 End

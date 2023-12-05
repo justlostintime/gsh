@@ -1,4 +1,8 @@
-Sub playground(...)
+Sub playground(...) ' Access and present playground programs
+'' PlayGround(...)
+'' Pass a playground program to run
+'' if no name supplied then present a list of available
+'' playground programs to select from and run
 
 try component.load("gb.net")
 if error then

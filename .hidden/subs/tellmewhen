@@ -1,4 +1,4 @@
-Sub tellmewhen()
+Sub tellmewhen() ' example of definig a public/statis fariable withing a script 
 public xxxx as string = "hello"
 print xxxx
 end

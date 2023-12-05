@@ -1,4 +1,4 @@
-Public Sub diskinfo() ' Display Disk Info
+Sub diskinfo() ' Display Disk Info
 '' Display the information about local disks
 '' and partitions
 'Linux
@@ -35,7 +35,7 @@ Next
 try plisting(disks, "Disks")
 For i As Integer = 0 To Disks.max
     try plisting(Partitions[i], "Disk Partitions " & Disks[i])
-Next 
+Next
 
 print "Partition Information .............................."
 For i = 0 To Disks.max
@@ -46,7 +46,7 @@ For i = 0 To Disks.max
    print "Partition > ";
     try printInformation(Disks[i] &/ Partitions[i][j], statmap)
   Next
-Next 
+Next
 
 print "Mount Points ......................................."
 ' get mount points
@@ -81,7 +81,7 @@ Catch
 End
 
 Sub printInformation(DiskInfo As String, StatMap As String[])
-  
+
     Dim stats As String[] = Split(file.load("/sys/block/" &/ DiskInfo &/ "/stat"), " \n", "", True, True)
     plisting(stats, "Stats for " & diskinfo, "*", statmap)
     Dim dSize As String = file.load("/sys/block/" &/ DiskInfo &/ "/size")
@@ -94,9 +94,9 @@ End
 
 
 Sub plisting(source As String[], title As String, Optional filter As String = "*", map As String[] = [])
-  Print title 
+  Print title
   For i As Integer = 0 To source.max
-    Dim s As String 
+    Dim s As String
     Try s = source[i]
     If s Like filter Then
        If map.count > 0 Then

@@ -19,9 +19,8 @@
 ' Boston, MA  02110-1301  USA
 '
 
-Public Sub gshmakecontent()
+Sub gshmakecontent()
 
-    use ""
     Dim execOutput As String
     Dim BaseDir As String = Application.dir
     Dim ContentFile As String = BaseDir &/ "content"
@@ -40,7 +39,7 @@ Public Sub gshmakecontent()
 
     Print "Processing "; MemContent.count;; "Entries"
     Dim Counter As Integer = 0
-    
+
     For Each filename As String In Memcontent
         If FIle_Types.Exist(Right(filename, 1)) Then
             filename = Left(filename, -1)
@@ -68,7 +67,7 @@ Public Sub gshmakecontent()
             md5sum = Split(Trim(md5sum), " ")[0]
             outText = FileName & "," & CStr(fileinfo.lastModified) & "," & md5sum
         Endif
-        
+
         OutContent.add(outText)
         Print OutText
     Next

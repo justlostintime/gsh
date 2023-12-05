@@ -3513,28 +3513,31 @@ Public Sub UseScript(ScriptName As String) As Object
 
 End
 
-
+Public AllThingsNames As New Collection(gb.ignorecase)
 
 Public Sub GetAllThings() As Collection
 
-  Dim AllCollection As Collection
-
   Dim lany As Object = UseScript("lany")
 
+  AllThingsNames.Clear()
 
-  AllCollection = lany.lany("sub", "subs")                               'lany defaults to subs when no parameters given
+  'lany returns an array [locationDescription, path to file,script name,LocationReadFrom,file type(class,struct,sub) ]
+  GenAllThings(lany.lany("sub", "subs"))                               'lany defaults to subs when no parameters given
+  GenAllThings(lany.lany("class", "class"))
+  GenAllThings(lany.lany("struct", "struct"))
 
-  Dim tClassStruct As Collection = lany.lany("class", "class")
-  For Each sv As String[] In tClassStruct
-    AllCollection.Add(sv, tClassStruct.key)
-  Next
-  tClassStruct = lany.lany("struct", "struct")
-  For Each sv As String[] In tClassStruct
-    AllCollection.Add(sv, tClassStruct.key)
-  Next
-  Return AllCollection
+  Return AllThingsNames
 
 End
+
+Sub GenAllThings(list As Collection)
+
+  For Each sv As String[] In list
+    AllThingsNames.Add(sv, list.key)
+  Next
+
+End
+
 
 Public Sub printHelp(Optional command As String = "")
 
@@ -3582,7 +3585,7 @@ helpRetry:
   Signal[Signal.SIGPIPE].Reset
 
 Catch
-  Error "Help System error :";; Error.text
+  Error "Help System error :";; Error.text;; Error.where
 
 End
 
@@ -3609,7 +3612,7 @@ Private Sub getSubdef(func As String[]) As String
   For Each s As String In func
     If s Like "*[Ss]ub *" Or If s Like "*[Ff]unction*" Or If s Like "*[Pp]rocedure*" Then Return s
   Next
-  Return "*" & func[0]
+  Return "*" & func[0] ' if it fails just return the first line of function as a guess
 
 End
 

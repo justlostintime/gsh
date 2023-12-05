@@ -3,12 +3,11 @@ Sub filter() ' this is a simple filter to do upper to lower case
 '' standard output until the std input is closed
 
 	dim buffer as string
-	
+
 	while not eof()
 			try line input buffer
 			if error then break
 			print upper(buffer)
 	wend
-print "done"
 
 End

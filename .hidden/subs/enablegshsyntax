@@ -1,4 +1,4 @@
-sub EnableGshSyntax() ' Install Nano and vim highlight syntax
+Sub EnableGshSyntax() ' Install Nano and vim highlight syntax
 'seteditsyntaxon() Enable gambas syntax both nano and vim
 ''          install gambas syntax both nano and vim
 ''          This Should have happened when you installed
@@ -8,33 +8,33 @@ dim OurEditRc as string[]
 dim lookfor as string
 
 '' Install the updates to the local .vimrc to detect gsh syntax
-if not exist(user.home &/ ".vimrc") then 
+if not exist(user.home &/ ".vimrc") then
     try copy "/usr/share/gsh/vim/.vimrc" to user.home &/ ".vimrc"
      if error then
         print #file.err, " copy failed from default .vimrc :";;error.text
         quit 1
-    endif 
+    endif
 else
     try EditRc = split(file.load(user.home &/ ".vimrc"))
     if error then
         print #file.err, " Unable to access local ~/.vimrc";;error.text
         quit 1
-    endif 
+    endif
     try OurEditRc = split(file.load("/usr/share/gsh/vim/.vimrc"),"\n","\"\"",true,true)
     if error then
         print #file.err, " Unable to access default /usr/share/gsh/vim/.vimrc";;error.text
         quit 1
-    endif 
+    endif
     for each lookfor in OurEditRc
     		if not EditRc.exist(lookfor) then
-           EditRc.add(lookfor)     
+           EditRc.add(lookfor)
         endif
     next
     try file.save(user.home &/ ".vimrc",EditRc.join("\n"))
     if error then
         print #file.err, " Unable to write ~/.vimrc";;error.text
         quit 1
-    endif 
+    endif
 endif
 
 '' install nano turn on linenumber etc
@@ -43,28 +43,28 @@ if not exist(user.home &/ ".nanorc") then
     if error then
         print #file.err, " Unable to access default /usr/share/gsh/nano/.nanorc";;error.text
         quit 1
-    endif 
+    endif
 else
 		try EditRc = split(file.load(user.home &/ ".nanorc"))
     if error then
         print #file.err, " Unable to access local ~/.nanorc";;error.text
         quit 1
-    endif 
+    endif
     try OurEditRc = split(file.load("/usr/share/gsh/nano/.nanorc"),"\n","\"\"",true,true)
     if error then
         print #file.err, " Unable to access default /usr/share/gsh/nano/.nanrc";;error.text
         quit 1
-    endif 
+    endif
     for each lookfor in OurEditRc
     		if not EditRc.exist(lookfor) then
-           EditRc.add(lookfor)     
+           EditRc.add(lookfor)
         endif
     next
     try file.save(user.home &/ ".nanorc",EditRc.join("\n"))
     if error then
         print #file.err, " Unable to write ~/.nanorc";;error.text
         quit 1
-    endif 
+    endif
 
 endif
 end
