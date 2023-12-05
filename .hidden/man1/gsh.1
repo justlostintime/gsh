@@ -1,0 +1,101 @@
+.TH "gsh" "1" "December 2023" "Ubuntu" "User Commands"
+
+.SH "NAME"
+.B gsh \- GAMBAS Shell cli environment
+
+.SH "SYNOPSIS"
+.B gsh
+[options] [<command string> or <gsh script file>]
+
+.SH "DESCRIPTION"
+Gambas Shell(gsh) is a general purpose command line interpreter that executes commands entered from the standard input or from a file much like bash or sh. It can be used for interactive terminal sessions or job control. The major difference is in the use of the complete Gambas3 Basic syntax with a few with extension that were required to to add BASH like CLI interface. One of the important features is the ability to share and synchronize data between running processes and to store the state and environment between invocations. gsh simplifies shell script development with the simple yet powerful and consistent syntax provided by the Gambas3 language(https://gambaswiki.org/wiki)
+.br
+Gsh is not a Posix compliant shell. Of course it can be used to run somewhat Posix compliant scripts through the command use of line Piping and redirection. But natively gsh uses Gambas3 syntax and constructs.
+.br
+For Gambas users - gsh required Gambas 3.18.0 or greater be installed as its base Gambas3 . gsh requires a few Gambas3 modules gambas3-runtime, gambas3-eval-highlight., gambas3-dev-tools,gambas3-westwood-sharedmem,gambas3-westwood-gb-scripter,
+
+.SH "OPTIONS"
+.TP
+\fB\-a, --about\fR
+About gsh shell
+.TP
+\fB\-c, --command\fR
+Command to be executed
+.TP
+\fB\-C --cleanup\fR
+Cleanup and delete the old Shared Memory Database file if it is closed and left around
+.TP
+\fB\-D -D --disctsize <<DictLength>>\fR
+Size of in memory Database Dictionary and index(Default 2.5m)
+.TP
+\fB\ -f --from\fR
+ Execute the content of a global variable as independant script, returns output
+.TP
+\fB\ -h --help\fR
+ Display this help
+.TP
+\fB\-i --interactive <The default mode>\fR
+Force Shell to be interactive
+.TP
+\fB\-I --image <image,name>\fR
+ Use this specific image database when starting
+.TP
+\fB\-l --logon\fR
+ Start as a logon shell
+.TP
+\fB\-m --manual\fR
+Print the extended help infomation
+.TP
+\fB\-M --memsize <<MemLength>>\fR
+Defines the ammount of storage needed for the In Memory Database(default 20.5m)
+.TP
+\fB\-n --noload\fR
+ Do Not Load gsh Image - Use Default image already loaded by another process
+.TP
+\fB\-r --runline <shell executable code>\fR
+Execute the following command line
+.TP
+\fB\ -s --shmname <Database name>\fR
+Shared Memory Name for application
+.TP
+\fB\-S --Single\fR
+Do not use shared memory, use onetime private memory for this shell
+.TP
+\fB\-v --versions\fR
+Lists the version of each component and library being used by gsh
+.TP
+\fB\-V, --version\fR
+display gsh version number
+
+.SH "EXAMPLE"
+#!/usr/bin/env gsh
+.br
+for i as integer = 0 to 10
+.br
+  print "Gambas Version of printing i ";; i
+.br
+  echo cli version of printing i {i}
+.br
+  ls | cat | tr [a-z] [A-Z]
+.br
+next
+
+.SH "AVAILABILITY"
+The latest version of gsh can always be obtained from
+.br
+\fBhttps://github.com/justlostintime/ppa\fR,
+.br
+\fBhttps://github.com/justlostintime/gsh\fR,
+.br 
+documentation about the language is at
+.br
+\fBhttps://github.com/justlostintime/GambasShell/wiki/Documentation\fR.
+
+.SH "REPORTING BUGS"
+Report bugs to \fBhttps://github.com/justlostintime/GambasShell/issues\fR
+
+.SH "COPYRIGHT"
+Copyright\(JustLostInTime@gmail.com\);
+.PP
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

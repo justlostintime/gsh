@@ -255,7 +255,7 @@ Public Sub ProcessOptions() As String[]
   bDbaseServer = Args.Has("d", "service", ("Run shell as a service point Daemon"))
   sPortNumber = Args.Get("p", "port", ("I/O Port number/name to use else  Defaults to stdin/stdout/stderr"))
   bA = Args.Has("a", "about", ("Display About ") & Application.Name)
-  bR = Args.Has("v", "version", ("Display version number"))
+  bR = Args.Has("v", "versions", ("Display version number"))
   $iTraceset = Args.GetInteger("t", "trace", ("Turn on tracing Parms 0 = off, 1 = user, 3 = -r and -f , 4 = all, 20 = create execprog.gsh in vars"), -1)
   sS = Args.Get("s", "shmname", ("Shared Memory Name for application"))
   bSingleUse = Args.has("S", "Single", ("Do not use shared memory"))

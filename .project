@@ -62,5 +62,5 @@ Categories=suse:"Shell"
 Groups=suse:"System/Shells"
 Menus=ubuntu:"Applications/Shells"
 Groups=ubuntu:"shells"
-ExtraFiles=*:"class\t/usr/share/gsh\ndoc\t/usr/share/gsh\nexamples\t/usr/share/gsh\nstruct\t/usr/share/gsh\nsubs\t/usr/share/gsh\nprofiles\t/usr/share/gsh\nnano\t/usr/share/gsh\nvim\t/usr/share/gsh\ngambas.nanorc\t/usr/share/nano\ngambas.vim\t/usr/share/vim/vim80/syntax\neditors\t/usr/share/gsh\ngambas.vim\t/usr/share/vim/vim81/syntax\nscripts\t/usr/share/gsh"
+ExtraFiles=*:"class\t/usr/share/gsh\ndoc\t/usr/share/gsh\nexamples\t/usr/share/gsh\nstruct\t/usr/share/gsh\nsubs\t/usr/share/gsh\nprofiles\t/usr/share/gsh\nnano\t/usr/share/gsh\nvim\t/usr/share/gsh\ngambas.nanorc\t/usr/share/nano\ngambas.vim\t/usr/share/vim/vim80/syntax\neditors\t/usr/share/gsh\ngambas.vim\t/usr/share/vim/vim81/syntax\nscripts\t/usr/share/gsh\nman1\t/usr/share/man"
 useterminal=1
