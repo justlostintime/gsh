@@ -332,8 +332,10 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         Inc CmdCount
         CurrentRead = CmdCount
         Inc i
-        NeedsSTDERRWrite = False
         NoOutRedirect = True
+        NeedsSTDIOWrite = False
+        NoErrRedirect = True
+        NeedsSTDERRWrite = False
         Continue
 
       Case "|>"
@@ -352,8 +354,10 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdWriters.add(z)
         Inc CmdCount
         Inc i
-        NeedsSTDERRWrite = False
         NoOutRedirect = True
+        NeedsSTDIOWrite = False
+        NoErrRedirect = True
+        NeedsSTDERRWrite = False
         Continue
 
       Case "|<"
@@ -372,8 +376,10 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdWriters.add(z)
         Inc CmdCount
         Inc i
-        NeedsSTDERRWrite = False
         NoOutRedirect = True
+        NeedsSTDIOWrite = False
+        NoErrRedirect = True
+        NeedsSTDERRWrite = False
         Continue
 
       Default
@@ -381,6 +387,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdTypes[CmdCount].Add(types[i])
 
     End Select
+
     Inc i
     gsh.LinkTable.Add("Private cmdBuild as new string[]\n", "cmdBuild")
   Loop Until i > syms.max
@@ -439,8 +446,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, False)
 
-          NeedsSTDERRWrite = False
-          NoOutRedirect = True
+          NeedsSTDERRWrite = True
+          NoOutRedirect = False
 
         Case "<" 'input features
           Inc i
@@ -584,7 +591,13 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
       CmdWriters[CurrentCmd].add(CmdReadFrom[CurrentCmd])
     Endif
 
-    If NoOutRedirect And NeedsSTDIOWrite Then CmdIo[CurrentCmd] &= "write #File.out, sInput, sInput.len\n"
+    If NoOutRedirect And NeedsSTDIOWrite Then
+      If CmdIo[CurrentCmd] = "" Then
+        CmdIo[CurrentCmd] &= DefaultIoSub(CurrentCmd, basename)
+      Else
+        CmdIo[CurrentCmd] &= "write #File.out, sInput, sInput.len\n"
+      Endif
+    Endif
     If NoErrRedirect And NeedsSTDERRWrite Then
       CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
     Endif
@@ -1023,7 +1036,7 @@ End
 
 Private Sub DefaultIoSub(CmdIndex As Integer, basename As String) As String
 
-  Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\nwrite #file.out,sInput, sInput.len\nend"
+  Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\nwrite #file.out,sInput, sInput.len\n"
 
 End
 
