@@ -235,7 +235,6 @@ Public Sub IsGlob(Exp As String) As Boolean
 
 End
 
-
 Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
 
   Dim CurrentCmd As Integer                             ' Index of the command we are processing
@@ -256,38 +255,40 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
   Dim CmdWriteTo As Integer[]                         ' This is the proc the command writes to
   Dim CmdReadFrom As Integer[]                     ' This is the proc the command reads from
   Dim CmdWriters As Integer[][]                        ' the list of writers to each command
+  Dim CmdPipeType As String[]                         ' identifies the pipe type that controls the command
   Dim WaitCompletion As Boolean = True      ' wait for command to finish
   Dim InBlock As Boolean = False
-  Dim BuildBlock As String                                   ' used to construct block a exec parameters
-  Dim NoOutRedirect As Boolean = True
-  Dim NoErrRedirect As Boolean = True
-  Dim NeedsSTDIOWrite As Boolean = False
-  Dim NeedsSTDERRWrite As Boolean = False
+  Dim BuildBlock As String                                   ' used to construct block as exec parameters
+  Dim NoOutRedirect As Boolean[]                  ' for each command
+  Dim NoErrRedirect As Boolean[]
+  Dim NeedsSTDIOWrite As Boolean[]
+  Dim NeedsSTDERRWrite As Boolean[]
   Dim BaseName As String
   Dim CurrentRead As Integer                            ' The proc  to read from
   Dim x As String[]
   Dim y As Integer[]
   Dim z As Integer[]                                                 ' Gambas class file
 
-  CmdExec = New String[]       ' this will contain the exec line for each command
-  CmdIo = New String[]         ' this will contain the read functions for each command or rd wr if inside pipe stream
-  CmdErr = New String[]        ' Function if errors are captured
-  CmdWrite = New String[]      ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
-  CmdKill = New String[]       ' This will have the close io functions when the task ends
-  CmdBeforeExec = New String[] ' list of things to do before starteing execs
-  CmdFinal = ""                ' This will contain the finished program segment and functions
-  CmdCount = 0                 ' the number of the command we are processing
-  CmdList = New String[][]     ' The first pass of command line collecting pipe connections
-  CmdTypes = New Integer[][]   ' the list of types for each value
-  CmdWriteTo = New Integer[]   ' This is the proc the command writes to
-  CmdReadFrom = New Integer[]  ' This is the proc the command reads from
-  CmdWriters = New Integer[][]    ' the list of writers to each command
-  WaitCompletion = True ' wait for command to finish
+  CmdExec = New String[]                                  ' this will contain the exec line for each command
+  CmdIo = New String[]                                       ' this will contain the read functions for each command or rd wr if inside pipe stream
+  CmdErr = New String[]                                     ' Function if errors are captured
+  CmdWrite = New String[]                                ' this will contain the write part for each command if outside of a pipe stream ie '< variable'
+  CmdKill = New String[]                                      ' This will have the close io functions when the task ends
+  CmdBeforeExec = New String[]                      ' list of things to do before starting execs
+  CmdFinal = ""                                                        ' This will contain the finished program segment and functions
+  CmdCount = 0                                                       ' the number of the command we are processing
+  CmdList = New String[][]                                   ' The first pass of command line collecting pipe connections
+  CmdTypes = New Integer[][]                            ' the list of types for each value
+  CmdWriteTo = New Integer[]                           ' This is the proc the command writes to
+  CmdReadFrom = New Integer[]                       ' This is the proc the command reads from
+  CmdWriters = New Integer[][]                         ' the list of writers to each command
+  CmdPipeType = New String[]                          ' this is the pipe type cmd that started everything
+  WaitCompletion = True                                      ' wait for command to finish
   InBlock = False
-  NoOutRedirect = True
-  NeedsSTDIOWrite = False
-  NoErrRedirect = True
-  NeedsSTDERRWrite = False
+  NoOutRedirect = New Boolean[]                     ' default to True
+  NeedsSTDIOWrite = New Boolean[]              ' default to  False
+  NoErrRedirect = New Boolean[]                       ' default to True
+  NeedsSTDERRWrite = New Boolean[]            ' default to  False
   BaseName = "r" & Str(Rand(9999))
 
   'Dim NextedFinals As String[]        ' this is where the generated && and || will be statcked until added to final final
@@ -310,6 +311,11 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
   CmdReadFrom.Add(-1)
   CmdWriteTo.Add(-2)
   CmdWriters.add(z)
+  CmdPipeType.Add("!")
+  NoOutRedirect.Add(True)
+  NeedsSTDIOWrite.Add(False)
+  NoErrRedirect.Add(True)
+  NeedsSTDERRWrite.Add(False)
 
   i = 0                     ' bypass the first ! command notation
   Do                        ' Break the command down into pipes
@@ -329,20 +335,23 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         cmdReadFrom.Add(CurrentRead)
         CmdWriteTo.Add(-2)
         CmdWriters.add(z)
+        CmdPipeType.add("|")
+        GoSub SetNeedsSTDERRWrite
         Inc CmdCount
         CurrentRead = CmdCount
         Inc i
-        NoOutRedirect = True
-        NeedsSTDIOWrite = False
-        NoErrRedirect = True
-        NeedsSTDERRWrite = False
+        NoOutRedirect.Add(True)
+        NeedsSTDIOWrite.Add(False)
+        NoErrRedirect.Add(True)
+        NeedsSTDERRWrite.Add(False)
+
         Continue
 
       Case "|>"
         x = New String[]
         y = New Integer[]
         z = New Integer[]
-        CmdList.Add(x)     ' setup entries for the next command
+        CmdList.Add(x)                                                    ' setup entries for the next command
         CmdTypes.Add(y)
         CmdExec.Add("")
         CmdIo.Add("")
@@ -350,14 +359,16 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdErr.Add("")
         CmdKill.Add("")
         cmdReadFrom.Add(CurrentRead)
-        CmdWriteTo.Add(-3)      ' -3 tells us this is a tee for the pipe fitting
+        CmdWriteTo.Add(-3)                                         ' -3 tells us this is a tee for the pipe fitting
         CmdWriters.add(z)
+        CmdPipeType.add("|>")
+        GoSub SetNeedsSTDERRWrite
         Inc CmdCount
         Inc i
-        NoOutRedirect = True
-        NeedsSTDIOWrite = False
-        NoErrRedirect = True
-        NeedsSTDERRWrite = False
+        NoOutRedirect.Add(True)
+        NeedsSTDIOWrite.Add(False)
+        NoErrRedirect.Add(True)
+        NeedsSTDERRWrite.Add(False)
         Continue
 
       Case "|<"
@@ -374,12 +385,13 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         cmdReadFrom.Add(-3) ' -3 tells us this is a tee for the pipe fitting
         CmdWriteTo.Add(CurrentRead)
         CmdWriters.add(z)
+        CmdPipeType.add("|<")
         Inc CmdCount
         Inc i
-        NoOutRedirect = True
-        NeedsSTDIOWrite = False
-        NoErrRedirect = True
-        NeedsSTDERRWrite = False
+        NoOutRedirect.Add(True)
+        NeedsSTDIOWrite.Add(False)
+        NoErrRedirect.Add(True)
+        NeedsSTDERRWrite.Add(True)
         Continue
 
       Default
@@ -435,8 +447,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, True)
 
-          NeedsSTDIOWrite = True
-          NoErrRedirect = False
+          NeedsSTDIOWrite[CurrentCmd] = True
+          NoErrRedirect[CurrentCmd] = False
 
         Case ">", ">>" ' Output redirect features
           Inc i
@@ -446,8 +458,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, False)
 
-          NeedsSTDERRWrite = True
-          NoOutRedirect = False
+          NeedsSTDERRWrite[CurrentCmd] = True
+          NoOutRedirect[CurrentCmd] = False
 
         Case "<" 'input features
           Inc i
@@ -582,7 +594,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdWrite[CmdWriteTo[CurrentCmd]] = " "
       Endif
       CmdWriters[CmdWriteTo[CurrentCmd]].add(CurrentCmd)
-      NoOutRedirect = False
+      NoOutRedirect[CurrentCmd] = False
     Else If CmdReadFrom[CurrentCmd] >= 0 Then ' we are a read from we have to add this
       If CmdIo[CmdReadFrom[CurrentCmd]] = "" Then CmdIo[CmdReadFrom[CurrentCmd]] = SetIoSub(CmdReadFrom[CurrentCmd], basename)
       If CmdKill[CmdReadFrom[CurrentCmd]] = "" Then CmdKill[CmdReadFrom[CurrentCmd]] = SetKillSub(CmdReadFrom[CurrentCmd], basename)
@@ -591,14 +603,15 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
       CmdWriters[CurrentCmd].add(CmdReadFrom[CurrentCmd])
     Endif
 
-    If NoOutRedirect And NeedsSTDIOWrite Then
+    If NoOutRedirect[CurrentCmd] And NeedsSTDIOWrite[CurrentCmd] Then
       If CmdIo[CurrentCmd] = "" Then
         CmdIo[CurrentCmd] &= DefaultIoSub(CurrentCmd, basename)
       Else
         CmdIo[CurrentCmd] &= "write #File.out, sInput, sInput.len\n"
       Endif
     Endif
-    If NoErrRedirect And NeedsSTDERRWrite Then
+
+    If NoErrRedirect[CurrentCmd] And NeedsSTDERRWrite[CurrentCmd] Then
       CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
     Endif
     If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"   ' do this only on first, allows to inject data to stream
@@ -690,11 +703,30 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
   If Not WaitCompletion Then CmdFinal &= "&"
   Return CmdFinal
 
+SetNeedsSTDERRWrite:      ' set the the last writer to also need to write std err
+
+  If cmdcount = 1 Then
+    NeedsSTDERRWrite[0] = True
+    Return
+  Endif
+
+  For icounter As Integer = CmdCount DownTo 0
+
+    If CmdPipeType[icounter] = "!" Or CmdPipeType[icounter] = "|" Then
+      NeedsSTDERRWrite[icounter] = True
+      Return
+    Endif
+
+  Next
+
+  Return
+
 Catch
   If gsh.DoTrace Then Error "Function #="; CurrentCmd, Error.text, Error.where
   Error.Propagate()
 
 End
+
 
 Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
