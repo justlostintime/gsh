@@ -109,7 +109,9 @@ Public Sub _Call()
       .profile = True
     Endif
 
-    .Sync(".", gsh.DefaultImageName)
+    If Not gsh.bSingleuse Then
+      .Sync(".", gsh.DefaultImageName)
+    Endif
 
   Catch
     Dim etext As String = Error.text & Error.where

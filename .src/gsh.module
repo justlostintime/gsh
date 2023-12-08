@@ -14,7 +14,7 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
   "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
   "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
-  "tracelevel", "dotrace", "noalias", "nopreprocess", "subpath", "classpath", "structpath"]
+  "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
@@ -38,6 +38,7 @@ Public VarCommandSource As String = ""
 Public LocalFunRun As String = ""
 Public cmdLineParameters As String[]
 Public NoWriteOnExit As Boolean = False
+Public bHelpListing As Boolean = False                                       ' display the manual
 '\\033[2K - Clear Line"
 '\\033[K Erase to end of line"
 'use \x01  to start escapes that will not be counted as part of the length of the prompt
@@ -67,9 +68,8 @@ Public StructTable As New String[]
 Public CompilerDirectiveTable As New String[]
 
 Public bCleanup As Boolean = False                           ' Cleanup any open Shared named database before starting
-Public bN As Boolean = False                                       ' Don't load the image file, already loaded by another task, from forked process
+Public bNoLoadImage As Boolean = False                                       ' Don't load the image file, already loaded by another task, from forked process
 Public bSingleUse As Boolean = False                      ' Do not used a names shared segment, private segment only
-Public bH As Boolean = False                                       ' display the manual
 Public bDbaseServer As Boolean = False                 ' Run as a service
 Public bInteractive As Boolean = False                      ' Force the interface to be interactive
 Public bLogon As Boolean = False                               ' Force to act as logon shell
@@ -247,32 +247,35 @@ End
 
 Public Sub ProcessOptions() As String[]
 
-  Dim bA, bR As Boolean
-  Dim sC As String[]
-  Dim sS, sI As String
+  Dim bAboutGsh As Boolean
+  Dim bReadVersions As Boolean
+  Dim sCRestOfArgs As String[]
+  Dim sSharedMemoryName As String
+  Dim sImageToUse As String
+
 
   Args.Begin(Application.Name & " <option> <Command.gsh>")
   bDbaseServer = Args.Has("d", "service", ("Run shell as a service point Daemon"))
   sPortNumber = Args.Get("p", "port", ("I/O Port number/name to use else  Defaults to stdin/stdout/stderr"))
-  bA = Args.Has("a", "about", ("Display About ") & Application.Name)
-  bR = Args.Has("v", "versions", ("Display version number"))
+  bAboutGsh = Args.Has("a", "about", ("Display About ") & Application.Name)
+  bReadVersions = Args.Has("v", "versions", ("Display version number"))
   $iTraceset = Args.GetInteger("t", "trace", ("Turn on tracing Parms 0 = off, 1 = user, 3 = -r and -f , 4 = all, 20 = create execprog.gsh in vars"), -1)
-  sS = Args.Get("s", "shmname", ("Shared Memory Name for application"))
+  sSharedMemoryName = Args.Get("s", "shmname", ("Shared Memory Name for application"))
   bSingleUse = Args.has("S", "Single", ("Do not use shared memory"))
-  bN = Args.Has("n", "noload", ("Do Not Load gsh Image - already loaded by another process"))
-  sI = Args.Get("I", "image", ("Use this specific image when starting"))
+  bNoLoadImage = Args.Has("n", "noload", ("Do Not Load gsh Image - already loaded by another process"))
+  sImageToUse = Args.Get("I", "image", ("Use this specific image when starting"))
   bInteractive = Args.Has("i", "interactive", ("Force Shell to be interactive"))
   bLogon = Args.Has("l", "logon", ("Start as a logon shell"))
-  bH = Args.Has("m", "manual", ("Print the extended help infomation"))
+  bHelpListing = Args.Has("m", "manual", ("Print the extended help infomation"))
   BlockSize = Args.GetInteger("M", "memsize", ("Defines the ammount of storage needed for the In Memory Database(default 20.5m)"), "<MemLength>", 20512000)
   CollectMemLen = Args.GetInteger("D", "disctsize", ("Size of in memory Database Dictionary and index(Default 2.5m)"), "<DictLength>", 2512000)
   bCleanup = Args.Has("C", "cleanup", ("Cleanup and delete the old Shm file if it is closed and left around"))
   InLineCommand = Args.Get("c", "command", ("Command to be executed"))
   VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independant script, returns output"))
   LocalFunRun = Args.Get("r", "runline", ("Execute the following command line"))
-  sC = Args.End()
+  sCRestOfArgs = Args.End()
 
-  If ba Then
+  If bAboutGsh Then
     Print ("\n\nGambas Shell")
     Print ("Interactive console for using gambas as your day to day shell")
     Print ("It Is Also usefull For learning To program")
@@ -284,7 +287,7 @@ Public Sub ProcessOptions() As String[]
     Quit 0
   Endif
 
-  If br Then
+  If bReadVersions Then
     Print ("gsh :");; $Version
     Print ("SharedMem :");; SharedMem.Version
     Print ("Script :");; Script.Version
@@ -301,20 +304,20 @@ Public Sub ProcessOptions() As String[]
 
   If bDbaseServer Then Error ("GSH in service mode");; Now;; Application.Version
 
-  If sS <> "" Then
-    DefaultSharedMem = ss
+  If sSharedMemoryName <> "" Then
+    DefaultSharedMem = sSharedMemoryName
   Endif
 
-  If si <> "" Then
-    If File.Dir(si) = "" Then si = sharedmem.DefaultSaveLocation & si
+  If sImageToUse <> "" Then
+    If File.Dir(sImageToUse) = "" Then sImageToUse = sharedmem.DefaultSaveLocation & sImageToUse
 
-    If Exist(si) Then
-      DefaultImageName = si
+    If Exist(sImageToUse) Then
+      DefaultImageName = sImageToUse
     Endif
 
   Endif
 
-  Return sC
+  Return sCRestOfArgs
 
 Catch
   Error "gsh Invalid Option "; Error.text;; Error.Where
@@ -658,14 +661,19 @@ Public Sub Main()
     SharedMem.Begin(BlockSize) ' preset this to be 4.5 meg of memory
     'Debug "Opening in single use/user mode. Image will not be updated"
   Else
-    If Exist("/dev/shm/" &/ DefaultSharedMem) Then bN = True ' if the shared memory already exists as a file then just use it
+    If Exist("/dev/shm/" &/ DefaultSharedMem) Then bNoLoadImage = True               ' if the shared memory already exists as a file then just use it
     SharedMem.CollectMemLen = CollectMemLen
     SharedMem.BeginNamed(DefaultSharedMem, BlockSize, bCleanup) ' preset this to be 4.5 meg of memory
   Endif
 
   Dim ImageFile As String = SharedMem.DefaultSaveLocation & DefaultImageName
 
-  If Not bN And Exist(ImageFile) Then
+  ' Merge the base image file into the loaded image file
+  ' even for the single use instanciated versions of this app
+  ' this means that the current state of the running or last run interactive
+  ' copy of gsh variables will be merged into the image of single use gsh running
+
+  If Not bNoLoadImage And Exist(ImageFile) Then
     SharedMem.Merge(DefaultImageName)
   Endif
 
@@ -707,7 +715,7 @@ Public Sub Main()
   'If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup complete")
   'Endif
 
-  If bH Then
+  If bHelpListing Then
     Try PrintHelp()
     If Error Then Error Error.text
     ExitProgram(0)
@@ -1015,6 +1023,8 @@ Public Sub ExitNow()
 
 End
 
+'' Called when the program is about to exit
+'' this is called for any reason
 Private Sub ExitProgram(Optional ExitValue As Integer = 0)
 
   Static HasExit As Boolean = False
@@ -2016,7 +2026,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Endif
 
             If AutoCompile Then
-              SharedMem.Sync(".", DefaultImageName)  ' write out image with new definition
+              If Not bSingleUse Then SharedMem.Sync(".", DefaultImageName)  ' write out image with new definition
               If dotrace Then Error ("sub compile "); lastelement
               compile(lastelement)
             Endif
@@ -2062,7 +2072,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               SharedMem[LastElement] = ExecBuffer
               ExecBuffer = ""
 
-              SharedMem.Sync(".", DefaultImageName)
+              If Not bSingleUse Then SharedMem.Sync(".", DefaultImageName)
               Debug "class compile "; lastelement
               compile(lastelement)
             Endif
@@ -2315,7 +2325,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
                   SharedMem["result"] = "OK"
                   execbuffer = ""
-                  SharedMem.Sync(".", DefaultImageName)
+                  If Not bSingleUse Then SharedMem.Sync(".", DefaultImageName)
                 Endif
               Endif
             Endif

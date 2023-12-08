@@ -1,11 +1,12 @@
 ' Gambas module file
 
 Public Sub main()
-  
+
   Dim a As String = ""
+
   a &/= "bin"
   Print a
   a = "" &/ "bin"
   Print a
-  
+
 End

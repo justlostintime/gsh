@@ -1,61 +1,127 @@
 Sub clearsubs(...) ' clear all or some of the subs/func/proc from the image
 ''clearsubs(<name of sub >,...) clears subs from memory
 ''clearsubs <name of sub> ...     ' command line format
+'' Options:
+'' --Verbose         Provide detailed listing of what is removed
+'' --IgnoreErrors    Ignore any error during processing
+'' --AutoSave        Automatically save a personal copy of any new or changed subs
+'' --NoSave          Do not save any new or changed subs, just remove from image
 ''          Does not delete the sub from disk
 ''          if no parameters than clear all
 ''          if parameters remove each from memory
 ''          prompt for each unsaved user altered system sub
 ''          prompt for each user created sub, not saved yet
 
+Public  Verbose as boolean = false
+Public  IgnoreErrors as boolean = false
+Public  AutoSave as boolean = false
+Public  NoSave as boolean = false
+dim     DoReturn as boolean = false
+
 if param.count <> 0 then
   for each subname as string in param
-    if sharedmem.exist("sub."&subname) then
-        print #file.err, "Clear Sub/Procedure/Function :" ;;subname
-        sharedmem.free("sub."&subname)
-    else
-        print #file.err, "Sub/function/procedure not found :";;subname
+    if left(subname,2) = "--" then
+      select case lower(right(subname,-2))
+        case "verbose"
+          Verbose = true
+        case "ignoreerrors"
+          ignoreerrors=true
+        case "autosave"
+          autosave = true
+        Default
+          print #file.err, "clearsubs Unknown option";;subname
+          print #file.err, "Use : --IgnoreErrors - ignore and error"
+          print #file.err, "      --Verbose      - Be verbose as to what is cleared or saved"
+          print #file.err, "      --AutoSave     - automatically save any new or changed subs in the image"
+          print #file.err, "      --NoSave       - Do not save any new or changed subs in image"
+      end select
+      continue
     endif
+
+    if sharedmem.exist("sub."&subname) then
+        sharedmem.free("sub."&subname)
+        if Verbose then print #file.err, "Clear Sub/Procedure/Function :" ;;subname
+        DoReturn = true
+    else
+        if not IgnoreErrors then print #file.err, "Sub/function/procedure not found :";;subname
+    endif
+
   next
-  return
+
+  if DoReturn then
+     return
+  endif
+
 endif
 
 ' Here is where we will use lany to save the sub
 Dim allSubs as collection
-Dim allIndex as new string[]
-Dim answer as string = "n"
+
 allSubs = lany("sub","subs")
 for each sEntry as string[] in allSubs
- if allSubs.key = "update" then continue
- if sEntry[eSubInMem] = "In-Mem" then
-   allIndex.add(allsubs.key)
-   ' print "In memory :";;sEntry[eSubPath]
-   if sEntry[eSubSource] = "In-Mem" then
-     error "Clearsub: Sub '";AllSubs.key;"' Not Saved, Do You want to save it now Y/n?";
-     line input Answer 
-     if trim(answer)[0] == "n" then
-        error "Clearsubs: Sub not saved ";allsubs.key
-     else
-        savesubs(allsubs.key)
-        error  "Clearsubs: Sub Saved ";allsubs.key
-     endif
-   else if  sEntry[eSubSource] <> "Default" and if file.load(sEntry[eSubPath]) <> sharedmem["sub."&allsubs.key] then
-     error "Clearsub";;sentry[eSubSource];" '";allsubs.key;"' Has changed, Would you like to save it Y/n?";
-     line input answer
-     if trim(answer)[0] == "n" then
-       error "ClearSubs: Changed Sub Not Saved ";allsubs.key
-     else
-       savesubs(allsubs.key)
-       error "Clearsubs:  Changed Sub Saved ";allsubs.key
-     endif
-   endif
-   error "Clearsub:";;allsubs.key;;" removed from memory"
-   sharedmem.free("sub."&allSubs.key)
- endif
 
+  if allSubs.key == "update" then continue
+  if allSubs.key == "clearsubs" then continue     ' just for debugging this
+
+  if sEntry[eSubInMem] = "In-Mem" then
+    ' print "In memory :";;sEntry[eSubPath] ' turn on for debug
+    if sEntry[eSubSource] = "In-Mem" then
+       SaveSubToDisk(AllSubs.key,"Clearsub: Sub '"&AllSubs.key&"' Not Saved, Do You want to save it now")
+    else if file.load(sEntry[eSubPath]) <> sharedmem["sub."&allsubs.key] then
+      SaveSubToDisk(allsubs.key,"Clearsub:"&sentry[eSubSource]&":"&sentry[eSubPath]&" '"&allsubs.key&"' Has changed, Would you like to save it")
+    endif
+
+    try sharedmem.free("sub."&allSubs.key)
+    if error then
+      if not IgnoreErrors then
+          Print  #file.err, "ClearSubs :";;error.text;; error.where
+          break
+      endif
+    else
+      if Verbose then Print #file.err, "Clearsub:";;allsubs.key;;" removed from memory"
+    endif
+  endif
 next
 
 catch
- print #file.err, "Error :";;error.text;; error.where
+ print #file.err, "ClearSubs Error :";;error.text;; error.where
 
 end
+
+Private Sub SaveSubtodisk(SubName as string,msg as string) as boolean
+'' return true upon success false otherwise
+    dim answer as string
+    if NoSave then return
+
+    if autosave then
+       goto DoSave
+    endif
+
+    ' Else we have to query if user want to save the sub to disk
+    Print #file.err,msg;"[Y/n] ";
+
+answerloop:
+
+    line input answer
+    if answer == "" or if left(answer,1)=="Y" or if left(answer,1)=="N" then
+      if left(answer,1)=="N" then return true
+      goto DoSave
+    else
+      Print #file.err, "ClearSubs Use: Yes, No or enter for yes"
+      goto answerloop
+    endif
+
+DoSave:
+    try savesubs(subname)
+    if error and not IgnoreErrors then
+      Print  #file.err, "ClearSubs";;subname;", Error :";;error.text;; error.where
+      return false
+    endif
+    return true
+
+catch
+ print #file.err, "ClearSubs;SaveSub";;SubName;" Error :";;error.text;; error.where
+ return false
+end
+
 enum eSubSource, eSubPath, eSubName, eSubInMem

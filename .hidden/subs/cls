@@ -1,6 +1,6 @@
 'nopreprocess
 sub cls() 'clear the screen buffer and the screen
 '' Clear the screen and the screen buffer
-   print "\e[H\ec";
+    print "\e[H\e[2J\e[3J";                    ' "\e[H\ec";
    flush
 end

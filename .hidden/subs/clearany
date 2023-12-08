@@ -1,0 +1,98 @@
+sub ClearAny(objtype as string,...)
+
+Public  Verbose as boolean = false
+Public  IgnoreErrors as boolean = false
+Public  AutoSave as boolean = false
+Public  NoSave as boolean = false
+Public  allobjects as collection
+Public  Locations as clollection = ["sub":"subs","class":"class","struct":"struct"]
+dim     DoReturn as boolean = false
+
+allobjects = lany(objtype,Locations[objtype])
+if param.count <> 0 then
+  for each objname as string in param
+    if left(objname,2) = "--" then
+      select case lower(right(objname,-2))
+        case "verbose"
+          Verbose = true
+        case "ignoreerrors"
+          ignoreerrors=true
+        case "autosave"
+          autosave = true
+        Default
+          print #file.err, "clear";objType;" Unknown option";;objname
+          print #file.err, "Use : --IgnoreErrors - ignore and error"
+          print #file.err, "      --Verbose      - Be verbose as to what is cleared or saved"
+          print #file.err, "      --AutoSave     - automatically save any new or changed subs in the image"
+          print #file.err, "      --NoSave       - Do not save any new or changed subs in image"
+      end select
+      continue
+    endif
+
+    if sharedmem.exist(objtype&"."&objname) then
+        if haschanged(objtype,allobjects[objname]) then
+           SaveToDisk(objtype,allobjects[objname],"New Version found Save to Disk ?")
+        endif
+        sharedmem.free(objtype&"."&objname)
+        if Verbose then print #file.err, "Clear ";objtype;" :" ;;objname
+        DoReturn = true
+    else
+        if not IgnoreErrors then print #file.err, "Clear ";objtype;"not found :";;objname
+    endif
+
+  next
+
+  if DoReturn then
+     return
+  endif
+
+endif
+
+Private sub HasChanged(objtype as string, sentry as string[]) as boolean
+
+end
+
+Private Sub Savetodisk(objtype as string,ObjectName as string,msg as string) as boolean
+'' return true upon success false otherwise
+    dim answer as string
+    if NoSave then return
+
+    if autosave then
+       goto DoSave
+    endif
+
+    ' Else we have to query if user want to save the sub to disk
+    Print #file.err,msg;"[Y/n] ";
+
+answerloop:
+
+    line input answer
+    if answer == "" or if left(answer,1)=="Y" or if left(answer,1)=="N" then
+      if left(answer,1)=="N" then return true
+      goto DoSave
+    else
+      Print #file.err, "Clear";objtype;;"Use: Yes, No or enter for yes"
+      goto answerloop
+    endif
+
+DoSave:
+    select case objtype
+      case "sub"
+        try savesubs(objname)
+      case "class","struct"
+        try saveclasses(objname)
+      Default
+         "Clear unsupported object type"
+    end select
+    if error and not IgnoreErrors then
+      Print  #file.err, "Clear";objtype;;objname;", Error :";;error.text;; error.where
+      return false
+    endif
+    return true
+
+catch
+ print #file.err, "Clear";objtype;";Save";;objname;" Error :";;error.text;; error.where
+ return false
+end
+
+enum eSubSource, eSubPath, eobjname, eSubInMem

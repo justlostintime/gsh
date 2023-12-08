@@ -2,17 +2,20 @@
 
 Private a As String = "019283465hjsdfnmvfnerjerigerijbeijvnvnejvnevjnalscmk.x,cm sl;kfpwjorgekvswcmwopijfeurnvcmkl,sepofjkoei mrgv8trvmr9 8yowpeg puvc vps\n\x00"
 Extern memcpy(dest As String, src As String, len As Pointer) As Pointer In "libc:6"
- 
+
 Public Sub main()
+
   Dim mFile As File
+
   mFile = Memory memcpy(a, a, CPointer(0)) For Read
-  
+
   Dim b As String
-  
+
   While Not Lof(mFile)
     Line Input #mfile, b
     If b = "\x00" Then Break
     Print b;
   Wend
   Close mfile
+
 End
