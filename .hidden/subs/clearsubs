@@ -64,7 +64,7 @@ for each sEntry as string[] in allSubs
   if allSubs.key == "clearsubs" then continue     ' just for debugging this
 
   if sEntry[eSubInMem] = "In-Mem" then
-    ' print "In memory :";;sEntry[eSubPath] ' turn on for debug
+    if verbose print #file.err, "In memory :";;sEntry[eSubPath] ' turn on for debug
     if sEntry[eSubSource] = "In-Mem" then
        SaveSubToDisk(AllSubs.key,"Clearsub: Sub '"&AllSubs.key&"' Not Saved, Do You want to save it now")
     else if file.load(sEntry[eSubPath]) <> sharedmem["sub."&allsubs.key] then
