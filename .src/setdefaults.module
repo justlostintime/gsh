@@ -52,6 +52,7 @@ Public Sub _Call()
     If Not .exist("lambda") Then .lambda = ""
     If Not .Exist("noalias") Then .noalias = False
     If Not .Exist("noPreProcess") Then .noPreProcess = False
+
     If Not .Exist("subsPath") Then .subspath = user.home &/ "vars/subs;" & user.home &/ "vars/games;/usr/share/gsh/subs"
     If Not .exist("classPath") Then .classpath = user.home &/ "vars/class;/usr/share/gsh/class"
     If Not .Exist("structPath") Then .structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
@@ -69,14 +70,19 @@ Public Sub _Call()
       gsh.TraceLevel = .TraceLevel
     Endif
 
-    Dim tmppath As String[] = Split(Env["PATH"], ":", "\"", True, True)
-    Dim newpath As String[] = Split(.["path"], ":", "\"", True, True)
+    If Not SharedMem.Exist("path") Then
+      .path = Env["PATH"]
+    Else
+      Dim tmppath As String[] = Split(Env["PATH"], ":", "\"", True, True)
+      Dim newpath As String[] = Split(.["path"], ":", "\"", True, True)
+      ' merge the two together
+      For Each tmpstring In newpath
+        If Not tmppath.Exist(tmpstring) Then
+          tmppath.Add(tmpstring, 0)
+        Endif
+      Next
+    Endif
 
-    For Each tmpstring In newpath
-      If Not tmppath.Exist(tmpstring) Then
-        tmppath.Add(tmpstring, 0)
-      Endif
-    Next
     If Not tmppath.Exist("/usr/share/gsh/scripts") Then tmppath.add("/usr/share/gsh/scripts", 0)
     If Not tmppath.Exist(User.home &/ "vars/scripts") Then tmppath.add(User.home &/ "vars/scripts", 0)
 

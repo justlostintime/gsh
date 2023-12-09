@@ -1,4 +1,4 @@
-sub ClearAny(objtype as string,...)
+sub ClearAny(objtype as string,parmset as string[])
 
 Public  Verbose as boolean = false
 Public  IgnoreErrors as boolean = false
@@ -9,8 +9,9 @@ Public  Locations as clollection = ["sub":"subs","class":"class","struct":"struc
 dim     DoReturn as boolean = false
 
 allobjects = lany(objtype,Locations[objtype])
-if param.count <> 0 then
-  for each objname as string in param
+
+if parmset.count <> 0 then
+  for each objname as string in parmset
     if left(objname,2) = "--" then
       select case lower(right(objname,-2))
         case "verbose"
@@ -48,7 +49,55 @@ if param.count <> 0 then
 
 endif
 
-Private sub HasChanged(objtype as string, sentry as string[]) as boolean
+' Here is where we will use lany to save the sub
+
+for each sEntry as string[] in allObjects
+
+  if allObjects.key == "update" then continue
+  'if allObjects.key == "clearclass" then continue     ' just for debugging this
+  'if allObjects.key == "clearany" then continue       ' just for debugging this
+
+  if sEntry[eSubInMem] = "In-Mem" then
+    if verbose then  print #file.err, "In memory :";;sEntry[eSubPath] ' turn on for debug
+    if sEntry[eSubSource] = "In-Mem" then
+       SaveSubToDisk(AllSubs.key,"Clearsub: Sub '"&AllSubs.key&"' Not Saved, Do You want to save it now")
+    else if file.load(sEntry[eSubPath]) <> sharedmem["sub."&allsubs.key] then
+      SaveSubToDisk(allsubs.key,"Clearsub:"&sentry[eSubSource]&":"&sentry[eSubPath]&" '"&allsubs.key&"' Has changed, Would you like to save it")
+    endif
+
+    try sharedmem.free("sub."&allSubs.key)
+    if error then
+      if not IgnoreErrors then
+          Print  #file.err, "ClearSubs :";;error.text;; error.where
+          break
+      endif
+    else
+      if Verbose then Print #file.err, "Clearsub:";;allsubs.key;;" removed from memory"
+    endif
+  endif
+next
+
+catch
+ print #file.err, "ClearSubs Error :";;error.text;; error.where
+
+end
+
+' See SetDefaults for information regarding searchpaths
+'.subspath = user.home &/ "vars/subs;" & user.home &/ "vars/games;/usr/share/gsh/subs"
+'.classpath = user.home &/ "vars/class;/usr/share/gsh/class"
+'.structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
+'.scriptpath = user.home &/ "vars/struct;/usr/share/gsh/scripts"
+Private Find_Object_Source(objType,objname) as string
+    dim Look_In_Directory as string[] = split(sharedmem[objtype&"path"],";","\"",true)
+    for each location as string in Look_In_Directory
+      if exist(location &/ objname) then
+         return location &/ objname 
+      endif
+    next
+    return ""
+end
+
+Private sub Has_Changed(objtype as string, sentry as string[]) as boolean
 
 end
 
