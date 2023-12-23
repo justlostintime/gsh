@@ -102,7 +102,7 @@ Public Sub GetHelpDetailedText(Command As String) As String
   Command = SearchCommand
 
   If TypeOf(Result) = gb.object Then
-    buffer = Getlivehelp(helpgetfile(Result[1]), Command, False)
+    buffer = Getlivehelp(result, helpgetfile(Result[1]), Command, False)
   Else If Result <> "" Then
     sSource.url = "https://gambaswiki.org" &/ Result
     sSource.async = False
@@ -176,8 +176,8 @@ End
 
 Private Sub GetLiveHelp(msymbol As String[], defInfo As String[], Title As String, Optional Summary As Boolean = False) As String
 
-  Dim ch As New ConsoleHighlight
-  'Dim ch As New Highlight
+  'Dim ch As New ConsoleHighlight
+  Dim ch As TextHighlighter = TextHighlighter["gambas"]
   Dim helptxt As String = ""
   Dim SynText As String = ""
   Dim MatchInfo As String
@@ -193,7 +193,7 @@ Private Sub GetLiveHelp(msymbol As String[], defInfo As String[], Title As Strin
       MatchInfo = ".*(?:SUB|CLASS|FUNCTION|PROCEDURE|STRUCT).*"
   End Select
 
-  For Each sText As String In msymbol
+  For Each sText As String In definfo
     Dim Skey As String = Upper(Trim(sText))
     If sKey[0] = "'" Then Continue
     If RegExp.Match(sKey, MatchInfo, RegExp.Caseless) Then
@@ -207,13 +207,14 @@ Private Sub GetLiveHelp(msymbol As String[], defInfo As String[], Title As Strin
     helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & SynText & "\n\nDESCRIPTION\n"
   Else
     helptxt = SynText
-    Return ch.ToConsole(helptxt)
+    ' Return ch.ToConsole(helptxt)
+    Return ch.ToANSI(helptxt)
   Endif
   Dim s As String
   Dim b As String
-  For Each s In msymbol
+  For Each s In definfo
     If s Like "''*" Then
-      b = Trim(Replace(s, "''", ""))
+      b = RTrim(Replace(s, "''", ""))
       If b <> "" Then HelpTxt &= "\t" & b & "\n"
       If summary Then Break
     Endif
@@ -316,7 +317,8 @@ Public HelpFromHtml As String
 Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint As Boolean = True) As String
 
   Dim mproc As Process
-  Dim ch As New ConsoleHighlight
+  'Dim ch As New ConsoleHighlight
+  Dim ch As TextHighlighter = TextHighlighter["gambas"]
 
   helpfromhtml = ""
   If Not System.Exist("html2text") Then
@@ -401,7 +403,8 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
   For Each s As String In SectionIndex
     HelpFromHtml &= s & "\n"
     If s Like "Example" Or If s Like "Examples" Then
-      HelpFromHtml &= ch.ToConsole(Sections[Replace(s, " ", "")])
+      ' HelpFromHtml &= ch.ToConsole(Sections[Replace(s, " ", "")])
+      HelpFromHtml &= ch.ToANSI(Sections[Replace(s, " ", "")])
     Else
       HelpFromHtml &= Sections[Replace(s, " ", "")]
     Endif

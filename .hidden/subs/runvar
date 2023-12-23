@@ -1,6 +1,9 @@
 public sub runvar(varname as string,...) as variant ' execute variable content as script
-'' Execute the content of a variable as an
-'' independent script
+'' $a = runvar("variableName",parn1,...)
+''    Execute the content of a variable as an
+''    independent script
+''    This is same as new notation  $a = @variableName(parm1, ...)
+''
 dim mOutput as string
 dim errorresult as new string[]
 
@@ -16,9 +19,9 @@ if .exist(varname) then
        for each ss as string in cmd
          print quote(ss);;
        next
-       print "]"  
+       print "]"
     endif
-    
+
     try exec cmd to mOutput
 
     if error then
@@ -31,7 +34,7 @@ if .exist(varname) then
     return iif(sOutput.count = 1,sOutput[0],sOutput)
 else
     ErrorResult.add("Variable Not found : "&varname)
-    return
+    return null
 endif
 
 end with

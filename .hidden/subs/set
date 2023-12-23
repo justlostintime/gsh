@@ -1,10 +1,11 @@
-Sub set(vArray as variant, Value as variant, ... ) as variant ' Update gsh shell array value
-'' Update the content of an array or collection  that is stored in memory database - gsh shell variable
-'' returns the updated array or collection
-'' usage : $a = set($a,myvalue,subscript1,....) ' up to 3 subscripts
-'' or      $a = set($a,myvalue,MyKey) for collections
-'' Rather slow as it gets the array as a copy then updates it
-'' then returns it and the user needs to store it again
+Sub set(vArray as variant, Value as variant, ... ) as variant   ' Update gsh shell array value
+''    Update the content of an array or collection  that is stored in memory database - gsh shell variable
+''    returns the updated array or collection
+''    usage : $a = set($a,myvalue,subscript1,....) ' up to 3 subscripts
+''    or      $a = set($a,myvalue,MyKey) for collections
+''    Rather slow as it gets the array as a copy then updates it
+''    then returns it and the user needs to store it again
+''
 select case Param.count
 case 0
   vArray = Value

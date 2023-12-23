@@ -19,7 +19,10 @@ Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "e
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
 
-Public ConsoleHighlight As New ConsoleHighlight
+'Public ConsoleHighlight As New ConsoleHighlight
+Public ConsoleHighlight As TextHighlighter = TextHighlighter["gambas"]
+Public ConsoleTheme As New TextHighlighterTheme
+
 Public ReadQueue As New String[]     ' Used to push items to be read first
 
 Public ExecBuffer As String = ""

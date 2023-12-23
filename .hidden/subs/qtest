@@ -1,4 +1,5 @@
 Sub qtest() '' test access an internal class information
+'' a general gsh test
 
   dim css as class
   dim sClass as new string[]
@@ -19,7 +20,7 @@ Sub qtest() '' test access an internal class information
 
   while $a < 5
      b = css.symbols[$a]
-     print b ;; 
+     print b ;;
      echo $a = {b}
      inc $a
   wend

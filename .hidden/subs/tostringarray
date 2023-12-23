@@ -1,9 +1,10 @@
 'nopreprocess
 Sub ToStringArray(sResult as string[],...) 'Change anything to string[]
-''ToStringArray    Creat a string array the content of arrays or collections
-''          or objects/classes with the special _print function
-''          returns string[] if found, empty array otherwise
-''          $result contains the error text or "OK"
+''ToStringArray    
+''    Create a string array the content of arrays or collections
+''    or objects/classes with the special _print function
+''    returns string[] if found, empty array otherwise
+''    $result contains the error text or "OK"
 
 Dim vParms As Variant[]
 

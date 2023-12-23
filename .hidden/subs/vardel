@@ -1,12 +1,12 @@
 Sub vardel(optional varname As String = "", noerrorreport As Boolean = False) As Boolean ' delete in memory vars/subs/classes/structs
 ''VarDel $globalvar - Delete a global variable
-''          as function vardel("varname")
-''          as command vardel "varname"
-''          global functions have format "sub.sub"
-''          global classes have format "class.classname"
-''          global struct have format "struct.structname"
-''          returns true if found, false otherwise
-''          $result contains the error text or "OK"
+''    as function vardel("varname")
+''    as command vardel "varname"
+''    global functions have format "sub.sub"
+''    global classes have format "class.classname"
+''    global struct have format "struct.structname"
+''    returns true if found, false otherwise
+''    $result contains the error text or "OK"
 with sharedmem
 if varname <> "" and if .exist(varname) Then
 .free(varname)

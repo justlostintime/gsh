@@ -1,6 +1,7 @@
 Public Sub toJsonformatted(cvId As Variant) As String ' Format the passed object as formatted json string
-'' ToJsonFormatted  Return an object as a nicely formatted editable json string
-''                  inserts the cr after the {} on level one
+'' ToJsonFormatted  
+''      Returns an object as a nicely formatted editable json string
+''      inserts the cr after the {} on level one
 
   use "gb.util.web"
 

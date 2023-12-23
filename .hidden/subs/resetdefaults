@@ -1,27 +1,10 @@
+class SetDefaults
 Sub resetdefaults() As Boolean ' reset all global variables to default values
 ''resetdefaults  resets the system variables to thier default value
 ''          this is non destructive and will change all needed variables to
 ''          thier default valiables.
-with sharedmem
-.["$execprog"] = "print \"Gambas Shell \""
-.["$alias"] = new collection
-.["$blockindent"] = "  "                          ' used to indent code as you enter a block of code
-.["$prompt"] = "Sharedmem[\"$pwd\"]&\"->\"&gsh.blockindent"
-.["$result"] = "OK"
-.["$maxhistory"] = 300    ' define the max history length
-.["$historycurrent"] = 0  ' defines the current history level
-.["$pwd"] = user.home
-.["$history"] = new collection
-.["$editor"] = "/bin/nano"
-.["$home"] = user.home
-.["$hosttype"] = system.Architecture
-.["$hostname"] = system.host
-.["$term"] = "xterm-256color"
-.["$path"] = user.home &/ ".local/bin:"&user.home &/ "bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
-.["$env"] = ["PWD="&.["$pwd"], "PATH="&.["$path"],"HOME="&.["$home"],"TERM="&.["$term"],"HOSTTYPE="&.["$hosttype"],"HOSTHAME="&.["$hostname"],"LASTPLACEONEARTH=EndOfTheEarth"]
-if not .exist("$trace") then
-.["$trace"] = False
-endif
-end with
+
+SetDefaults()
+
 return true
 end

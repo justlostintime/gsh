@@ -1,4 +1,8 @@
 Sub primes() '' input a range of primes, calculate primes in range
+'' primes
+''   prompts for largest number to chack
+''   outputs a list of every prime between that number and 0
+''
 dim mem as byte[]
 dim n as integer
 print " Enter highest number >";

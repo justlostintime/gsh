@@ -1,7 +1,7 @@
-sub varwr(...)'write a list of variabls to files
-''varwr varname varnam ..
-''          write multiple variables to the vars directory
-''          using the default name , the variable name
+sub varwr(...) 'write a list of variabls to files
+'' varwr varname varnam ..
+''   write multiple variables to the vars directory
+''   using the default name , the variable name
 
 if param.count = 0 then return
 for each s as string in param

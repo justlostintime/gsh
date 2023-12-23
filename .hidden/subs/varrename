@@ -1,6 +1,7 @@
 Sub VarRename(OldName as string, NewName as string) as boolean ' rename a variable
-'' Rename a Variable from one symbol name to another
-'' Input the old name, and the new name
+'' varrename oldname newname
+''    Rename a Variable from one symbol name to another
+''    Input the old name, and the new name
 
   with sharedmem
     try  .rename(oldname,newname)

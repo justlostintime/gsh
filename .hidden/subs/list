@@ -1,4 +1,7 @@
 class gsh
+class texthighlighter
+class color
+
 Sub list(...) ' list the last executed script or a specific sub/class/struct
            If param.count > 0 Then
               For parscount As Integer = 0 To param.max
@@ -13,8 +16,7 @@ Sub list(...) ' list the last executed script or a specific sub/class/struct
 end
 
 Private Sub doListing(Command As String)
-
-  dim txthigh as new gshhighlight
+  dim txthigh as texthighlighter = gsh.ConsoleHighlight
   Dim ListProg As String
   Dim AllList As Collection = gsh.GetAllThings()
 
@@ -39,6 +41,6 @@ Private Sub doListing(Command As String)
   Endif
 
   'print "Listing for ";;quote(command);;"from";;listpath
-  Print txthigh.ToConsole(ListProg)
+  Print txthigh.ToAnsi(ListProg)
 
 End

@@ -1,16 +1,41 @@
 ' Gambas module file
 
+Styles As String[] = ["Background", "Normal", "Selection", "Alternate", "Highlight", "CurrentLine", "Added", "Removed", "Error", "Comment", "Documentation", "Keyword",
+  "Function", "Operator", "Symbol", "Number", "String", "Breakpoint", "Current", "Datatype", "Preprocessor", "Escape", "Label", "Constant", "Class", "Id", "Element",
+  "Property", "Pseudo", "Rule", "Important", "File", "Header", "Position", "Markup", "Attribute", "Value", "Entity", "WebMarkup", "WebComment", "WebArgument"]
+
 Public Sub main()
 
-  Dim x As New ConsoleHighlight
+
+
+  ' Dim x As New ConsoleHighlight
+  Dim x As TextHighlighter = TextHighlighter["gambas"]
+  Dim y As TextHighlighterTheme = New TextHighlighterTheme
+
+  Print y.Settings
+
+  Print y.dark
+
+  Print TextHighlighterTheme.Colors.join(",")
+
+  y.Invert()
 
   Dim teststring As String = "\"This string\" , upper(a)\n \"more string\"\na=14\n"
-  Dim outstring As String = X.ToConsole(teststring)
+  'Dim outstring As String = X.ToConsole(teststring)
+  Dim outstring As String = X.ToANSI(teststring, y)
 
   Print outstring
 
   TestString = "'This is a comment\n'' Comment descrition\n'' another thing\n''' this too\na = 27\n'' Description of Function\n'' More details about function\n'' Even more  and more details\nb = 56 ' a comment"
-  outstring = X.ToConsole(teststring)
+  Dim newtext As String[] = Highlight.analyze(TestString, True)
+  For Each i As Integer In Highlight.Types
+    Print Styles[i]
+  Next
+  'outstring = X.ToConsole(teststring)
+  outstring = X.ToANSI(teststring, y)
+  Print outstring
+  y.Invert
+  outstring = X.ToANSI(teststring, y)
   Print outstring
 
 End

@@ -1,7 +1,7 @@
 Sub varstat(optional symbol As String= "", display As Boolean = True) As Sharedmemsymbol ' displays/returns the type of a varable
 ''varstat varname display<true|false - displays info about a variable
-''          varname with display=yes defaults to display info other wise just returns Stat
-''          Displays the var type, class etc
+''  varname with display=yes defaults to display info other wise just returns Stat
+''  Displays the var type, class etc
 ''
 with sharedmem
 
@@ -48,7 +48,7 @@ for each symbols as string in varlist
            print "\n";space(40);
         endif
       next
-      
+
       print "]"
     else if x.symtype = gb.string then
       print "Len[";.[x.symname].len;"]"

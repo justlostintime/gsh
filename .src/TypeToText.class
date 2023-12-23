@@ -1,12 +1,16 @@
 ' Gambas class file
 
+Static Styles As String[] = ["Background", "Normal", "Selection", "Alternate", "Highlight", "CurrentLine", "Added", "Removed", "Error", "Comment", "Documentation", "Keyword",
+  "Function", "Operator", "Symbol", "Number", "String", "Breakpoint", "Current", "Datatype", "Preprocessor", "Escape", "Label", "Constant", "Class", "Id", "Element",
+  "Property", "Pseudo", "Rule", "Important", "File", "Header", "Position", "Markup", "Attribute", "Value", "Entity", "WebMarkup", "WebComment", "WebArgument"]
+
 Static Property Read max As Integer
 
 Static Public Sub _get(index As Integer) As String
 
   Dim result As String
 
-  Try result = Highlight.Styles[index]
+  Try result = styles[index]
   If Error Then
     result = "Unknown"
   Endif
@@ -18,6 +22,6 @@ End
 
 Static Private Function max_Read() As Integer
 
-  Return Highlight.Styles.max
+  Return styles.max
 
 End

@@ -1,6 +1,7 @@
 Sub tofile(fname As String, optional atEnd as boolean = false) 'tee write to the file and stdout
-'' Take the std in and tee's it to a file and to std out
-'' take a copy of a pipeline !!!
+'' tofile filename
+''     Take the std in and tee's it to a file and to std out
+''     take a copy of a pipeline !!!
     public filename as string = ""
     public mfile as file
 
@@ -29,5 +30,5 @@ Sub tofile(fname As String, optional atEnd as boolean = false) 'tee write to the
 	wend
 
   close #mfile
-  
+
 end

@@ -1,7 +1,7 @@
 sub varrd(...) 'read the value and definition of a global variable from file
 'varrd varname varname ..
-''          read/instanciate multiple variables from the vars directory
-''          using the default name , the variable name
+''  read/instanciate multiple variables from the vars directory
+''  using the default name , the variable name
 if param.count = 0 then return
 for each s as string in param
         varread(s)

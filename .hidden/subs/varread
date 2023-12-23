@@ -1,9 +1,9 @@
 Sub varread(Optional varname As String = "", Optional FileName As String = "") As Boolean ' load variable from file
 ''VarRead  $GlobalVarName <"filename"> - read a global variable value from a file, default = ~/var/varname
-''          as function - varread("varname <, "filename">)
-''          as command  - varread "varname" <"filename
-''          returns true if read, false otherwise
-''          $result contains the error text or "OK"
+''   as function - varread("varname <, "filename">)
+''   as command  - varread "varname" <"filename
+''   returns true if read, false otherwise
+''   $result contains the error text or "OK"
 ''
 with sharedmem
 if varname = "" then

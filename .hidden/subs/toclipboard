@@ -1,9 +1,13 @@
 Sub toclipboard(fileName as string,optional source as string = "") '' copy a file into the clipboard
-'' Copies a file into the clipboard
-'' if a second string parameter is included then the string
-'' is copied to the clipboard
-'' it uses the xclip cli to do this
-'' alias tcb='toclipboard'
+'' toclipboard filename  
+''    copy a file to clipboard
+'' toclipboard "" "copy this stuff to clipboard"
+''    copy string to clipboard
+''    Copies a file into the clipboard
+''    if a second string parameter is included then the string
+''    is copied to the clipboard
+''    it uses the xclip cli to do this
+''    alias tcb='toclipboard'
 
 use "gb.gui","gb.image"
 class.load("clipboard")
