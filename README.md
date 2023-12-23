@@ -12,9 +12,10 @@ Gambas 3.18 is now available as a backport for debian and ubuntu, even available
 ## Update - Ubuntu/Debian installation packages available to add to apt source list
 
 ```
-  curl -s --compressed "https://raw.githubusercontent.com/justlostintime/ppa/main/ubuntu/KEY.gpg" | sudo apt-key add -
-  sudo curl -s --compressed -o /etc/apt/sources.list.d/gsh.list "https://raw.githubusercontent.com/justlostintime/ppa/main/ubuntu/gsh.list"
-  sudo apt update
+sudo -i
+curl -s --compressed "https://raw.githubusercontent.com/justlostintime/ppa/main/ubuntu/KEY.gpg" | gpg --dearmor > /etc/apt/trusted.gpg.d/westwood-archive-key.gpg
+sudo curl -s --compressed -o /etc/apt/sources.list.d/gsh.list "https://raw.githubusercontent.com/justlostintime/ppa/main/ubuntu/gsh.list"
+sudo apt update
 ```
 
 ### NOTE GSH UPDATE FOR GAMBAS 3.18 and above 03/30/2023
