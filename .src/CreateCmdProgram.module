@@ -39,7 +39,6 @@ Public AliasList As New Collection(gb.ignorecase)
 Public MyReg As New Regexp
 Public MyParams As New String[20]
 
-
 Public Sub MakeAbs(newdir As String) As String
 
   'Dim sPath As String = Trim(newdir)
@@ -488,7 +487,6 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
 
           i = GenerateStringInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
 
-
         Case "!>" ' Write the return value from the exec to this variable
           Inc i
           If i > CmdList[CurrentCmd].max Then
@@ -726,7 +724,6 @@ Catch
   Error.Propagate()
 
 End
-
 
 Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
@@ -1015,7 +1012,6 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
 
 End
 
-
 Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As String
 
   Select Case val[0]
@@ -1058,7 +1054,6 @@ Private Sub BuildClose(procnum As Integer, processnums As Integer[], BaseName As
   Return finalbuf
 
 End
-
 
 Private Sub SetIoSub(CmdIndex As Integer, basename As String) As String
 
@@ -1123,7 +1118,6 @@ Public Sub _init()
 
 End
 
-
 '' This function will Parse the LINUX Shell(sh like) command line
 Private Sub parseline(InLine As String)
 
@@ -1139,14 +1133,12 @@ Catch
 
 End
 
-
 Public Sub DoGlob(path As String, Optional dironly As Boolean = False) As String[]
 
   Dim Paths As New String[]
   Dim sret As New Glob_t
   Dim ReturnSet As Pointer
   Dim CallResult As Integer
-
 
   CallResult = glob(path, (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE Or If(dironly = True, GLOB_ONLYDIR, 0)), Null, sret)
   If Callresult <> 0 Then
@@ -1185,7 +1177,8 @@ Sub multiSub(akey As String, data As String, Myreg As Regexp) As String
   If MyReg.count <= 0 Then Return data
 
   If MyReg.count > 0 Then data = MyReg[1].text
-  If MyReg.count > 1 Then Data &= Eval("subst(" & Quote(AliasList[akey].join(" ")) & "," & MyReg[2].text & ")")
+  Dim evalset As String = "subst(" & Quote(AliasList[akey].join(" ")) & "," & MyReg[2].text & ")"
+  If MyReg.count > 1 Then Data &= Eval(evalset)
   If MyReg.count = 3 And If MyReg[3].text <> "" Then
     data &= multiSub(akey, MyReg[3].text, MyReg)
   Endif
@@ -1211,8 +1204,9 @@ DoAliasAgain:
     akey = Replace(akey, "$", "\\$")
     If Not used.Exist(akey) Then
       If InStr(aliasList.key, "()") > 0 Then                                                                                 ' check if this is a parameterized alias aKey is alias name
-        If InStr(data, Left(aliasList.key, -2)) = 0 Then Continue
-
+        If InStr(data, Left(aliasList.key, -2)) = 0 Then
+          Continue
+        Endif
         Dim searchstr As String = "(.*[^\\w]?)" & Left(akey, -2) & "[(](.*)[)](.*$)"
         MyReg.compile(searchStr, RegExp.MultiLine)                                             ' find the parameters after removing the ()
         data = multiSub(aliasList.key, data, MyReg)                                                              ' Do the matching on the data for parameters
@@ -1308,7 +1302,6 @@ Public Sub setalias(cmdline As String)
   Dim cmd As String[]
   Dim Params As String[]
 
-
   cmd = Split(cmdline, " =", "''", True, False)
 
   If cmd.count = 2 Then
@@ -1392,34 +1385,3 @@ Public Sub printAlias(name As String, def As String[], Optional MaxNameLen As In
   Print "'"
 
 End
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

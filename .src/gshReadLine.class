@@ -52,7 +52,6 @@ End
 
 Private Sub DetectReadlineVersion() As Integer
 
-
   Try c9_using_history()
   If Not Error Then Return 9
   Try c8_using_history()

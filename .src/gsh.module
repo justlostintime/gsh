@@ -96,7 +96,6 @@ Private executedblock As String = ""
 Private lastexecutedblock As String = ""
 Private DoAlias As Boolean = True
 
-
 ' Extern rWrite(handle As Integer, data As Pointer, len As Integer) As Integer In "libc:6" Exec "write"
 ' Extern setenv(name As String, value As String, overwrite As Integer) As Integer In "libc:6"
 ' Extern unsetenv(name As String) As Integer In "libc:6"
@@ -108,7 +107,6 @@ Extern chdir(Dest As String) As Integer In "libc:6"
 'Extern SignalSend(sigpid As Integer, Sig As Integer) As Integer In "libc:6" Exec "kill"
 Private windowwidth As Integer = 80
 Private windowheight As Integer = 24
-
 
 Public DoTrace As Boolean = False
 Public TraceLevel As Integer = 1
@@ -255,7 +253,6 @@ Public Sub ProcessOptions() As String[]
   Dim sCRestOfArgs As String[]
   Dim sSharedMemoryName As String
   Dim sImageToUse As String
-
 
   Args.Begin(Application.Name & " <option> <Command.gsh>")
   bDbaseServer = Args.Has("d", "service", ("Run shell as a service point Daemon"))
@@ -416,7 +413,6 @@ Public Sub compileClassOnStart()
 
 End
 
-
 '' Load and compile all sub/func that are a part
 '' of the gsh.image at startup.
 '' the compile function checks the cache
@@ -506,7 +502,6 @@ Private Sub CreateProject(sym As String, buffer As String, Optional componly As 
   Dim ExtraClasses As New Collection
   Dim ProjectDirectory As String
 
-
   proc = PreProcBuffer("Public Sub main()\n" & buffer & "\nend\n")
   If IsNull(proc) Then Return ""
   Dim AlreadyLinked As New String[]
@@ -549,7 +544,6 @@ Private Sub CreateProject(sym As String, buffer As String, Optional componly As 
   Return ProjectDirectory
 
 End
-
 
 '' Compile the content of a shared memory sysmbol
 '' loads the class created and compiled into memory
@@ -635,7 +629,6 @@ Catch
 
 End
 
-
 Public Sub Main()
 
   $gshref = Me
@@ -684,7 +677,6 @@ Public Sub Main()
 
   SharedMem["pwd"] = Env["PWD"]
   SetDefaults()
-
 
   Try chdir(Env["PWD"])
 
@@ -904,7 +896,6 @@ Public Sub Main()
 
     execlocal(["onstart()"])                                                  ' only if we are not a service
 
-
     If Exist(User.home &/ "vars/profile.gsh.new") And If SharedMem["newprofile"] = False Then
       Error ("New base Profile revision profile.gsh\nRun update to use new base profile\n\n")
       SharedMem["newprofile"] = True
@@ -1046,7 +1037,6 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
   gshlogging.EndLog
   gshlogging.logrotate()
 
-
   If exitValue < 32000 Then
     If bSingleUse Then
       Try SharedMem.end()
@@ -1085,7 +1075,6 @@ Public Sub SetTitle()
   Flush
 
 End
-
 
 Private SubParmItems As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
 Private SubParmParser As New ParseParm(False, [","], ["(", ")", "\"", "\""])
@@ -1283,7 +1272,6 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
 
   ContainsGlobal = True ' force to use always +++ why?
 
-
   If containsGlobal Or linktable.count > 0 Then
 
     AlreadyLinked = New String[]
@@ -1339,7 +1327,6 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     CompilerDirectiveTable.Clear()
 
     Program = ProgPart1 & Program
-
 
     If bSingleUse Then
       Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
@@ -1565,7 +1552,6 @@ Catch
 
 End
 
-
 Public Sub SystemRead_read()
 
   Dim sLine As String
@@ -1585,7 +1571,6 @@ Public Sub SystemRead_error(msg As String)
   Error ("System Read Error:");; msg
 
 End
-
 
 Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, DoAlias As Boolean = False) As String
 
@@ -1670,7 +1655,6 @@ Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
   Endif
 
 End
-
 
 Public Sub ReadBuffer() As String
 
@@ -1833,7 +1817,6 @@ End
 
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
-
 
 Public Sub IfReader(EndBlk As String[]) As Boolean
 
@@ -2080,8 +2063,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               compile(lastelement)
             Endif
 
-
-
           Case "STRUCT"
             Dim data As String = getlastline(execbuffer) & "\n"
             Dim StructName As String = InBufParse[parsepos + 1]
@@ -2180,7 +2161,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             lambdaExpression(["END"])
             Dec LambdaLevel
             If LambdaLevel = 0 Then InLambda = False
-
 
           Case "RUN"
             If lastexecutedblock == "run\n" Then
@@ -2334,7 +2314,6 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Endif
         End Select
 
-
       Case Highlight.Function
 
       Case Highlight.Number
@@ -2455,7 +2434,6 @@ Catch
   Error.Propagate()
 
 End
-
 
 Sub editanything(funclass As String) As Boolean
 
@@ -2644,7 +2622,6 @@ Catch
 
 End
 
-
 Public Sub editbuffer(thebuffer As String) As String
   ''debug "edit "; thebuffer
 
@@ -2756,7 +2733,6 @@ Catch
   Error.Propagate()
 
 End
-
 
 Public Sub ExecFromHistory(Count As Integer) As Boolean
 
@@ -2962,8 +2938,6 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   Next
 
   Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
-
-
 
   ' Scan it for comments... forgot about this
   For iScan As Integer = 0 To CmdLine.max
@@ -3362,7 +3336,6 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
     Endif
   Endif
 
-
   ''Debug OutBuf
   'Print OutBuf
   If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess outputs"); ": "; outbuf
@@ -3372,7 +3345,6 @@ Catch
   Error.Propagate()
 
 End
-
 
 '' resolve the file name to a single file if possible
 '' glob it first and if its not found expand name and return it
@@ -3483,7 +3455,6 @@ Public Sub HexPrint(Val As String)
 
 End
 
-
 Public Sub mProcget_read()
 
   Dim buffer As String
@@ -3550,7 +3521,6 @@ Sub GenAllThings(list As Collection)
   Next
 
 End
-
 
 Public Sub printHelp(Optional command As String = "")
 
@@ -3663,4 +3633,3 @@ Public Sub lambda() As String
   Return LambdaBuffer
 
 End
-
