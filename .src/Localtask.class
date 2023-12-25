@@ -2,6 +2,8 @@
 
 Inherits Task
 
+Class SharedMem
+
 Public Parms As Variant[]
 Public Method As String
 Public sObject As String

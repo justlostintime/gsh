@@ -1,6 +1,6 @@
 ' Gambas class file
 
-' Gambas module file
+Class Sharedmem
 
 'These are the defaults
 ' Static Public syms As String[]
@@ -10,6 +10,7 @@
 ' Static Public SpecialSymbols As String[] = ["{", "}"]
 ' Static Public quotes As String[] = ["\"", "\""]
 ' Static Public braces As String[] = ["{", "}"]
+
 Static defaultp As New ParseParm(True)
 
 Static Private Sub SymsInsert(p As ParseParm, sym As String, type As Integer)

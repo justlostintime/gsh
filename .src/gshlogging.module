@@ -3,7 +3,6 @@
 Property LogActive As Boolean Use $LogActive = True
 Property Read LogFile As File Use $LogFile = Null
 
-
 Public Sub _Call(logname As String, msg As String)
 
   Dim locker As Stream
@@ -53,7 +52,6 @@ Public Sub logrotate(Optional rotateName As String = "gsh_log_" & CStr(Now) & ".
   Dim logfile As File
 
   If Stat(User.home &/ "vars/gsh.log").size < MaxLength Then Return
-
 
   Try locker = Lock "/tmp/" &/ User.id & "_gshlogger_lock" Wait 1.5
   If Error Then

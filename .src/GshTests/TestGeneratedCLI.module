@@ -2,7 +2,9 @@
 
 '#!/usr/bin/gbs3
 Extern chdir(Dest As String) As Integer In "libc:6"
-Use "westwood.sharedmem"
+Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Class Sharedmem
+
 Private cmdBuild As New String[]
 Public mProcr89340 As Process
 'Private cmdBuild As String[]

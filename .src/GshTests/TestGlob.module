@@ -25,7 +25,6 @@ End
 Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
 Extern globfree(glob_def As Glob_t) In "libc:6"
 
-
 Sub fileexpand(path As String, Optional dironly As Boolean = False, GlobStarForce As Boolean = False) As String[] ' Calls Glob to get list of file
   '' fileexpand(Path as string, optional DirOnly as boolean) as string()
   ''   Returns a list of files as expanded by the shells
@@ -84,4 +83,3 @@ Catch
   Error.Propagate()
 
 End ' Gambas module file
-

@@ -3,6 +3,8 @@
 ' test commit too
 ' Gambas module
 ' change
+Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Class Sharedmem
 
 Public Sub rr_Read()
 
@@ -26,8 +28,6 @@ Public Sub rr_error(merror As String)
   Print "Error = "; merror
 
 End
-
-
 
 Public Sub main()
 
@@ -57,4 +57,3 @@ Public Sub main()
   End With
 
 End
-

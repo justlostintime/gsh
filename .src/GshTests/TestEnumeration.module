@@ -1,5 +1,7 @@
 ' Gambas module file
 
+Class SharedMem
+
 Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant ' process a text value with enumeration
   '' Will return an enumerated text vale as an array of string values
   '' much like the bash braced enumeration
@@ -28,7 +30,6 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
   Return IntermResults
 
 End
-
 
 Sub enumerateloop(value As String) As String[] ' loop here until completed
 
@@ -178,7 +179,6 @@ Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[] 
   '' fileexpand(Path as string, optional DirOnly as boolean) as string()
   ''   Returns a list of files as expanded by the shells
 
-
   ' Dim GLOB_ERR As Integer = Shl(1, 0)                     ' Return On Read errors. * /
   ' Dim GLOB_MARK As Integer = Shl(1, 1)                    ' Append a slash To Each name. * /
   ' Dim GLOB_NOSORT As Integer = Shl(1, 2)                  ' Don 't sort the names.  */
@@ -240,4 +240,3 @@ Catch
   Error.Propagate()
 
 End
-

@@ -66,5 +66,3 @@ Catch
   Return IIf(gsh.ReadQueue.count > 0, False, True)
 
 End
-
-

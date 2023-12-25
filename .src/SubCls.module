@@ -1,6 +1,7 @@
 ' Gambas module file
 
 Export
+Class SharedMem
 
 Public Struct subload
   iIsSub As Boolean               ' true as sub, false as class
@@ -75,17 +76,16 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
     sName = cName
   Endif
 
-
   If NameIn[0] = "sub" Then
     Dim pattern As String = "(^|\n) *SUB " & cname & " *[(]"
     Dim a As New RegExp(SourceFile, pattern, RegExp.caseless)
     Dim Subvalue As String = "\nPublic Sub " & cname & "("
     SourceFile = a.Replace(SourceFile, pattern, SubValue, regexp.caseless)
-    SourceFile = "Export\n" & SourceFile
+    SourceFile = "Export\nClass Sharedmem\nClass SharedmemSymbol\nclass SharedMemWaitQueue\nClass Mem\n " & SourceFile
   Else
     sourcefile = Replace(sourcefile, "\nend class", "\n", gb.IgnoreCase)
     Sourcefile = Replace(sourcefile, "Export\n", "", gb.Ignorecase)
-    SourceFile = "Export\n" & SourceFile
+    SourceFile = "Export\nClass Sharedmem\nClass SharedmemSymbol\nclass SharedMemWaitQueue\nClass Mem\n" & SourceFile
     isClass = True
   Endif
 
@@ -180,7 +180,6 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
 
     Shell Subst$("gba3 &1 -o &2 2>&&1", sPath, sArchive) To sRes
     If Process.LastValue Then Error.Raise(Subst$(("Archiver error:\n&1"), sRes))
-
 
     If Not CompileOnly Then
       Component.Load(sArchive)
@@ -393,4 +392,3 @@ Private Sub CheckLibVersions(sPath As String, Version As String) As String
   Endif
 
 End
-

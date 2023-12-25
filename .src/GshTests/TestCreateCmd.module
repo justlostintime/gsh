@@ -1,5 +1,7 @@
 ' Gambas module file
 
+Class SharedMem
+
 Public program As String[]
 Public SProgram As String
 

@@ -2,6 +2,8 @@
 
 Export
 
+Class Sharedmem
+
 Public GLOB_ERR As Integer = Shl(1, 0)                     ' Return On Read errors. * /
 Public GLOB_MARK As Integer = Shl(1, 1)                    ' Append a slash To Each name. * /
 Public GLOB_NOSORT As Integer = Shl(1, 2)                  ' Don 't sort the names.  */

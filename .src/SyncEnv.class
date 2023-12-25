@@ -1,6 +1,7 @@
 ' Gambas class file
 
 Export
+Class SharedMem
 
 Property Read syncvars As Collection Use $syncvars
 
@@ -52,11 +53,8 @@ Public Sub Remove(varname As String) As Boolean
 
 End
 
-
 Public Sub varchanged(Value As Variant, Variable As String)
 
   Env[$syncvars[Variable]] = Value
 
 End
-
-

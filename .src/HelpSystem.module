@@ -1,5 +1,7 @@
 ' Gambas module file
 
+Class SharedMem
+
 Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki",
   "https://gambaswiki.org/wiki/cat",
   "https://gambaswiki.org/wiki/lang",
@@ -397,7 +399,6 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
   '   HelpFromHtml &= "\nSEE ALSO\n\n"
   '   HelpFromHtml &= Sections["seealso"]
   ' Endif
-
 
   HelpFromHtml = "NAME\n"
   For Each s As String In SectionIndex

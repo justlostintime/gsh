@@ -1,6 +1,8 @@
 ' Gambas module file
 
 'Extern chdir(path As String) As Integer In "libc:6"
+Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Class Sharedmem
 
 Public Sub Main()
 
@@ -172,4 +174,3 @@ Public Sub reset()
   Print "test"
 
 End
-

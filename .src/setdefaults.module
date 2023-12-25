@@ -1,5 +1,7 @@
 ' Gambas module file
 
+Class SharedMem
+
 ''  Sets the defaults for all of the system variables
 ''  Uses values found in the system image if present
 ''  SetDefaults, configure the basic system at start

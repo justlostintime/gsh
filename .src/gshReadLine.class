@@ -1,6 +1,7 @@
 ' Gambas class file
 
 Export
+Class SharedMem
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
 

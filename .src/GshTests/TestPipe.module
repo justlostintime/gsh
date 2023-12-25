@@ -5,6 +5,8 @@ Public mProc1 As Process
 Public mTask0 As TestTask
 Public mTaskWrite As File
 
+Class SharedMem
+
 Public Sub application_signal(sig As Integer)
 
   Print "Sig caught"; sig
@@ -81,5 +83,3 @@ Public Sub Main()
   SharedMem.end()
 
 End
-
-

@@ -4,7 +4,6 @@ Inherits Task
 Public inpipe As Stream
 Public inpipename As String
 
-
 Public Sub main()
 
   Dim sLine As String

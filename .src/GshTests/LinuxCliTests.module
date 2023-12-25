@@ -1,16 +1,26 @@
 ' Gambas module file
 
+Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Class Sharedmem
+
 Public Sub main()
 
   Dim command As String = ""
 
   SharedMem.Begin(1280000)
-  While True
-    'Line Input command
-    command = "echo  \"hello\" {a} {subst(a,\"100\")}"
-    Print CreateCmdProgram(command)
+  With sharedmem
+    ' the following is needed by the cmdprogram generator
+    .subspath = "~/vars/subs"
+    .classpath = "~/vars/class"
+    .structpath = "~/vars/structs"
 
-  Wend
-  SharedMem.end()
+    While command <> "quit"
+      Line Input command
+      'Dim a As String = "Bye Bye Birdy &1"
+      'command = "echo  \"hello\" {a} {subst(a,\"100\")}"
+      Print CreateCmdProgram(command)
+    Wend
+    SharedMem.end()
+  End With
 
 End

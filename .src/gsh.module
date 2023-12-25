@@ -4,8 +4,13 @@ Export
 'Fast Unsafe
 
 Class ScripterExecute
+Class Script
+Class ScriptCompileErrors
+Class CompileErrorMsg
 
 Property Read gshref As Object Use $gshref
+Property Read sharedmemlib As String Use $sharedmemlib
+Property Read SCripterLib As String Use $scripterlib
 
 Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String",
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "",
@@ -115,6 +120,7 @@ Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
 
 Public EnvSync As SyncEnv
+Class Sharedmem
 
 '' Set the trace level while running the script
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel)    ' this function turns on the compile tracing
@@ -216,33 +222,69 @@ Public Sub TestModuleAccess() As Boolean
 
 End
 
+ClassesToLoad As String[] = [
+  "ScripterExecute",
+  "Script",
+  "ScriptCompileErrors",
+  "CompileErrorMsg",
+  "Buffer",
+  "BufferFields",
+  "mem",
+  "ptr",
+  "SharedClass",
+  "SharedMemSymbol",
+  "SharedMemWaitQueue",
+  "SharedRemote",
+  "sharedmem",
+  "Signal",
+  "SubCls",
+  "CreateCmdProgram",
+  "Parser",
+  "ServiceMode",
+  "HelpSystem",
+  "gshReadLine",
+  "LocalTask",
+  "gshlogging",
+  "RunScript",
+  "FindScript",
+  "VerifyFileType"
+]
+
 Public Sub _init()
 
   Dim result As Integer
 
-  Try Component.Load("gb.signal")
-  Try Class.Load("Signal")
-  Try Class.Load("SubCls")
-  Try Class.Load("CreateCmdProgram")
-  Try Class.Load("Parser")
-  Try Class.Load("ServiceMode")
-  Try Class.Load("HelpSystem")
-  Try Class.Load("gshReadLine")
-  Try Class.Load("LocalTask")
-  Try Class.Load("gshlogging")
-  Try Class.Load("RunScript")
-  Try Class.Load("FindScript")
-  Try Class.Load("VerfyFileType")
+  $sharedmemlib = File.Load("sharedmem")
+  $ScripterLib = File.Load("gb.scripter")
 
-  Try Component.Load("westwood.gb.scripter")
+  Try Component.Load("gb.signal")
+  Try Component.load($sharedmemlib)
   If Error Then
-    Error "gb.scripter not found, default to internal build"
-    gbscomponent = False
-  Else
-    gbscomponent = True
+    Print "Init Error : "; Error.text;; Error.where
+    Print "Shared memory library not avaiable at";; $sharedmemlib
+    Quit 9
   Endif
 
+  Try Component.Load($ScripterLib)
+  If Error Then
+    Error "Error Scripter library not found, ";; $ScripterLib
+    Quit 9
+  Endif
+  gbscomponent = True
+
+  For Each c As String In ClassesToLoad
+    Try Class.Load(c)
+    If Error Then
+      Print "Error  loading :";; c;; ":";; Error.text;; Error.where
+      Quit 8
+    Endif
+  Next
+
   SharedMem.DoInit()
+
+Catch
+  Print Error.text, Error.Where
+  Quit 9
 
 End
 
@@ -633,6 +675,7 @@ Public Sub Main()
 
   $gshref = Me
   Try $version = File.Load("VERSION")
+
   If Error Then
     Print "GSH : VERSION file is missing, defaulting to application version"
     $version = Application.version
@@ -1302,11 +1345,13 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       ProgPart1 &= sInsert & "\n"
     Next
 
-    If Component.IsLoaded("westwood.sharedmem") Then
-      ProgPart1 &= "Use \"westwood.sharedmem\""
-    Else If Component.IsLoaded("sharedmem") Then
-      ProgPart1 &= "Use \"sharedmem\""
-    Endif
+    ' If Component.IsLoaded("westwood.sharedmem") Then
+    '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
+    ' Else If Component.IsLoaded("sharedmem") Then
+    '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
+    ' Endif
+
+    ProgPart1 &= " Use " & "\"westwood.sharedmem:3\"\nClass Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n"
 
     For Each sinsert In UseTable
       ProgPart1 &= "," & sinsert

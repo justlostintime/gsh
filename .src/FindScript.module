@@ -1,5 +1,7 @@
 ' Gambas module file
 
+Class SharedMem
+
 '' Find and identify  the  type of script  to load
 extensions As Collection = ["sub": "gshp", "struct": "gshs", "class": "gshc"]
 
@@ -40,4 +42,3 @@ Catch
   Error.Raise(msg)
 
 End
-

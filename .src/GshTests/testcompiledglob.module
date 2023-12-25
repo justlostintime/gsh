@@ -1,7 +1,8 @@
 ' Gambas module file
 
 Extern chdir(Dest As String) As Integer In "libc:6"
-Use "westwood.sharedmem"
+Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Class Sharedmem
 
 Public Struct glob_t   'The structure definition used by the glob system function
   ''          Some size_t functions are implemented as prointer as size_t
@@ -63,7 +64,6 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
   Return IntermResults
 
 End
-
 
 Sub enumerateloop(value As String) As String[]  ' loop here until completed
 
