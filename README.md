@@ -1,5 +1,9 @@
 # gsh
 
+### NOTE GSH 1.6.2 no longer requires installation of other components
+gb.scripter and sharedmem are now built into the gsh shell and Do not need to be installed separately.
+
+
 Gambas 3.18 is now available as a backport for debian and ubuntu, even available for Raspberry OS!
 ```
   for pi os:

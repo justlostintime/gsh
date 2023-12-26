@@ -1351,7 +1351,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
     ' Endif
 
-    ProgPart1 &= " Use " & "\"westwood.sharedmem:3\"\nClass Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n"
+    ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\""
 
     For Each sinsert In UseTable
       ProgPart1 &= "," & sinsert
