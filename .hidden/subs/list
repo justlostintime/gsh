@@ -41,6 +41,11 @@ Private Sub doListing(Command As String)
   Endif
 
   'print "Listing for ";;quote(command);;"from";;listpath
-  Print txthigh.ToAnsi(ListProg)
+  if file.out.isterm then
+      Print txthigh.ToAnsi(ListProg)
+  Else
+      Print ListProg
+  Endif
+  
 
 End

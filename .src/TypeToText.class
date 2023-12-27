@@ -19,7 +19,6 @@ Static Public Sub _get(index As Integer) As String
 
 End
 
-
 Static Private Function max_Read() As Integer
 
   Return styles.max

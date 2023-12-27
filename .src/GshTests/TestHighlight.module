@@ -4,11 +4,12 @@ Styles As String[] = ["Background", "Normal", "Selection", "Alternate", "Highlig
   "Function", "Operator", "Symbol", "Number", "String", "Breakpoint", "Current", "Datatype", "Preprocessor", "Escape", "Label", "Constant", "Class", "Id", "Element",
   "Property", "Pseudo", "Rule", "Important", "File", "Header", "Position", "Markup", "Attribute", "Value", "Entity", "WebMarkup", "WebComment", "WebArgument"]
 
+Class TextHighlighter
+Class TextHighlighterTheme
+
 Public Sub main()
 
-
-
-  ' Dim x As New ConsoleHighlight
+  'Dim x As New ConsoleHighlight
   Dim x As TextHighlighter = TextHighlighter["gambas"]
   Dim y As TextHighlighterTheme = New TextHighlighterTheme
 
@@ -16,7 +17,7 @@ Public Sub main()
 
   Print y.dark
 
-  Print TextHighlighterTheme.Colors.join(",")
+  Print "States\n";; x.States.Join();; "\n end of states"
 
   y.Invert()
 
