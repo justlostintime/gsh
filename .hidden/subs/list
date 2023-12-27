@@ -29,7 +29,7 @@ Private Sub doListing(Command As String)
         listprog = SharedMem[listpath]
       Endif
     Else
-      Try listprog = File.Load(expandfn(listpath))
+      Try listprog = File.Load(expandfn(command))
       If Error Then
         Error ("List: Unable to find ") & command
         Return
