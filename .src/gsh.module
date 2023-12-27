@@ -197,6 +197,9 @@ Public Sub application_signal(sig As Integer)
       Endif
 
       If Not CommandMode Then
+        If BlockLevel > 0 Then
+          Error.Raise("Break!")
+        Endif
         Return
       Else
         Try gshlogging(User.home &/ "vars/gsh.log", "Command Mode recieved Process Sigint(" & CStr(sig) & "):PID=" & Application.id)
