@@ -7,10 +7,12 @@ Class ScripterExecute
 Class Script
 Class ScriptCompileErrors
 Class CompileErrorMsg
+Class TextHighlighter
 
 Property Read gshref As Object Use $gshref
 Property Read sharedmemlib As String Use $sharedmemlib
 Property Read SCripterLib As String Use $scripterlib
+Property Read ScriptHighlighter As String Use $ScriptHighlighter
 
 Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String",
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "",
@@ -25,8 +27,7 @@ Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "e
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
 
 'Public ConsoleHighlight As New ConsoleHighlight
-Public ConsoleHighlight As TextHighlighter = TextHighlighter["gambas"]
-Public ConsoleTheme As New TextHighlighterTheme
+Public ConsoleHighlight As TextHighlighter
 
 Public ReadQueue As New String[]     ' Used to push items to be read first
 
@@ -250,17 +251,26 @@ ClassesToLoad As String[] = [
   "gshlogging",
   "RunScript",
   "FindScript",
-  "VerifyFileType"
+  "VerifyFileType",
+  "texthighlighter"
 ]
 
+'Public Sub Myinit()
 Public Sub _init()
 
   Dim result As Integer
 
   $sharedmemlib = File.Load("sharedmem")
   $ScripterLib = File.Load("gb.scripter")
+  $ScriptHighlighter = File.Load("gb.highlight")
 
   Try Component.Load("gb.signal")
+  Try Component.Load($ScriptHighlighter)
+  If Error Then
+    Print "Unable to locate";; $ScriptHighlighter;; Error.text
+    Quit 7
+  Endif
+
   Try Component.load($sharedmemlib)
   If Error Then
     Print "Init Error : "; Error.text;; Error.where
@@ -282,6 +292,8 @@ Public Sub _init()
       Quit 8
     Endif
   Next
+
+  ConsoleHighlight = TextHighlighter["gambas"]
 
   SharedMem.DoInit()
 
@@ -676,6 +688,7 @@ End
 
 Public Sub Main()
 
+  ' Myinit()
   $gshref = Me
   Try $version = File.Load("VERSION")
 

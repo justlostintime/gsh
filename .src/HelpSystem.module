@@ -1,6 +1,7 @@
 ' Gambas module file
 
 Class SharedMem
+Class TextHighlighter
 
 Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki",
   "https://gambaswiki.org/wiki/cat",

@@ -5,38 +5,47 @@ Styles As String[] = ["Background", "Normal", "Selection", "Alternate", "Highlig
   "Property", "Pseudo", "Rule", "Important", "File", "Header", "Position", "Markup", "Attribute", "Value", "Entity", "WebMarkup", "WebComment", "WebArgument"]
 
 Class TextHighlighter
-Class TextHighlighterTheme
 
 Public Sub main()
 
   'Dim x As New ConsoleHighlight
+  Component.Load("gb.eval.highlight")
   Dim x As TextHighlighter = TextHighlighter["gambas"]
-  Dim y As TextHighlighterTheme = New TextHighlighterTheme
+  '  Dim y As TextHighlighterTheme = New TextHighlighterTheme
 
-  Print y.Settings
+  ' Print "Settings :\n"; Split(y.Settings, ";").Join("\n"); "\n End if settings\n"
+  ' Dim newstyles As New Collection(gb.ignorecase)
+  ' For Each s As String In Split(y.Settings, ";")
+  '   Dim nval As String[] = Split(s, "=")
+  '   newstyles.Add(nval[1], nval[0])
+  ' Next
 
-  Print y.dark
+  '  Print "Dark ?";; y.dark
 
-  Print "States\n";; x.States.Join();; "\n end of states"
+  'Print "\nStates\n";; x.States.Join();; "\n end of states\n"
 
-  y.Invert()
+  '  y.Invert()
 
   Dim teststring As String = "\"This string\" , upper(a)\n \"more string\"\na=14\n"
+
   'Dim outstring As String = X.ToConsole(teststring)
-  Dim outstring As String = X.ToANSI(teststring, y)
+  Dim outstring As String = X.ToANSI(teststring)
 
   Print outstring
 
   TestString = "'This is a comment\n'' Comment descrition\n'' another thing\n''' this too\na = 27\n'' Description of Function\n'' More details about function\n'' Even more  and more details\nb = 56 ' a comment"
-  Dim newtext As String[] = Highlight.analyze(TestString, True)
-  For Each i As Integer In Highlight.Types
-    Print Styles[i]
+  Dim newtext As String[] = Highlight.analyze(TestString)
+  Print "List of symbols and thier types:"
+  For i As Integer = 0 To newtext.max
+    Print Left(newtext[i] & Space(40), 40);; "-";; Styles[Highlight.Types[i]]; "("; Highlight.types[i]; ")"   ' ;; newstyles.Keys[Highlight.Types[i]]
   Next
+  Print "End of list\n"
+
   'outstring = X.ToConsole(teststring)
-  outstring = X.ToANSI(teststring, y)
+  outstring = X.ToANSI(teststring)
   Print outstring
-  y.Invert
-  outstring = X.ToANSI(teststring, y)
-  Print outstring
+  ' y.Invert
+  ' outstring = X.ToANSI(teststring, y)
+  'Print outstring
 
 End
