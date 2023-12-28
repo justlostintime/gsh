@@ -353,6 +353,7 @@ Private Sub ProcessLibrary(LibName As String) As String
       LibEntry = LibEntry & ":" & sSplitLine[1]
     Else
       LibEntry = CheckLibVersions(LibEntry, sSplitLine[1])
+
       If LibEntry = "" Then
         LibEntry = "/usr/lib/gambas" & System.version &/ sSplitLine[0]
         If Exist(LibEntry & ":" & sSplitLine[1] & ".gambas") Then
@@ -380,6 +381,9 @@ Private Sub CheckLibVersions(sPath As String, Version As String) As String
 
   If sVersion.count > 0 Then
     Dim sDir As String = File.Dir(sPath)
+    If Not Exist(sDir) Then
+      Return ""
+    Endif
     Dim sName As String = File.Name(sPath) & ":" & sVersion[0] & ".*" & ".gambas"
     Dim sEntries As String[] = Dir(sDir, sName, gb.file).Sort()
     If sEntries.count > 0 Then

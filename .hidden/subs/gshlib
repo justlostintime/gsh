@@ -17,6 +17,8 @@
 ' Foundation, Inc., 51 Franklin St, Fifth Floor,
 ' Boston, MA  02110-1301  USA
 '
+Class sharedmem
+
 Sub gshlib(...) As Collection  'manage the gsh online library
     '' this allows the user to search and retrieve programs from
     '' the online gsh library
