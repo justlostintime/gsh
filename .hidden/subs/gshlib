@@ -38,7 +38,7 @@ Sub gshlib(...) As Collection  'manage the gsh online library
         Next
     Endif
 
-    Use "westwood.sharedmem", "gb.net", "gb.net.curl", "gb.term", "gb.util", "gb.eval.highlight", "gb.pcre"
+    Use "westwood.sharedmem:3", "gb.net", "gb.net.curl", "gb.term", "gb.util", "gb.eval.highlight", "gb.pcre"
     Extern chdir(Dest As String) As Integer In "libc:6"
     Private BaseUrl As String
     Private sMainIndex As Collection
@@ -54,7 +54,6 @@ Sub gshlib(...) As Collection  'manage the gsh online library
     sMainIndex = New Collection(gb.ignorecase)
     FlatIndex = New Variant[]
     FlatNames = New String[]
-
 
     Try class.load("httpClient")
     If Error Then
@@ -183,8 +182,6 @@ Sub gshlib(...) As Collection  'manage the gsh online library
                     Else
                         ReplyIndex = CInt(reply) - 1
                     Endif
-
-
 
                     If replyIndex < 0 And replyIndex > FlatNames.max Then
 
@@ -322,7 +319,6 @@ Sub displayInfo(index As Integer)
     Print
 
 End
-
 
 Sub PrintFlatIndex()
 
