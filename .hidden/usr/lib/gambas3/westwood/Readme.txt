@@ -1,1 +1,0 @@
-These libraries are built from the gb.scripter and shared mem projects

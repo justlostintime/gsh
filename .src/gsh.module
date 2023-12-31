@@ -491,6 +491,8 @@ End
 '' compile and load the sub/func in a buffer
 '' convert the sub into a class with an entry point equal to the sub name
 '' checks if already compiled and in cache.
+SharedMemClasses As String[] = ["Class Sharedmem", "Class SharedmemSymbol", "Class SharedMemWaitQueue", "Class Mem"]
+
 Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As Boolean = False) As Boolean
 
   Dim proc As String = ""
@@ -503,6 +505,10 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
   Dim AlreadyLinked As New String[]
 
   Dim ProcLinks As String = ""
+
+  If InStr(proc, "sharedmem", 0, gb.ignorecase) > 0 Then
+    ExternTable.insert(SharedMemClasses)
+  Endif
 
   While LinkTable.COUNT
     If linktable.first <> sym Then

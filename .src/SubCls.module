@@ -81,11 +81,11 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
     Dim a As New RegExp(SourceFile, pattern, RegExp.caseless)
     Dim Subvalue As String = "\nPublic Sub " & cname & "("
     SourceFile = a.Replace(SourceFile, pattern, SubValue, regexp.caseless)
-    SourceFile = "Export\nClass Sharedmem\nClass SharedmemSymbol\nclass SharedMemWaitQueue\nClass Mem\n " & SourceFile
+    SourceFile = "Export\n" & SourceFile
   Else
     sourcefile = Replace(sourcefile, "\nend class", "\n", gb.IgnoreCase)
     Sourcefile = Replace(sourcefile, "Export\n", "", gb.Ignorecase)
-    SourceFile = "Export\nClass Sharedmem\nClass SharedmemSymbol\nclass SharedMemWaitQueue\nClass Mem\n" & SourceFile
+    SourceFile = "Export\n" & SourceFile
     isClass = True
   Endif
 
