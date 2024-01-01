@@ -236,7 +236,7 @@ Public Sub AllHelp() As String
   Dim HelpList As New String[]
   Dim Entry As String[]
 
-  HelpTxt = File.Load("/usr/share/gsh/doc/help.info")
+  HelpTxt = File.Load("/usr/share/gsh/docs/help.info")
   HelpTxt &= ("\nUseful included Functions and Classes these may be edited to your taste\n"
     "Functions Can be found in /usr/share/gsh/subs for Default versions or\n"
   "in ~/vars/subs for personal versions\n\n")

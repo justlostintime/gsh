@@ -164,13 +164,13 @@ Public Sub application_signal(sig As Integer)
 
     Case Signal.SIGHUP, Signal.SIGABRT
       If RunningProcess <> Null Then
-        Signal.send(RunningProcess.Handle, Signal.SigKill)
         Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup/abort(" & CStr(sig) & "): Sub Process PID=" & RunningProcess.handle)
+        Signal.send(RunningProcess.Handle, Signal.SigKill)
         RunningProcess = Null
         Return
       Endif
-      Signal.send(0, Signal.SigKill)
       Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup/SigAbrt(" & CStr(sig) & "):PID=" & Application.id)
+      Signal.send(0, Signal.SigKill)
       ExitProgram()
 
     Case Signal.SIGTERM
@@ -180,13 +180,14 @@ Public Sub application_signal(sig As Integer)
         RunningProcess = Null
         Return
       Endif
+
       Try gshlogging(User.home &/ "vars/gsh.log", " Gsh got SigTerm " & application.handle)
       ExitProgram()
 
     Case Signal.SIGINT
       If RunningProcess <> Null Then
-        Signal.send(RunningProcess.Handle, Signal.SigInt)
         Try gshlogging(User.home &/ "vars/gsh.log", "Process SigInt" & RunningProcess.handle)
+        Signal.send(RunningProcess.Handle, Signal.SigInt)
         RunningProcess = Null
         Error "\n"
         Return
@@ -1030,6 +1031,7 @@ interactive:
   Wait 0.001
   '  Signal.send(0, Signal.SigKill)
   ExitProgram()
+  Quit 7
 
 Catch
   Dim errorText As String = Error.text & ";" & Error.where
@@ -2436,8 +2438,10 @@ Catch
   NoPreProcess = False
   BlockLevel = 0
   ''debug "Exit DOBLK"
-  Error.Propagate()
-  'Error.Raise(Error.text)
+  Dim errormsg As String = "ifreader Error : " & Error.text & ": " & Error.where
+  ' Error.Propagate()
+  gshlogging(User.home &/ "vars/gsh.log", errormsg)
+  Error.Raise(ErrorMsg)
 
 End
 
@@ -2821,8 +2825,12 @@ Public Sub ExecFromHistory(Count As Integer) As Boolean
   bi = IfReader([""])
   SOURCE = "STDIN"
   Return bi
+
 Catch
-  Error.Propagate()
+  Dim errormsg As String = "ExecFromHistory  Error : " & Error.text & " : " & Error.where
+  gshlogging(User.home &/ "vars/gsh.log", errormsg)
+  Error.Raise(errormsg)
+  'Error.Propagate()
 
 End
 
@@ -2839,7 +2847,9 @@ Public Sub DoBlock(EndBlk As String[])
 
   End With
 Catch
-  Error.Propagate()
+  Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where
+  gshlogging(User.home &/ "vars/gsh.log", errormsg)
+  Error.Raise(errormsg)
 
 End
 
