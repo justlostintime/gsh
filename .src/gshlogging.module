@@ -4,11 +4,11 @@ Property LogActive As Boolean Use $LogActive = True
 Property Read LogFile As File Use $LogFile = Null
 
 Public Sub _Call(logname As String, msg As String)
-
+  
   Dim locker As Stream
-
+  
   If Not $Logactive Then Return
-
+  
   If $LogFile = Null Then
     If Exist(logname) Then
       Try $LogFile = Open logname For Write Append
@@ -18,58 +18,58 @@ Public Sub _Call(logname As String, msg As String)
       Endif
       Try $LogFile = Open logname For Write Create
     Endif
-
+    
     If Error Then
       Error "Unable to open log file "; Quote(logname); " : "; Error.text
     Endif
   Endif
-
+  
   '  Try locker = Lock "/tmp" &/ User.id & "_gshlogger_lock" Wait 1.5
-
+  
   If Error Then
     Error ("Log lock failed : timed out : " & msg)
   Endif
-
+  
   Try Print #$LogFile, Format(Application.id, "#######0");; Format(Now, " yyyy/mm/dd hh:nn:ss.uuu");; msg
   Try Flush #$LogFile
-
+  
   ' Unlock locker
-
+  
 End
 
 Public Sub EndLog()
-
+  
   If $Logfile <> Null Then
     Try Close #$LogFile
   Endif
   $logfile = Null
-
+  
 End
 
 Public Sub logrotate(Optional rotateName As String = "gsh_log_" & CStr(Now) & ".rotate", MaxLength As Long = 1000000, DeleteAged As Integer = 90)
-
+  
   Dim locker As Stream
   Dim info As Stat
   Dim logfile As File
-
+  
   If Stat(User.home &/ "vars/gsh.log").size < MaxLength Then Return
-
+  
   Try locker = Lock "/tmp/" &/ User.id & "_gshlogger_lock" Wait 1.5
   If Error Then
     Error ("Logfile lock during log rotate timed out ")
   Endif
-
+  
   If $Logfile <> Null Then
     Try Close #$logfile
     $LogFile = Null
   Endif
-
+  
   Move User.home &/ "vars/gsh.log" To rotateName
   logfile = Open User.home &/ "vars/gsh.log" For Write Create
   Print #logfile, "Log rotated : " & Str(Now)
   Close #logfile
   Unlock locker
-
+  
   Dim oldest As Date = CDate(CDate(Now) - CDate(DeleteAged))                     ' calculate the date less the number of days to keep
   Dim filesList As String[] = Dir(User.home &/ "vars/", "*.rotate", gb.file)
   For Each sOldFile As String In fileslist
@@ -79,5 +79,5 @@ Public Sub logrotate(Optional rotateName As String = "gsh_log_" & CStr(Now) & ".
       Kill sOldFile
     Endif
   Next
-
+  
 End

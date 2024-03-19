@@ -1,20 +1,20 @@
 ' Gambas module file
 
 Public Sub RunScript(cmd As String) As Boolean
-
+  
   Return _call(cmd)
-
+  
 End
 
 Public Sub _call(cmd As String) As Boolean
-
+  
   Dim oldCommandMode As Boolean = gsh.CommandMode
   Dim OldSource As String = gsh.Source
   Dim oldAppSource As File = gsh.AppSource
   Dim fPath As String
-
+  
   cmd = Trim(Replace(cmd, "\"", ""))
-
+  
   If File.Dir(fPath) = "" Then
     fpath = Env["PWD"] &/ cmd
     If Not Exist(fpath) Then
@@ -27,12 +27,12 @@ Public Sub _call(cmd As String) As Boolean
       Endif
     Endif
   Endif
-
+  
   fpath = CreateCmdProgram.getfullpath(fpath)
-
+  
   gsh.CommandMode = True
   gsh.Source = "FILE"
-
+  
   Try gsh.AppSource = Open fpath For Read
   If Error Then
     Error ("Error : Gsh script: "); cmd; " -  "; Error.text
@@ -49,20 +49,20 @@ Public Sub _call(cmd As String) As Boolean
     Wend
     gsh.ReadQueue.Insert(SaveQueue)
   Endif
-
+  
   Close gsh.AppSource
   gsh.appSource = oldAppSource
   gsh.Source = OldSource
   gsh.CommandMode = OldCommandMode
   Return IIf(gsh.ReadQueue.count > 0, False, True)
-
+  
 Catch
-
+  
   Close gsh.AppSource
   gsh.appSource = oldAppSource
   gsh.Source = OldSource
   gsh.CommandMode = OldCommandMode
   Error "gsh RunScript :";; Error.Text;; Error.where
   Return IIf(gsh.ReadQueue.count > 0, False, True)
-
+  
 End

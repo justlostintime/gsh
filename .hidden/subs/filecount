@@ -60,13 +60,8 @@ Enum FTW_PHYS = 1, FTW_MOUNT = 2, FTW_CHDIR = 4, FTW_DEPTH = 8, FTW_ACTIONRETVAL
 Enum FTW_CONTINUE = 0, FTW_STOP = 1, FTW_SKIP_SUBTREE = 2, FTW_SKIP_SIBLINGS = 3
 
 'Flags passed to the user callback function
-Enum FTW_F,         'Regular file
-     FTW_D,         'Directory
-     FTW_DNR,       'UnReadable Directory
-     FTW_NS,        'Unstable file
-     FTW_SL,        'Symbolic link
-     FTW_DP,        'nftw only, Directory, all subdirs have been visited
-     FTW_SNL        'nftw only - Symbolic link naming non-existing file
+Enum FTW_F, FTW_D, FTW_DNR, FTW_NS,FTW_SL, FTW_DP, FTW_SNL
+'Regular file'Directory'UnReadable Directory 'Unstable file 'Symbolic link'nftw only, Directory, all subdirs have been visited'nftw only - Symbolic link naming non-existing file
 
 Public Struct FTW
        base As Integer             '  offset of the filename (i.e., basename component) in the pathname given In fpath.
