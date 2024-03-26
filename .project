@@ -69,4 +69,5 @@ Groups=ubuntu:"shells"
 ExtraFiles=*:"class\t/usr/share/gsh\ndoc\t/usr/share/gsh\nexamples\t/usr/share/gsh\nstruct\t/usr/share/gsh\nsubs\t/usr/share/gsh\nprofiles\t/usr/share/gsh\nnano\t/usr/share/gsh\nvim\t/usr/share/gsh\ngambas.nanorc\t/usr/share/nano\ngambas.vim\t/usr/share/vim/vim80/syntax\neditors\t/usr/share/gsh\ngambas.vim\t/usr/share/vim/vim81/syntax\nscripts\t/usr/share/gsh\nman1\t/usr/share/man\nlib\t/usr\ndoc\t/usr/share"
 Reference=../../../../usr/lib/gambas3/westwood/sharedmem:3.19.gambas
 Reference=../../../../usr/lib/gambas3/westwood/gb.scripter:3.19.gambas
+FileProperties={".hidden/subs":{"HighlightWith":"gambas"},".hidden/scripts":{"HighlightWith":"gambas"},".hidden/examples":{"HighlightWith":"gambas"},".hidden/struct":{"HighlightWith":"gambas"},".hidden/class":{"HighlightWith":"gambas"},".hidden/ReadlineInfo":{"HighlightWith":"c"},".hidden/profiles":{"HighlightWith":"sh"}}
 useterminal=1

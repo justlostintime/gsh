@@ -24,7 +24,7 @@ Public Sub _Call(logname As String, msg As String)
     Endif
   Endif
   
-  '  Try locker = Lock "/tmp" &/ User.id & "_gshlogger_lock" Wait 1.5
+  Try locker = Lock "/tmp" &/ User.id & "_gshlogger_lock" Wait 1.5
   
   If Error Then
     Error ("Log lock failed : timed out : " & msg)
@@ -33,7 +33,7 @@ Public Sub _Call(logname As String, msg As String)
   Try Print #$LogFile, Format(Application.id, "#######0");; Format(Now, " yyyy/mm/dd hh:nn:ss.uuu");; msg
   Try Flush #$LogFile
   
-  ' Unlock locker
+  Unlock locker
   
 End
 

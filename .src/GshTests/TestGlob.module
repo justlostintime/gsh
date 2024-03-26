@@ -15,11 +15,11 @@ Public Struct glob_t   'The structure definition used by the glob system functio
 End Struct
 
 Public Sub main()
-
+  
   Dim result As String[]
-
+  
   result = fileexpand("~/tmp/**")
-
+  
 End
 
 Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
@@ -30,7 +30,7 @@ Sub fileexpand(path As String, Optional dironly As Boolean = False, GlobStarForc
   ''   Returns a list of files as expanded by the shells
   ' Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
   ' Extern globfree(glob_def As Glob_t) In "libc:6"
-
+  
   Dim GLOB_ERR As Integer = Shl(1, 0)                     ' Return On Read errors. * /
   Dim GLOB_MARK As Integer = Shl(1, 1)                    ' Append a slash To Each name. * /
   Dim GLOB_NOSORT As Integer = Shl(1, 2)                  ' Don 't sort the names.  */
@@ -53,16 +53,16 @@ Sub fileexpand(path As String, Optional dironly As Boolean = False, GlobStarForc
   Dim CallResult As Integer
   Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
   Dim GlobStar As Boolean = (path Like "*\\*\\**" Or GlobStarForce)
-
+  
   If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
   CallResult = glob(path, flags, Null, sret)
-
+  
   If Callresult <> 0 Then
     Error.Raise("File Expansion Error :" & globerrors[CallResult])
   Endif
-
+  
   ReturnSet = sret.gl_pathv
-
+  
   For i As Integer = 0 To sret.gl_pathc - 1
     Dim rpath As String = String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i)))
     If rpath[rpath.len - 1] = "*" And If GlobStar = True Then
@@ -74,12 +74,12 @@ Sub fileexpand(path As String, Optional dironly As Boolean = False, GlobStarForc
       paths.Insert(fileexpand(rpath & "*", False, True))
     Endif
   Next
-
+  
   globfree(sret)
-
+  
   Return paths
-
+  
 Catch
   Error.Propagate()
-
+  
 End ' Gambas module file

@@ -21,7 +21,7 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
   "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
   "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
-  "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath"]
+  "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
@@ -1898,6 +1898,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
   Dim HTypes As Integer[]
   Dim hStart As Integer = 0
   Dim filename As String
+  Dim answer As String
   
   With sharedmem
     ' Moved to function bellow here
@@ -1970,7 +1971,12 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Dim parsepos As Integer = 0
     
     If InBufParse.count = 1 And If HTypes[0] = Highlight.symbol And If Not FunctionCommandOrexecVar(InBufParse[0]) Then
-      Error.Raise(("UnKnown command or function , Can Not Be executed ") & InBufParse[0])
+      Dim answers As String = ""
+      If sharedmem["SuggestCommand"] Then
+        Shell "apropos" & " " & InBufParse[0] To answers
+        answer = "Did you mean:\n" & answers
+      Endif
+      Error.Raise("Unkown command or function " & Quote(InBufParse[0]) & answers)
     Endif
     
   StartAgain:
@@ -2438,7 +2444,8 @@ Catch
   NoPreProcess = False
   BlockLevel = 0
   ''debug "Exit DOBLK"
-  Dim errormsg As String = "ifreader Error : " & Error.text & ": " & Error.where
+  'Dim errormsg As String = "ifreader Error : " & Error.text & ": " & Error.where
+  Dim errormsg As String = Error.text
   ' Error.Propagate()
   gshlogging(User.home &/ "vars/gsh.log", errormsg)
   Error.Raise(ErrorMsg)

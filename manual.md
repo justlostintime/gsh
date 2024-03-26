@@ -579,20 +579,23 @@ For example : ls /\*/\*/gsh/subs would be expanded by the shell to
 *\'/usr/share/gsh/subs\' before being passed to ls.*
 
 *Another example would be to echo /\*. this would echo a directory
-listing of the root directory*
+listing of the root directory* 
+
 ```
-  echo /**
+  echo /*
 ```
-*outputs:*
+*Outputs:*
+
 ```
-*/bin/ /boot/ /cdrom/ /core /dev/ /etc/ /home/ /initrd.img
+/bin/ /boot/ /cdrom/ /core /dev/ /etc/ /home/ /initrd.img
 /initrd.img.old /lib/ /lib32/ /lib64/ /libx32/ /lost+found/ /media/
 /mnt/ /oldhome/ /oldSrvToo/ /opt/ /proc/ /root/ /run/ /sbin/ /srv/
-/srvToo/ /sys/ /tmp/ /usr/ /var/ /vmlinuz /vmlinuz.old*
+/srvToo/ /sys/ /tmp/ /usr/ /var/ /vmlinuz /vmlinuz.old
 ```
-*echo \*\*/\* would recurse through all directories if \$globstar=true*
+*echo \*\*/\* would recurse through all directories if  $globstar=true*
 
 *Bash Brace Expansion is also supported*
+
 ```
   echo $"0..100"        ' will print 0 to 100
   touch $"tm{0..10}"    ' will touch files tm0 ... tm10
@@ -621,6 +624,7 @@ Outputs:
 We may also do the same thing using the Linux **echo** command.
 
 Try the following as well.
+
 ```
   > echo hello world
 ```
@@ -628,6 +632,7 @@ Furthermore, gsh allows the embedding of Linux commands into your
 script. Here is an example of that.
 
 ### Let's Print \"hello world\" Five Time in Basics and Five Times with CLI Command
+
 ```
  > for I as integer = 0 to 5
  >   ? "hello world";;i         ' internal Gambas print
@@ -656,10 +661,12 @@ first thing on the line.
 ### Let's Look at History
 
 You may recall lines and execute them from history by using the
+
 ```
   > 20!              ' <HistoryLinenumber!>  expression.
 ```
 Enter:
+
 ```
   > hist             ' which displays the entire history
 or
@@ -669,6 +676,7 @@ This will display a list of everything we have entered so far
 
 Look at the listing and find the line containing the start of the
 **for** loop. The output should look something like this:
+
 ```
   > hh
    [ 2]for I as integer = 0 to 10 
@@ -678,6 +686,7 @@ Look at the listing and find the line containing the start of the
 ```
 Now enter the history number containing the **for** keyword followed by
 an !
+
 ```
   > 2!
 ```
@@ -686,7 +695,8 @@ You should see "hello world" ten more times.
 If you made an error when entering you can use the edit history
 expression to change and rerun it.
 
-Let's change \"hello world\" to \"goodbye world.\"
+Let's change "hello world" to "goodbye world."
+
 ```
   > [3]hello/goodbye/            'This will change the "hello" to "goodbye"
                                   using regular expressions and syntax
@@ -694,16 +704,18 @@ Let's change \"hello world\" to \"goodbye world.\"
 **hh** 'We can see the change.
 
 Let's run it again.
+
 ```
   > 2!
 ```
-It prints \"goodbye world\" 5 times and \"hello world\" 5 times.
+It prints "goodbye world" 5 times and "hello world" 5 times.
 
 ### Let\'s Define a Function/Sub/Procedure
 
 All functions/sub/procedures are public so don't use public keyword.
 
 Type the following:
+
 ```
   > Sub mytest(msg as string) as string
   >   return upper(msg) & "one more"
@@ -714,14 +726,15 @@ function.
 
 Don't forget the end!
 
-Let\'s run our new function.
+Let's run our new function.
 ```
    ? mytest("this is a message")  'This will print the message in upper case to the console
 ```
 
-### Let\'s Write a Simple Gambas Short Program Interactively
+### Let's Write a Simple Gambas Short Program Interactively
 
 Improper script code:
+
 ```
    dim a as string = "this"       ' This will run but variable 'a' goes away
                                   ' as soon as the line executes.
@@ -730,6 +743,7 @@ Improper script code:
                                   ' unknown variable error.
 ```
 To clear the screen buffer, enter:
+
 ```
    clear                          'This will clear the screen.
 ' or
@@ -759,7 +773,7 @@ Any of these will print the value of 'a' correctly.
 
 We can add a call to our mytest in the lambda function or code block by editing it.
 
-### Let\'s Look at the edit Command
+### Let's Look at the edit Command
 ```
   > ? $editor      'This prints the editor defined as the default text editor.
   nano
@@ -778,17 +792,20 @@ In the editor we can change the code:
 Save the file to the provided file name and it will execute as soon as you save it. You may only
 edit the most recent lambda expression or logical code block.
 
-Let\'s change our mytest function to do something else.
+Let's change our mytest function to do something else.
+
 ```
    edit mytest
 ```
 Change the return line to
+
 ``` 
    return upper(msg) & "one more".
 ```
 Save it. It will compile but not run the function.
 
 Enter:
+
 ```
    ? mytest("this")        ' You should see '**THIS one more**
                            ' printed to the console.
@@ -807,11 +824,12 @@ We have also learned that each script line is executed as soon as the
 section of code is completed. And we learned that the lambda expression
 allows us to group Gambas code into related block for execution.
 
-### Let\'s Look at the Shell Interface to Linux Commands
+### Let's Look at the Shell Interface to Linux Commands
 
 To run a Linux CLI command, just enter it on the command line.
 
 For example:
+
 ```
    ls -l
 ```
@@ -821,7 +839,8 @@ This will produce the usual directory listing.
 
 Gambas keywords Execute the line as gambas code.
 
-Check statements in the following order:\
+Check statements in the following order:
+
 ```
   Defined user functions 
   Gambas functions 
@@ -834,6 +853,7 @@ command then you can force the command to be evaluated as a linux cli by
 adding a ! to the beginning of the line.
 
 For example:
+
 ```
    chmod "filename" to "rw-rw-rw"
    chmod 777 filename
@@ -841,6 +861,7 @@ For example:
 Both have the same name but executing the second line will give you an
 error regarding 'to' being missing. So to execute the cli use ! as
 follows
+
 ```
   > !chmod 777 filename
 ```
@@ -859,7 +880,7 @@ If you want the content evaluated you must us braces and brackets
 ```
 
 
-### Let\'s Look at Aliases and Alias Substitution
+### Let's Look at Aliases and Alias Substitution
 
 Alias substitution is performed on the line before being passed to the
 shell parser. "ls" has an alias defined in the profile.gsh file.
@@ -868,6 +889,7 @@ Let's look at the aliases currently defined as default aliases in the
 profile.gsh file.
 
 Enter the following command:
+
 ```
    alias
 ```
@@ -876,31 +898,36 @@ You should see a list of current aliases.
 You may create or delete aliases using the **alias** command.
 
 For example:
+
 ```
    alias hello='? "hello world"'
 ```
 Notice the single quote around the definition. This is required.\
 Enter:
+
 ```
    alias
 ```
 You should see our new alias listed.\
 Now enter:
+
 ```
   > hello
 ```
-We should see \"hello world\" printed. Now let\'s delete our alias.
+We should see "hello world" printed. Now let's delete our alias.
+
 ```
    alias hello=
 ```
 This deleted the definition; we can list them again and see that it's
 gone.
+
 ```
    alias
 ```
 Changing an alias is simple process of redefining it.
 
-### Let\'s Look at Global Variables
+### Let's Look at Global Variables
 
 Global variables persist across command blocks, restarting **gsh**, and
 are available to tasks and processes using the same in-memory database.
@@ -914,6 +941,7 @@ type of data assigned to them. These are dynamically typed and may be changes
 except when a process has asked to be notified if the variable changes.
 
 Enter at the  >  prompt:
+
 ```
   $a = "this is a string"    ' This will work well.
   ? $a                       ' This will print $a.

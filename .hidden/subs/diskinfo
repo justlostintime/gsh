@@ -32,23 +32,23 @@ For Each diskset As String In disks
         If Results.count > 0 Then Partitions.add(Results.Sort())
 Next
 
-try plisting(disks, "Disks")
+Try plisting(disks, "Disks")
 For i As Integer = 0 To Disks.max
-    try plisting(Partitions[i], "Disk Partitions " & Disks[i])
+    Try plisting(Partitions[i], "Disk Partitions " & Disks[i])
 Next
 
-print "Partition Information .............................."
+Print "Partition Information .............................."
 For i = 0 To Disks.max
-  print "Disk > ";
-  try printInformation(Disks[i], statmap)
-  if i > partitions.max then continue
+  Print "Disk > ";
+  Try printInformation(Disks[i], statmap)
+  If i > partitions.max Then Continue
   For j As Integer = 0 To Partitions[i].Max
-   print "Partition > ";
-    try printInformation(Disks[i] &/ Partitions[i][j], statmap)
+   Print "Partition > ";
+    Try printInformation(Disks[i] &/ Partitions[i][j], statmap)
   Next
 Next
 
-print "Mount Points ......................................."
+Print "Mount Points ......................................."
 ' get mount points
 Dim mounts As String[] = Split(file.load("/proc/mounts"), "\n", "", True, True)
 
@@ -65,14 +65,14 @@ Dim labels As String[] = Dir("/dev/disk/by-label") ' each is a link to the devic
 
 
 
-try plisting(mounts, "Mounted Devices", "/dev*") ' change /dev to UUID if your system uses that
+Try plisting(mounts, "Mounted Devices", "/dev*") ' change /dev to UUID if your system uses that
 
 For i As Integer = 0 To labels.Max
     Dim st As Stat
     Try st = Stat("/dev/disk/by-label" &/ labels[i])
     Try labels[i] = prtlen(Replace(labels[i], "\\x20", " "), 20) & "-> " & File.Name(st.link)
 Next
-try plisting(labels, "Labels of disks")
+Try plisting(labels, "Labels of disks")
 
 Print "Complete"
 
@@ -87,8 +87,8 @@ Sub printInformation(DiskInfo As String, StatMap As String[])
     Dim dSize As String = file.load("/sys/block/" &/ DiskInfo &/ "/size")
     Dim Blocks As Float = CFloat(Trim(dsize) & ".0")
     Print "Size of " & diskInfo & "  :";; Format(((blocks * 512.0) / 1000000000.0) + 0.001, "####0.0");; " Gigabytes, ";; Format(blocks * 512.0, "###,###,###,###,##0");; "Bytes\n"
-catch
-   return
+Catch
+   Return
 End
 
 
@@ -107,8 +107,8 @@ Sub plisting(source As String[], title As String, Optional filter As String = "*
     Endif
     Next
     Print
-catch
-   return
+Catch
+   Return
 End
 
 '' Set a fixed length to the text being displayed

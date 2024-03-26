@@ -1,11 +1,11 @@
-Class gshhighlight
+Class Gshhighlight
 
-  use "gb.highlight","gb.eval"
+  Use "gb.highlight", "gb.eval"
 
-  Public highlighter as texthighlighter = texthighlighter["gambas"]
+  Public highlighter As Texthighlighter = texthighlighter["gambas"]
 
-  Public sub ToConsole(text as string ) as string
-   return highlighter.ToAnsi(text)
-  end
+  Public Sub ToConsole(text As String) As String
+   Return highlighter.ToAnsi(text)
+  End
 
-end class
+End Class

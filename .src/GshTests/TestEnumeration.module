@@ -5,16 +5,16 @@ Class SharedMem
 Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant ' process a text value with enumeration
   '' Will return an enumerated text vale as an array of string values
   '' much like the bash braced enumeration
-
+  
   ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
   '     Return IIf(CheckOnly = True, False, Null)
   ' Endif
-
+  
   'If checkonly = True Then Return True
   Dim expandsets As String[] = Split(value, " ", " ''", True, True)
   Dim FirstSet As String[]
   Dim intermresults As New String[]
-
+  
   For Each eitem As String In expandsets
     FirstSet = enumerateloop(eitem)
     If FirstSet.count = 0 Then Continue
@@ -28,15 +28,15 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
     Endif
   Next
   Return IntermResults
-
+  
 End
 
 Sub enumerateloop(value As String) As String[] ' loop here until completed
-
+  
   Dim finalresult As New String[]
-
+  
   Dim leftbrace, rightbrace As Integer
-
+  
   leftbrace = InStr(value, "{")
   rightbrace = matchbrace(value, leftbrace)
   If leftbrace > 0 Then
@@ -51,7 +51,7 @@ Sub enumerateloop(value As String) As String[] ' loop here until completed
     sRight = ""
     sEnum = value
   Endif
-
+  
   Dim result As String[]
   result = getenum(sEnum)
   For i As Integer = 0 To result.Max
@@ -63,31 +63,31 @@ Sub enumerateloop(value As String) As String[] ' loop here until completed
     Endif
   Next
   Return finalresult
-
+  
 End
 
 Sub matchbrace(src As String, start As Integer) As Integer
-
+  
   Dim level As Integer = 1
-
+  
   Inc start
   For i As Integer = start To src.len - 1
     If src[i] = "{" Then Inc level
     If src[i] = "}" Then Dec level
     If level = 0 Then Return i + 1  ' we are working with strings
   Next
-
+  
   Return 0
-
+  
 End
 
 Private EnumParser As New ParseParm(False, [",", " "], ["{", "}", "\"", "\""])
 
 Sub getenum(enumdef As String) As String[]
-
+  
   Dim toEnum As String[] = Parser(enumdef, EnumParser)
   Dim result As New String[]
-
+  
   For Each s As String In toEnum
     If InStr(s, "{") Then
       result.Insert(enumerate(s))
@@ -95,36 +95,36 @@ Sub getenum(enumdef As String) As String[]
       Dim enumset As String[] = Split(s, ".", "", True)
       Dim enumStart As String = enumset[0]
       Dim enumend As String = enumset[1]
-
+      
       If IsNumber(EnumStart) Then
-
+        
         Dim nStart As Integer = EnumStart
         Dim nEnd As Integer = EnumEnd
         Dim nStep As Integer = IIf(nStart < nEnd, 1, -1)
         For i As Integer = nStart To nEnd Step nStep
           result.Add(i)
         Next
-
+        
       Else
-
+        
         Dim bStart As Byte = CByte(Asc(EnumStart, 1))
         Dim bEnd As Byte = CByte(Asc(EnumEnd, 1))
         Dim bStep As Integer = IIf(bStart < bEnd, 1, -1)
         For b As Byte = bStart To bEnd Step bStep
           result.Add(Chr(b))
         Next
-
+        
       Endif
     Else
       result.Add(s)
     Endif
   Next
   Return result
-
+  
 End
 
 Public Sub main()
-
+  
   SharedMem.Begin(1920000)
   printit(enumerate("/home/brian/tmp/*{0..9}*"))
   printit(enumerate("dshsdahdhsd,asddasd,adsasdd,asdasdasd"))
@@ -143,11 +143,11 @@ Public Sub main()
   printit(enumerate(Application.name & "this{that, 10..1, c{a..y}}XXX{6..9}"))
   printit(enumerate(Application.name & "this{that, 10..1, c{a..y}}XXX{6..9}-a" & Space(5) & "o"))
   SharedMem.end()
-
+  
 End
 
 Sub printit(var As String[])
-
+  
   If IsNull(var) Then
     Print "Nothing to print"
     Return
@@ -155,7 +155,7 @@ Sub printit(var As String[])
   For Each s As String In var
     Print s
   Next
-
+  
 End
 
 Public Struct glob_t   'The structure definition used by the glob system function
@@ -178,7 +178,7 @@ Extern globfree(glob_def As Glob_t) In "libc:6"
 Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[] ' Calls Glob to get list of file
   '' fileexpand(Path as string, optional DirOnly as boolean) as string()
   ''   Returns a list of files as expanded by the shells
-
+  
   ' Dim GLOB_ERR As Integer = Shl(1, 0)                     ' Return On Read errors. * /
   ' Dim GLOB_MARK As Integer = Shl(1, 1)                    ' Append a slash To Each name. * /
   ' Dim GLOB_NOSORT As Integer = Shl(1, 2)                  ' Don 't sort the names.  */
@@ -209,34 +209,34 @@ Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[] 
   Dim GLOB_TILDE As Integer = &h1000              ' Expand ~user and ~ to home directories. */
   Dim GLOB_ONLYDIR As Integer = &h2000           ' Match only directories. * /
   Dim GLOB_TILDE_CHECK As Integer = &h4000
-
+  
   Dim globerrors As String[] = ["System Error", "No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
   Dim Paths As New String[]
   Dim sret As New Glob_t
   Dim ReturnSet As Pointer
   Dim CallResult As Integer
   Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
-
+  
   If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
   CallResult = glob(path, flags, Null, sret)
-
+  
   If Callresult <> 0 Then
     Error.Raise("File Expansion Error :" & globerrors[CallResult + 1])
   Endif
-
+  
   ReturnSet = sret.gl_pathv
-
+  
   For i As Integer = 0 To sret.gl_pathc - 1
     Paths.Add(String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i))))
   Next
-
+  
   globfree(sret)
-
+  
   Return paths
-
+  
 Catch
-
+  
   Print Error.text, Error.where
   Error.Propagate()
-
+  
 End

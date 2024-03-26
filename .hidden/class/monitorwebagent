@@ -1,113 +1,113 @@
-class monitorwebagent  'This class is used by the monitor web App to check in backgraound if var changes'
+Class Monitorwebagent  'This class is used by the monitor web App to check in backgraound if var changes'
 ''          It notifies the forground app when the website is down
 ''
-inherits task
+Inherits Task
 
-Private MonitorWebTimer as timer
-Public MonitorWebAddr as string = ""
-Public ExpectedReturn as string = "" ' "*HTTP/1.1 200 OK*"
-static public ControlVariable as string = "monweb"
-Public MonitorTimeOut as integer = 15 ' timeout in seconds
-Public MonitorPollTime as integer = 30000 ' time in milliseconds
-Public MonitorNotifyEmail as string = ""
-Public MonitorNotifyHost as string = ""
-Public MonitorNotifyUser as string = ""
-Public MonitorNotifyPwd as string = ""
-Public MonitorNotifyPort as integer = 0
-Public MonitorMissedCount as integer = 0
-Private SendCount as integer = 3            ' number of missed or incorrect responses before email sent
-Private errorexit as boolean = false
+Private MonitorWebTimer As Timer
+Public MonitorWebAddr As String = ""
+Public ExpectedReturn As String = "" ' "*HTTP/1.1 200 OK*"
+Static Public ControlVariable As String = "monweb"
+Public MonitorTimeOut As Integer = 15 ' timeout in seconds
+Public MonitorPollTime As Integer = 30000 ' time in milliseconds
+Public MonitorNotifyEmail As String = ""
+Public MonitorNotifyHost As String = ""
+Public MonitorNotifyUser As String = ""
+Public MonitorNotifyPwd As String = ""
+Public MonitorNotifyPort As Integer = 0
+Public MonitorMissedCount As Integer = 0
+Private SendCount As Integer = 3            ' number of missed or incorrect responses before email sent
+Private errorexit As Boolean = False
 
-Private hClient as httpclient
+Private hClient As Httpclient
 
-public Sub main()
+Public Sub main()
 
-with sharedmem
-    USE "gb.net","gb.net.curl","gb.pcre","gb.net.smtp"
-    .[controlvariable] = true    ' this creates or resets controlvariable when reset stops this task        
-    MonitorWebTimer =  new timer as "monitorcheck" 
+With sharedmem
+    Use "gb.net", "gb.net.curl", "gb.pcre", "gb.net.smtp"
+    .[controlvariable] = True    ' this creates or resets controlvariable when reset stops this task        
+    MonitorWebTimer = New Timer As "monitorcheck" 
     MonitorWebTimer.Delay = MonitorPollTime
-    MonitorWebTimer.enabled = true
-    while .[ControlVariable] = true or ErrorExit = true
-        wait 10.00
-    wend
-    print "MonitorWeb Agent: Exit monitor agent for ";;MonitorWebAddr
-end with
-end
+    MonitorWebTimer.enabled = True
+    While .[ControlVariable] = True Or ErrorExit = True
+        Wait 10.00
+    Wend
+    Print "MonitorWeb Agent: Exit monitor agent for ";; MonitorWebAddr
+End With
+End
 
-public sub monitorcheck_timer()
+Public Sub monitorcheck_timer()
 'print "poll web address"
 
-hclient =  new httpclient as "hclient"
+hclient = New Httpclient As "hclient"
 hclient.URL = MonitorWebAddr
-hClient.async = true
+hClient.async = True
 hClient.timeout = MonitorTimeOut
-try hClient.get()
-if error then 
-    sendemail("MonitorWeb agent Error:"&error.text&""&error.where,true)
-    return
-endif
+Try hClient.get()
+If Error Then 
+    sendemail("MonitorWeb agent Error:" & error.text & "" & error.where, True)
+    Return
+Endif
 
-if hclient.status < 0 then
-	sendemail("MonitorWeb Server "&MonitorWebAddr&" Not responding correctly :"&hClient.reason,true)
-endif
+If hclient.status < 0 Then
+ sendemail("MonitorWeb Server " & MonitorWebAddr & " Not responding correctly :" & hClient.reason, True)
+Endif
 
-end
+End
 
-public sub hClient_error()
-    SendEmail("MonitorWeb error :"&MonitorWebAddr&" Response error :"&hclient.reason,true)
-end
+Public Sub hClient_error()
+    SendEmail("MonitorWeb error :" & MonitorWebAddr & " Response error :" & hclient.reason, True)
+End
 
-Public sub hClient_finished()
+Public Sub hClient_finished()
 
-dim sBuffer as string = ""
+Dim sBuffer As String = ""
 
-if lof(hclient) Then sBuffer = read #hClient, lof(hClient)
+If Lof(hclient) Then sBuffer = Read #hClient, Lof(hClient)
 
-if ExpectedReturn <> "" and if not regexp.match(sBuffer,ExpectedReturn,regexp.caseless) then
-      SendEmail("Unexpected Response from "&MonitorWebAddr&" Got='"&left(sBuffer,20)&"' Expected='"&ExpectedReturn&"'",false)
-else
+If ExpectedReturn <> "" And If Not regexp.match(sBuffer, ExpectedReturn, regexp.caseless) Then
+      SendEmail("Unexpected Response from " & MonitorWebAddr & " Got='" & Left(sBuffer, 20) & "' Expected='" & ExpectedReturn & "'", False)
+Else
     MonitorMissedCount = 0
     SendCount = 3
     'print MonitorWebAddr ;; "is alive!"
-endif
+Endif
 
-catch
- SendEmail("MonitorWeb Internal Error:"&error.text&" "&error.where,true)
-end
+Catch
+ SendEmail("MonitorWeb Internal Error:" & error.text & " " & error.where, True)
+End
 
-sub SendEmail(message as string, HaltTask as boolean)
+Sub SendEmail(message As String, HaltTask As Boolean)
     'Print "Sendmail"
-    if not HaltTask then
-        inc MonitorMissedCount
+    If Not HaltTask Then
+        Inc MonitorMissedCount
         'print "Notify email = ";MonitorNotifyEmail
        
-        if (MonitorMissedCount mod sendcount) <> 0  then return
+        If (MonitorMissedCount Mod sendcount) <> 0 Then Return
     
         sendcount = 20                      ' after first send then every 20
-    endif
+    Endif
     
-    if MonitorNotifyEmail = "" then
-        print
-        print "MonitorWeb Agent Message:";message
-        return
-    endif
+    If MonitorNotifyEmail = "" Then
+        Print
+        Print "MonitorWeb Agent Message:"; message
+        Return
+    Endif
     
-    dim email as new smtpclient
+    Dim email As New Smtpclient
    
     email.host = MonitorNotifyHost
-    if MonitorNotifyUser <> "" then email.user = MonitorNotifyuser
-    if MonitorNotifyPwd <> "" then  email.password = MonitorNotifyPwd
+    If MonitorNotifyUser <> "" Then email.user = MonitorNotifyuser
+    If MonitorNotifyPwd <> "" Then email.password = MonitorNotifyPwd
     email.from = MonitorNotifyEmail
     email.to.add(MonitorNotifyEmail)
-    Email.Subject = "Host Not Responding "&MonitorWebAddr
-    Email.Body = MonitorWebAddr&":"&message
+    Email.Subject = "Host Not Responding " & MonitorWebAddr
+    Email.Body = MonitorWebAddr & ":" & message
     'print "sending email"
     Email.send
-    wait
+    Wait
     
-    if HaltTask then errorexit = true
+    If HaltTask Then errorexit = True
     
-end
+End
 
-end class
+End Class

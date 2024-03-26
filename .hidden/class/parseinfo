@@ -1,4 +1,4 @@
-class ParseInfo
+Class ParseInfo
 
 Public seperators As String[]
 Public operators As String[]
@@ -16,21 +16,21 @@ Public KeepQuote As Boolean
 Public syms As New String[]
 Public types As New Integer[]
 
-Public Sub _new(optional SetDefaults As Boolean = true, ops As String[] = [":"], qs As String[] = ["\"", "\""], sep As String[] = [" ", ","], Special As Boolean = False, LeaveQuotes As Boolean = True)
+Public Sub _new(Optional SetDefaults As Boolean = True, ops As String[] = [":"], qs As String[] = ["\"", "\""], sep As String[] = [" ", ","], Special As Boolean = False, LeaveQuotes As Boolean = True)
   
 If SetDefaults Then
- seperators = [" ","\n"]
- operators = [":",","]
+ seperators = [" ", "\n"]
+ operators = [":", ","]
  SpecialSymbols = ["{", "}"]
  quotes = ["\"", "\"", "`", "`"]
- braces = ["{", "}","(",")"]
+ braces = ["{", "}", "(", ")"]
  comments = ["'"]
  endofline = ["\n"]
  IgnoreChar = New String[]
  keywords = New String[]
  DoFileExpand = False
  KeepQuote = True
- DoSpecial = false
+ DoSpecial = False
 Else
  seperators = sep
  operators = ops
@@ -45,6 +45,6 @@ Else
  KeepQuote = LeaveQuotes
  DoSpecial = special
 Endif
-end
+End
 
-End class
+End Class

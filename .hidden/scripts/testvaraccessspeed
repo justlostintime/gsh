@@ -1,51 +1,51 @@
 #!/usr/bin/env gsh
-do
- with sharedmem
-   print "Test each of the methods for access/updating a gsh variable, this can take a while"
-   print "The test for each type is execute 1,000,000 times\n"
-   print "Test Speed to Access script Variables using $varname access method, locking"
-   dim starttime as float = timer
-   dim i as integer = 0
-   dim a as pointer
-   dim b as SharedMemSymbol
+Do
+ With sharedmem
+   Print "Test each of the methods for access/updating a gsh variable, this can take a while"
+   Print "The test for each type is execute 1,000,000 times\n"
+   Print "Test Speed to Access script Variables using $varname access method, locking"
+   Dim starttime As Float = Timer
+   Dim i As Integer = 0
+   Dim a As Pointer
+   Dim b As SharedMemSymbol
 
    $i = 59
-   for i = 0 to 1000000
-     if i % 100000 = 0 then print $i
-     inc $i
-   next
-   print "Total time ";timer - starttime
+   For i = 0 To 1000000
+     If i % 100000 = 0 Then Print $i
+     Inc $i
+   Next
+   Print "Total time "; Timer - starttime
 
-   print "Test Speed to Access script Variables using Symbol object access method, locking"
-   starttime = timer
+   Print "Test Speed to Access script Variables using Symbol object access method, locking"
+   starttime = Timer
    $i = 89
    b = .symboltable["i"]
-   for i = 0 to 1000000
-      if i % 100000 = 0 then print b.value
-      inc b.value
-   next
-   print "Total time ";timer - starttime
+   For i = 0 To 1000000
+      If i % 100000 = 0 Then Print b.value
+      Inc b.value
+   Next
+   Print "Total time "; Timer - starttime
 
-   print "Test Speed to Access script Variables using mem access interface, no locking"
-   starttime = timer
+   Print "Test Speed to Access script Variables using mem access interface, no locking"
+   starttime = Timer
    $i = 98
    a = ._varptr("i")
-   for i = 0 to 1000000
-      if i % 100000 = 0 then print .usermem[a]
-      inc .usermem[a]
-   next
-   print "Total time ";timer - starttime
+   For i = 0 To 1000000
+      If i % 100000 = 0 Then Print .usermem[a]
+      Inc .usermem[a]
+   Next
+   Print "Total time "; Timer - starttime
 
-   print "Test Speed to Access script Variables using integer@ptr access method, no locking"
-   starttime = timer
+   Print "Test Speed to Access script Variables using integer@ptr access method, no locking"
+   starttime = Timer
    $i = 99
-   b  = .symboltable["i"]
-   a  = b.Dataptr()
-   print a, integer@(a)
-   for i = 0 to 1000000
-      if i % 100000 = 0 then print integer@(a)
-      integer@(a) = integer@(a) + 1
-   next
-   print "Total time ";timer - starttime
-end with
+   b = .symboltable["i"]
+   a = b.Dataptr()
+   Print a, Integer@(a)
+   For i = 0 To 1000000
+      If i % 100000 = 0 Then Print Integer@(a)
+      Integer@(a) = Integer@(a) + 1
+   Next
+   Print "Total time "; Timer - starttime
+End With
 done

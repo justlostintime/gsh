@@ -7,20 +7,20 @@ Sub filecount(...) ' Count the number of files
 Extern ftw(dirpath As String, CalledFunction As Pointer, NumOpenFd As Integer) As Integer In "libc:6"
 Extern nftw(dirpath As String, CalledFunction As Pointer, NumOpenFd As Integer, flags As Integer) As Integer In "libc:6"
 
-Public FlagsText As String[] = ["File                        ", "Directory                   ","Unreadable Dir              ","Unstable File               ", "Sym Link                    ", "Dir All Subs Visited        ","Sym Link Naming Non Existant"]
+Public FlagsText As String[] = ["File                        ", "Directory                   ", "Unreadable Dir              ", "Unstable File               ", "Sym Link                    ", "Dir All Subs Visited        ", "Sym Link Naming Non Existant"]
 Public totalfiles As Long = 0
 Public TotalDirectories As Long = 0
-Public OpenFiles as integer = 256
-dim DirPath as string = "."
+Public OpenFiles As Integer = 256
+Dim DirPath As String = "."
 
-  if param.count = 0 then 
+  If param.count = 0 Then 
      PrintInfo(DirPath)
-     return
-  endif
+     Return
+  Endif
 
-  for each DirPath in param
+  For Each DirPath In param
    PrintInfo(DirPath)
-  next
+  Next
   
 
 '  nftw(User.home, ftwprocess2, 64, FTW_PHYS) ' only phsical files no symlinks
@@ -28,13 +28,13 @@ dim DirPath as string = "."
 
 End
 
-Private Sub PrintInfo(DirPAth as string)
-  Print "File/Directory Count for : ";DirPath
+Private Sub PrintInfo(DirPAth As String)
+  Print "File/Directory Count for : "; DirPath
   TotalDirectories = 0
   TotalFiles = 0
   FTW(DirPath, ftwprocess, OpenFiles)
   Print "FTW : Total Directories =";; Format(TotalDirectories, "########0"), "Total Files =";; totalFiles
-end
+End
 
 
 Public Sub ftwProcess(fpath As String, sb As Pointer, typeflag As Integer) As Integer
@@ -60,7 +60,7 @@ Enum FTW_PHYS = 1, FTW_MOUNT = 2, FTW_CHDIR = 4, FTW_DEPTH = 8, FTW_ACTIONRETVAL
 Enum FTW_CONTINUE = 0, FTW_STOP = 1, FTW_SKIP_SUBTREE = 2, FTW_SKIP_SIBLINGS = 3
 
 'Flags passed to the user callback function
-Enum FTW_F, FTW_D, FTW_DNR, FTW_NS,FTW_SL, FTW_DP, FTW_SNL
+Enum FTW_F, FTW_D, FTW_DNR, FTW_NS, FTW_SL, FTW_DP, FTW_SNL
 'Regular file'Directory'UnReadable Directory 'Unstable file 'Symbolic link'nftw only, Directory, all subdirs have been visited'nftw only - Symbolic link naming non-existing file
 
 Public Struct FTW

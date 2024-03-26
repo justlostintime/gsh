@@ -42,11 +42,11 @@ Public MyReg As New Regexp
 Public MyParams As New String[20]
 
 Public Sub MakeAbs(newdir As String) As String
-
+  
   'Dim sPath As String = Trim(newdir)
   Dim sPathSplit As String[] = Split(newdir, "/", "", True)
   Dim pwds As New String[]
-
+  
   If sPathSplit.count = 0 Then
     Return newdir
   Else If sPathSplit.count = 1 Then
@@ -56,18 +56,18 @@ Public Sub MakeAbs(newdir As String) As String
       Select Case SDir
         Case "~"
           If pwds.count = 0 Then pwds.insert(Split(user.home, "/", "", True))
-
+          
         Case "."
           If pwds.count = 0 Then pwds.insert(Split(env["PWD"], "/", "", True))
-
+          
         Case ".."
           If pwds.count > 0 Then pwds.remove(pwds.max)
-
+          
         Default
           pwds.add(sdir)
-
+          
       End Select
-
+      
       Dim RealPath As String = "/" & pwds.join("/")
       Dim StatInfo As Integer = Stat(RealPath).mode
       If Not Exist(RealPath) Then
@@ -75,23 +75,23 @@ Public Sub MakeAbs(newdir As String) As String
       Else If (StatInfo And &h49) = 0
         Error.Raise("Command file : [" & RealPath & "] Not executable")
       Endif
-
+      
     Next
   Endif
-
+  
   If pwds.count > 0 Then
     Return RealPath
   Else
     Return "/"
   Endif
-
+  
 End
 
 Public Sub getfullpath(filename As String) As String
-
+  
   Dim expandedList As String[]
   Dim pwds As New String[]
-
+  
   Select Case filename[0]
     Case "/", "~", ".", ".."
       ' do nothing
@@ -99,9 +99,9 @@ Public Sub getfullpath(filename As String) As String
     Default
       filename = "." &/ filename
   End Select
-
+  
   expandedList = DoGlob(filename)
-
+  
   If expandedlist.count <> 1 Then
     Error.Raise("Too many files match [" & expandedlist.Join(" ; ") & "]")
   Endif
@@ -110,55 +110,55 @@ Public Sub getfullpath(filename As String) As String
       Error.Raise("File not found [" & filename & "]")
     Endif
   Endif
-
+  
   Dim sPathSplit As String[] = Split(expandedlist[0], "/", "", True)
-
+  
   For Each Sdir As String In sPathSplit
     Select Case SDir
       Case "~"
         If pwds.count = 0 Then pwds.insert(Split(user.home, "/", "", True))
-
+        
       Case "."
         If pwds.count = 0 Then pwds.insert(Split(env["PWD"], "/", "", True))
-
+        
       Case ".."
         If pwds.count > 0 Then pwds.remove(pwds.max)
-
+        
       Default
         pwds.add(sdir)
-
+        
     End Select
-
+    
   Next
-
+  
   If pwds.count > 0 Then
     Return "/" &/ pwds.join("/")
   Else
     Return "/"
   Endif
-
+  
 End
 
 '' This function will compile a Standard(SH) shell CLI line into gambas syntax
 Public Sub _call(Source As String, Optional AsFunction As Boolean = False) As String
-
+  
   Return compile(source, AsFunction)
-
+  
 End
 
 Private AutoFuncName As Integer = 0
 
 Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns a correctly created program to run the command
-
+  
   Dim lines As New String[]
   Dim FinalProgram As String = ""
   Dim BraceLevel As Integer = 0
   Dim AndOrLevel As Integer = 0
   Dim AndOrLevelStack As New Integer[]
   Dim i As Integer
-
+  
   lines = Parser(Source, Null, True)
-
+  
   For i As Integer = 0 To lines.max
     If Lines[i] = "" Then Continue
     If i > 0 Then lines[i] = AliasReplace(lines[i])
@@ -184,7 +184,7 @@ Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, Ret
         FinalProgram &= "Endif\n"
         Dec BraceLevel
         AndOrLevel = AndOrLevelStack.Pop()
-
+        
       Default
         FinalProgram &= DoProcess(lines[i], AsFunction, ReturnSet)
         If AndOrLevel Then
@@ -193,11 +193,11 @@ Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, Ret
         Endif
     End Select
   Next
-
+  
   If BraceLevel > 0 Or BraceLevel < 0 Then Error.raise("Incorrect(unbalanced)  usage of '()' Braces in CLI")
   If AndOrLevel Then Finalprogram &= "Endif\n"
   '   FinalProgram &= "Catch\nError \"gsh error:\" & error.text \n"
-
+  
   If AsFunction Then
     Dim AutoFunc As String
     Dim AutoName As String = "FuncGen" & AutoFuncName
@@ -207,37 +207,37 @@ Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, Ret
     Else
       AutoFunc = "Sub " & AutoName & "() as integer\n" & FinalProgram & "\nReturn Process.LastValue\nend\n"
     Endif
-
+    
     gsh.LinkTable.Add(AutoFunc, AutoName)
     FinalProgram = AutoName & "()"
   Endif
-
+  
   Return FinalProgram
-
+  
 End
 
 Public Sub IsGlob(Exp As String) As Boolean
-
+  
   Select Case exp[0]
     Case "@", "/", "~"
       Return True
-
+      
     Case "."
       If exp[1] = "/" Then Return True
       If exp.len = 1 Then Return True
       Return False
-
+      
     Default
       If InStr(exp, "*") Then Return True
-
+      
   End Select
-
+  
   Return False
-
+  
 End
 
 Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
-
+  
   Dim CurrentCmd As Integer                             ' Index of the command we are processing
   Dim i As Integer                                                    ' Index of current symbol within the command
   Dim j As Integer                                                    ' Index general
@@ -269,7 +269,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
   Dim x As String[]
   Dim y As Integer[]
   Dim z As Integer[]                                                 ' Gambas class file
-
+  
   CmdExec = New String[]                                  ' this will contain the exec line for each command
   CmdIo = New String[]                                       ' this will contain the read functions for each command or rd wr if inside pipe stream
   CmdErr = New String[]                                     ' Function if errors are captured
@@ -291,17 +291,17 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
   NoErrRedirect = New Boolean[]                       ' default to True
   NeedsSTDERRWrite = New Boolean[]            ' default to  False
   BaseName = "r" & Str(Rand(9999))
-
+  
   'Dim NextedFinals As String[]        ' this is where the generated && and || will be statcked until added to final final
-
+  
   parseline(Source)                   ' Parse the line and set the syms and types
-
+  
   CurrentRead = 0      ' The proc to read from
   'Dim CurrentWrite As Integer = -2   ' On the first pass we dont know where to write to
   x = New String[]
   y = New Integer[]
   z = New Integer[]
-
+  
   CmdList.Add(x)    ' Setup entries for first command
   CmdTypes.Add(y)
   CmdExec.Add("")
@@ -317,7 +317,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
   NeedsSTDIOWrite.Add(False)
   NoErrRedirect.Add(True)
   NeedsSTDERRWrite.Add(False)
-
+  
   i = 0                     ' bypass the first ! command notation
   Do                        ' Break the command down into pipes
     sym = syms[i]
@@ -345,9 +345,9 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         NeedsSTDIOWrite.Add(False)
         NoErrRedirect.Add(True)
         NeedsSTDERRWrite.Add(False)
-
+        
         Continue
-
+        
       Case "|>"
         x = New String[]
         y = New Integer[]
@@ -371,7 +371,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         NoErrRedirect.Add(True)
         NeedsSTDERRWrite.Add(False)
         Continue
-
+        
       Case "|<"
         x = New String[]
         y = New Integer[]
@@ -394,30 +394,30 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         NoErrRedirect.Add(True)
         NeedsSTDERRWrite.Add(True)
         Continue
-
+        
       Default
         CmdList[CmdCount].Add(sym)
         CmdTypes[CmdCount].Add(types[i])
-
+        
     End Select
-
+    
     Inc i
     gsh.LinkTable.Add("Private cmdBuild as new string[]\n", "cmdBuild")
   Loop Until i > syms.max
-
+  
   For CurrentCmd = 0 To CmdList.Max
     If currentCmd > 0 Then
       DoAlias(CmdList, CmdTypes, currentcmd)
     Endif
     Dim bFirst As Boolean = True
     gsh.LinkTable.Add("Public mProc" & BaseName & Str(CurrentCmd) & " As Process\n", "mProc" & BaseName & Str(CurrentCmd))
-
+    
     If CmdKill[CurrentCmd] = "" Then CmdKill[CurrentCmd] = SetKillSub(CurrentCmd, basename)
-
+    
     CmdExec[CurrentCmd] = "cmdBuild.clear()\n"
-
+    
     BuildBlock = ""
-
+    
     For i = 0 To CmdList[CurrentCmd].max
       If i > CmdList[CurrentCmd].max Then Break ' we change the size of the array so need a live check
       Sym = CmdList[CurrentCmd][i]
@@ -428,9 +428,9 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
           If Error Or If sym = "" Then Error.Raise("Pipe Fitting error: Command/Function [" & CmdList[CurrentCmd][i] & "] Unknown")
         Endif
       Endif
-
+      
       Select Case sym
-
+          
         Case "&" ' error redirection we hope or send to bg
           If CurrentCmd = CmdList.max And i = CmdList[CurrentCmd].max Then 'we have a background request
             WaitCompletion = False
@@ -439,56 +439,56 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
             ' ignore the & if not in last position
             Error.Raise(" & not last symbol in command for background request")
           Endif
-
+          
         Case "&>", "&>>"   ' redirect error stream to object or file, clear or append
           Inc i
           If i > CmdList[CurrentCmd].max Then
             Error.Raise("Missing Error redirection destination &> &>> [" & CmdList[CurrentCmd].join(" ") & " ... ]")
           Endif
-
+          
           i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, True)
-
+          
           NeedsSTDIOWrite[CurrentCmd] = True
           NoErrRedirect[CurrentCmd] = False
-
+          
         Case ">", ">>" ' Output redirect features
           Inc i
           If i > CmdList[CurrentCmd].max Then
             Error.Raise("Missing output redirection destination > >> [" & CmdList[CurrentCmd].join(" ") & " ...]")
           Endif
-
+          
           i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, False)
-
+          
           NeedsSTDERRWrite[CurrentCmd] = True
           NoOutRedirect[CurrentCmd] = False
-
+          
         Case "<" 'input features
           Inc i
-
+          
           If i > CmdList[CurrentCmd].max Then
             Error.Raise("Missing input redirection destination < [" & CmdList[CurrentCmd].join(" ") & " ...]")
           Endif
-
+          
           i = GenerateRedirectInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
-
+          
         Case "<<"   'inline input until value found features
           Inc i
-
+          
           If i > CmdList[CurrentCmd].max Then
             Error.Raise("Missing input termination string < [" & CmdList[CurrentCmd].join(" ") & " ...]")
           Endif
-
+          
           i = GenerateInlineInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
-
+          
         Case "<<<"   'inline input the following string or global Variable
           Inc i
-
+          
           If i > CmdList[CurrentCmd].max Then
             Error.Raise("Missing input string/Variable < [" & CmdList[CurrentCmd].join(" ") & " ...]")
           Endif
-
+          
           i = GenerateStringInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
-
+          
         Case "!>" ' Write the return value from the exec to this variable
           Inc i
           If i > CmdList[CurrentCmd].max Then
@@ -503,11 +503,11 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
               Case Highlight.function    ' remember we used this to mean local function
                 gsh.PreProcesses("tostringarray()")
                 CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-r\"," & Quote(sym)
-
+                
               Case Highlight.label
                 gsh.PreProcesses("tostringarray()")
                 CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-f\"," & Quote(sym)
-
+                
               Default
                 Dim rTemp, rrTemp As String
                 gsh.PreProcesses("tostringarray()")
@@ -517,7 +517,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
                   gsh.LinkTable.add("Const " & currentcmdname & " As String = " & Quote(System.Find(sym)), currentcmdname)
                   CmdExec[CurrentCmd] &= "tostringarray(CmdBuild," & currentcmdname
                 Endif
-
+                
             End Select
             bFirst = False
           Else
@@ -527,17 +527,17 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
               rrtemp = "--"
               rtemp = rrtemp & Rtemp
               CmdExec[CurrentCmd] &= "," & Quote(rTemp)
-
+              
             Else If sym[0] = "-" Then
               rtemp = "-" & UnQuote(preprocess(Mid(sym, 2)))
               CmdExec[CurrentCmd] &= "," & Quote(rTemp)
-
+              
             Else                                                      ' not an option
               Dim Preprocstuff As String
               If (sym = "$" And i + 1 <= CmdTypes[CurrentCmd].max) And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then   ' handle all special shell functions
                 CmdExec[CurrentCmd] &= "," & gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1])
                 Inc i
-
+                
               Else If (sym = "$" And i + 1 <= CmdTypes[CurrentCmd].max) And If CmdTypes[CurrentCmd][i + 1] = Highlight.Symbol And If Left(CmdList[CurrentCmd][i + 1], 1) = "[" Then
                 Inc i
                 sym = CmdList[CurrentCmd][i]
@@ -547,7 +547,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
                 PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, Quote(sym), preprocess(sym, InBlock))
                 'PreProcStuff = If(CmdTypes[CurrentCmd][i] = Highlight.added, sym, preprocess(sym))
               Endif
-
+              
               If Preprocstuff = "(" Then
                 Dim addcomma As Boolean = True
                 'CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,"
@@ -565,26 +565,26 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
                   If Not IsNull(PreprocStuff) Then CmdExec[CurrentCmd] &= "," & PreProcStuff
                 Endif
               Endif
-
+              
             Endif
-
+            
           Endif
-
+          
       End Select
-
+      
     Next
-
+    
     'CmdExec[CurrentCmd] &= "]" ' with sharedmem[\"env\"] "
     CmdExec[CurrentCmd] &= ")\n"
     CmdExec[CurrentCmd] &= "\n''#" & CmdList[currentcmd].Join(" ") & "#''\n"
     Dim ExportedEnv As String = "with [\"PWD=\"&env[\"PWD\"]] "
-
+    
     If AsFunction And ReturnSet Then
       CmdExec[CurrentCmd] &= "Exec cmdBuild " & ExportedEnv
     Else
       CmdExec[CurrentCmd] &= "\nmProc" & BaseName & Str(CurrentCmd) & " = Exec cmdBuild " & ExportedEnv
     Endif
-
+    
     If CmdWriteTo[CurrentCmd] >= 0 Then   ' we need to do the write to the next command in pipe
       If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
       CmdIo[CurrentCmd] &= "write #mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ", sInput, sInput.len\n"
@@ -602,7 +602,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
       CmdKill[CmdReadFrom[CurrentCmd]] &= "if mClose" & BaseName & Str(CurrentCmd) & "() then mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"
       CmdWriters[CurrentCmd].add(CmdReadFrom[CurrentCmd])
     Endif
-
+    
     If NoOutRedirect[CurrentCmd] And NeedsSTDIOWrite[CurrentCmd] Then
       If CmdIo[CurrentCmd] = "" Then
         CmdIo[CurrentCmd] &= DefaultIoSub(CurrentCmd, basename)
@@ -610,15 +610,15 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdIo[CurrentCmd] &= "write #File.out, sInput, sInput.len\n"
       Endif
     Endif
-
+    
     If NoErrRedirect[CurrentCmd] And NeedsSTDERRWrite[CurrentCmd] Then
       CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
     Endif
     If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"   ' do this only on first, allows to inject data to stream
   Next
-
+  
   CmdFinal = ""
-
+  
   For Each sym In CmdIo   ' setup all the read functions
     Dim Vset As String[] = Split(sym, "|", "\"\"", True, True)
     If sym <> "" Then
@@ -626,7 +626,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
       gsh.LinkTable.Add(Vset[1], Vset[0])               'CmdFinal &= sym
     Endif
   Next
-
+  
   For Each sym In CmdErr
     Vset = Split(sym, "|", "\"\"", True, True)
     If sym <> "" Then
@@ -634,7 +634,7 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
       gsh.LinkTable.Add(Vset[1], Vset[0])               'CmdFinal &= sym
     Endif
   Next
-
+  
   For Each sym In CmdKill
     Vset = Split(sym, "|", "\"\"", True, True)
     If sym <> "" Then
@@ -642,18 +642,18 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
       gsh.LinkTable.Add(Vset[1], Vset[0])               'CmdFinal &= sym
     Endif
   Next
-
+  
   For j = 0 To CmdWriters.Max
     If CmdWriters[j].count = 0 Then Continue
     gsh.LinkTable.add(BuildClose(j, CmdWriters[j], basename), "mClose" & BaseName & Str(j))
   Next
-
+  
   For Each sym In CmdBeforeExec
     If sym <> "" Then CmdFinal &= sym
   Next
-
+  
   Dim NoReadWrite As Boolean = True
-
+  
   For i = CmdList.Max DownTo 0
     If CmdIo[i] <> "" Or CmdErr[i] <> "" Or CmdWrite[i] <> "" Or i > 0 Then
       Cmdexec[i] &= " For "
@@ -665,13 +665,13 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdExec[i] &= "Write "
       Endif
     Endif
-
+    
     If NoReadWrite And ReturnSet Then
       CmdExec[i] &= " to result \n"
     Else
       CmdExec[i] &= " as \"mRead" & BaseName & Str(i) & "\"\n"
     Endif
-
+    
     If gsh.jobctl Then
       Dim StartCopy As Integer = InStr(CmdExec[i], "''#", 0, gb.IgnoreCase)
       If StartCopy > 0 Then Startcopy += 3 ' len of search string
@@ -679,14 +679,14 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
       Dim cmdjobsinfo As String = Quote(Mid(CmdExec[i], StartCopy, endcopy - startcopy))
       CmdExec[i] &= "sharedmem[\"pid.p\" & mProc" & BaseName & Str(i) & ".id]= str(mProc" & BaseName & Str(i) & ".id)&\"|\"& format(now,\"mm/dd/yyyy hh:nn:ss.uu\")& \"|\" & " & cmdjobsinfo & "\n"
     Endif
-
+    
     CmdFinal &= CmdExec[i]
   Next
-
+  
   For Each sym In CmdWrite
     If sym <> "" Then CmdFinal &= sym
   Next
-
+  
   ' bFirst = True
   ' CmdFinal &= "While "
   ' For i = 0 To CmdList.Max
@@ -695,40 +695,40 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
   '   bFirst = False
   ' Next
   ' CmdFinal &= "\nwait 0.01\nwend\n"
-
+  
   If Not (NoReadWrite And ReturnSet) Then
     CmdFinal &= "mProc" & BaseName & Str(CmdList.Max) & ".wait()\n"
   Endif
-
+  
   If Not WaitCompletion Then CmdFinal &= "&"
   Return CmdFinal
-
+  
 SetNeedsSTDERRWrite:      ' set the the last writer to also need to write std err
-
+  
   If cmdcount = 1 Then
     NeedsSTDERRWrite[0] = True
     Return
   Endif
-
+  
   For icounter As Integer = CmdCount DownTo 0
-
+    
     If CmdPipeType[icounter] = "!" Or CmdPipeType[icounter] = "|" Then
       NeedsSTDERRWrite[icounter] = True
       Return
     Endif
-
+    
   Next
-
+  
   Return
-
+  
 Catch
   If gsh.DoTrace Then Error "Function #="; CurrentCmd, Error.text, Error.where
   Error.Propagate()
-
+  
 End
 
 Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
-
+  
   Dim aFunction As Boolean = False
   'Check if we will from a function or some other evaluated at runtime function
   If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
@@ -743,7 +743,7 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
         Inc execBraceLevel
       Endif
       execFunction &= CmdList[CurrentCmd][i]
-
+      
       If CmdList[CurrentCmd][i] = ")" Then
         Dec execBraceLevel
       Endif
@@ -758,11 +758,11 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
     CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
     i = execStartAt
   Endif
-
+  
   If CmdTypes[CurrentCmd][i] = Highlight.string Then
     CmdList[CurrentCmd][i] = "(" & CmdList[CurrentCmd][i] & ")"
   Endif
-
+  
   If CmdList[CurrentCmd][i] Like "*fileexpand*" Or If (Not aFunction And CmdList[CurrentCmd][i][0] = "(") Then
     If CmdList[CurrentCmd][i] Like "*fileexpand*" Then
       CmdWrite[CurrentCmd] &= gsh.preprocesses("(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase) & "))") & "\n"
@@ -781,22 +781,22 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
     Endif
   Endif
   Return i
-
+  
 End
 
 Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As Integer, sym As String, CmdErr As String[], CmdIo As String[], CmdList As String[][], CmdTypes As Integer[][], CmdBeforeExec As String[], CmdKill As String[], Optional WriteError As Boolean = False) As Integer
-
+  
   Dim notfile As Boolean = False
   Dim fullname As String
   Dim fileext As String
   Dim sSinkObject As String
-
+  
   If WriteError Then
     If CmdErr[CurrentCmd] = "" Then CmdErr[CurrentCmd] = SetErrSub(CurrentCmd, basename)
   Endif
-
+  
   If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
-
+  
   'Check if we will send to a function or some other evaluated at runtime function
   If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
     Dim execStartAt As Integer = i
@@ -809,7 +809,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
         Inc execBraceLevel
       Endif
       execFunction &= CmdList[CurrentCmd][i]
-
+      
       If CmdList[CurrentCmd][i] = ")" Then
         Dec execBraceLevel
       Endif
@@ -823,11 +823,11 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
     CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
     i = execStartAt
   Endif
-
+  
   If CmdTypes[CurrentCmd][i] = Highlight.string Then
     CmdList[CurrentCmd][i] = "(expandfn(" & CmdList[CurrentCmd][i] & "))"
   Endif
-
+  
   If (CmdList[CurrentCmd][i][0] = "(" And InStr(CmdList[CurrentCmd][i], "...") = 0) Or If IsGlob(CmdList[CurrentCmd][i]) Then
     notfile = False
     If CmdList[CurrentCmd][i][0] = "(" Then                  ' allow any expression to be source of file name
@@ -836,7 +836,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
     Else
       fullname = CmdList[CurrentCmd][i]
     Endif
-
+    
     fileext = "RE" & Rand(56, 67890)
     gsh.LinkTable.Add("Public OutFile" & BaseName & fileext & " as File\n", "OutFile" & BaseName & fileext)
     If sym = ">" Or sym = "&>" Then
@@ -844,23 +844,23 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
     Else
       CmdBeforeExec.Add("OutFile" & BaseName & fileext & " = open " & If(notfile = True, fullname, Quote(fullname)) & " for write append\n")
     Endif
-
+    
     If WriteError Then
       Cmderr[Currentcmd] &= "write #OutFile" & BaseName & fileext & ", msg,msg.len\n"
     Else
       CmdIo[Currentcmd] &= "write #OutFile" & BaseName & fileext & ", sInput,sInput.len\n"
     Endif
-
+    
     If CmdKill[CurrentCmd] = "" Then CmdKill[CurrentCmd] = SetKillSub(CurrentCmd, basename)
     CmdKill[Currentcmd] &= "Close Outfile" & BaseName & fileext & "\n"
-
+    
   Else
     If sym = ">" Or sym = "&>" Then
       If CmdTypes[CurrentCmd][i] <> Highlight.function Then
         CmdBeforeExec.Add(gsh.preProcesses(CmdList[CurrentCmd][i]) & " = \"\"\n")     ' Define a line to set it to zero only if not append
       Endif
     Endif
-
+    
     If CmdList[CurrentCmd][i][0] = "(" And If InStr(CmdList[CurrentCmd][i], "...") > 0 Then
       If InStr(CmdList[CurrentCmd][i], "...") > 0 Then ' Send data  to a function for processing
         CmdList[CurrentCmd][i] = IIf(WriteError = False, Replace(CmdList[CurrentCmd][i], "...", "sInput"), Replace(CmdList[CurrentCmd][i], "...", "msg"))
@@ -875,7 +875,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
       If cmdlist[CurrentCmd][i][0] = "$" Then ' if it is not there just make it
         If Not SharedMem.exist(cmdlist[CurrentCmd][i]) Then SharedMem[Right(cmdlist[CurrentCmd][i], -1)] = ""
       Endif
-
+      
       If WriteError Then
         sSinkObject = gsh.preProcesses(CmdList[CurrentCmd][i])
         If sSinkObject Like "*()" Then
@@ -893,17 +893,17 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
         Endif
         CmdIo[CurrentCmd] &= sSinkObject
       Endif
-
+      
     Endif
   Endif
   Return i
-
+  
 End
 
 Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
-
+  
   Static BufferCounter As Long = 0
-
+  
   Dim aFunction As Boolean = False
   Dim DataSource As String
   'Check if we will from a function or some other evaluated at runtime function
@@ -919,7 +919,7 @@ Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As 
         Inc execBraceLevel
       Endif
       execFunction &= CmdList[CurrentCmd][i]
-
+      
       If CmdList[CurrentCmd][i] = ")" Then
         Dec execBraceLevel
       Endif
@@ -934,13 +934,13 @@ Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As 
     CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
     i = execStartAt
   Endif
-
+  
   If CmdTypes[CurrentCmd][i] = Highlight.string Then
     CmdList[CurrentCmd][i] = "(" & CmdList[CurrentCmd][i] & ")"
   Endif
-
+  
   CmdWrite[CurrentCmd] &= "Dim SndBuff" & Str(BufferCounter) & " as string =\"\"\nDim RdBuff" & Str(BufferCounter + 1) & " as string\n While true\nLine Input RdBuff" & Str(BufferCounter + 1) & "\n"
-
+  
   If CmdTypes[CurrentCmd][i] = Highlight.Function Then
     DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
   Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
@@ -950,21 +950,21 @@ Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As 
   Else
     DataSource = Quote(CmdList[CurrentCmd][i])
   Endif
-
+  
   CmdWrite[CurrentCmd] &= "If RdBuff" & Str(BufferCounter + 1) & " == " & DataSource & " Then Break\n"
   CmdWrite[CurrentCmd] &= "SndBuff" & Str(BufferCounter) & " &= RdBuff" & Str(BufferCounter + 1) & " & " & Quote(" \n") & "\nWend\n"
   CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " ,  SndBuff" & Str(BufferCounter) & ")") & "\n"
   BufferCounter += 2
-
+  
   Return i
-
+  
 End
 
 Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
-
+  
   Dim aFunction As Boolean = False
   Dim DataSource As String
-
+  
   'Check if we will from a function or some other evaluated at runtime function
   If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
     aFunction = True
@@ -978,7 +978,7 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
         Inc execBraceLevel
       Endif
       execFunction &= CmdList[CurrentCmd][i]
-
+      
       If CmdList[CurrentCmd][i] = ")" Then
         Dec execBraceLevel
       Endif
@@ -993,11 +993,11 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
     CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
     i = execStartAt
   Endif
-
+  
   If CmdTypes[CurrentCmd][i] = Highlight.string Then
     CmdList[CurrentCmd][i] = "(" & CmdList[CurrentCmd][i] & ")"
   Endif
-
+  
   If CmdTypes[CurrentCmd][i] = Highlight.Function Then
     DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
   Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
@@ -1007,15 +1007,15 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
   Else
     DataSource = Quote(gsh.PreProcesses(CmdList[CurrentCmd][i]))                               ' what ever else we find turn it into a string
   Endif
-
+  
   CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " ,  " & DataSource & ")") & "\n"
-
+  
   Return i
-
+  
 End
 
 Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As String
-
+  
   Select Case val[0]
     Case "\""
       Return Quote(UnQuote(gsh.PreProcesses(val)))
@@ -1036,62 +1036,62 @@ Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As St
     Case "@"
       Return Quote(UnQuote(Eval(gsh.PreProcesses(val))))
   End Select
-
+  
   Return IIf(NoQuote, UnQuote(gsh.PreProcesses(val)), Quote(val))
-
+  
 Catch
   Error.Propagate()
-
+  
 End
 
 Private Sub BuildClose(procnum As Integer, processnums As Integer[], BaseName As String) As String
-
+  
   Dim finalbuf As String = "Public Sub mClose" & BaseName & Str(procnum) & "() as boolean\n dim alivecount as integer=0\nDim LastOne as boolean = false\n"
-
+  
   For Each i As Integer In processnums
     finalbuf &= "if mProc" & BaseName & Str(i) & ".state = process.running then inc alivecount\n"
   Next
-
+  
   finalbuf &= "if alivecount = 0 then LastOne = true\nreturn LastOne\nEnd\n"
   Return finalbuf
-
+  
 End
 
 Private Sub SetIoSub(CmdIndex As Integer, basename As String) As String
-
+  
   Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\n"
-
+  
 End
 
 Private Sub DefaultIoSub(CmdIndex As Integer, basename As String) As String
-
+  
   Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\nwrite #file.out,sInput, sInput.len\n"
-
+  
 End
 
 Private Sub SetKillSub(CmdIndex As Integer, basename As String) As String
-
+  
   Dim final As String
-
+  
   final = "mRead" & BaseName & Str(CmdIndex) & "_kill|Public sub mRead" & BaseName & Str(CmdIndex) & "_kill()\nwith sharedmem\n"
   If gsh.jobctl Then
     final &= "if sharedmem.exist(\"pid.p\" & mProc" & BaseName & Str(cmdIndex) & ".id) Then "
     final &= "sharedmem[\"pid.p\" & mProc" & BaseName & Str(cmdIndex) & ".id] &= \"|\"& format(now,\"mm/dd/yyyy hh:nn:ss.uu\")& \"|\" & mProc" & BaseName & Str(cmdIndex) & ".value\n"
   Endif
   Return final
-
+  
 End
 
 Private Sub SetErrSub(CmdIndex As Integer, basename As String) As String
-
+  
   Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\n"
-
+  
 End
 
 Private Sub DefaultErrSub(CmdIndex As Integer, basename As String) As String
-
+  
   Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\nwrite #file.err,  msg, msg.len\n"
-
+  
 End
 
 Private syms As String[]
@@ -1105,100 +1105,100 @@ Private ShellParse As ParseParm
 Public ShelliParse As ParseParm
 
 Public Sub _init()
-
+  
   ShellParse = New ParseParm(False, ["&", ">", ">>", "<", "<<", "<<<", "&>", "&>>", "|", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
   ShellParse.braces = []
   ShellParse.seperators = [" ", "\t", "\n"]
   ShellParse.DoFileExpand = True
-
+  
   ShelliParse = New ParseParm(False, [], ["\"", "\"", "`", "`"])
   ShelliParse.braces = ["(", ")"]
   ShelliParse.SpecialSymbols = []
   ShelliParse.seperators = [" ", "\t", "\n"]
   ShelliParse.DoFileExpand = False
   ShelliParse.DoSpecial = False
-
+  
 End
 
 '' This function will Parse the LINUX Shell(sh like) command line
 Private Sub parseline(InLine As String)
-
+  
   syms = Parser(InLine, ShellParse)
   types = ShellParse.types
   If syms[0] = "!" Then
     syms.Remove(0)
     types.Remove(0)
   Endif
-
+  
 Catch
   Error.Propagate()
-
+  
 End
 
 Public Sub DoGlob(path As String, Optional dironly As Boolean = False) As String[]
-
+  
   Dim Paths As New String[]
   Dim sret As New Glob_t
   Dim ReturnSet As Pointer
   Dim CallResult As Integer
-
+  
   CallResult = glob(path, (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE Or If(dironly = True, GLOB_ONLYDIR, 0)), Null, sret)
   If Callresult <> 0 Then
     Error.Raise("File Expansion Error :" & globerrors[CallResult])
   Endif
-
+  
   ReturnSet = sret.gl_pathv
-
+  
   For i As Integer = 0 To CLong(sret.gl_pathc) - 1
     Paths.Add(String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i))))
   Next
   globfree(sret)
-
+  
   Return paths
 Catch
   Error.Propagate()
-
+  
 End
 
 Public Sub InitAlias()
-
+  
   Dim stemp As Collection = SharedMem["alias"]
-
+  
   For Each s As String[] In sTemp
     Try AliasList[stemp.key] = s
   Next
-
+  
 End
 
 Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
 
 Sub multiSub(akey As String, data As String, Myreg As Regexp) As String
-
+  
   MyReg.Exec(data)
   If MyReg.count <= 0 Then Return data
-
+  
   If MyReg.count > 0 Then data = MyReg[1].text
   Dim evalset As String = "subst(" & Quote(AliasList[akey].join(" ")) & "," & MyReg[2].text & ")"
   If MyReg.count > 1 Then Data &= Eval(evalset)
   If MyReg.count = 3 And If MyReg[3].text <> "" Then
     data &= multiSub(akey, MyReg[3].text, MyReg)
   Endif
-
+  
   Return Data
-
+  
 End
 
 Public Sub AliasReplace(Data As String) As String
   'Dim bChanged As Boolean = False
   'Dim aList As String[] = Split(Trim(data), " \t!|", "\"\"", True, True)
-
+  
   Dim s As Variant
   Dim used As New String[]
   Dim MyParmsDummy As New String[20]
   'If Upper(aList[0]) = "ALIAS" Then Return data
   If Upper(Left(Trim(data), 5)) = "ALIAS" Then Return data
-
+  
 DoAliasAgain:
   For Each s In aliaslist
     Dim akey As String = aliaslist.Key
@@ -1214,25 +1214,25 @@ DoAliasAgain:
         data = multiSub(aliasList.key, data, MyReg)                                                              ' Do the matching on the data for parameters
         used.Add(aliaslist.key)
         Goto DoAliasAgain
-
+        
       Else If InStr(data, aliaslist.key) = 0 Then
         Continue
-
+        
       Else If aliaslist.key = Trim(data) Then
         data = Replace(data, aliaslist.key, s.Join(" "), gb.ignorecase)
         used.Add(aliaslist.key)
         Goto DoAliasAgain
-
+        
       Else If RegExp.Match(data, "^" & akey & "[ <>|!&\n\t]") Then
         data = RegExp.replace(data, "^" & aKey & "([ <>|!&\n\t])", s.Join(" ") & "&1 ")
         used.Add(aliaslist.key)
         Goto DoAliasAgain
-
+        
       Else If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "[^_[:alnum:]]") Then
         data = RegExp.replace(data, "(^[`!]?[\\s]*)" & aKey & "(.*)", "&1" & s.Join(" ") & "&2")
         used.Add(akey)
         Goto DoAliasAgain
-
+        
       Else If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "$") Then
         data = RegExp.replace(data, "(^[`!]?[\\s]*)" & aKey & "(.*)", "&1" & s.Join(" ") & "&2")
         used.Add(akey)
@@ -1240,7 +1240,7 @@ DoAliasAgain:
       Endif
     Endif
   Next
-
+  
   If InStr(data, ":") <> 0 Then
     used = parser(data, MultyParse)
     'used = Split(data, ":", "\"\"", True, True)
@@ -1255,24 +1255,24 @@ DoAliasAgain:
         Next
       Endif
     Endif
-
+    
     Return Trim(used[0])
   Else
     Return Trim(data)
   Endif
-
+  
 Catch
   Dim errortext As String
   errortext = Error.where & ":" & Error.text
   Error.Propagate()
-
+  
 End
 
 'Public ShelliParse As ParseParms
 Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As Integer)
-
+  
   Dim NewLine As String = AliasReplace(CmdList[currentcmd][0])
-
+  
   Parser(NewLine, ShelliParse)
   If CmdList[currentcmd].count > 1 Then
     ShelliParse.syms.Insert(CmdList[currentcmd].Extract(1, -1))
@@ -1280,32 +1280,32 @@ Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As
   Endif
   CmdTypes[currentcmd] = ShelliParse.types
   CmdList[currentcmd] = ShelliParse.syms
-
+  
 End
 
 Public Sub alias(cmd As String) As String[]  ' return a list of command line changes
-
+  
   Dim result As String[]
-
+  
   result = AliasList[cmd]
-
+  
   If IsNull(result) Then
     result = New String[]
     result.Add(cmd)
   Endif
-
+  
   Return result
-
+  
 End
 
 Public Sub setalias(cmdline As String)
-
+  
   Dim body As String[]
   Dim cmd As String[]
   Dim Params As String[]
-
+  
   cmd = Split(cmdline, " =", "''", True, False)
-
+  
   If cmd.count = 2 Then
     params = Split(cmd[1], "()")
     If params.count > 1 Then cmd[1] = params[0] & "()"
@@ -1318,13 +1318,13 @@ Public Sub setalias(cmdline As String)
     If params.count > 1 Then
       cmd[1] = params[0] & "()"                                   ' set up the alias so we match a bracket
     Endif
-
+    
     body = Split(cmd[2], " \t", "", True)                          'What the hell is this
-
+    
     If body.count < 1 Then
       Error.Raise("alias: no definition provided: " & cmdline)
     Endif
-
+    
     If Not aliasList.exist(cmd[1]) Then
       Try aliasList.Add(body, cmd[1])
       If Error Then Return
@@ -1333,16 +1333,16 @@ Public Sub setalias(cmdline As String)
       If Error Then Return
     Endif
   Endif
-
+  
   SharedMem["alias"] = aliasList
-
+  
 Catch
   Error.Propagate()
-
+  
 End
 
 Public Sub listAlias(Optional sAlias As String = "")
-
+  
   If sAlias <> "" Then
     Dim params As String[] = Split(sAlias, "()")
     If params.count > 1 Then sAlias = params[0] & "()"
@@ -1353,16 +1353,16 @@ Public Sub listAlias(Optional sAlias As String = "")
       Error.Raise("Unknown alias :" & sAlias)
     Endif
   Endif
-
+  
   Dim sortlist As New String[]
   Dim MaxLen As Integer = 0
   For Each s As String[] In AliasList
     sortlist.Add(AliasList.key)
     If AliasList.Key.len > MaxLen Then MaxLen = AliasList.Key.len
   Next
-
+  
   sortlist.sort()
-
+  
   For i As Integer = 0 To sortlist.max
     If sortlist[i][sortlist[i].len - 1] = "(" Then
       AliasList.Remove(sortlist[i])
@@ -1371,13 +1371,13 @@ Public Sub listAlias(Optional sAlias As String = "")
     Endif
     printAlias(sortlist[i], AliasList[sortlist[i]], MaxLen)
   Next
-
+  
 End
 
 Public Sub printAlias(name As String, def As String[], Optional MaxNameLen As Integer = 20)
-
+  
   Dim bFirst As Boolean = True
-
+  
   Print "\x1b[32m" & Left(name & Space(MaxNameLen), MaxNameLen) & "\x1b[0m"; " = '";
   For Each s As String In def
     If Not bfirst Then Print " ";
@@ -1385,5 +1385,5 @@ Public Sub printAlias(name As String, def As String[], Optional MaxNameLen As In
     bfirst = False
   Next
   Print "'"
-
+  
 End
