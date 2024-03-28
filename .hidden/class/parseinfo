@@ -1,4 +1,7 @@
 Class ParseInfo
+''' This class holds the gsh parser rules
+'' the fields in this class are used by the gsh
+''internal parser
 
 Public seperators As String[]
 Public operators As String[]
@@ -17,7 +20,7 @@ Public syms As New String[]
 Public types As New Integer[]
 
 Public Sub _new(Optional SetDefaults As Boolean = True, ops As String[] = [":"], qs As String[] = ["\"", "\""], sep As String[] = [" ", ","], Special As Boolean = False, LeaveQuotes As Boolean = True)
-  
+
 If SetDefaults Then
  seperators = [" ", "\n"]
  operators = [":", ","]

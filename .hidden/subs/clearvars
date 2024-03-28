@@ -1,4 +1,5 @@
-Sub clearvars(Optional varname As String = "") As Boolean ' Delete all user variables and content
+Sub clearvars(Optional varname As String = "") As Boolean 
+''' Clear all user global variables and content, preserves system variables
 ''clearvars  <$GlobalVarName> - delete all varables or specific variable
 ''          function clearvars(<varname>)
 ''          command clearvars <varname>
@@ -25,7 +26,6 @@ if varname <> "" and if not instr(varname,"*") then
 		return false
 	endif
 endif
-
 
 For Each s As string In SymbolList
     if (s like "sub.*" or s like "class.*" or s like "struct.*") then continue

@@ -27,13 +27,13 @@ Public Sub Add(VarName As String, envEntry As String) As Boolean
   $syncvars.Add(envEntry, VarName)
   Try SharedMem.NotifyChange(Varname, Me, -1, "varchanged")
   If Error Then
-    Error "SyncEnv Error:";; Error.Text
+    Error "SyncEnv.add NotifyChange Error:";; Error.Text
     Return False
   Endif
   Return True
 
 Catch
-  Error "SyncEnv Error:";; Error.Text;; Error.where
+  Error "SyncEnv.add Error:";; Error.Text;; Error.where
   Return False
 
 End
@@ -45,11 +45,16 @@ Public Sub Remove(varname As String) As Boolean
   Try SharedMem.NotifyCancel(Varname, Me)
   If Error Then
     Try $syncvars.Remove(varname)
-    Error "SyncEnv Error:";; Error.text
+    Error "SyncEnv.remove NotifyCancel Error:";; Error.text
     Return False
   Endif
+
   Try $syncvars.Remove(varname)
   Return True
+
+Catch
+  Error "SyncEnv.Remove Error:";; Error.Text;; Error.where
+  Return False
 
 End
 

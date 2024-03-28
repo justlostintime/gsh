@@ -1,4 +1,5 @@
-Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collection 'Gets List of files from gsh system directories
+Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collection 
+'''Gets List of files from gsh system directories or local user directories
 ''lany(TypeOfFile,basDirectoryName) - Creates a collection from a subs directories
 ''          Returns a collections from the specified directories or in memory
 ''          namespace struct. or sub. or class.  types.

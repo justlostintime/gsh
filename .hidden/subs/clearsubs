@@ -1,4 +1,5 @@
-Sub clearsubs(...) ' clear all or some of the subs/func/proc from the image
+Sub clearsubs(...) 
+''' clear all or some of the subs/func/proc from the image
 ''clearsubs(<name of sub >,...) clears subs from memory
 ''clearsubs <name of sub> ...     ' command line format
 '' Options:

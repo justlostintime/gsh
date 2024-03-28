@@ -1,5 +1,7 @@
-Sub DoScript(scriptname As String, ...) As Boolean ' execute a script from an other script
-''runscript(name as string , ...) as boolean
+Sub DoScript(scriptname As String, ...) As Boolean 
+''' executes a script from an other script
+''' This is depreciated, just place name of script directly now
+''doscript(name as string , ...) as boolean
 '' run a script in a program,
 '' use run from command line to run script immediately
 ''

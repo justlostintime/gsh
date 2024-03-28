@@ -1,4 +1,5 @@
-Sub lsclasses(Optional classname As String = "",...)' List Loaded classes - from classes object
+Sub lsclasses(Optional classname As String = "",...)
+''' List All or specific Loaded class - from classes object
 '' lsclasses  List all the classes in the current environment
 '' if classname is set to filter=used  then only list classes refrenced by application
 '' Else all loaded classes will be displayed.

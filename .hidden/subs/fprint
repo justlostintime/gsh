@@ -1,4 +1,5 @@
-Sub fprint(optional filename As Variant=File.out, ...) As Boolean ' print anything to a file
+Sub fprint(optional filename As Variant=File.out, ...) As Boolean 
+''' print anything to a stream or filename, defaults to stdout
 ''fPrint    print to a file the content of arrays or collections
 ''          or objects/classes with the special _print function
 ''          function fprint(filename,...) print the valiables
@@ -8,6 +9,7 @@ Sub fprint(optional filename As Variant=File.out, ...) As Boolean ' print anythi
 Dim vParms As Variant[] = param.all
 Dim mFile as variant
 Dim DoClose as boolean = false
+
 With sharedmem
 
 if typeof(filename) = gb.string and param.count > 0 then

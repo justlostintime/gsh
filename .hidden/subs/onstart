@@ -1,5 +1,8 @@
-Sub onstart() As Boolean ' executed when gsh starts an interactive session
+Sub onstart() As Boolean 
+''' Executed when gsh starts an interactive session
 ''onstart()  - Executed at startup of interactive session
+''             Default version runs fortune if it is available
+
 if system.exist("fortune") then
 	shell "fortune" wait
 	print

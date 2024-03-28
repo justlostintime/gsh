@@ -1,6 +1,7 @@
-public sub FromJson(cvJson as string) as variant ' convert a json string to a gambas object/value
+public sub FromJson(cvJson as string) as variant 
+''' convert a json string to a gambas json object/value set
 '' FromJson  Will take a valid JSON string and return a gambas object containg the
-''           value
+''           string as a value set.
 use "gb.util.web"
 return json.decode(cvJson)
 end

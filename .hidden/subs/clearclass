@@ -1,4 +1,5 @@
-Sub clearclass(...) ' clear all or some of the class/struct from the image
+Sub clearclass(...) 
+''' clear all or some of the class/struct from the image
 ''clearclass(<name of class/struct >,...) clears classes from memory
 ''clearclass <name of Class/struct> ...     ' command line format
 ''          Does not delete the class/struct from disk
@@ -6,7 +7,7 @@ Sub clearclass(...) ' clear all or some of the class/struct from the image
 ''          if parameters remove each from memory
 ''          prompt for each unsaved user altered system class/sub
 ''          prompt for each user created class/struct, not saved yet
- 
+
 if param.count <> 0 then
   for each subname as string in param
     if sharedmem.exist("class."&subname) then
@@ -40,7 +41,7 @@ for each sEntry as string[] in allSubs
    ' print "In memory :";;sEntry[SubPath]
    if sEntry[SubSource] = "In-Mem" then
      error "ClearClass:";;extension;" '";AllSubs.key;"' Not Saved, Do You want to save it now Y/n?";
-     line input Answer 
+     line input Answer
      if trim(upper(answer))[0] <> "" and if trim(upper(answer))[0] <> "Y" then
         error "ClearClass:";;extension;" not saved ";allsubs.key
      else

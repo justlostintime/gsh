@@ -1,11 +1,18 @@
 Sub disktest(...)
+''' Test a local or remote disk performance
+''' disktest  [-p|-print] file_or_dev_1 test2 test3......
 '' Version 1.0.1
 '' Test local disk performance
 '' Pass the name of a file to create and read in the location to test
 '' It is possible to test raw devices but only read only testing is allowed
 '' this runs as a graphical popup or console test routine
 '' it defaults to graphical interface unless the -p parameter is passed
-''
+''disktest  [-p|-print] file_or_dev_1 test2 test3....... \n"
+'' Example: disktest /dev/sda /tmp/testfile \n"
+''          To Use a /dev/..    you must sudo this command\n"
+''          Note: Physical Devices are always tested for read performance only\n"
+''          You may test a device or a mounted directory\n"
+''          -p | -print will direct all output to stdout"
 
 Use "gb.gui"
 
@@ -19,7 +26,6 @@ Public Cproc As Process
 Public Helpit As String
 Public printon As Boolean
 
-
 Dim smsgs, nanswer As String
 Dim i As Integer
 printon = False
@@ -31,13 +37,13 @@ helpit = "disktest  [-p|-print] file_or_dev_1 test2 test3....... \n"
          " You may test a device or a mounted directory\n"
          " -p | -print will direct all output to stdout"
 
- '' debug "arg 0 = " & Param[0]
+ ' debug "arg 0 = " & Param[0]
  If param.count > 0 And If Left(Param[0], 1) = "-" Then
     Debug "testing for p=" & Mid(Param[0], 2, 1)
     If Mid(Param[0], 2, 1) = "p" Then printon = True
  Endif
 
- '' debug "Printon =", printon
+ ' debug "Printon =", printon
 
 If Not printon Then
          progress = New Window As "theWindow"
@@ -84,7 +90,7 @@ results = New Collection
                Endif
 
         If Left(Param[i], 5) = "/dev/" Then
-               ''Debug "Hi its a device " & param[i]
+               'Debug "Hi its a device " & param[i]
                If Not printon Then
                 mytext.text &= "\nTesting device  " & Param[i] & " Read Only Mode"
                 mytext.refresh()
@@ -107,11 +113,11 @@ results = New Collection
          myTime.Stop()
 
          answer = "hd test ->" & answer
-         ''debug "adding ->", Param[i],  answer
+         'debug "adding ->", Param[i],  answer
     results.add(answer, ARGS[i])
 
         Else
-                ''Debug "Hi its a directory" & args[i]
+                'Debug "Hi its a directory" & args[i]
     If Not printon Then
                 mytext.text &= "\nTesting File  " & Param[i] & " Read/Write Mode"
                 mytext.refresh()
@@ -130,7 +136,7 @@ results = New Collection
      Wait 0.1
                 Wend
 
-                ''debug "adding ->", Param[i],  answer
+                'debug "adding ->", Param[i],  answer
 
           results.add(answer, "Write -> " & Param[i])
 
@@ -140,16 +146,16 @@ results = New Collection
       Wait 0.1
                      Wend
 
-                     ''debug "adding ->", Param[i],  answer
+                     'debug "adding ->", Param[i],  answer
                 results.add(answer, "Read-> " & param[i])
 
-                     ''debug "removing file "& param[i]
+                     'debug "removing file "& param[i]
                      answer = ""
                 cproc = Shell "rm " & param[i] & " 2>&1" For Read As "ShellData"
                 While cproc.state = process.running
       Wait 0.1
                      Wend
-                      ''debug "file removed"
+                      'debug "file removed"
 
                 results.add(answer, "Removed file -> " & Param[i])
                       myTime.Stop()
@@ -175,7 +181,7 @@ message(error.text & "\n" & error.where)
 End
 
 Public Sub TheTime_Timer()
-  '''' ''debug "Entered timer function !"
+  'debug "Entered timer function !"
   If Not printon Then
     myText.text &= "."
     progress.refresh()
@@ -188,7 +194,7 @@ Public Sub TheTime_Timer()
 End
 
 Public Sub ShellData_read()
-            ''''debug "entered read function"
+            'debug "entered read function"
             answer &= Read #Last, -2048
-            '''''Debug "answer =>" & answer & " <"
+            'Debug "answer =>" & answer & " <"
 End

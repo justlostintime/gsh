@@ -1,4 +1,5 @@
-Sub fileexpand(path As String, Optional dironly As Boolean = False, globstar as boolean = sharedmem["globstar"],  Recurse as boolean = false ) As String[] ' list of file
+Sub fileexpand(path As String, Optional dironly As Boolean = False, globstar as boolean = sharedmem["globstar"],  Recurse as boolean = false ) As String[] 
+''' Returns a list of file names as expanded by bash to include the full path of each
 '' fileexpand(Path as string, optional DirOnly as boolean) as string()
 ''   Returns a list of files as expanded by the shells
 Extern glob(Pattern As String, flags As Integer, ErrorCallback As Pointer, glob_def As Glob_t) As Integer In "libc:6"
@@ -20,7 +21,6 @@ Dim GLOB_TILDE As Integer = &h1000              ' Expand ~user and ~ to home dir
 Dim GLOB_ONLYDIR As Integer = &h2000           ' Match only directories. * /
 Dim GLOB_TILDE_CHECK As Integer = &h4000
 
-
 Dim globerrors As String[] = ["System Call Error","No error", "Out Of Memory", "Read Error", "No Matches", "Not Implemented"]
 Dim Paths As New String[]
 Dim sret As New Glob_t
@@ -29,23 +29,23 @@ Dim CallResult As Integer
 Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
 
   if Recurse = false and if globstar = true then recurse = (path like "*\\*\\**")
-  
+
   if dironly = true or if  path[path.len-1] = "/" Then
      dironly = true
      flags = (flags Or GLOB_ONLYDIR)
   Endif
 
   CallResult = glob(path, flags, Null, sret)
-  
+
   If Callresult <> 0 Then
       Error.Raise("File Expansion Error :" & globerrors[CallResult+1])
   Endif
-  
+
   ReturnSet = sret.gl_pathv
-  
+
   For i As Integer = 0 To sret.gl_pathc - 1
     Dim rpath As String = String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i)))
-    if globstar then 
+    if globstar then
       If rpath[rpath.len - 1] = "*" Then
         Continue
       Endif
@@ -57,12 +57,12 @@ Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
          Paths.Add(rpath)
     endif
   Next
-  
+
   globfree(sret)
-  
-  Return paths 
-  
+
+  Return paths
+
 Catch
   Error.Propagate()
-  
+
 End ' Gambas module file

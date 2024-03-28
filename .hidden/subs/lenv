@@ -1,4 +1,5 @@
-Sub lenv() As Boolean ' list all environment variables
+Sub lenv() As Boolean 
+''' List all environment variables
 ''lEnv      prints the current environment for exec
 ''          as function env()
 ''          as command  env
@@ -7,13 +8,13 @@ Sub lenv() As Boolean ' list all environment variables
 ''          $result contains the error text or "OK"
 ''
 with sharedmem
-dim sortlist as new string[]
-for each sI as string in env
-  sortlist.add(sI)
-next
-sortlist.sort
-for each sI in sortlist
-print  sI;"=";env[sI]
-next
+  dim sortlist as new string[]
+  for each sI as string in env
+    sortlist.add(sI)
+  next
+  sortlist.sort
+  for each sI in sortlist
+    print  sI;"=";env[sI]
+  next
 end with
 End

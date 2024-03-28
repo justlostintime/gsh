@@ -1,6 +1,7 @@
 'nopreprocess
-sub SubComp(LocalSubName as string) as integer 'Compare and report diffrence in local copy of system subroutines
-''subcomp  "SystemSubName" 
+sub SubComp(LocalSubName as string) as integer 
+'''Compare and report diffrence in local copy of system subroutines
+''subcomp  "SystemSubName"
 ''   Compare personal copy of System Subroutine to Personal copy if exists
 
    dim mySource as string = "~/vars/subs" &/ LocalSubName

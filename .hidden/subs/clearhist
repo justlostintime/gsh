@@ -1,4 +1,5 @@
-Sub clearhist(optional Tokeep as integer = 0) As Boolean ' Clear History
+Sub clearhist(optional Tokeep as integer = 0) As Boolean 
+''' Clear command line history
 ''clearhist(ToKeep)  Clear History, optional keep last number or entries
 ''          Function clearhist(<Number to keep)
 ''          Command clearhist <number to keep>

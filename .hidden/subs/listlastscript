@@ -1,8 +1,9 @@
-Sub listlastscript() ' summary of last script executed
-'' lists a short form of the last script executed
+Sub listlastscript() 
+''' Summary of last script executed
+'' Lists a short form of the last script executed
 '' if you want the details then just enter
 '' list
-'' this will list the fully linkes script
+'' this will list the fully linked script
 
     Dim ConsoleHighlight As New gshHighlight
 

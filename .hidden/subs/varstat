@@ -1,4 +1,5 @@
-Sub varstat(optional symbol As String= "", display As Boolean = True) As Sharedmemsymbol ' displays/returns the type of a varable
+Sub varstat(optional symbol As String= "", display As Boolean = True) As Sharedmemsymbol 
+''' Displays/returns the type of a varable
 ''varstat varname display<true|false - displays info about a variable
 ''  varname with display=yes defaults to display info other wise just returns Stat
 ''  Displays the var type, class etc

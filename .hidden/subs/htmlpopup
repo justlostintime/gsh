@@ -1,4 +1,5 @@
-Sub htmlpopup(htmltext As String,optional Title as string = "HTML PAGE") as window           '' Display an html page in a popup window
+Sub htmlpopup(htmltext As String,optional Title as string = "HTML PAGE") as window  
+''' Display an html page in a popup window
 
 extern dup(oldCode as integer) as integer in "libc:6"
 extern dup2(newid as integer, replaceid as integer) as integer in "libc:6"
@@ -43,9 +44,8 @@ use "gb.form","gb.image","gb.gui","gb.form.htmlview","gb.settings","gb.gui.webvi
 
     Public HtmlViewer as variant
 
-
     if upper(left(htmltext,5)) = "HTTP:" or if upper(left(htmltext,6)) = "HTTPS:" then
-      print "process url : ";quote(htmltext)
+      ' print "process url : ";quote(htmltext)
       HtmlViewer = new Webview(MainForm)
       HtmlViewer.url = htmltext
     else if upper(left(htmltext,5)) like "FILE:" then

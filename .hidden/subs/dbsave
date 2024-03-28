@@ -1,4 +1,5 @@
-Sub dbsave(Optional FileName As String = ".") As Boolean ' Save InMemory database to file/Image
+Sub dbsave(Optional FileName As String = ".") As Boolean 
+''' Save InMemory state database/Image to file/Image
 ''dbSave <"ImageFileName"> - Save the current database image to a file
 ''          Images may be saved to a file and loaded as needed
 ''          Images may contain any application environment

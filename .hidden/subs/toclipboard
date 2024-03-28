@@ -1,5 +1,6 @@
-Sub toclipboard(fileName as string,optional source as string = "") '' copy a file into the clipboard
-'' toclipboard filename  
+Sub toclipboard(fileName as string,optional source as string = "") 
+''' copy a file into the clipboard
+'' toclipboard filename
 ''    copy a file to clipboard
 '' toclipboard "" "copy this stuff to clipboard"
 ''    copy string to clipboard

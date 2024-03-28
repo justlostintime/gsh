@@ -1,6 +1,13 @@
-Class Monitorwebagent  'This class is used by the monitor web App to check in backgraound if var changes'
-''          It notifies the forground app when the website is down
-''
+Class Monitorwebagent
+'''This class is used by the monitor web App to check in backgraound
+'''if a website is down
+'''' MonitorWedAgent, MonitorWebStop
+''It notifies the forground app when the website is down
+''by sending a message to the forground web monitor App
+''This does most to the monitor work, polling the website every
+''few seconds or minutes to see if it still responds
+''This will send an email to the user when a site fails after
+''the configured number of retries.
 Inherits Task
 
 Private MonitorWebTimer As Timer
@@ -13,19 +20,23 @@ Public MonitorNotifyEmail As String = ""
 Public MonitorNotifyHost As String = ""
 Public MonitorNotifyUser As String = ""
 Public MonitorNotifyPwd As String = ""
-Public MonitorNotifyPort As Integer = 0
+Public MonitorNotifyPort As Integer = 465
 Public MonitorMissedCount As Integer = 0
 Private SendCount As Integer = 3            ' number of missed or incorrect responses before email sent
 Private errorexit As Boolean = False
 
 Private hClient As Httpclient
-
+Class Sharedmem
 Public Sub main()
-
+     Print " Monitor Web Agent";; application.id;; "started for";; Quote(MonitorWebAddr)
+     
 With sharedmem
     Use "gb.net", "gb.net.curl", "gb.pcre", "gb.net.smtp"
-    .[controlvariable] = True    ' this creates or resets controlvariable when reset stops this task        
-    MonitorWebTimer = New Timer As "monitorcheck" 
+    .[controlvariable] = True    ' this creates or resets controlvariable when reset stops this task
+    If MonitorWebAddr = "" Then
+       Print "No Web Address provided to monitor : Ending monitor"
+    Endif
+    MonitorWebTimer = New Timer As "monitorcheck"
     MonitorWebTimer.Delay = MonitorPollTime
     MonitorWebTimer.enabled = True
     While .[ControlVariable] = True Or ErrorExit = True
@@ -42,20 +53,21 @@ hclient = New Httpclient As "hclient"
 hclient.URL = MonitorWebAddr
 hClient.async = True
 hClient.timeout = MonitorTimeOut
+
 Try hClient.get()
-If Error Then 
+If Error Then
     sendemail("MonitorWeb agent Error:" & error.text & "" & error.where, True)
     Return
 Endif
 
 If hclient.status < 0 Then
- sendemail("MonitorWeb Server " & MonitorWebAddr & " Not responding correctly :" & hClient.reason, True)
+ sendemail("MonitorWeb Not responding correctly :" & hClient.reason & " Status " & hclient.status, True)
 Endif
 
 End
 
 Public Sub hClient_error()
-    SendEmail("MonitorWeb error :" & MonitorWebAddr & " Response error :" & hclient.reason, True)
+    SendEmail("Monitor Web error : Unexpected Response\nReason : " & Quote(hclient.reason) & "\nStatus : " & hclient.status, True)
 End
 
 Public Sub hClient_finished()
@@ -65,7 +77,7 @@ Dim sBuffer As String = ""
 If Lof(hclient) Then sBuffer = Read #hClient, Lof(hClient)
 
 If ExpectedReturn <> "" And If Not regexp.match(sBuffer, ExpectedReturn, regexp.caseless) Then
-      SendEmail("Unexpected Response from " & MonitorWebAddr & " Got='" & Left(sBuffer, 20) & "' Expected='" & ExpectedReturn & "'", False)
+    SendEmail("Unexpected Response\nGot='" & Quote(Left(sBuffer, 40)) & "\nExpected=" & Quote(ExpectedReturn), False)
 Else
     MonitorMissedCount = 0
     SendCount = 3
@@ -76,38 +88,63 @@ Catch
  SendEmail("MonitorWeb Internal Error:" & error.text & " " & error.where, True)
 End
 
+Public InSend As Boolean = False
 Sub SendEmail(message As String, HaltTask As Boolean)
     'Print "Sendmail"
+
+    ErrorExit = HaltTask
+
+    If InSend Then
+       Print "In Sendmail Overlap :";; message
+       Return
+    Endif
+    
+    InSend = True
+    Try MonitorWebTimer.stop()
+
     If Not HaltTask Then
         Inc MonitorMissedCount
         'print "Notify email = ";MonitorNotifyEmail
-       
-        If (MonitorMissedCount Mod sendcount) <> 0 Then Return
-    
+
+        If (MonitorMissedCount Mod sendcount) <> 0 Then 
+            InSend = False
+            Try MonitorWebTimer.start()
+            Return
+        Endif
+
         sendcount = 20                      ' after first send then every 20
     Endif
-    
+
     If MonitorNotifyEmail = "" Then
         Print
-        Print "MonitorWeb Agent Message:"; message
+        Print "MonitorWeb Agent Message about";; Quote(MonitorWebAddr);; ":";; message;; "\n";; MonitorMissedCount
+        InSend = False
+        Try MonitorWebTimer.start()
         Return
     Endif
-    
+
     Dim email As New Smtpclient
-   
+
     email.host = MonitorNotifyHost
     If MonitorNotifyUser <> "" Then email.user = MonitorNotifyuser
     If MonitorNotifyPwd <> "" Then email.password = MonitorNotifyPwd
+    email.Port = MonitorNotifyPort
+    email.Authentication = SmtpClient.Plain
+    Email.Encrypt = Net.SSL
     email.from = MonitorNotifyEmail
     email.to.add(MonitorNotifyEmail)
-    Email.Subject = "Host Not Responding " & MonitorWebAddr
-    Email.Body = MonitorWebAddr & ":" & message
+    Email.Subject = "Web Monitoring For " & Quote(MonitorWebAddr)
+    Email.Body = "Monitoring " & Quote(MonitorWebAddr) & "\n" & message & "\n" & "Retry count :" & MonitorMissedCount
     'print "sending email"
-    Email.send
+    Email.send()
     Wait
     
-    If HaltTask Then errorexit = True
-    
+    InSend = False
+    Try MonitorWebTimer.start()
+
+Catch
+   Print "Send Mail Error "; error.text
+   errorExit = True
 End
 
 End Class

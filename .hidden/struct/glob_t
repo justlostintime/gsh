@@ -1,4 +1,6 @@
-Public Struct glob_t   'The structure definition used by the glob system function
+Public Struct glob_t
+'''The structure definition used by the glob system function
+'''This is used when the $glob system variable is true
 ''          Some size_t functions are implemented as prointer as size_t
 ''          follows the size of the address pointer in most systems
 ''          Used by some plugin functions

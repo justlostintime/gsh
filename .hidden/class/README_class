@@ -1,16 +1,18 @@
-class README_class
+Class README_class   ' template for all gsh classes
+''' class readme_class  --  is the prototype for all gsh classes
+''' triple quotes creats a synopsis
 '' This is the directory where
 '' user or system defined classes should appear
 '' This file is a model of a gsh class
 
-public sub _get(...) as string
-    return "README"
-    end
+Public Sub _get(...) As String
+    Return "README"
+    End
 
-public sub _put(...)
+Public Sub _put(...)
 
     'put it away
-    end
+    End
 
 
 

@@ -1,4 +1,5 @@
-Sub varwrite(Optional varname As String = "", FileName As String = "",astext as boolean  = false) As Boolean ' write variable to a file
+Sub varwrite(Optional varname As String = "", FileName As String = "",astext as boolean  = false) As Boolean 
+''' write variable to a file
 ''VarWrite  $GlobalVarName <"filename"> - write a global variable value to a file, default = ~/var/varname
 ''    as function - varwrite("varname <, "filename">)
 ''    as command  - varwrite "varname" <"filename>

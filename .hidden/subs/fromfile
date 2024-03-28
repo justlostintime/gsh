@@ -1,11 +1,18 @@
-Sub fromfile(filename as string)as string ' return a text file as a string
+Sub fromfile(filename as string, optional AsList as boolean = false)as variant 
+''' return a text file as a string or list
+''' example: ? fromfile(".profile")  .. lists .profile
+'''          $a = fromfile(".profile") $a now contains .profile
 '' fromfile <filename> - loads and return a text file as a string
 ''          may be used as the source for redirected input
 ''          although the shell now supports this function natively
 ''          cat < ~/vars/xx may now be used.
 
-dim result as string 
+dim result as string
     result = expandfn(filename)
 	if not exist(result) then error.raise("File not found:"&result)
-	return file.load(result)
+	if AsList then
+	  return split(file.load(result),"\n","\"",false,true)
+  else
+	  return file.load(result)
+  endif
 End

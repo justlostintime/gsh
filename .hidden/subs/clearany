@@ -1,4 +1,12 @@
 sub ClearAny(objtype as string,parmset as string[])
+''' Clear all class, sub and struct objects from memory
+''' by default will prompt to save all changed files
+'' Use : ClearAny <class|struct|sub> <["name1","name2"]>
+'' if no type and no list then just do everything
+''       --IgnoreErrors - ignore and error"
+''       --Verbose      - Be verbose as to what is cleared or saved"
+''       --AutoSave     - automatically save any new or changed subs in the image"
+''       --NoSave       - Do not save any new or changed subs in image"
 
 Public  Verbose as boolean = false
 Public  IgnoreErrors as boolean = false
@@ -91,7 +99,7 @@ Private Find_Object_Source(objType,objname) as string
     dim Look_In_Directory as string[] = split(sharedmem[objtype&"path"],";","\"",true)
     for each location as string in Look_In_Directory
       if exist(location &/ objname) then
-         return location &/ objname 
+         return location &/ objname
       endif
     next
     return ""

@@ -1,4 +1,6 @@
-public sub runvar(varname as string,...) as variant ' execute variable content as script
+public sub runvar(varname as string,...) as variant 
+''' Execute variable content as script -- also use @varname(...)
+''' This is redundant and not recommended
 '' $a = runvar("variableName",parn1,...)
 ''    Execute the content of a variable as an
 ''    independent script

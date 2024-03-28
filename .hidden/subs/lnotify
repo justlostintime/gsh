@@ -1,9 +1,10 @@
-Sub lnotify() ' List all variable and objects with functions waiting for notification
+Sub lnotify() 
+''' List all variable and objects with functions waiting for notification
 '' lnotify  list all the variables that have a task/process waiting for a changed indication
 ''          when the current task is waiting for a variable provides a detailed list of callback
 ''          functions for each task/process.
 with sharedmem
-  print "Symbol  [ Timeout, time Last Updated, pid of waiting task, function Called, Object Class Called"
+  print "Symbol [ Timeout, time Last Updated, pid of waiting task, function Called, Object Class Called ]\n"
 	for each s as string in .notifylist()
 		print s
 	next

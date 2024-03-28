@@ -1,4 +1,5 @@
-Sub msgs(...) as integer ' display a popup message and return the selection
+Sub msgs(...) as integer 
+''' Display a popup message and return the selection
 '' Display the message popup with the defined buttons 1-3
 '' returns the index of the button pressed
 '' msgs [type] message buttontxt1 buttontxt2 buttontxt3

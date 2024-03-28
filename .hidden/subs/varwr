@@ -1,4 +1,5 @@
-sub varwr(...) 'write a list of variabls to files
+sub varwr(...) 
+'''write a list of variables to files
 '' varwr varname varnam ..
 ''   write multiple variables to the vars directory
 ''   using the default name , the variable name

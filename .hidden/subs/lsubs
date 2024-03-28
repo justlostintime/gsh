@@ -1,4 +1,5 @@
-Sub lsubs(Optional varname As String = "") As Boolean ' list all subs/functions/procedures
+Sub lsubs(Optional varname As String = "") As Boolean 
+''' List all subs/functions/procedures or specific function
 ''lSubs <GlobalSubName> - prints a list of global Functions, Subs or Procs
 ''          prints the content of Sub if name is provided same as list command
 ''          May be used as command or subroutine in scripts
@@ -13,11 +14,9 @@ Dim allindex As New String[]
 Dim GetHighlight As New gshHighLight
 Dim ShowDetail As Boolean = False
 
-
 'dim mygsh as object = classes["gsh"]
 'allsubs = object.call(mygsh,"lany",["sub","subs"])
 allsubs = lany("sub", "subs")
-
 
 If varname.len = 2 And If varname = "-l" Then
     varname = ""

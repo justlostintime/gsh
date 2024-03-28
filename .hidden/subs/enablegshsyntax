@@ -1,13 +1,14 @@
-Sub EnableGshSyntax() ' Install Nano and vim highlight syntax
-'seteditsyntaxon() Enable gambas syntax both nano and vim
+Sub EnableGshSyntax() 
+''' Install Nano and vim highlight syntax
+''EnableEditSyntax() Enable gambas syntax both nano and vim
 ''          install gambas syntax both nano and vim
 ''          This Should have happened when you installed
-''          gsh
+''          gsh. But this will update the user rc scripts
 dim EditRc as string[]
 dim OurEditRc as string[]
 dim lookfor as string
 
-'' Install the updates to the local .vimrc to detect gsh syntax
+print "Install the updates to the local .vimrc to detect gsh syntax"
 if not exist(user.home &/ ".vimrc") then
     try copy "/usr/share/gsh/vim/.vimrc" to user.home &/ ".vimrc"
      if error then
@@ -37,7 +38,7 @@ else
     endif
 endif
 
-'' install nano turn on linenumber etc
+Print "Install nano turn on linenumber etc"
 if not exist(user.home &/ ".nanorc") then
     try copy "/usr/share/gsh/nano/.nanorc" to user.home &/ ".nanorc"
     if error then

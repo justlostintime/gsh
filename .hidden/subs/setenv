@@ -1,4 +1,5 @@
-Sub setenv(var As String, value As String) ' set shell environment var
+Sub setenv(var As String, value As String) 
+''' set shell environment var
 '' sets the value of an environment variable
 
 env[var] = value

@@ -1,5 +1,6 @@
-Sub traceon(Optional level As Integer = -1) As Boolean ' turn the tracing of script on
-''TraceOn   
+Sub traceon(Optional level As Integer = -1) As Boolean 
+''' turn the tracing of script on
+''TraceOn
 ''    Turns on shell command tracing
 ''    Will cause the printing of each input line with time stamp and required terminator
 ''    terminator is the current block termination string

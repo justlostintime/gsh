@@ -1,4 +1,5 @@
-Sub cd(Optional CDToDir As String = "~") As Boolean ' change directory
+Sub cd(Optional CDToDir As String = "~") As Boolean 
+'''  change directory with path expansion
 ''cd   directorypath - change the current working directory
 ''          uses the env["PWD"] variable
 ''          updates the global $env,$pwd variables
@@ -6,6 +7,10 @@ Sub cd(Optional CDToDir As String = "~") As Boolean ' change directory
 ''          Command  cd "directory"
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
+'' parameters
+'' "cd -" Swap to last directory entered   
+'' "cd "  Goto home directory
+
 with sharedmem
 dim a as new glob_t
 Dim sPath As String

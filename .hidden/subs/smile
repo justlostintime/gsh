@@ -1,4 +1,5 @@
-sub smile() ' fun app to print a smile
+sub smile()
+''' fun app to print a smile as text picture
 '' print a smile!
 print "Its is always a good day to smile"
 print "      ********************     "

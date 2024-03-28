@@ -1,4 +1,6 @@
 Class Gshhighlight
+''' This is loaded by the system to create highlighted
+''' gsh/gambas source listings
 
   Use "gb.highlight", "gb.eval"
 

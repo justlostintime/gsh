@@ -1,4 +1,5 @@
-Sub playground(...) ' Access and present playground programs
+Sub playground(...) 
+''' Access and present, execute  playground programs
 '' PlayGround(...)
 '' Pass a playground program to run
 '' if no name supplied then present a list of available
@@ -158,7 +159,6 @@ sub editexample(index as string) as string
    return editbuffer
    end with
 end
-
 
 Public sub DisplayListing(AllIndex as string[])
 

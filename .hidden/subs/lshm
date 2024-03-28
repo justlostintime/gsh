@@ -1,4 +1,5 @@
-Sub lshm(optional shortreport as boolean = true) ' list of used shared memory and values
+Sub lshm(optional shortreport as boolean = true) 
+''' list of used shared memory blocks, sizes , values and  variable name
 with sharedmem
 ._print(shortreport)
 end with

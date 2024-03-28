@@ -2,7 +2,8 @@ class gsh
 class texthighlighter
 class color
 
-Sub list(...) ' list the last executed script or a specific sub/class/struct
+Sub list(...) 
+''' List the last executed script or a specific sub/class/struct
            If param.count > 0 Then
               For parscount As Integer = 0 To param.max
                 If param[parscount][0] = "\"" Then param[parscount] = UnQuote(param[parscount])
@@ -46,6 +47,5 @@ Private Sub doListing(Command As String)
   Else
       Print ListProg
   Endif
-  
 
 End

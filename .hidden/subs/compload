@@ -1,4 +1,5 @@
-Sub compload(...) As Boolean ' loads a gambas3 component into memory
+Sub compload(...) As Boolean 
+''' loads a gambas3 component into memory dynamically
 ''compload(NameOfComponant as string) as component
 ''          Load a component into the current shaell and make it available
 ''          to the current shell

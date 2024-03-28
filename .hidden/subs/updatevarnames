@@ -1,20 +1,22 @@
-sub UpdateVarNames()  ' updates all var names to new standards
+sub UpdateVarNames()  
+''' Updates all var names to new standards, Used by gsh
+''' to update variable internal format to new version
 '' In old versions of gsh internal variables included the $ names
 '' names have been standardized to remove the need for the $ at
 '' the start of variable names internally
 '' This function renames all variables in the image to the new standardized
 '' it is called by update once to convert the names
   with sharedmem
-  
+
     for each s as string in sharedmem
-     
+
       print "Checking";; s;;":";;
       if s[0] = "$" then
         dim newname as string = right(s,-1)
         if not .Exist(newname) then
            print "Renaming";;s ;;"to";;newname;;
            .rename(s,newname)
-        else 
+        else
            print "Replacing existing";;newname;;"With Contents of";;s;;
            .[newname] = .[s]
            .free(s)
@@ -22,6 +24,6 @@ sub UpdateVarNames()  ' updates all var names to new standards
       endif
       print
     next
-    
+
   end with
 end

@@ -1,8 +1,9 @@
 class SetDefaults
-Sub resetdefaults() As Boolean ' reset all global variables to default values
-''resetdefaults  resets the system variables to thier default value
-''          this is non destructive and will change all needed variables to
-''          thier default valiables.
+Sub resetdefaults() As Boolean 
+'''Reset all global system variables to default values
+''resetdefaults  Resets the system variables to thier default value
+''               this is non destructive and will change all system variables to
+''               thier default valiables.
 
 SetDefaults()
 

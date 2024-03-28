@@ -1,5 +1,8 @@
 sub monitorwebstop()
-
+''' Stop the Monitoring of websites
+'' Stops the monitoring of websites started by monitorwebagent
+'' it sends a message to the background agent for all running monitors
+''' MonitorWeb, MonitorWebAgent
 with sharedmem
  .[monitorwebagent.ControlVariable] = false
 end with

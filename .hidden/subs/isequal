@@ -1,4 +1,5 @@
-Sub isEqual(leftval As Variant, rightval As Variant) As Boolean ' compare anything to anything
+Sub isEqual(leftval As Variant, rightval As Variant) As Boolean 
+''' compare anything to anything
 '' Compares any data to any data, including array content and object
 '' object arrays
 '' simple data types
@@ -30,7 +31,7 @@ Select Case ObjClass.name
                  If leftval[i] <> rightval[i] Then Return False
             Next
             Return True
-            
+
        Case "Variant[]"
             If LeftVal.count <> rightval.count Then Return False
             For i As Integer = 0 To leftval.max
@@ -42,7 +43,7 @@ Select Case ObjClass.name
             Next
             Return True
 
-       Case "Object[]"                                             ' Left just for documentation, same as else 
+       Case "Object[]"                                             ' Left just for documentation, same as else
             If leftval.count <> rightval.count Then Return False
             For i = 0 To leftval.max
              If Not isEqual(leftval[i], rightval[i]) Then Return False
@@ -50,7 +51,7 @@ Select Case ObjClass.name
             Return True
 
        Case Else
-         
+
             If Right(ObjClass.name, 2) = "[]" Then                    ' every other type of object array
                  If leftval.count <> rightval.count Then Return False
                  For i = 0 To leftval.max
@@ -58,9 +59,9 @@ Select Case ObjClass.name
                  Next
                  Return True
             Endif
-            
+
            Return leftval = rightval
-           
+
 End Select
 
 Return False

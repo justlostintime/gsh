@@ -3,8 +3,9 @@
 '' included into your script as a refrence is seen in
 '' a script being executed.
 
-public struct README_struct
-	body as string
-end struct
+Public Struct README_struct ' Prototype definition for gsh structures
+ body As String
+End Struct
+''' This is a prototype for gsh data structures
 
 '' this directory contains all structures defined in your shell

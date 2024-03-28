@@ -1,4 +1,5 @@
-Sub Sink() ' simple example of a data sink receiver
+Sub Sink() 
+''' Simple example of a data sink receiver
 '' Functions like this can be to sink/receive data from a process stream
 '' Just have to read from stdin
 

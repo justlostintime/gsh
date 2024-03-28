@@ -1,5 +1,6 @@
 Class gsh
-Sub removesync(VarName as string) ' stop Syncing an environment entry with the gsh variable value
+Sub removesync(VarName as string) 
+''' Stop Syncing an environment entry with the gsh variable value
 '' RemoveSync(Variable)
 '' remove binding between gsh var and env var
 

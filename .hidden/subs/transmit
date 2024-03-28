@@ -1,4 +1,5 @@
-Sub transmit(varname as string) ' Used in service mode to transmit the requested global variable
+Sub transmit(varname as string) 
+''' Used in service mode to transmit the requested global variable
 ''transmit -This is used when the shell in started in service mode
 ''          It will transmit via stdout the content of a global variable/class/structure or function
 with sharedmem

@@ -1,4 +1,5 @@
-Sub varread(Optional varname As String = "", Optional FileName As String = "") As Boolean ' load variable from file
+Sub varread(Optional varname As String = "", Optional FileName As String = "") As Boolean 
+''' Load variable from file
 ''VarRead  $GlobalVarName <"filename"> - read a global variable value from a file, default = ~/var/varname
 ''   as function - varread("varname <, "filename">)
 ''   as command  - varread "varname" <"filename

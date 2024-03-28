@@ -1,4 +1,6 @@
-Sub lprint(...) As Boolean ' Print Anything to stdout
+Sub lprint(...) As Boolean
+''' Print Anything to stdout, formats most datatypes into 
+''' printable a format.
 ''lPrint    print the content of arrays or collections
 ''          or objects/classes with the special _print function
 ''          function lprint(...) print the valiables
@@ -10,3 +12,7 @@ for each v as variant in vParams
     fprint(file.out,v)
     next
 end
+
+class sharedmem
+class mem
+class fprint

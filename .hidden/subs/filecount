@@ -1,5 +1,8 @@
-Sub filecount(...) ' Count the number of files
+Sub filecount(...)
+''' Count the number of files in specified directory
+''' recursively
 '' ftw - fast traverse (walk) a file tree
+'' uses the system call ftw to count the number of files
 
 ' numOpenFds is the maximum number of file descriptors that will be open at any one time
 '            they are used to open each directory depth wise, 64 is a good number
@@ -13,7 +16,7 @@ Public TotalDirectories As Long = 0
 Public OpenFiles As Integer = 256
 Dim DirPath As String = "."
 
-  If param.count = 0 Then 
+  If param.count = 0 Then
      PrintInfo(DirPath)
      Return
   Endif
@@ -21,11 +24,10 @@ Dim DirPath As String = "."
   For Each DirPath In param
    PrintInfo(DirPath)
   Next
-  
 
 '  nftw(User.home, ftwprocess2, 64, FTW_PHYS) ' only phsical files no symlinks
 '  Print "NFTW: Total Directories =";; Format(TotalDirectories, "########0"), "Total Files =";; totalFiles
-
+'
 End
 
 Private Sub PrintInfo(DirPAth As String)
@@ -35,7 +37,6 @@ Private Sub PrintInfo(DirPAth As String)
   FTW(DirPath, ftwprocess, OpenFiles)
   Print "FTW : Total Directories =";; Format(TotalDirectories, "########0"), "Total Files =";; totalFiles
 End
-
 
 Public Sub ftwProcess(fpath As String, sb As Pointer, typeflag As Integer) As Integer
 

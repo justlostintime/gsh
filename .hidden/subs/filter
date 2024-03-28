@@ -1,4 +1,5 @@
-Sub filter() ' this is a simple filter to do upper to lower case
+Sub filter() 
+''' this is a simple filter to do upper to lower case
 '' these functions just have to read from std input and write to
 '' standard output until the std input is closed
 

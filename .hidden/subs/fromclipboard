@@ -1,4 +1,5 @@
-Sub fromclipboard(optional PrintContent as boolean = false) as variant '' prints the clipboard to stdout
+Sub fromclipboard(optional PrintContent as boolean = false) as variant 
+''' prints the clipboard to stdout, alias is fcb
 '' Copies the clipboard to standard out
 '' example to copy the information to a file use the
 '' following command:

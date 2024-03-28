@@ -1,4 +1,5 @@
-Sub tofile(fname As String, optional atEnd as boolean = false) 'tee write to the file and stdout
+Sub tofile(fname As String, optional atEnd as boolean = false) 
+'''tee write to the file and stdout -- redundant use |> or |< instead
 '' tofile filename
 ''     Take the std in and tee's it to a file and to std out
 ''     take a copy of a pipeline !!!

@@ -1,46 +1,31 @@
-Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant  ' Bash Style enumeration
+Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant  
+''' Bash Style brace expansion/enumeration definitions are expanded to list of values
+''' This is used by gsh to expand $"..." expressions
 '' Will return an enumerated text value as an array of string values
-'' much like the bash braced enumeration
+'' much like the bash braced expansion / enumeration
 '' Example :
 '' for each a as integer in $"0..10..2"
-''   print a
+''   print a;;
 '' next
 '' outputs:
-''0
-''2
-''4
-''6
-''8
-''10
+''   0 2 4 6 8 10
 ''
-'' for each s as string in $"route\t{0..10}\ttimet{0000..1200..1000}"
+'' for each s as string in $"route\t{0..3}\ttimet{0000..1200..600}"
 ''   print s
 '' next
 '' outputs:
-''route	00	time	0000
-''route	00	time	0100
-''route	00	time	0200
-''route	00	time	0300
-''route	02	time	0000
-''route	02	time	0100
-''route	02	time	0200
-''route	02	time	0300
-''route	04	time	0000
-''route	04	time	0100
-''route	04	time	0200
-''route	04	time	0300
-''route	06	time	0000
-''route	06	time	0100
-''route	06	time	0200
-''route	06	time	0300
-''route	08	time	0000
-''route	08	time	0100
-''route	08	time	0200
-''route	08	time	0300
-''route	10	time	0000
-''route	10	time	0100
-''route	10	time	0200
-''route	10	time	0300
+''    route	0	timet0000
+''    route	0	timet0600
+''    route	0	timet1200
+''    route	1	timet0000
+''    route	1	timet0600
+''    route	1	timet1200
+''    route	2	timet0000
+''    route	2	timet0600
+''    route	2	timet1200
+''    route	3	timet0000
+''    route	3	timet0600
+''    route	3	timet1200
 
 
 ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
@@ -66,8 +51,7 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
  Return IntermResults
  End
 
-
- Sub enumerateloop(value As String) As String[] ' loop here until completed
+ Sub enumerateloop(value As String) As String[] ' loop here until completed'
 
  Dim finalresult As New String[]
 
@@ -106,7 +90,7 @@ Sub matchbrace(src As String, start As Integer) As Integer
   For i As Integer = start To src.len - 1
     If src[i] = "{" Then Inc level
     If src[i] = "}" Then Dec level
-    If level = 0 Then Return i + 1  ' we are working with strings
+    If level = 0 Then Return i + 1  ' we are working with strings'
   Next
 
   Return 0
@@ -129,7 +113,7 @@ Sub getenum(enumdef As String) As String[]
       endif
 
       If IsNumber(EnumStart) Then
-        dim PatternLength as integer = 0                 ' we must pad with leading zeros when asked
+        dim PatternLength as integer = 0                 ' we must pad with leading zeros when asked'
         dim Pattern as string = ""
         if EnumStart[0] = "0" or if EnumEnd[0]="0" Then
           PatternLength = max(EnumStart.len,EnumEnd.len)

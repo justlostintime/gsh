@@ -1,7 +1,8 @@
-Sub searchpath() ' list all search paths for libraries
+Sub searchpath() 
+''' list all search paths for libraries
 '' searchpath
 ''   prints a list of all the locations
-''   to be searched when trying to load a 
+''   to be searched when trying to load a
 ''   library
 Print "Begin library Search list"
 

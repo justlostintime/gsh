@@ -1,6 +1,9 @@
 use "gb.gui"
 
 Sub noteiffy(varname as string, optional InitValue as variant = "", termvalue as variant = "bye")
+''' Notify user when a GSH variable changes.
+'' Pops up a message window when a GSH variable is changed
+
      sharedmem[varname] = InitValue
      Print "Waiting for Variable to change to value = ";termvalue
      sharedmem.notifychange(varname,me,-1,"testread")

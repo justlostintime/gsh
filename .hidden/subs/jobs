@@ -1,4 +1,6 @@
-Sub jobs(Optional varname As String = "") As Boolean ' Job Control
+Sub jobs(Optional varname As String = "") As Boolean 
+''' Job Control - list of current BG jobs
+'''               or turn job control on or off
 ''jobs <pid|on|off> prints a list of current background jobs
 ''          Or turns job control ON or OFF
 ''

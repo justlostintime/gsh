@@ -121,24 +121,25 @@ Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
 
 Public EnvSync As SyncEnv
+
 Class Sharedmem
 
 '' Set the trace level while running the script
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel)    ' this function turns on the compile tracing
-  
+
   DoTrace = setting
   SharedMem["DoTrace"] = setting
   TraceLevel = level
   sharedmem["TraceLevel"] = level
-  
+
 End
 
 '' turn on or off the job control system
 '' Causes the shell to track all jobs, keep job history
 Public Sub setjobctl(setting As Boolean)
-  
+
   jobctl = setting
-  
+
 End
 
 '' Function the catches the system signals
@@ -148,9 +149,9 @@ Public Sub application_signal(sig As Integer)
   '   signal[Signal.SIGINT].catch
   '   Signal[Signal.SIGHUP].catch
   ' Print " Signal "; sig
-  
+
   Select Case sig
-      
+
     Case Signal.SIGWINCH
       windowwidth = File.Out.Term.width
       Env["COLUMNS"] = windowwidth
@@ -161,7 +162,7 @@ Public Sub application_signal(sig As Integer)
         Signal.send(RunningProcess.Handle, Signal.SIGWINCH)
       Endif
       Return
-      
+
     Case Signal.SIGHUP, Signal.SIGABRT
       If RunningProcess <> Null Then
         Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup/abort(" & CStr(sig) & "): Sub Process PID=" & RunningProcess.handle)
@@ -172,7 +173,7 @@ Public Sub application_signal(sig As Integer)
       Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup/SigAbrt(" & CStr(sig) & "):PID=" & Application.id)
       Signal.send(0, Signal.SigKill)
       ExitProgram()
-      
+
     Case Signal.SIGTERM
       If RunningProcess <> Null Then
         Signal.send(RunningProcess.Handle, Signal.SigTerm)
@@ -180,10 +181,10 @@ Public Sub application_signal(sig As Integer)
         RunningProcess = Null
         Return
       Endif
-      
+
       Try gshlogging(User.home &/ "vars/gsh.log", " Gsh got SigTerm " & application.handle)
       ExitProgram()
-      
+
     Case Signal.SIGINT
       If RunningProcess <> Null Then
         Try gshlogging(User.home &/ "vars/gsh.log", "Process SigInt" & RunningProcess.handle)
@@ -192,12 +193,12 @@ Public Sub application_signal(sig As Integer)
         Error "\n"
         Return
       Endif
-      
+
       If LocalRunning Then
         LocalRunning = False
         Error.Raise("Terminated")
       Endif
-      
+
       If Not CommandMode Then
         If BlockLevel > 0 Then
           Error.Raise("Break!")
@@ -208,7 +209,7 @@ Public Sub application_signal(sig As Integer)
         'Signal.send(0, Signal.SigKill)
         ExitProgram()
       Endif
-      
+
     Case Signal.SIGCHLD
       'gshlogging(User.home &/ "vars/gsh.log", "Process SigChld")
       ' If LocalRunning Then
@@ -216,15 +217,15 @@ Public Sub application_signal(sig As Integer)
       ' Endif
       Return
   End Select
-  
+
 End
 
 '' called to veirify that a loaded module can
 '' access the shell interface
 Public Sub TestModuleAccess() As Boolean
-  
+
   Return True
-  
+
 End
 
 ClassesToLoad As String[] = [
@@ -258,34 +259,34 @@ ClassesToLoad As String[] = [
 
 'Public Sub Myinit()
 Public Sub _init()
-  
+
   Dim result As Integer
-  
+
   $sharedmemlib = File.Load("sharedmem")
   $ScripterLib = File.Load("gb.scripter")
   $ScriptHighlighter = File.Load("gb.highlight")
-  
+
   Try Component.Load("gb.signal")
   Try Component.Load($ScriptHighlighter)
   If Error Then
     Print "Unable to locate";; $ScriptHighlighter;; Error.text
     Quit 7
   Endif
-  
+
   Try Component.load($sharedmemlib)
   If Error Then
     Print "Init Error : "; Error.text;; Error.where
     Print "Shared memory library not avaiable at";; $sharedmemlib
     Quit 9
   Endif
-  
+
   Try Component.Load($ScripterLib)
   If Error Then
     Error "Error Scripter library not found, ";; $ScripterLib
     Quit 9
   Endif
   gbscomponent = True
-  
+
   For Each c As String In ClassesToLoad
     Try Class.Load(c)
     If Error Then
@@ -293,25 +294,25 @@ Public Sub _init()
       Quit 8
     Endif
   Next
-  
+
   ConsoleHighlight = TextHighlighter["gambas"]
-  
+
   SharedMem.DoInit()
-  
+
 Catch
   Print Error.text, Error.Where
   Quit 9
-  
+
 End
 
 Public Sub ProcessOptions() As String[]
-  
+
   Dim bAboutGsh As Boolean
   Dim bReadVersions As Boolean
   Dim sCRestOfArgs As String[]
   Dim sSharedMemoryName As String
   Dim sImageToUse As String
-  
+
   Args.Begin(Application.Name & " <option> <Command.gsh>")
   bDbaseServer = Args.Has("d", "service", ("Run shell as a service point Daemon"))
   sPortNumber = Args.Get("p", "port", ("I/O Port number/name to use else  Defaults to stdin/stdout/stderr"))
@@ -332,7 +333,7 @@ Public Sub ProcessOptions() As String[]
   VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independant script, returns output"))
   LocalFunRun = Args.Get("r", "runline", ("Execute the following command line"))
   sCRestOfArgs = Args.End()
-  
+
   If bAboutGsh Then
     Print ("\n\nGambas Shell")
     Print ("Interactive console for using gambas as your day to day shell")
@@ -344,7 +345,7 @@ Public Sub ProcessOptions() As String[]
     Print ("westwood : https://github.com/justlostintime/GambasShell/wiki\n\n")
     Quit 0
   Endif
-  
+
   If bReadVersions Then
     Print ("gsh :");; $Version
     Print ("SharedMem :");; SharedMem.Version
@@ -354,44 +355,44 @@ Public Sub ProcessOptions() As String[]
     Next
     Quit 0
   Endif
-  
+
   If $iTraceSet >= 0 Then
     TraceLevel = $iTraceSet
     If TraceLevel > 3 Then DoTrace = True
   Endif
-  
+
   If bDbaseServer Then Error ("GSH in service mode");; Now;; Application.Version
-  
+
   If sSharedMemoryName <> "" Then
     DefaultSharedMem = sSharedMemoryName
   Endif
-  
+
   If sImageToUse <> "" Then
     If File.Dir(sImageToUse) = "" Then sImageToUse = sharedmem.DefaultSaveLocation & sImageToUse
-    
+
     If Exist(sImageToUse) Then
       DefaultImageName = sImageToUse
     Endif
-    
+
   Endif
-  
+
   Return sCRestOfArgs
-  
+
 Catch
   Error "gsh Invalid Option "; Error.text;; Error.Where
   Quit 0
-  
+
 End
 
 Public Sub RunFromExtern(ScriptName As String, ...)
-  
+
   execbuffer = ""
   Try RunScript(ScriptName)
   If Error Then
     Error (" extern run "); Error.text; Error.where
   Endif
   execbuffer = ""
-  
+
 End
 
 '' Find the location of a plugin subroutine
@@ -399,56 +400,56 @@ End
 '' Check if it has changed and if we need to compile and load the
 '' Plugin class. The class must have a function by the same name
 Public Sub GetSub(cmd As String) As Boolean
-  
+
   Dim fpath As String
-  
+
   cmd = Replace(cmd, "\"", "")
-  
+
   Dim SubName As String = "sub." & File.Name(Lower(cmd))
   If SharedMem.exist(SubName) Then Return True
-  
+
   fpath = FindScript(cmd, "subs")
   If Not Exist(fPath) Then
     Error.Raise(("Get Error: Command not found ") & cmd)
     Return False  ' never gets here but reminds us what happens up the chain
   Endif
-  
+
   SharedMem[SubName] = File.Load(fPath)
   'If IsNull(SubCls.CompileIt(SubName, SharedMem[subname])) Then Return False
   If Not compile(SubName) Then Return False
   Return True
-  
+
 End
 
 '' Return a list of all the system variables
 '' These variables are not cleared or deleted
 '' by any of the system functions
 Public Sub SystemVariables() As String[]
-  
+
   Return SysVars
-  
+
 End
 
 '' Updates the environment variables used by the exec
 '' function when running scripts
 Private Sub UpdateEnv()
-  
+
   getenv()
-  
+
 End
 
 '' Get the env variables into the gsh.image variable
 Public Sub getenv() As String[]
-  
+
   SharedMem["pwd"] = Env["PWD"]
-  
+
   Dim senv As New String[]
   For Each s As String In Application.env
     senv.add(s & "=" & Application.Env[s])
   Next
   SharedMem["env"] = senv
   Return senv
-  
+
 End
 
 '' Used to compile and load all plugin classes
@@ -456,9 +457,9 @@ End
 '' Called after the shared memory has been initialized.
 '' the compile function checks the cache
 Public Sub compileClassOnStart()
-  
+
   Dim Syms As String[] = SharedMem.Variables("class.*")
-  
+
   For Each sym As String In syms
     'Print "On Start Class Compile "; sym
     Try compile(sym)
@@ -466,18 +467,18 @@ Public Sub compileClassOnStart()
       Error ("Compile On Start of Class");; sym;; ("Failed :");; Error.text;; Error.where
     Endif
   Next
-  
+
   linktable.Clear()
-  
+
 End
 
 '' Load and compile all sub/func that are a part
 '' of the gsh.image at startup.
 '' the compile function checks the cache
 Public Sub compileFunctionsOnStart()
-  
+
   Dim Syms As String[] = SharedMem.Variables("sub.*")
-  
+
   For Each sym As String In syms
     'Print "On Start Function Compile "; sym
     Try compile(sym)
@@ -486,7 +487,7 @@ Public Sub compileFunctionsOnStart()
     Endif
   Next
   linktable.Clear()
-  
+
 End
 
 '' compile and load the sub/func in a buffer
@@ -495,22 +496,22 @@ End
 SharedMemClasses As String[] = ["Class Sharedmem", "Class SharedmemSymbol", "Class SharedMemWaitQueue", "Class Mem"]
 
 Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As Boolean = False) As Boolean
-  
+
   Dim proc As String = ""
   Dim FinalProgram As String = ""
   Dim ExtraClasses As New Collection
-  
+
   proc = PreProcBuffer(buffer, False, True)
   If IsNull(proc) Then Return False
-  
+
   Dim AlreadyLinked As New String[]
-  
+
   Dim ProcLinks As String = ""
-  
+
   If InStr(proc, "sharedmem", 0, gb.ignorecase) > 0 Then
     ExternTable.insert(SharedMemClasses)
   Endif
-  
+
   While LinkTable.COUNT
     If linktable.first <> sym Then
       If Not AlreadyLinked.Exist(LinkTable.First) Then
@@ -524,53 +525,53 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
     Endif
     linktable.Remove(linktable.first)
   Wend
-  
+
   For Each sinsert As String In CompilerDirectiveTable
     FinalProgram &= sInsert & "\n"
   Next
-  
+
   For Each sinsert As String In StructTable
     FinalProgram &= sInsert & "\n"
   Next
-  
+
   For Each sinsert In ExternTable
     FinalProgram &= sInsert & "\n"
   Next
-  
+
   FinalProgram &= proclinks & proc
-  
+
   Linktable.clear()
   CompilerDirectiveTable.Clear()
   StructTable.Clear()
   ExternTable.Clear()
-  
+
   SubCls.CompileIt(Lower(sym), FinalProgram, componly, ExtraClasses)
-  
+
   UseTable.Clear()
-  
+
   Return True
   'Endif
-  
+
   linktable.Clear()
   Return False
-  
+
 End
 
 '' Create a project And optionally execute it
 '' Will build the gambas app structure from the contents of a shared mem symbol
 '' Once compiled can be executed immeadiatly.
 Private Sub CreateProject(sym As String, buffer As String, Optional componly As Boolean = False, ExecuteProject As Boolean = False) As String
-  
+
   Dim proc As String = ""
   Dim FinalProgram As String = ""
   Dim ExtraClasses As New Collection
   Dim ProjectDirectory As String
-  
+
   proc = PreProcBuffer("Public Sub main()\n" & buffer & "\nend\n")
   If IsNull(proc) Then Return ""
   Dim AlreadyLinked As New String[]
   Dim ProcLinks As String = ""
-  
+
   While LinkTable.COUNT
     If linktable.first <> sym Then
       If Not AlreadyLinked.Exist(LinkTable.First) Then
@@ -584,76 +585,76 @@ Private Sub CreateProject(sym As String, buffer As String, Optional componly As 
     Endif
     linktable.Remove(linktable.first)
   Wend
-  
+
   For Each sinsert As String In CompilerDirectiveTable
     FinalProgram &= sInsert & "\n"
   Next
-  
+
   For Each sinsert As String In StructTable
     FinalProgram &= sInsert & "\n"
   Next
-  
+
   For Each sinsert In ExternTable
     FinalProgram &= sInsert & "\n"
   Next
-  
+
   FinalProgram = FinalProgram & ProcLinks & proc
   ProjectDirectory = SubCls.CompileIt(Lower("sub." & sym), FinalProgram, componly, ExtraClasses, ExecuteProject)
-  
+
   CompilerDirectiveTable.Clear()
   StructTable.Clear()
   ExternTable.Clear()
   Linktable.Clear()
   UseTable.Clear()
   Return ProjectDirectory
-  
+
 End
 
 '' Compile the content of a shared memory sysmbol
 '' loads the class created and compiled into memory
 '' ready for execution
 Private Sub Compile(sym As String, Optional componly As Boolean = False) As Boolean
-  
+
   Dim proc As String = SharedMem[Lower(sym)]
   Dim result As Boolean
-  
+
   Dim saveDirective As String[] = CompilerDirectiveTable
   Dim saveLinks As Collection = linktable
   Dim saveuse As String[] = UseTable
   Dim saveextern As String[] = ExternTable
   Dim SaveStruct As String[] = StructTable
   'Print "Compile prog : "; sym
-  
+
   LinkTable = New Collection
   UseTable = New String[]
   ExternTable = New String[]
   StructTable = New String[]
   CompilerDirectiveTable = New String[]
-  
+
   result = CompileBuffer(sym, proc, componly)
-  
+
   linktable = saveLinks
   usetable = saveuse
   externtable = saveextern
   structtable = savestruct
   CompilerDirectiveTable = saveDirective
   Return result
-  
+
 End
 
 '' Create all of the directories  required directories needed by gsh
 '' set the default onstart and onexit functions in ~/vars
 '' set the default profile.gsh in ~vars. Make executable
 Private Sub VerifyAppDepend()
-  
+
   If Not Exist(User.home &/ "vars") Then
     Mkdir User.Home &/ "vars"
   Endif
-  
+
   If Not Exist(User.home &/ "bin") Then
     Mkdir User.Home &/ "bin"
   Endif
-  
+
   If Not Exist(User.home &/ "vars/class") Then
     Mkdir User.Home &/ "vars/class"
   Endif
@@ -663,18 +664,18 @@ Private Sub VerifyAppDepend()
   If Not Exist(User.home &/ "vars/struct") Then
     Mkdir User.Home &/ "vars/struct"
   Endif
-  
+
   If Not Exist(User.home &/ ".gshrc") Then
     Shell "touch " & User.home &/ ".gshrc" Wait
   Endif
-  
+
   If Not Exist(User.home &/ "vars/subs/onstart") Then
     Copy "/usr/share/gsh/subs/onstart" To User.home &/ "vars/subs/onstart"
   Endif
   If Not Exist(User.home &/ "vars/subs/onexit") Then
     Copy "/usr/share/gsh/subs/onexit" To User.home &/ "vars/subs/onexit"
   Endif
-  
+
   If Not Exist(User.home &/ "vars/profile.gsh")
     Copy "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh"
     Chmod User.home &/ "vars/profile.gsh" To "rwxr-x---"
@@ -687,18 +688,18 @@ Private Sub VerifyAppDepend()
       Chmod User.home &/ "vars/profile.gsh.new" To "rwxr-x---"
     Endif
   Endif
-  
+
 Catch
   Print "Unable to verify depenencies : "; Error.text
-  
+
 End
 
 Public Sub Main()
-  
+
   ' Myinit()
   $gshref = Me
   Try $version = File.Load("VERSION")
-  
+
   If Error Then
     Print "GSH : VERSION file is missing, defaulting to application version"
     $version = Application.version
@@ -706,18 +707,18 @@ Public Sub Main()
   Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
   'Debug line ****
   'Print "starting "; CDate(Now)
-  
+
   Dim DontExit As Boolean
   Dim i As Integer
-  
+
   'System.Language = "fr_FR"
   'System.Language = "en_US"
   cmdLineParameters = ProcessOptions()
-  
+
   VerifyAppDepend()
-  
+
   If DoTrace Then Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
-  
+
   If bSingleUse Then
     SharedMem.CollectMemLen = CollectMemLen
     SharedMem.Begin(BlockSize) ' preset this to be 4.5 meg of memory
@@ -727,30 +728,30 @@ Public Sub Main()
     SharedMem.CollectMemLen = CollectMemLen
     SharedMem.BeginNamed(DefaultSharedMem, BlockSize, bCleanup) ' preset this to be 4.5 meg of memory
   Endif
-  
+
   Dim ImageFile As String = SharedMem.DefaultSaveLocation & DefaultImageName
-  
+
   ' Merge the base image file into the loaded image file
   ' even for the single use instanciated versions of this app
   ' this means that the current state of the running or last run interactive
   ' copy of gsh variables will be merged into the image of single use gsh running
-  
+
   If Not bNoLoadImage And Exist(ImageFile) Then
     SharedMem.Merge(DefaultImageName)
   Endif
-  
+
   If SharedMem.exist("sub.update") Then SharedMem.Free("sub.update")              ' this must always be read from the latest system install
-  
+
   SharedMem["pwd"] = Env["PWD"]
   SetDefaults()
-  
+
   Try chdir(Env["PWD"])
-  
+
   'Debug line ****
   'Print "starting "; CDate(Now); " Init Alias"
-  
+
   CreateCmdProgram.InitAlias()
-  
+
   gshrcdate = Stat(User.home &/ ".gshrc").lastmodified
   If Not SharedMem.exist("gshrcdate") Then SharedMem["gshrcdate"] = ""
   If SharedMem["gshrcdate"] < datetostring(gshrcdate) Then
@@ -760,30 +761,30 @@ Public Sub Main()
         Error ("Loading updated .gshrc")
       Endif
     Endif
-    
+
     Try RunScript(User.home &/ ".gshrc")
-    
+
     If Error Then
       Error ("Unable to run updated .gshrc :");; Error.text
     Endif
     execbuffer = ""
   Endif
-  
+
   'If VarCommandSource = "" Then
   'If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup")
   'compileClassOnStart()
   'compileFunctionsOnStart()
   'If DoTrace Then Error "(Trace "; Now; ") "; ("Compile Classes and Funtions in image at startup complete")
   'Endif
-  
+
   If bHelpListing Then
     Try PrintHelp()
     If Error Then Error Error.text
     ExitProgram(0)
   Endif
-  
+
   UpdateEnv()
-  
+
   Signal[Signal.sigtstp].Ignore
   Signal[Signal.sigterm].catch
   signal[Signal.SIGINT].catch
@@ -791,12 +792,12 @@ Public Sub Main()
   Signal[Signal.SIGWINCH].catch
   Signal[Signal.SIGABRT].catch
   Signal[Signal.SIGCHLD].catch
-  
+
   Try EnvSync = New SyncEnv
   If Error Then
     envSync = Null
   Endif
-  
+
   ' Check if we have a one line command
   ' Posix says we must execute this command then exit
   ' we provide the environment for this execution in our shell
@@ -804,11 +805,11 @@ Public Sub Main()
     DoTrace = True
     SharedMem["dotrace"] = DoTrace
   Endif
-  
+
   'Check if we have request to execute a local function
-  
+
   If LocalFunRun <> "" Then
-    
+
     If DoTrace Then Error "(Trace "; Now; ") "; (" Execute a function in image "); LocalFunRun
     execBuffer = LocalFunRun
     For i As Integer = 0 To cmdLineParameters.Max
@@ -823,15 +824,15 @@ Public Sub Main()
     Endif
     ExitProgram()
   Endif
-  
+
   'Check for a request to execute a variable
   If VarCommandSource <> "" Then
-    
+
     If DoTrace Then Error "(Trace "; Now; ") ";; ("Execute The Content of a variable from shared memory ");; VarCommandSource
-    
+
     If SharedMem.exist(VarCommandSource) Then
       Dim codebuffer As String '= "Lambda"
-      
+
       ' If cmdLineParameters.count > 0 Then
       '   ' For i As Integer = 0 To cmdLineParameters.Max
       '   '   cmdLineParameters[i] = Quote(cmdLineParameters[i])
@@ -843,9 +844,9 @@ Public Sub Main()
       '   ' Next
       '   ' codebuffer &= ")"
       ' Endif
-      
+
       codebuffer &= "\n" & SharedMem[VarCommandSource] & "\n" '& "end\n"
-      
+
       If DoTrace Then Print "(Trace "; Now; ") ";; ("***********************************\nVariable program call defined as \n ");; codebuffer;; "\n*********************\n"
       OpenBuffer(codebuffer)
       While IfReader(["QUIT"])
@@ -860,11 +861,11 @@ Public Sub Main()
       Error ("Execute from Global Variable : Variable \""); VarCommandSource; ("\" Not Found")
       ExitProgram(1)
     Endif
-    
+
     ExitProgram()
-    
+
   Endif
-  
+
   'check for an -c command to execute
   If InLineCommand <> "" Then                 ' we have a command -c
     If DoTrace Then Error "(Trace "; Now; ") ";; ("-c Command recieved :["); InLineCommand; "]"
@@ -873,7 +874,7 @@ Public Sub Main()
     If Error Then Error Error.text
     ExitProgram(Process.LastValue)
   Endif
-  
+
   ' Check for a list of script files on the command line
   If cmdLineParameters.count > 0 And If cmdLineParameters[0][0] <> "-" Then
     If DoTrace Then Error "(Trace "; Now; ") ";; ("Command line scripts to execute cnt="); cmdLineParameters.count
@@ -883,14 +884,14 @@ Public Sub Main()
     If File.Dir(runcmder) = "" Or If runcmder[0] <> "/" Then
       runcmder = Env["PWD"] &/ runcmder
     Endif
-    
+
     If DoTrace Then Error "(Trace "; Now; ") ";; ("Execute gsh script file");; runcmder
     Try AppSource = Open runcmder For Read
     If Error Then
       Error "Gsh script not found : "; runcmder
       ExitProgram(1)
     Endif
-    
+
     While IfReader(["QUIT"])
       Try ProcessProg()
       If Error Then
@@ -899,20 +900,20 @@ Public Sub Main()
       Endif
       Wait 0
     Wend
-    
+
     Close AppSource
     ExitProgram()
   Endif
-  
+
   getline = New GshReadLine
   If TraceLevel > 0 Then
     DoTrace = True
     SharedMem["DoTrace"] = DoTrace
   Endif
-  
+
   ' Then assume it is an interactive session
   If Not bDbaseServer Then ' dont do this if in service mode
-    
+
     onstartrcdate = Stat(User.home &/ "vars/subs/onstart").lastmodified
     If Not SharedMem.exist("onstartrcdate") Then SharedMem["onstartrcdate"] = ""
     If SharedMem["onstartrcdate"] < datetostring(onstartrcdate) Or If Not SharedMem.exist("sub.onstart") Then
@@ -928,7 +929,7 @@ Public Sub Main()
       Endif
       execbuffer = ""
     Endif
-    
+
     onexitrcdate = Stat(User.home &/ "vars/subs/onexit").lastmodified
     If Not SharedMem.exist("onexitrcdate") Then SharedMem["onexitrcdate"] = ""
     If SharedMem["onexitrcdate"] < datetostring(onstartrcdate) Or If Not SharedMem.exist("sub.onexit") Then
@@ -944,7 +945,7 @@ Public Sub Main()
       Endif
       execbuffer = ""
     Endif
-    
+
     If SharedMem.exist("history") Then
       history = SharedMem["history"]
       If history.count > 0 Then
@@ -953,33 +954,33 @@ Public Sub Main()
         SharedMem["historycurrent"] = 1
       Endif
     Endif
-    
+
     SetTitle()
-    
+
     For Each sh As String In history
       getline.add_history(sh & "\x00")
     Next
-    
+
     execlocal(["onstart()"])                                                  ' only if we are not a service
-    
+
     If Exist(User.home &/ "vars/profile.gsh.new") And If SharedMem["newprofile"] = False Then
       Error ("New base Profile revision profile.gsh\nRun update to use new base profile\n\n")
       SharedMem["newprofile"] = True
     Else
       SharedMem["newprofile"] = False
     Endif
-    
+
   Else If sPortNumber <> ""                                                                       ' If we are a server then do this config
     CommandMode = True
     Source = "FILE"
-    
+
     If DoTrace Then Error "(Trace "; Now; ") ";; ("Execite gsh script file");; runcmder
     Try AppSource = ServiceMode.InitService(sPortNumber)
     If Error Then
       Error "Gsh script not found : "; runcmder
       ExitProgram(1)
     Endif
-    
+
     While IfReader(["QUIT"])
       Try ProcessProg()
       If Error Then
@@ -988,19 +989,19 @@ Public Sub Main()
       Endif
       Wait 0
     Wend
-    
+
     Close AppSource
     ExitProgram()
   Endif
-  
+
   If DoTrace Then Error "(Trace "; Now; ") ";; ("Enter interactive mode!")
   Dim InteractiveErrorCount As Integer = 0
-  
+
   'Debug Line * * * *
   'Print "starting "; CDate(Now); " Interactive Begin If reader loop"
-  
+
 interactive:
-  
+
   While True
     Try DontExit = IfReader(["QUIT"])
     If Error Then
@@ -1017,93 +1018,93 @@ interactive:
         InteractiveErrorCount = 0
       Endif
     Endif
-    
+
     If Not bDbaseServer Then settitle()
-    
+
     Try chdir(Env["PWD"])
     If Error Then Error Error.Text
-    
+
     Wait 0
-    
+
   Wend
-  
+
   If Not bDbaseServer Then execlocal(["onexit()"])
   Wait 0.001
   '  Signal.send(0, Signal.SigKill)
   ExitProgram()
   Quit 7
-  
+
 Catch
   Dim errorText As String = Error.text & ";" & Error.where
   Try gshlogging(User.home &/ "vars/gsh.log", "GSH Aborted with " & errorText & "(" & Error.where & ")")
-  
+
   Dim exitcode As Integer = 1
-  
+
   If Left(ErrorText, 6) = "Abort:" Or If LocalFunRun <> "" Or If VarCommandSource <> "" Then
-    
+
     If Left(ErrorText, 6) = "Abort:" Then
       Try exitcode = Split(errortext, ":")[1]
       If Error Then exitcode = 2
     Endif
-    
+
     Error "GSH aborted with error:";; errorText
     ExitProgram(exitcode)
-    
+
   Endif
-  
+
   CleanupError()
   Inc InteractiveErrorCount
-  
+
   If InteractiveErrorCount > 1000 Then Quit 2
-  
+
   Goto interactive
-  
+
 End
 
 Private Sub CleanUpError()
-  
+
   ExecBuffer = ""
   ReturnOutputTo = ""
   BlockIndent = "  "
   BlockLevel = 0
-  
+
   LinkTable.clear()
   ExternTable.Clear()
   UseTable.Clear()
   StructTable.Clear()
   CompilerDirectiveTable.Clear()
-  
+
   ContainsGlobal = False
   Error.Clear()
-  
+
 End
 
 Public Sub ExitNow()
-  
+
   ReadQueue.push("QUIT")
-  
+
 End
 
 '' Called when the program is about to exit
 '' this is called for any reason
 Private Sub ExitProgram(Optional ExitValue As Integer = 0)
-  
+
   Static HasExit As Boolean = False
-  
+
   EnvSync._free()
   EnvSync = Null
-  
+
   Signal[Signal.sigterm].ignore
   signal[Signal.SIGINT].ignore
   Signal[Signal.SIGHUP].ignore
   Signal[Signal.SIGWINCH].ignore
   Signal[Signal.SIGABRT].ignore
-  
+
   Try gshlogging(User.home &/ "vars/gsh.log", "GSH Exits program PID= " & Application.Id & ",Exit code=" & ExitValue)
-  
+
   gshlogging.EndLog
   gshlogging.logrotate()
-  
+
   If exitValue < 32000 Then
     If bSingleUse Then
       Try SharedMem.end()
@@ -1113,61 +1114,61 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
       If Error Then Error Error.text
     Endif
   Endif
-  
+
   SubCls.free()
   Wait 0.001
-  
+
   If Not hasExit Then
     HasExit = True
     Quit ExitValue
   Endif
-  
+
 Catch
   Error "GSH : Error on exit "; Error.text;; Error.where
   Quit ExitValue
-  
+
 End
 
 Public Sub datetostring(mDate As Date) As String
-  
+
   Dim d As String = Format(mdate, "yyyymmddhhnnssuu")
-  
+
   Return d
-  
+
 End
 
 Public Sub SetTitle()
-  
+
   Print "\x1b]0;gsh " & $Version & "-" & User.name & "@" & System.host & ":" & Env["PWD"] & "\x07";
   Flush
-  
+
 End
 
 Private SubParmItems As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
 Private SubParmParser As New ParseParm(False, [","], ["(", ")", "\"", "\""])
 
 Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Boolean
-  
+
   Dim newsplit As String
-  
+
   If prog.count <> 1 Then Return False                            ' If it is more than one line then just return
   'Dim lsplit As String[] = Split(prog[0], "(,)", "\"\"", True, True)
   Dim lsplit As String[] = Parser(prog[0], SubParmParser)
   If lsplit.count < 1 Then Return False
-  
+
   If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
   If UseTable.count > 0 Then Return False                         ' If this command has any kind of use parameters we can not process
-  
+
   Dim method As String = lsplit[0]
   Dim sObject As String = "sub." & method
   lsplit.Remove(0)
-  
+
   If Not isLocalFunc(method) Then Return False
-  
+
   If Not SubCls.Exist(sObject) Then
     If Not Compile(sObject) Then Return False
   Endif
-  
+
   If Not SubCls.Exist(sObject) Then Return False                  ' its not in the compiled list
   If SubCls.changed(sObject) Then Return False                    ' we changed it in this session so will reflect this after start
   If SubCls.HasGui(sObject) Then Return False
@@ -1176,13 +1177,13 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
   ' Can only load a function once after start
   ' Link Table will always have link to own code
   linktable.Clear()
-  
+
   newsplit = RegExp.Replace(lsplit[0], "^.*[(]", "")
   newsplit = RegExp.Replace(newsplit, "[)]$", "")
   'lsplit = Split(newsplit, "," , "[]()", True, True)
   lsplit = Parser(newsplit, SubParmItems, False, False)
   Dim parms As New Variant[]
-  
+
   For Each s As String In lsplit
     If s.len > 1 And If s[0] = "." Or s[0] = "!" Then
       If s.len > 2 And If s[1] = "[" Then
@@ -1193,20 +1194,20 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     Endif
     If s <> "" Then parms.Add(Eval(s))
   Next
-  
+
   If DoTrace Then
     Error "(Trace "; Now; ") "; ("Exec local Sub/func/proc"); ": "; method
     For Each xs As Variant In parms
       Error "(Trace "; Now; ") "; "Exec Sub/proc/func parm"; ": "; xs
     Next
   Endif
-  
+
   If nowait = True Then
     Dim NewTask As New Localtask(sObject, Method, Parms)
     Wait 0
     Return True
   Endif
-  
+
   LocalRunning = True
   Try Object.Call(SubCls[sObject], method, parms)
   If Error Then
@@ -1221,21 +1222,21 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
       Error ("[Terminated]")
     Endif
   Endif
-  
+
   LocalRunning = False
   Return True
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Public ReturnOutputTo As String = ""
 
 Public Sub _unknown(...)
-  
+
   Error ("GSH Call to Unknown function");; Param.name
-  
+
 End
 
 Private CompileResult As String = ""
@@ -1245,7 +1246,7 @@ Private execprog As String = ""          ' the last executed gbs script
 
 Public Sub ProcessProg(Optional NoWait As Boolean = False)
   'Dim ProgramCommand, Result As String
-  
+
   Dim MyProg As File
   Dim MyProcess As Process
   Dim Program As String = ""
@@ -1260,15 +1261,15 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
   Dim EndCopy As Integer
   Dim cmdjobsinfo As String
   '  Dim Result As String
-  
+
   ''Debug "Execute the program"
-  
+
   If Trim(ExecBuffer) = "" Then Return
   If Right(ExecBuffer, 2) = "&\n" Then
     NoWait = True
     execbuffer = Replace(execbuffer, "&\n", "\n")
   Endif
-  
+
   'If Not nowait Then
   If execlocal(Split(execbuffer, "\n", "\"\"", True, True), nowait) Then
     execprog = ExecBuffer
@@ -1278,7 +1279,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     Return
   Endif
   'Endif
-  
+
   ' If Not compileonly Then ' we are going to run this with gbx3 not as a script
   '                         ' otherwise we will just do the ussual
   '
@@ -1336,13 +1337,13 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
   '     ContainsGlobal = False
   '    Return
   ' Endif
-  
+
   ContainsGlobal = True ' force to use always +++ why?
-  
+
   If containsGlobal Or linktable.count > 0 Then
-    
+
     AlreadyLinked = New String[]
-    
+
     While LinkTable.COUNT
       'Print "Inserting "; linktable[linktable.first]
       If Not AlreadyLinked.Exist(LinkTable.First) Then
@@ -1362,41 +1363,41 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     If Not ExternTable.Exist(chdirextern) Then
       ExternTable.Add(chdirextern)
     Endif
-    
+
     ProgPart1 = "#!/usr/bin/gbs3\n"
-    
+
     For Each sinsert As String In CompilerDirectiveTable
       ProgPart1 &= sInsert & "\n"
     Next
-    
+
     ' If Component.IsLoaded("westwood.sharedmem") Then
     '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
     ' Else If Component.IsLoaded("sharedmem") Then
     '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
     ' Endif
-    
+
     ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\""
-    
+
     For Each sinsert In UseTable
       ProgPart1 &= "," & sinsert
     Next
-    
+
     ProgPart1 &= "\n"
     For Each sinsert In StructTable
       ProgPart1 &= sInsert & "\n"
     Next
-    
+
     For Each sinsert In ExternTable
       ProgPart1 &= sInsert & "\n"
     Next
-    
+
     StructTable = New String[]
     UseTable = New String[]
     ExternTable = New String[]
     CompilerDirectiveTable.Clear()
-    
+
     Program = ProgPart1 & Program
-    
+
     If bSingleUse Then
       Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
     Else
@@ -1410,16 +1411,16 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       If DoTrace Then
         Error "(Trace "; Now; ") "; ("Execute External "); ": "; ScriptName
       Endif
-      
+
       execprog = program  ' save a copy of last executed program, can be edited by "edit execprog" on command line
       SharedMem.prevexecprog = SharedMem.execprog
       SharedMem.execprog = "Executed on :" & Str(Now) & "\n" & ExecProg
-      
+
       If TraceLevel >= 20 Then
         File.Save(user.home & "/vars/ExecProg.gbs", program)
         Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
       Endif
-      
+
       If gbscomponent And If Not NoWait Then
         If jobctl Then RunningProcessStart = Now
         CompileResult = ScripterExecute("lambda", program, [], cmdLineParameters)
@@ -1436,9 +1437,9 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         ContainsGlobal = False
         SharedMem["execprog"] = "Executed on :" & Str(Now) & "\n" & ExecProg
         Return
-        
+
       Endif
-      
+
       Try MyProg = Open ScriptName For Write Create
       If Not Error Then
         'Try rWrite(MyProg.handle, CPointer(program), Len(program))
@@ -1450,13 +1451,13 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
               Error "(Trace "; Now; ") "; ("Execute External "); ": "; sdf
             Next
           Endif
-          
+
           CompileResult = ""
           CompilerOutput = ""
           eCmd = ["/usr/bin/gbs3", "-b", "-T", ScriptName]
-          
+
           Try Exec ecmd Wait For Read As "compileread"
-          
+
           If CompileResult <> "" And Left(Compileresult, 5) <> "Class" And If Error Or CompileResult <> "" Then
             If Error Then
               Error "Generated Script ="; ScriptName;; ":";; Error.text
@@ -1495,7 +1496,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
               ContainsGlobal = False
               Return
             Endif
-            
+
             If MyProcess <> Null And If jobctl Then
               ActiveProcesses.Add(MyProcess)
               execline = Split(execbuffer, "\n", "", True)[0]
@@ -1508,7 +1509,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                 cmdjobsinfo = execline
               Endif
               sharedmem["pid.p" & MyProcess.id & Application.id] = Str(MyProcess.id) & "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & cmdjobsinfo & "\n"
-              
+
               '"sharedmem[\"pid.p\" & mProc" & BaseName & Str(i) & ".id]= str(mProc" & BaseName & Str(i) & ".id)&\"|\"& format(now,\"mm/dd/yyyy hh:nn:ss.uu\")& \"|\" & " & cmdjobsinfo & "\n"
             Endif
           Else
@@ -1543,7 +1544,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         MyProcess = Exec cmd With getenv()
         'MyProcess = Exec cmd With SharedMem["env"]
       Endif
-      
+
       If Not nowait Then
         RunningProcess = MyProcess
         If jobctl Then RunningProcessStart = Now
@@ -1554,105 +1555,105 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       compilescript = execbuffer
     Endif
   Endif
-  
+
   ExecBuffer = ""
   ReturnOutputTo = ""
   LinkTable.clear()
   ContainsGlobal = False
-  
+
 Catch
   'Error Error.Text
   ExecBuffer = ""
   LinkTable.clear()
   ContainsGlobal = False
   Error.Propagate()
-  
+
 End
 
 Public Sub compileread_read()
-  
+
   Dim sLine As String
-  
+
   Read #Last, sLine, -256
   CompilerOutput &= sLine
-  
+
 End
 
 Public Sub compileread_error(Err As String)
-  
+
   CompileResult &= err
-  
+
 End
 
 Public Sub SysProc_kill()
-  
+
   If ActiveProcesses.count = 0 Then
     If jobctl Then Error "Complete pid="; RunningProcess.id; " State="; Process.LastState;; "Value="; Process.LastValue
     Return
   Endif
-  
+
   For i As Integer = ActiveProcesses.Max To 0
     Select Case ActiveProcesses[i].state
       Case Process.Crashed
         sharedmem["pid.p" & ActiveProcesses[i].id & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Crashed]\n")
         Error ("Job pid="); ActiveProcesses[i].id;; ("Crashed")
         ActiveProcesses.remove(i)
-        
+
       Case Process.Running
         Continue
-        
+
       Case Process.Signaled
         sharedmem["pid.p" & ActiveProcesses[i].id & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Signaled]\n")
         Error ("Job pid="); ActiveProcesses[i].id;; ("Signaled")
         ActiveProcesses.remove(i)
-        
+
       Case Process.stopped
         sharedmem["pid.p" & ActiveProcesses[i].id & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Stopped]\n")
         Error ("Job pid="); ActiveProcesses[i].id;; ("Complete")
         ActiveProcesses.remove(i)
-        
+
       Default
         Error "Job pid="; ActiveProcesses[i].id;; ("New State");; ActiveProcesses[i].state
     End Select
   Next
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub SystemRead_read()
-  
+
   Dim sLine As String
-  
+
   sLine = Read #Last, -256
   SharedMem[ReturnOutputTo] &= sLine
-  
+
 End
 
 Public Sub SystemRead_kill()
   ' remove from job management comming soon!
-  
+
 End
 
 Public Sub SystemRead_error(msg As String)
-  
+
   Error ("System Read Error:");; msg
-  
+
 End
 
 Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, DoAlias As Boolean = False) As String
-  
+
   Dim plist As String[]
   Dim OldDoAlias As New Boolean[]
   Dim OldNoPreProcess As New Boolean[]
   Dim finalbuf As String = ""
   ''Debug "enter preprocbuffer"
   plist = Split(proc, "\n", "", True)
-  
+
   OldDoAlias.Push(DoAlias)
   OldNoPreProcess.Push(NoPreProcess)
-  
+
   For Each s As String In plist
     ' Debug "--> " & s
     If s == "'noalias" Then
@@ -1668,9 +1669,9 @@ Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, Do
       NoPreProcess = False
       Continue
     Endif
-    
+
     If DoAlias Then s = CreateCmdProgram.AliasReplace(s)
-    
+
     If s <> "" Then
       If NoPreProcess = False Then
         finalbuf &= preprocesses(s, IsClass) & "\n"
@@ -1679,14 +1680,14 @@ Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, Do
       Endif
     Endif
   Next
-  
+
   DoAlias = OldDoAlias.first
   NoPreProcess = OldNoPreProcess.first
   Return finalbuf
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Private ReadFromBuffer_buffer As New String[]
@@ -1694,27 +1695,27 @@ Private savedSourcebuffer As String = ""
 Private saveSource As Boolean = False
 
 Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
-  
+
   Dim CapturedSource As String[] = Split(data, "\n", "\"\"", True, True)
   Dim ValidLines As Integer = 0
-  
+
   If IsNull(CapturedSource) Or If CapturedSource.count = 0 Then
     Return
   Endif
-  
+
   For Each s As String In CapturedSource
     If s <> Space(s.len) Then
       ReadFromBuffer_buffer.Add(s)
       Inc ValidLines
     Endif
   Next
-  
+
   If ValidLines = 0 Then
     Return
   Endif
-  
+
   savesource = inSaveSource
-  
+
   If saveSource Then
     savedsourcebuffer = Source
     Source = "BUFFER"
@@ -1722,50 +1723,50 @@ Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
     savedsourcebuffer = "BUFFER"
     Source = "BUFFER"
   Endif
-  
+
 End
 
 Public Sub ReadBuffer() As String
-  
+
   Dim nextline As String
-  
+
   If ReadFromBuffer_Buffer.count = 0 Then
     Source = savedsourcebuffer
     Return "QUIT"
   Endif
-  
+
   nextline = ReadFromBuffer_buffer[0]                               ' Get the top ot the read stack
   ReadFromBuffer_buffer.Remove(0)                                   ' pop the line from the top of the stack
-  
+
   If ReadFromBuffer_buffer.count = 0 Then
     Source = savedsourcebuffer
   Endif
-  
+
   Return nextline
-  
+
 End
 
 Public Sub ReadHistory() As String
-  
+
   Dim ValLine As String = ""
-  
+
   If history.Exist(Str(HCurrentRead)) Then
     ValLine = History[Str(HCurrentRead)]
     Inc hCurrentRead
   Endif
-  
+
   Wait 0
   Return ValLine
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub ReadFile() As String
-  
+
   Dim thebuffer As String
-  
+
   If Eof(AppSource) Then Return "QUIT"
   Try Line Input #AppSource, thebuffer
   If Error Then
@@ -1775,11 +1776,11 @@ Public Sub ReadFile() As String
   Return theBuffer
 Catch
   Error.Propagate()
-  
+
 End
 
 Sub SetBlockIndent() As String
-  
+
   With sharedmem
     If blocklevel = 0 Then
       blockindent = "\x00"
@@ -1788,51 +1789,51 @@ Sub SetBlockIndent() As String
     Endif
   End With
   Return blockindent
-  
+
 End
 
 Public Sub readline() As String
-  
+
   Dim sbuffer As String
-  
+
   getline.DoTrace = DoTrace
   getline.UserPrompt = SharedMem["prompt"]
   'Debug Line * * * *
   'Print "starting "; Eval("CDate(Now)"); " ReadLine()"
-  
+
   sbuffer = getline(SetBlockIndent(), bDbaseServer)
   SharedMem["prompt"] = getline.UserPrompt
   Return sBuffer
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub Reader(EndBlk As String[]) As String
-  
+
   Dim sInBuffer As String = ""
-  
+
   If DoTrace Then Error "(Trace "; Now; ") ";; "Source input="; source
   If ReadQueue.count = 0 Then
     Select Case source
-        
+
       Case "BUFFER"
         Do
           sinBuffer = Trim(ReadBuffer())
         Loop Until sinBuffer <> ""
-        
+
         If DoTrace Then Error "(Trace "; Now; ") ";; "Read Buffer '"; sinbuffer; "'"
-        
+
         If InBuffer = "QUIT" And sinBuffer <> endblk.Join("") Then
           Error.raise("Error reading File UNEXPECTED EOF , Wanted " & endblk.Join(" "))
         Endif
-        
+
       Case "STDIN"
         Do
           'Debug Line * * * *
           'Print "starting "; CDate(Now); " Reader Stdin"
-          
+
           sinbuffer = readline()
           If DoTrace Then Error "(Trace "; Now; ") ";; "Read Line '"; sinbuffer; "'"
           If Upper(sInBuffer) <> "EDIT" And If Upper(sInBuffer) <> "RUN" Then
@@ -1844,12 +1845,12 @@ Public Sub Reader(EndBlk As String[]) As String
             Endif
           Endif
         Loop Until sInBuffer <> ""
-        
+
       Case "HISTORY"
         sinBuffer = Trim(ReadHistory())
         getline.add_history(sinBuffer)
         If DoTrace Then Error "(Trace "; Now; ") ";; ("Read History '"); sinbuffer; "'"
-        
+
       Case "FILE"
         Do
           sinBuffer = Trim(ReadFile())
@@ -1858,40 +1859,40 @@ Public Sub Reader(EndBlk As String[]) As String
         If sInBuffer = "QUIT" And If sinBuffer <> endblk.Join("") Then
           Error.raise("Error reading File UNEXPECTED EOF , Wanted " & endblk.Join(" "))
         Endif
-        
+
     End Select
-    
+
     If source = "STDIN" Then ' only record keystroke entries
-      
+
       If sInBuffer Like "*!!*" Then
         sinbuffer = Replace(inbuffer, "!!", SharedMem["history"][SharedMem["historycurrent"] - 1])
       Endif
-      
+
       history = SharedMem["history"]
       History.add(sInBuffer, sharedMem["historycurrent"])
       Inc SharedMem["historycurrent"]
       If History.count > SharedMem["maxhistory"] Then History.remove(History.first)
       SharedMem["history"] = history
     Endif
-    
+
   Else
-    
+
     sInBuffer = ReadQueue.pop()
-    
+
   Endif
-  
+
   Return Trim(sInBuffer)
-  
+
 End
 
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 
 Public Sub IfReader(EndBlk As String[]) As Boolean
-  
+
   'Debug Line * * * *
   'Print "starting "; CDate(Now); " If Reader "; Quote(EndBlk.join())
-  
+
   Dim lastElement As String = ""
   Dim i As Integer
   Dim execbuff As String
@@ -1899,16 +1900,16 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
   Dim hStart As Integer = 0
   Dim filename As String
   Dim answer As String
-  
+
   With sharedmem
     ' Moved to function bellow here
-    
+
     InBuffer = Reader(EndBlk)
     While Right(inbuffer, 1) = "\\"                        ' allow line to be continued with a \ at the end of the line
       InBuffer = Left(InBuffer, -1)                          ' we want to read the entire line into a single buffer for processing
       InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
     Wend
-    
+
     If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
       MultyParse.allowEolToClose = True
       Dim InList As String[] = Parser(InBuffer, MultyParse, False)
@@ -1919,20 +1920,20 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
         Next
       Endif
     Endif
-    
+
     If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed
     If DoAlias Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)
-    
+
     InBufParse = Highlight.Analyze(InBuffer)
     HTypes = Highlight.Types
-    
+
     If HTypes[0] = Highlight.Comment Or If HTypes[0] = Highlight.Help Then Return True
-    
+
     If HTypes.last = Highlight.comment Or If HTypes.last = Highlight.help Then
       HTypes.pop()
       InBufParse.Pop()
     Endif
-    
+
     If HTypes.Exist(Highlight.Error) Then ' check for what ever the error is looking for `....`
       If InBufParse.Last[0] = "`" Then
         Dim tmpParse As String[] = Parser(InBuffer, ErrorParse, True)
@@ -1944,13 +1945,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
         Next
       Endif
     Endif
-    
+
     Dim newCmdLine As String = Preprocesses(InBuffer)
-    
+
     If newCmdLine = "" Then Return True
-    
+
     ExecBuffer &= newCmdLine & "\n"
-    
+
     If InBufParse.max >= EndBlk.max Then
       Dim Truth As Integer = 0
       For i As Integer = 0 To EndBlk.max
@@ -1969,7 +1970,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Endif
     'Print "type="; TypeToText[Highlight.Types[0]],HTypes[0]
     Dim parsepos As Integer = 0
-    
+
     If InBufParse.count = 1 And If HTypes[0] = Highlight.symbol And If Not FunctionCommandOrexecVar(InBufParse[0]) Then
       Dim answers As String = ""
       If sharedmem["SuggestCommand"] Then
@@ -1978,7 +1979,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       Endif
       Error.Raise("Unkown command or function " & Quote(InBufParse[0]) & answers)
     Endif
-    
+
   StartAgain:
     Select Case HTypes[hstart]
       Case Highlight.Keyword
@@ -1996,24 +1997,24 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               Inc ParsePos
               Goto StartAgain
             Endif
-            
+
           Case "STATIC"
             Inc hstart
             Inc ParsePos
             Goto StartAgain
-            
+
           Case "SUB", "FUNCTION", "PROCUDURE"
             If InLambda Then
               lambdaSubFuncClass(["END"])
               Return True
             Endif
-            
+
             If autocompile Then
               Dim Saveexec As String = execbuffer
               execbuffer = getlastline(execbuffer)
               Saveexec = removeLastLine(Saveexec)
             Endif
-            
+
             If InBufParse.count < parsepos + 2 Then
               Error.Raise(InBufParse[parsepos] & (" requires a function name !"))
               If AutoCompile Then execbuffer = ""
@@ -2038,7 +2039,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                 Endif
               Endif
               execbuffer &= "\n"
-              
+
               If autocompile Then
                 If Not sharedmem.exist("sub." & Lower(InBufParse[parsepos + 1])) Then
                   LastElement = "sub." & Lower(InBufParse[parsepos + 1])
@@ -2067,33 +2068,33 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                   Else
                     Error.Raise(("Use Edit to change :") & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & (" ... Already Defined\n") & SharedMem["sub." & Lower(InBufParse[parsepos + 1])])
                   Endif
-                  
+
                   ExecBuffer = ""
                   Return True
                 Endif
               Endif
-              
+
               NoPreProcess = True
               doAlias = False
               DoBlock(["END"])
               doAlias = True
               NoPreProcess = False
-              
+
               If AutoCompile Then
                 SharedMem[Lower(LastElement)] = Trim(ExecBuffer)
                 ExecBuffer = ""
               Endif
-              
+
             Endif
-            
+
             If AutoCompile Then
               If Not bSingleUse Then SharedMem.Sync(".", DefaultImageName)  ' write out image with new definition
               If dotrace Then Error ("sub compile "); lastelement
               compile(lastelement)
             Endif
-            
+
             If autocompile Then execbuffer = Saveexec
-            
+
           Case "CLASS"
             If InBufParse.count < 2 Then
               Error.Raise(InBufParse[0] & (" requires a class name !"))
@@ -2103,7 +2104,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               '   lambdaSubFuncClass(["END", "CLASS"])
               '   Return True
               ' Endif
-              
+
               If Not SharedMem.exist("class." & Lower(InBufParse[1])) Then
                 LastElement = "class." & Lower(InBufParse[1])
                 SharedMem[LastElement] = "Class " & Lower(InBufParse[1])
@@ -2114,15 +2115,15 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                   NoPreProcess = True
                   DoBlock(["END", "CLASS"])
                   NoPreProcess = False
-                  
+
                 Else
                   Error.Raise(("Use edit to change :") & InBufParse[0] & " " & InBufParse[1] & (" ... Already Defined\n") & SharedMem["class." & Lower(InBufParse[1])])
                 Endif
-                
+
                 ExecBuffer = ""
                 Return True
               Endif
-              
+
               NoPreProcess = True
               AutoCompile = False
               DoAlias = False
@@ -2132,12 +2133,12 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               AutoCompile = True
               SharedMem[LastElement] = ExecBuffer
               ExecBuffer = ""
-              
+
               If Not bSingleUse Then SharedMem.Sync(".", DefaultImageName)
               Debug "class compile "; lastelement
               compile(lastelement)
             Endif
-            
+
           Case "STRUCT"
             Dim data As String = getlastline(execbuffer) & "\n"
             Dim StructName As String = InBufParse[parsepos + 1]
@@ -2148,41 +2149,41 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             StructTable.Add("Public " & execbuffer)
             sharedmem["struct." & Lower(StructName)] = "Public " & execbuffer
             execbuffer = oldexec
-            
+
           Case "REPEAT"
             DoBlock("UNTIL")
-            
+
           Case "FOR"
             DoBlock(["NEXT"])
-            
+
           Case "IF"
             If inBufparse[InBufParse.max] == "THEN"
               DoBlock(["ENDIF"])
             Endif
-            
+
           Case "DO"
             DoBlock(["LOOP"])
-            
+
           Case "WHILE"
             DoBlock(["WEND"])
-            
+
           Case "WITH"
             DoBlock(["END", "WITH"])
-            
+
           Case "SELECT"
             DoBlock(["END", "SELECT"])
-            
+
         End Select
         ''debug "[ \n"; ExecBuffer; "\n]"
         Return True
-        
+
       Case Highlight.Symbol
-        
+
         Select Case Upper(inBufParse[0])
           Case "ABORT"
             ExitProgram(32001) ' thats all she wrote
             Return False
-            
+
           Case "ALIAS"
             If InBufParse.count = 1 Then
               CreateCmdProgram.listAlias()
@@ -2194,23 +2195,23 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Endif
             execbuffer = ""
             Return True
-            
+
           Case "UNALIAS"
             If InBufParse.count = 2 Then
               CreateCmdProgram.setalias(InBuffer & " =")
             Endif
             execbuffer = ""
             Return True
-            
+
           Case "COMPILE", "PROGRAM"
-            
+
             CompileOnly = True
             data = getlastline(execbuffer)
             execbuffer = removeLastLine(execbuffer)
             DoBlock(["END", Upper(inBufParse[0])])
-            
+
             execbuffer = removeLastLine(execbuffer)
-            
+
             ProcessProg()
             execbuffer = ""
             CompileOnly = False
@@ -2221,14 +2222,14 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               filename = UnQuote(filename)
               If File.Dir(filename) = "" Then filename = User.home &/ "bin" &/ filename
             Endif
-            
+
             Try File.Save(filename, CompileScript)
             If Error Then
               Error.raise(("Unable to create ") & filename)
             Endif
             Chmod filename To "rwxr-x--x"
             Return True
-            
+
           Case "LAMBDA", "BEGIN"
             If Lambdalevel = 0 Then lambdabuffer = ""
             Inc LambdaLevel
@@ -2236,13 +2237,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             lambdaExpression(["END"])
             Dec LambdaLevel
             If LambdaLevel = 0 Then InLambda = False
-            
+
           Case "RUN"
             If lastexecutedblock == "run\n" Then
               execBuffer = ""
               Return True
             Endif
-            
+
             If inBufParse.count > 1 Then
               execbuffer = ""
               Dim sfilename As String = Trim(Replace(InBuffer, "run", "", gb.ignorecase))
@@ -2266,17 +2267,17 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               Error.Raise(("file not found.. Did you forget quotes"))
             Endif
             execbuffer = ""
-            
+
           Case "HELP"
             If InBufParse.count >= 2 Then
               PrintHelp(InBuffer)
             Else
               PrintHelp()
             Endif
-            
+
             SharedMem["result"] = "OK"
             execbuffer = ""
-            
+
           Case "GET"     ' load a plugin into memory for use in the local command shell
             LinkTable.Clear()
             If inbufparse.count >= 2 Then
@@ -2289,10 +2290,10 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Endif
             SharedMem["result"] = "OK"
             execbuffer = ""
-            
+
             'edit it
           Case "EDIT"    ' edit a class or Procedure
-            
+
             LinkTable.Clear()
             Dim funclass As String
             If InBufParse.count = 1 Then
@@ -2353,26 +2354,26 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                     Case "Class", "C"
                       funclass = "class." & inBufParse[1]
                       sharedMem[funclass] = "Class " & inbufParse[1] & "\nExport\nInherits SharedClass\nPublic Sub Dummy()\nprint \"Class here\"\nEnd\n"
-                      
+
                     Case "SUB", "FUNCTION", "PROCEDURE", "S"
                       funclass = "sub." & inBufParse[1]
                       sharedmem[funclass] = "Sub " & inbufParse[1] & "()\nprint \"Sub here\"\nEnd\n"
-                      
+
                     Case "STRUCT", "T"
                       funclass = "sub." & inBufParse[1]
                       sharedmem[funclass] = "Struct " & inbufParse[1] & "\nSampleVar1 as Integer\nEnd\n"
-                      
+
                     Case "VAR", "VARIABLE", "V"
                       funclass = inBufParse[1]
                       sharedmem[funclass] = ""
-                      
+
                     Case "NO", "", "N"
                       execbuffer = ""
                       Return True
-                      
+
                   End Select
                 Endif
-                
+
                 If Not editanything(funclass) Then
                   execbuffer = ""
                   Return True
@@ -2380,7 +2381,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                   If funclass Like "class.*" Or funclass Like "sub.*" Or Funclass Like "struct.*" Then
                     compile(funclass)
                   Endif
-                  
+
                   SharedMem["result"] = "OK"
                   execbuffer = ""
                   If Not bSingleUse Then SharedMem.Sync(".", DefaultImageName)
@@ -2388,9 +2389,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               Endif
             Endif
         End Select
-        
+
       Case Highlight.Function
-        
+
       Case Highlight.Number
         If inBufParse.count = 2 Then
           If inBufParse[1] = "!" Then
@@ -2400,7 +2401,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Return ExecFromHistory(CInteger(inBufParse[0]))
           Endif
         Endif
-        
+
       Case highlight.operator
         Select Case inBufParse[0]
           Case "-"
@@ -2412,7 +2413,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                 Return ExecFromHistory(-CInteger(inBufParse[1]))
               Endif
             Endif
-            
+
           Case "["    ' use this to recall a history and change its content
             If inBufParse.count >= 3 Then
               If HTypes[1] = highlight.number And inBufParse[2] = "]" Then
@@ -2424,7 +2425,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
               Endif
             Endif
         End Select
-        
+
       Case Highlight.Error
         Select Case InBufParse[0]
           Case "{" ' begin compile block
@@ -2436,10 +2437,10 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             If LambdaLevel = 0 Then InLambda = False
         End Select
     End Select
-    
+
     Return True
   End With
-  
+
 Catch
   NoPreProcess = False
   BlockLevel = 0
@@ -2449,28 +2450,28 @@ Catch
   ' Error.Propagate()
   gshlogging(User.home &/ "vars/gsh.log", errormsg)
   Error.Raise(ErrorMsg)
-  
+
 End
 
 Sub lambdaExpression(eblk As String[])
-  
+
   Dim variables As String = GetLastLine(execbuffer)
-  
+
   execbuffer = removeLastLine(execbuffer)
   Dim savebuf2 As String = execbuffer
   execbuffer = ""
-  
+
   NoPreProcess = True
   DoBlock(eblk)
   NoPreProcess = False
   execbuffer = removeLastLine(execbuffer)
-  
+
   Dim lambdaname As String = "lambda" & Str(linktable.count)
   lambdabuffer &= "sub " & lambdaname & "(...) as variant\n" & execbuffer & "\nend\n"
-  
+
   linktable.Add(lambdabuffer, lambdaname)
   execbuffer = savebuf2 & lambdaname & "("
-  
+
   Dim parms As String[] = Split(Variables, " \t,()", "\"\"", True, True)
   If parms.count > 1 Then
     For i As Integer = 1 To parms.max
@@ -2479,21 +2480,21 @@ Sub lambdaExpression(eblk As String[])
     Next
   Endif
   Execbuffer &= ")\n"
-  
+
   SharedMem["lambda"] = LambdaBuffer
-  
+
 Catch
   NoPreProcess = False
   inLambda = False
   Error.Propagate()
-  
+
 End
 
 Sub lambdaSubFuncClass(eblk As String[])
-  
+
   Dim slambdabuffer As String = ""
   Dim sName As String = GetLastLine(execbuffer)
-  
+
   execbuffer = removeLastLine(execbuffer)
   Dim savebuf2 As String = execbuffer
   execbuffer = ""
@@ -2501,27 +2502,27 @@ Sub lambdaSubFuncClass(eblk As String[])
   DoBlock(eblk)
   NoPreProcess = False
   execbuffer = removeLastLine(execbuffer)
-  
+
   slambdabuffer = sName & "\n" & execbuffer & "\nend\n"
-  
+
   LambdaBuffer = sLambdaBuffer & "\n" & lambdabuffer
   execbuffer = savebuf2
-  
+
 Catch
   NoPreProcess = False
   Error.Propagate()
-  
+
 End
 
 Sub editanything(funclass As String) As Boolean
-  
+
   Dim cvBuffer As String[]
   Dim cvBufferString As String
   Dim cvVariantBuffer As Variant
   Dim cvLine As String
   Dim cvLineSet As String[]
   Dim cvString As Variant
-  
+
   If funclass <> "" Then
     If funclass Like "sub.*" Or If funclass Like "class.*" Or If funclass Like "struct.*" Then cvString = Trim(cvString)
     If funclass[0] = "$" Then
@@ -2533,44 +2534,44 @@ Sub editanything(funclass As String) As Boolean
     Else
       cvString = sharedmem[funclass]
     Endif
-    
+
     Select Case TypeOf(cvString)
       Case gb.Null
         Error.raise(("Error : Edit of null object/Not Found"))
         Return False
-        
+
       Case gb.Boolean
         cvBufferString = Str(cvstring)
         cvString = editbuffer(cvString)
         sharedMem[funclass] = IIf(cvstring[0] == "T" Or cvstring == "1", True, False)
-        
+
       Case gb.integer, gb.long, gb.float, gb.short, gb.Date
         cvBufferString = Str(cvstring)
         cvString = editbuffer(cvString)
         sharedMem[funclass] = Val(cvString)
-        
+
       Case gb.String
         cvString = editbuffer(cvString)
         If funclass Like "sub.*" Or If funclass Like "class.*" Then cvString = Trim(cvString)
         sharedMem[funclass] = RTrim(cvString)
-        
+
       Case gb.Object
-        
+
         If Object.Class(cvString).Symbols.Exist("_edit") Then ' check if the object by some strange chance can edit it's self
           SharedMem[funclass] = cvString._edit()
           Return True
         Endif
-        
+
         Select Case Object.Class(cvString).name
           Case "String[]"
             cvBuffer = cvString
             cvBufferString = cvBuffer.Join("\n", "\"\"")
             cvBufferString = editbuffer(cvBufferString)
             sharedMem[funclass] = Split(cvBufferString, "\n", "\"\"", True)
-            
+
           Case "Byte[]"
             SharedMem[funclass] = editHex(cvstring)
-            
+
           Case "Boolean[]"
             cvBufferString = ""
             For Each s As Variant In cvString
@@ -2583,9 +2584,9 @@ Sub editanything(funclass As String) As Boolean
               s = Trim(s)
               cvString.add(IIf(s[0] == "T" Or s == "1", True, False))
             Next
-            
+
             sharedMem[funclass] = cvString
-            
+
           Case "Integer[]", "Long[]", "Float[]", "Short[]", "Date[]"
             cvBufferString = ""
             For Each s As Variant In cvString
@@ -2598,12 +2599,12 @@ Sub editanything(funclass As String) As Boolean
               cvString.add(Val(s))
             Next
             sharedMem[funclass] = cvString
-            
+
           Case "Collection"   ' updated to use json format for collections
             cvBufferString = toJson(cvString)
             cvString = JSON.FromString(editbuffer(cvBufferString))
             sharedMem[funclass] = cvString
-            
+
           Default
             Try cvBufferString = toJson(cvString)
             If Not Error Then
@@ -2613,70 +2614,70 @@ Sub editanything(funclass As String) As Boolean
               Error.raise(("Error : May not edit objects of type ") & Object.Class(cvString).name)
               Return False
             Endif
-            
+
         End Select
-        
+
       Default
         Error.raise(("Error : May only edit strings and some objects"))
         Return False
     End Select
   Endif
-  
+
   Return True
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub toJson(cvId As Variant) As String '' this is special as it will add carrage return at the end of each entry
-  
+
   Dim cvJSON As Byte[] = Byte[].FromString(JSON.Encode(cvID))
   Dim i As Integer
   Dim level As Integer = 0
   Dim cvReturned As String = ""
   Dim Indent As Integer = 0
-  
+
   For i = 0 To cvJson.max
     Select Case Chr(cvJson[i])
       Case "{"
         Inc level
         Inc indent
         cvReturned &= Chr(cvJson[i]) & "\n" & Space(indent)
-        
+
       Case "}"
         Dec level
         Dec Indent
         cvReturned &= "\n" & Chr(cvJson[i]) & "\n" & Space(indent)
-        
+
       Case ","
         cvReturned &= Chr(cvJson[i])
         If level = 1 Then
           cvReturned &= "\n" & Space(indent)
-          
+
         Endif
-        
+
       Case "["
         Inc level
         cvReturned &= Chr(cvJson[i])
-        
+
       Case "]"
         Dec level
         cvReturned &= Chr(cvJson[i])
-        
+
       Default
         cvReturned &= Chr(cvJson[i])
     End Select
   Next
   Return cvReturned
-  
+
 End
 
 Public Sub removeLastLine(sBuffer As String) As String
-  
+
   Dim sLines As String[]
   Dim sBuff, sResult As String
-  
+
   sResult = ""
   sLines = Split(sBuffer, "\n", "", True)
   sLines.Remove(sLines.Max)
@@ -2686,23 +2687,23 @@ Public Sub removeLastLine(sBuffer As String) As String
   Return sResult
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub GetLastLine(sBuffer As String) As String
-  
+
   Dim sLines As String[]
-  
+
   sLines = Split(sBuffer, "\n", "", True)
   Return sLines.Last
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub editbuffer(thebuffer As String) As String
   ''debug "edit "; thebuffer
-  
+
   Dim workfile As String = Temp() & ".gsh"
   Dim Wfile As File
   Dim resultfile As String
@@ -2710,9 +2711,9 @@ Public Sub editbuffer(thebuffer As String) As String
   wfile = Open workfile For Write Create
   Write #wfile, thebuffer, Len(thebuffer)
   Close wfile
-  
+
   Shell "clear" Wait
-  
+
   With sharedmem
     'Dim cmd As String = sharedMem["editor"] & " " & workfile
     Dim mProc As Process
@@ -2732,25 +2733,25 @@ Public Sub editbuffer(thebuffer As String) As String
   End With
   cmd.Add(workfile)
   mProc = Exec cmd With getenv()
-  
+
   RunningProcess = mProc
   mProc.Wait()
   RunningProcess = Null
-  
+
   wfile = Open workfile For Read
   Try resultfile = Read #wfile, Lof(wfile)
   If Error Then resultfile = thebuffer
   Close wfile
-  
+
   Return resultfile
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub editHex(thebuffer As Byte[]) As Byte[]
   ''debug "edit "; thebuffer
-  
+
   Dim workfile As String = Temp()
   Dim Wfile As File
   Dim resultfile As Byte[]
@@ -2758,45 +2759,45 @@ Public Sub editHex(thebuffer As Byte[]) As Byte[]
   wfile = Open workfile For Write Create
   thebuffer.Write(wfile)
   Close wfile
-  
+
   Shell "clear" Wait
-  
+
   'Dim cmd As String = sharedMem["editor"] & " " & workfile
   Dim mProc As Process
   'mProc = Exec [SharedMem["hexeditor"], workfile] With SharedMem["env"]
   mProc = Exec [SharedMem["hexeditor"], workfile] With getenv()
-  
+
   RunningProcess = mProc
   mProc.Wait()
   RunningProcess = Null
-  
+
   wfile = Open workfile For Read
   resultfile = New Byte[Lof(wfile)]
   Try resultfile.Read(wfile)
   If Error Then resultfile = thebuffer
   Close wfile
-  
+
   Return resultfile
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub editHistory(index As Integer) As Boolean
-  
+
   Dim MaxEdit As Integer = sharedMem["historycurrent"] - 1
   Dim EditNum As Integer = 0
   Dim EditParts As String[]
   Dim EditParms As String
-  
+
   EditParms = regexp.replace(InBuffer, "^.*]", "")
   EditParts = Split(EditParms, "/", "''", True, False)             ' we should now have the correct edit info
-  
+
   If editparts.count <> 2 Then
     Error "Invalid replace parameters ", EditParms
     Return True
   Endif
-  
+
   editnum = If(index < 0, Maxedit + index, index)
   If editnum < 0 Or editnum > MaxEdit Then
     Error ("History index out of bounds ["); index; "]"
@@ -2809,14 +2810,14 @@ Public Sub editHistory(index As Integer) As Boolean
   sharedmem["history"] = history
 Catch
   Error.Propagate()
-  
+
 End
 
 Public Sub ExecFromHistory(Count As Integer) As Boolean
-  
+
   Dim bi As Boolean
   Dim readpos As Integer = If(count < 0, sharedMem["historycurrent"] + count, count)
-  
+
   If history.Exist(READPOS) Then
     HCurrentRead = readpos
   Else
@@ -2824,25 +2825,25 @@ Public Sub ExecFromHistory(Count As Integer) As Boolean
     execbuffer = ""
     Return True
   Endif
-  
+
   ''Debug "Access history number"; HCurrentRead
-  
+
   execbuffer = ""
   Source = "HISTORY"
   bi = IfReader([""])
   SOURCE = "STDIN"
   Return bi
-  
+
 Catch
   Dim errormsg As String = "ExecFromHistory  Error : " & Error.text & " : " & Error.where
   gshlogging(User.home &/ "vars/gsh.log", errormsg)
   Error.Raise(errormsg)
   'Error.Propagate()
-  
+
 End
 
 Public Sub DoBlock(EndBlk As String[])
-  
+
   With sharedmem
     Inc blockLevel
     ''debug "Enter DOBLK"
@@ -2851,42 +2852,42 @@ Public Sub DoBlock(EndBlk As String[])
     Wend
     Dec BlockLevel
     ''debug "Exit DOBLK"
-    
+
   End With
 Catch
   Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where
   gshlogging(User.home &/ "vars/gsh.log", errormsg)
   Error.Raise(errormsg)
-  
+
 End
 
 Private Sub FunctionCommandOrexecVar(symbol As String) As Boolean
-  
+
   If isLocalFunc(symbol, False) Then Return True
   If System.Exist(symbol) Then Return True
   If LocalKeyWords.Exist(Lower(symbol)) Then Return True
   ' If SharedMem.exist(symbol) Then
   '   If SharedMem.SymbolTable[symbol].symtype = gb.string Then Return True
   ' Endif
-  
+
   Return False
-  
+
 End
 
 Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As Integer
-  
+
   Dim sym As String = Lower(msym)
-  
+
   If Not IsLetter(sym[0]) Then
     If Not (sym[0] = "$" Or sym[0] = "_") Then
       Return False
     Endif
   Endif
-  
+
   Dim fullSymName As String = "sub." & sym
   If Not SharedMem.exist(fullSymName) Then
     Dim LocalPath As String = FindScript(sym, "subs")
-    
+
     If Exist(LocalPath) And If Stat(localpath).type = gb.file Then
       Try SharedMem[fullSymName] = File.Load(localpath)
       If Error Then Error.Raise("IsLocalFunc : " & fullSymName & Error.text)
@@ -2901,38 +2902,38 @@ Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As 
     'Endif
     Return True
   Endif
-  
+
   Return False
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Private Sub isKeyword(sym As String) As Boolean
-  
+
   If LocalKeyWords.Exist(Lower(sym)) Or If System.Keywords.Exist(sym) Then
     Return True
   Else If Left(System.fullversion, 4) >= "3.16" And If System.Subroutines.Exist(sym) Then
     Return True
   Endif
-  
+
   Return False
 Catch
   Error.Propagate()
-  
+
 End
 
 Private Sub isLocalClass(msym As String, Optional docompile As Boolean = True, doclasscheck As Boolean = False) As Integer
-  
+
   Dim c As Class
   Dim sym As String = Lower(msym)
-  
+
   If Not IsLetter(sym) And If Not (sym Like "*_*") Then Return False
-  
+
   Dim FullName As String = "class." & sym
   If SharedMem.exist(fullname) Then Return True
-  
+
   Dim localPath As String = FindScript(sym, "class")
   If Exist(localPath) And If Stat(localpath).type = gb.file Then
     Try SharedMem[fullName] = File.Load(localPath)
@@ -2942,29 +2943,29 @@ Private Sub isLocalClass(msym As String, Optional docompile As Boolean = True, d
     Endif
     Return True
   Endif
-  
+
   If doclasscheck Then
     Try c = Classes[sym]
     If Not Error And If c <> Null Then Return True
   Endif
-  
+
   Return False
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Private Sub isLocalstruct(msym As String, Optional docompile As Boolean = True) As Integer
-  
+
   Dim sym As String = Lower(msym)
-  
+
   If Not IsLetter(sym) And If Not (sym Like "*_*") Then Return False
   Dim FullName As String = "struct." & sym
   If SharedMem.exist(FullName) Then Return True
-  
+
   Dim localPath As String = FindScript(sym, "struct")
-  
+
   If Exist(localPath) And If Stat(localpath).type = gb.file Then
     Try SharedMem[FullName] = File.Load(localPath)
     If Error Then Error.Raise("IsLocalStruct:" & Error.text)
@@ -2973,32 +2974,32 @@ Private Sub isLocalstruct(msym As String, Optional docompile As Boolean = True) 
     Endif
     Return True
   Endif
-  
+
   'Try dim c as class = Classes[sym]
   'If Not Error Then Return True
-  
+
   Return False
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "<<", "<<<", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
 Private ParmParser As New ParseParm(False, ["'"], ["\"", "\"", "[", "]"], [","])
 
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
-  
+
   Dim i, j As Integer
   Dim si As String
   Dim nowait As Boolean = False
   Dim MinCount As Integer = 0
-  
+
   Dim Funcdef As String = getSubdef(Split(SharedMem["sub." & funcname], "\n", "\"\"", True))
   'Dim interface As String[] = Split(FuncDef, "(,)", "\"\"", True, True)
   ParmParser.braces = ["(", ")", "{", "}"]
   Dim interfaceDef As String[] = Parser(FuncDef, ParmParser, False, False)
-  
+
   Dim InBrace As Integer = 0
   Dim interface As New String[]
   Dim GotMin As Boolean = False
@@ -3016,13 +3017,13 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
       MinCount = interface.count
       gotmin = True
     Endif
-    
+
     interface.Add(si)
-    
+
   Next
-  
+
   Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
-  
+
   ' Scan it for comments... forgot about this
   For iScan As Integer = 0 To CmdLine.max
     If CmdLine[iScan] = "'" Then
@@ -3030,12 +3031,12 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
       Break
     Endif
   Next
-  
+
   If CmdLine.last = "&" Then
     CmdLine.Pop()
     NoWait = True
   Endif
-  
+
   Dim sCodeLine As String = CmdLine[0] & "("
   Dim types As Integer[]
   Dim syms As String[]
@@ -3050,7 +3051,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
   For i = 1 To CmdLine.max
     If j > interface.max Then Break
     If i > 1 Then sCodeLine &= ","
-    
+
     If interface[j] <> "..." Then
       syms = highlight.Analyze(interface[j])
       types = highlight.types
@@ -3069,36 +3070,36 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
       sCodeLine &= CmdLine[i]
     Endif
   Next
-  
+
   sCodeLine &= ")"
   If nowait Then scodeline &= " &"
-  
+
   Return sCodeLine
 Catch
   Error.Propagate()
-  
+
 End
 
 Private AutoGenSub As Integer = 0
 
 Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As String             ' MaxGlobSize As 0 means unlimited
-  
+
   Dim OutBuf As String = ""
   Dim Syms As String[]
   Dim types As Integer[]
   Dim tCount As Integer
   Dim bLookup As Boolean = False
-  
+
   If NoPreProcess Then
     If DoTrace Then Error "(Trace "; Now; ") "; ("No Preprocess "); ": "; InVar
     Return InVar
   Endif
   If DoTrace Then Error "(Trace "; Now; ") "; ("Before Preprocess "); ": "; InVar
   If IsSpace(Invar) Then Return " "
-  
+
   Syms = Highlight.Analyze(InVar)
   types = Highlight.types
-  
+
   If Types.Exist(Highlight.Error) Then ' check for what ever the error is looking for `....`
     Dim tmpParse As String[] = Parser(InVar, ErrorParse, True)
     Syms.Clear()
@@ -3108,18 +3109,18 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
       Types.Insert(Highlight.types)
     Next
   Endif
-  
+
   If syms.count = 0 Or If types[0] = Highlight.Comment Or If types[0] = Highlight.Help Then
     Return InVar
   Endif
-  
+
   If syms[0] = "EXTERN" Then
     If Not ExternTable.Exist(Trim(InVar)) Then
       ExternTable.Add(Trim(invar))
     Endif
     syms[0] = "'" & syms[0]
   Endif
-  
+
   If syms.count >= 1 And syms.count <= 2 And syms[0] = "FAST" Then
     If syms.count = 1 Or If syms[1] = "UNSAFE" Then
       If Not CompilerDirectiveTable.exist(InVar) Then
@@ -3128,7 +3129,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
       Endif
     Endif
   Endif
-  
+
   If syms[0] = "USE" Then
     Dim uses As String[] = Split(invar, " ,", "\"\"", True, True)
     For dvi As Integer = 1 To uses.Max
@@ -3140,14 +3141,14 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
     ContainsGlobal = True
     Return Syms.Join(" ")
   Endif
-  
+
   If (invar[0] = "." And invar[1] = "/") Or If (invar[0] = "~" And invar[1] = "/") Or If invar[0] = "/" Or If invar[0] = "*" Then
     syms.Add("!", 0)
     types.Add(Highlight.operator, 0)
-    
+
   Else If types[0] = Highlight.symbol Then                 ' check the type of symbol, look for function local override
     bLookup = System.Exist(syms[0])
-    
+
     If bLookup And Not isLocalFunc(syms[0], True) And Not isKeyword(syms[0]) And Not isLocalClass(syms[0], True, True) And Not isLocalStruct(syms[0], False) Then
       syms.Add("!", 0)
       types.Add(Highlight.operator, 0)
@@ -3163,7 +3164,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             Dim NewLineDef As String = MakeIntoCall(syms[0], InVar)
             Syms = Highlight.Analyze(NewLineDef)
             types = highlight.types
-            
+
             If NewLineDef = "" Then
               Error SharedMem["result"]
               Return ""
@@ -3174,13 +3175,13 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
       bLookup = False
     Endif
   Endif
-  
+
   'If types[0] = Highlight.operator And Syms[0] = "!" Then ' we treat this like an external command whole line
   If Syms[0] = "!" Then ' we treat this like an external command whole line
     outbuf = CreateCmdProgram.compile(InVar)
     If DoTrace Then Error "(Trace "; Now; ") "; ("PreProcess Cmd Compiled "); ": "; outbuf
     ContainsGlobal = True
-    
+
   Else
     tcount = 0
     While tCount < Syms.count
@@ -3189,14 +3190,14 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
         Continue
       Endif
       Select Case Types[tCount]
-          
+
         Case Highlight.Error
           If syms[tCount][0] = "`" And If syms[tCount][syms[tCount].len - 1] = "`" Then
             Dim EvalStmt As String = Mid(syms[tCount], 2, syms[tCount].len - 2)
             Dim CompileStmt As String = CreateCmdProgram.compile(EvalStmt, True)
             syms[tCount] = CompileStmt
           Endif
-          
+
         Case Highlight.string
           If Syms[tCount][1] = "#" And Syms[tCount].len >= 5 And syms[tcount][2] = "{" Then
             Dim sLtemp As String[] = Split(Mid(Syms[tcount], 2, Syms[tcount].len - 2), "#", "{}", True, False)
@@ -3217,9 +3218,9 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
               Return ""
             Endif
           Endif
-          
+
         Case Highlight.symbol
-          
+
           If Syms[TCount] = "$" And If (tcount + 1) < types.count And If types[tcount + 1] = Highlight.operator Then
             Select Case Syms[Tcount + 1]
               Case "*", "!", "@"
@@ -3227,7 +3228,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
                 Syms[Tcount + 1] = ""
             End Select
           Endif
-          
+
           If Syms[Tcount] = "$" And If (tcount + 1) < types.count And If types[tcount + 1] = Highlight.error Then
             If syms[tCount + 1][0] = "`" And If syms[tCount + 1][syms[tCount + 1].len - 1] = "`" Then
               EvalStmt = Mid(syms[tCount + 1], 2, syms[tCount + 1].len - 2)
@@ -3237,7 +3238,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             Inc tcount
             syms[tcount] = "' " & syms[tcount]
           Endif
-          
+
           If Syms[Tcount] = "$" And If (tcount + 1) < types.count And If types[tcount + 1] = Highlight.String Then
             syms[tcount] = "enumerate"
             types[tcount] = Highlight.symbol
@@ -3310,7 +3311,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
               Endif
             Endif
           Endif
-          
+
         Case Highlight.Operator
           If syms.max >= tcount + 1 Then
             If syms[tcount] = "@" And types[tcount + 1] = Highlight.symbol Then                   ' we are going to execute a variable
@@ -3339,9 +3340,9 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
       End Select
       Inc tcount
     Wend
-    
+
     ' scan if we need to include a class, structure or function
-    
+
     For tcount = 0 To syms.max
       If syms[tcount] = "" Then Continue
       If types[tcount] = highlight.symbol Or If types[tcount] = Highlight.DataType Then
@@ -3367,14 +3368,14 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
         Endif
       Endif
     Next
-    
+
     OutBuf = Syms[0]
-    
+
     For tcount = 1 To Syms.Max
       If syms[tcount] = "" Then Continue
       Dim sspacer As String = ""
       If tcount - 1 >= 0 Then
-        
+
         If syms[tcount] = "." Then
           If types[tcount - 1] = Highlight.symbol Or syms[tcount - 1] = "ERROR" Then
             sspacer = ""
@@ -3391,12 +3392,12 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
         OutBuf &= sspacer & Syms[tcount]
       Endif
     Next
-    
+
     If DoTrace Then Error "(Trace "; Now; ") "; ("After Preprocess "); ": "; Outbuf
-    
+
     Highlight.Analyze(Outbuf, True)
     OutBuf = Highlight.TextAfter
-    
+
     If Not IsClass Then
       Dim PublicCheck As Integer = IIf(syms[0] = "STATIC", 1, 0)
       If (syms[PublicCheck] = "ENUM") Then
@@ -3419,60 +3420,60 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
       Endif
     Endif
   Endif
-  
+
   ''Debug OutBuf
   'Print OutBuf
   If DoTrace Then Error "(Trace "; Now; ") "; ("Preprocess outputs"); ": "; outbuf
   Return OutBuf
-  
+
 Catch
   Error.Propagate()
-  
+
 End
 
 '' resolve the file name to a single file if possible
 '' glob it first and if its not found expand name and return it
 
 Public Sub resolvefilename(filename As String) As String
-  
+
   Dim results As String[] = CreateCmdProgram.DoGlob(filename)
   Dim newdir As String = results[0]
-  
+
   If results.count > 1 Then newdir = filename
   Dim name As String = File.Name(newdir)
   newdir = File.Dir(newdir)
-  
+
   Dim sPath As String = Trim(newdir)
-  
+
   Dim sPathSplit As String[] = Split(newdir, "/", "", True)
-  
+
   Dim pwds As New String[]
-  
+
   If file.isrelative(sPath) Then pwds.insert(Split(env["PWD"], "/", "", True))
-  
+
   For Each Sdir As String In sPathSplit
     Select Case SDir
       Case "~"
         If pwds.count = 0 Then pwds.insert(Split(user.home, "/", "", True))
-        
+
       Case "."
         If pwds.count = 0 Then pwds.insert(Split(env["PWD"], "/", "", True))
-        
+
       Case ".."
         If pwds.count > 0 Then pwds.remove(pwds.max)
-        
+
       Default
         pwds.add(sdir)
-        
+
     End Select
-    
+
     If Not Exist("/" & pwds.join("/")) Then
       Error.raise(("Directory Not Found :[") & "/" & pwds.join("/") & "]")
     Endif
-    
+
   Next
   Return "/" & PWDs.join("/") &/ name
-  
+
 End
 '
 ' Public ExecVarBuffer As String = ""
@@ -3528,91 +3529,91 @@ Public helptxt As String
 Public helpfromhtml As String
 
 Public Sub HexPrint(Val As String)
-  
+
   Dim bstr As New Byte[]
-  
+
   bstr = bstr.FromString(val)
   For i As Integer = 0 To bstr.max
     Print Hex(bstr[i]); ":"; Chr(bstr[i]);;
   Next
   Print
-  
+
 End
 
 Public Sub mProcget_read()
-  
+
   Dim buffer As String
-  
+
   buffer = Read #Last, -256
   helpfromhtml &= buffer
-  
+
 End
 
 Public Sub GetHighlightTypeAsText(intype As Integer) As String
-  
+
   If intype >= 0 And intype <= TypeToText.max Then
     Return TypeToText[intype]
   Endif
   Return ("UNKNOWN Highlight Type-") & Str(intype)
-  
+
 End
 
 Public Sub GetDataTypeAsText(intype As Integer) As String
-  
+
   If intype >= 0 And intype <= DataTypes.max Then
     Return DataTypes[intype]
   Endif
   Return ("UNKNOWN Data Type-") & Str(intype)
-  
+
 End
 
 Public Sub UseScript(ScriptName As String) As Object
-  
+
   Dim Name As String = "sub." & ScriptName
-  
+
   GetSub(ScriptName)
   If Not SubCls.Exist(Name) Then
     If Not compile(name) Then
       Error.Raise("UseScript Compile failed for :" & ScriptName)
     Endif
   Endif
-  
+
   Return SubCls[name]
-  
+
 End
 
 Public AllThingsNames As New Collection(gb.ignorecase)
 
 Public Sub GetAllThings() As Collection
-  
+
   Dim lany As Object = UseScript("lany")
-  
+
   AllThingsNames.Clear()
-  
+
   'lany returns an array [locationDescription, path to file,script name,LocationReadFrom,file type(class,struct,sub) ]
   GenAllThings(lany.lany("sub", "subs"))                               'lany defaults to subs when no parameters given
   GenAllThings(lany.lany("class", "class"))
   GenAllThings(lany.lany("struct", "struct"))
-  
+
   Return AllThingsNames
-  
+
 End
 
 Sub GenAllThings(list As Collection)
-  
+
   For Each sv As String[] In list
     AllThingsNames.Add(sv, list.key)
   Next
-  
+
 End
 
 Public Sub printHelp(Optional command As String = "")
-  
+
   Signal[Signal.SIGPIPE].Ignore
-  
+
   Dim mproc As Process
   HelpSystem.LoadHelp() ' only loads help if not already loaded
-  
+
   If command <> "" Then
     command = Trim(Replace(command, "help", "", gb.ignorecase))
     HelpTxt = HelpSystem.GetHelpDetailedText(command)
@@ -3620,17 +3621,17 @@ Public Sub printHelp(Optional command As String = "")
       Exec ["man", command] Wait
       Return
     Endif
-    
+
   Else
-    
+
     HelpTxt = HelpSystem.AllHelp()
-    
+
   Endif
-  
+
   Dim helpretryCount As Integer = 0
-  
+
 helpRetry:
-  
+
   If helpRetryCount = 2 Then Error.Raise(("Help Display failed!"))
   'Try mproc = Exec ["/usr/bin/less", "-R", "/tmp/jummp"] Wait
   'Try Exec ["clear"] Wait
@@ -3640,26 +3641,26 @@ helpRetry:
     Inc helpRetryCount
     Goto helpRetry
   Endif
-  
+
   Wait 0
-  
+
   Try Write #mproc, Helptxt
   Try Flush #mproc
-  
+
   Try mproc.CloseInput()
   Try mproc.Wait()
-  
+
   Signal[Signal.SIGPIPE].Reset
-  
+
 Catch
   Error "Help System error :";; Error.text;; Error.where
-  
+
 End
 
 Sub helpgetfile(path As String) As String[]
-  
+
   Dim func As String
-  
+
   If path[0] = "/" Then
     Try func = file.load(path)
     If Error Then
@@ -3671,16 +3672,16 @@ Sub helpgetfile(path As String) As String[]
   Endif
   'func = ConsoleHighlight.ToConsole(func)
   Return Split(func, "\n", "\"\"", False, True)
-  
+
 End
 
 Private Sub getSubdef(func As String[]) As String
-  
+
   For Each s As String In func
     If s Like "*[Ss]ub *" Or If s Like "*[Ff]unction*" Or If s Like "*[Pp]rocedure*" Then Return s
   Next
   Return "*" & func[0] ' if it fails just return the first line of function as a guess
-  
+
 End
 
 ' Private Sub doListing(Command As String)
@@ -3713,7 +3714,7 @@ End
 ' End
 
 Public Sub lambda() As String
-  
+
   Return LambdaBuffer
-  
+
 End

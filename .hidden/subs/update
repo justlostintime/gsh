@@ -1,4 +1,5 @@
-Sub update() As Boolean ' when a new profile.gsh is available update the environment with it
+Sub update() As Boolean 
+''' When a new profile.gsh is available update the environment with it
 ''update
 ''     update to the latest profile default functions
 ''     loads the latest alias and functions and classes from
@@ -45,37 +46,3 @@ else
 endif
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

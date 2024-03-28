@@ -1,4 +1,5 @@
-sub varrd(...) 'read the value and definition of a global variable from file
+sub varrd(...) 
+'''Read the value and definition of a global variable from file
 'varrd varname varname ..
 ''  read/instanciate multiple variables from the vars directory
 ''  using the default name , the variable name

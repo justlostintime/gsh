@@ -1,4 +1,5 @@
-Sub ListLastCompile() ' list the last compiled script
+Sub ListLastCompile() 
+''' List the last compiled script
 
     Dim ConsoleHighlight As New gshHighlight
 

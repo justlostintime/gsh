@@ -1,10 +1,12 @@
-Public Sub GetHtmlAsText(TheUrl as string) as string[] ' turn html into text string
+Public Sub GetHtmlAsText(TheUrl as string) as string[] 
+''' Fetch an html web  page and return it as a formatted text string 
 '' Read a web page and return the page converted to text
 '' uses html2text linux app to do the conversion
+  use "gb.net.curl"
   Dim mproc As Process
   Dim sSource As New HttpClient As "hclient"
   Dim buffer As String
-  dim aTmps as string[]
+  dim aTmps as new string[]
 
   sSource.url = TheUrl
   sSource.async = False
@@ -26,7 +28,7 @@ Public Sub GetHtmlAsText(TheUrl as string) as string[] ' turn html into text str
       atmps = Split(Replace(ReadBuffer, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
   Endif
 
-  Return sTemps
+  Return atmps
 end
 
 Public ReadBuffer as string = ""

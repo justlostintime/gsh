@@ -1,4 +1,5 @@
-Sub dbload(Optional FileName As String = ".") As Boolean 'Load Memory DB from file/image
+Sub dbload(Optional FileName As String = ".") As Boolean 
+'''Load Memory DB/Image  from file/image
 ''dbload <"ImageFileName"> - load an database image from a file and make it current
 ''          Images may be saved to a file and loaded as needed
 ''          Images may contain any application environment

@@ -1,4 +1,5 @@
-Sub qtest() '' test access an internal class information
+Sub qtest() 
+''' test access an internal class information
 '' a general gsh test
 
   dim css as class

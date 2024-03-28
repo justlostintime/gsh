@@ -1,6 +1,7 @@
-Sub plot(pairs as variant[], optional Title as string = "Plotter", xRange as float = 0.0, yRange as float = 0.0, OriginX as float = 0.0, OriginY as float = 0.0) ' Plots a set of points on a graph
-''' Plot a set of points on a 2d graph, input a variant array containing integer arrays
-''' with two points each
+Sub plot(pairs as variant[], optional Title as string = "Plotter", xRange as float = 0.0, yRange as float = 0.0, OriginX as float = 0.0, OriginY as float = 0.0)
+''' Plots a set of points on a graph in a graphics drawing area
+'' Plot a set of points on a 2d graph, input a variant array containing integer arrays
+'' with two points each
 
 use "gb.gui","gb.image"
 component.load("gb.gui")

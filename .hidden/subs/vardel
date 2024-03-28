@@ -1,4 +1,5 @@
-Sub vardel(optional varname As String = "", noerrorreport As Boolean = False) As Boolean ' delete in memory vars/subs/classes/structs
+Sub vardel(optional varname As String = "", noerrorreport As Boolean = False) As Boolean 
+''' Delete in memory vars/subs/classes/structs
 ''VarDel $globalvar - Delete a global variable
 ''    as function vardel("varname")
 ''    as command vardel "varname"

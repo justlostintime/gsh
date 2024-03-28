@@ -1,4 +1,5 @@
-Sub popup(msg As String)  '' display a user graphical popup message
+Sub popup(msg As String) 
+''' display a user graphical popup message
 '' Displays a user graphical popup message
 '' it calls the gui message interface
 use "gb.gui","gb.form"

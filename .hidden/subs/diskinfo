@@ -1,4 +1,5 @@
-Sub diskinfo() ' Display Disk Info
+Sub diskinfo()
+''' Display Detailed Disk Information - all storage
 '' Display the information about local disks
 '' and partitions
 'Linux
@@ -63,8 +64,6 @@ Next
 Dim uuids As String[] = Dir("/dev/disk/by-uuid") ' each is a link to the device
 Dim labels As String[] = Dir("/dev/disk/by-label") ' each is a link to the device
 
-
-
 Try plisting(mounts, "Mounted Devices", "/dev*") ' change /dev to UUID if your system uses that
 
 For i As Integer = 0 To labels.Max
@@ -90,8 +89,6 @@ Sub printInformation(DiskInfo As String, StatMap As String[])
 Catch
    Return
 End
-
-
 
 Sub plisting(source As String[], title As String, Optional filter As String = "*", map As String[] = [])
   Print title

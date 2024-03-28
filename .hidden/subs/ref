@@ -1,7 +1,8 @@
 Sub ref(SrcObj As Variant, method as string, ... ) As Variant
+''' Run an Method provided by an object
 '' ref(SrcObject,"methodToRun",parm1....)
 ''    Function to call an objects method from a script
-''    return the object 
+''    return the object
 object.call(SrcObj,method,param.all)
 return SrcObj
 end

@@ -1,4 +1,7 @@
-Sub notifymany(optional list as string[] = ["a"], count as integer = 10000) ' test notify function
+Sub notifymany(optional list as string[] = ["a"], count as integer = 10000, lastvalue as string = "bye") 
+''' test notify function by changing an array variables a number of times
+'' will change the provided list of variables a number of times
+'' Defaults to 1000 times per Variable, and sets it to the lastvalue when done
 
 for i as integer = 1 to count
 	for each s as string in list
@@ -6,4 +9,9 @@ for i as integer = 1 to count
 	next
 next
 
+	for each s as string in list
+		sharedmem[s] = lastvalue
+	next
+	
 End
+Class Sharedmem

@@ -20,7 +20,7 @@
 '
 
 Sub gshmakecontent()
-
+''' Format the content of the Library 
     Dim execOutput As String
     Dim BaseDir As String = Application.dir
     Dim ContentFile As String = BaseDir &/ "content"

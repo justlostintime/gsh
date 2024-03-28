@@ -1,5 +1,6 @@
-Sub traceoff() As Boolean ' turn the tracing of scripts off
-''TraceOff  
+Sub traceoff() As Boolean 
+''' turn the tracing of scripts off
+''TraceOff
 ''    Turns off shell command tracing
 ''    Will cause the printing of each input line with time stamp
 ''    and required terminator to stop

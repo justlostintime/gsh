@@ -1,5 +1,6 @@
 private var as string = "a"
-Sub testnotify(optional svar as string = "a") ' test notify on var change functions
+Sub testnotify(optional svar as string = "a") 
+''' test notify on var change functions
 ''testnotifychange - Used to test the notify functions
 ''
 var = svar

@@ -1,4 +1,5 @@
-Sub tellmewhen() ' example of defining a public/status variable within a script
+Sub tellmewhen() 
+''' example of defining a public/status variable within a script
 '' tellmewhen
 
 public xxxx as string = "hello"

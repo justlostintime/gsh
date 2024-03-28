@@ -19,7 +19,8 @@
 '
 Class sharedmem
 
-Sub gshlib(...) As Collection  'manage the gsh online library
+Sub gshlib(...) As Collection 
+    '''Manage the gsh online library
     '' this allows the user to search and retrieve programs from
     '' the online gsh library
     '' called with an indicator to just return the library

@@ -1,4 +1,5 @@
-Sub VarRename(OldName as string, NewName as string) as boolean ' rename a variable
+Sub VarRename(OldName as string, NewName as string) as boolean 
+''' rename a variable
 '' varrename oldname newname
 ''    Rename a Variable from one symbol name to another
 ''    Input the old name, and the new name

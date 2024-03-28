@@ -1,4 +1,5 @@
-Sub getfile(filename As String, symbol As String) As Boolean 'Load Binary file into a byte[] global variable
+Sub getfile(filename As String, symbol As String) As Boolean 
+'''Load Binary file into a byte[] array and assign to a gsh $variable
 ''getfile  loads a binary copy of the file into a global variable
 ''         Defaults to ~/vars/filename
 ''         loaded file may be dumped using fprint

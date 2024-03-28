@@ -1,8 +1,9 @@
 Class gsh
-public sub setsync(VarName as string, EnvEntryName as string) ' Sync an environment entry with the gsh variable value
+public sub setsync(VarName as string, EnvEntryName as string) 
+''' Sync an environment entry with the gsh variable value
 '' SetSync(Variable, EnvEntryName)
 ''   Syncronize the value of a gsh variable with an entry in the environment variable list
-''   This will enable the syncronization between a linux environment variable and 
+''   This will enable the syncronization between a linux environment variable and
 ''   a Gsh global variable - $variable name.
 
    if not sharedmem.exist(VarName) then

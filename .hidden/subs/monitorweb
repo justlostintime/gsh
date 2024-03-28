@@ -1,6 +1,7 @@
 Private enum hosturl,expected,emailaddr, emailhost,emailport,emailuser,emailpwd
-
-Sub monitorweb(...) ' Monitors in background a list of websites, emails user if down
+class sharedmem
+Sub monitorweb(...) 
+''' Monitors in background a list of websites, emails user if site is down
 ''monitorweb(HostList as string[],...
 ''          parameter format  [hosturl, expecttext, [emailaddr,[emailhost[,Emailport[, emailuser,emailpwd]]]]
 ''          Email Field examples emailaddr as string = "",emailhost as string = "",emailuser as string = "",emailpwd as string = "",emailport as string = "465")
