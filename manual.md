@@ -384,9 +384,9 @@ Sub jobs(Optional varname As String = \"\") As Boolean \' Job Control
 '' pid can equal ON for using job control
 '' or OFF (default) no job control
 '' job info can be accessed by Process
-'' using sharedmem["pid.p[processid]"] 
+'' using sharedmem["pid.p[processid] & "a" &"application.id"] 
 '' example:
-'' sharedmem["pid.p098765"]
+'' sharedmem["pid.p098765" & "a" & application.id]
 ....
 End
 ```
@@ -878,7 +878,6 @@ If you want the content evaluated you must us braces and brackets
 ```
    echo {(myvar + 5)}    ' more on this later
 ```
-
 
 ### Let's Look at Aliases and Alias Substitution
 

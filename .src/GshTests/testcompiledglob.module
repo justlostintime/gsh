@@ -28,13 +28,13 @@ Sub lprint(...) As Boolean  ' Print Anything to stdout
   ''          command  lprint .....  prints the variables
   ''          returns true if found, false otherwise
   ''          result contains the error text or "OK"
-  
+
   Dim vParams As Variant = param.all
-  
+
   For Each v As Variant In vParams
     fprint(file.out, v)
   Next
-  
+
 End
 
 Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant  ' process a text value with enumeration
@@ -43,12 +43,12 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
   ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
   '     Return IIf(CheckOnly = True, False, Null)
   ' Endif
-  
+
   'If checkonly = True Then Return True
   Dim expandsets As String[] = Split(value, " ", " ''", True, True)
   Dim FirstSet As String[]
   Dim intermresults As New String[]
-  
+
   For Each eitem As String In expandsets
     FirstSet = enumerateloop(eitem)
     If FirstSet.count = 0 Then Continue
@@ -62,15 +62,15 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
     Endif
   Next
   Return IntermResults
-  
+
 End
 
 Sub enumerateloop(value As String) As String[]  ' loop here until completed
-  
+
   Dim finalresult As New String[]
-  
+
   Dim leftbrace, rightbrace As Integer
-  
+
   leftbrace = InStr(value, "{")
   rightbrace = matchbrace(value, leftbrace)
   If leftbrace > 0 Then
@@ -96,29 +96,29 @@ Sub enumerateloop(value As String) As String[]  ' loop here until completed
     Endif
   Next
   Return finalresult
-  
+
 End
 
 Sub matchbrace(src As String, start As Integer) As Integer
-  
+
   Dim level As Integer = 1
-  
+
   Inc start
   For i As Integer = start To src.len - 1
     If src[i] = "{" Then Inc level
     If src[i] = "}" Then Dec level
     If level = 0 Then Return i + 1   ' we are working with strings
   Next
-  
+
   Return 0
-  
+
 End
 
 Sub getenum(enumdef As String) As String[]
-  
+
   Dim toEnum As String[] = Split(enumdef, ", ", "{}\"\"", True, True)
   Dim result As New String[]
-  
+
   For Each s As String In toEnum
     If InStr(s, "{") Then
       result.Insert(enumerate(s))
@@ -126,32 +126,32 @@ Sub getenum(enumdef As String) As String[]
       Dim enumset As String[] = Split(s, ".", "", True)
       Dim enumStart As String = enumset[0]
       Dim enumend As String = enumset[1]
-      
+
       If IsNumber(EnumStart) Then
-        
+
         Dim nStart As Integer = EnumStart
         Dim nEnd As Integer = EnumEnd
         Dim nStep As Integer = IIf(nStart < nEnd, 1, -1)
         For i As Integer = nStart To nEnd Step nStep
           result.Add(i)
         Next
-        
+
       Else
-        
+
         Dim bStart As Byte = CByte(Asc(EnumStart, 1))
         Dim bEnd As Byte = CByte(Asc(EnumEnd, 1))
         Dim bStep As Integer = IIf(bStart < bEnd, 1, -1)
         For b As Byte = bStart To bEnd Step bStep
           result.Add(Chr(b))
         Next
-        
+
       Endif
     Else
       result.Add(s)
     Endif
   Next
   Return result
-  
+
 End
 
 Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
@@ -161,10 +161,10 @@ Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
   ''          command  lprint filename .....  prints the variables
   ''          returns true if found, false otherwise
   ''          result contains the error text or "OK"
-  
+
   Dim vParms As Variant[]
   Dim mFile As Variant
-  
+
   With sharedmem
     If TypeOf(filename) = gb.string Then
       If file.dir(filename) = "" Then
@@ -240,7 +240,7 @@ Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
   End With
   If TypeOf(filename) = gb.string Then Close mfile
   Return True
-  
+
 End
 
 Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[]  ' Calls Glob to get list of file
@@ -248,7 +248,7 @@ Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[] 
   ''   Returns a list of files as expanded by the shells
   'EXTERN glob ( Pattern AS STRING , flags AS INTEGER , ErrorCallback AS POINTER , glob_def AS Glob_t ) AS INTEGER IN "libc:6"
   'EXTERN globfree ( glob_def AS Glob_t ) IN "libc:6"
-  
+
   Dim GLOB_ERR As Integer = Shl(1, 0)                      ' Return On Read errors. * /
   Dim GLOB_MARK As Integer = Shl(1, 1)                     ' Append a slash To Each name. * /
   Dim GLOB_NOSORT As Integer = Shl(1, 2)                   ' Don 't sort the names.  */
@@ -271,39 +271,39 @@ Sub fileexpand(path As String, Optional dironly As Boolean = False) As String[] 
   Dim CallResult As Integer
   Dim flags As Integer = (GLOB_TILDE Or GLOB_MARK Or GLOB_NOCHECK Or GLOB_BRACE)
   Dim GlobStar As Boolean = path Like "*\\*\\**"
-  
+
   If dironly = True Then flags = (flags Or GLOB_ONLYDIR)
   CallResult = glob(path, flags, Null, sret)
-  
+
   If Callresult <> 0 Then
     Error.Raise("File Expansion Error :" & globerrors[CallResult])
   Endif
-  
+
   ReturnSet = sret.gl_pathv
-  
+
   For i As Integer = 0 To sret.gl_pathc - 1
     Paths.Add(String@(Pointer@(ReturnSet + (SizeOf(gb.pointer) * i))))
     If GlobStar = True And If Paths.Last[Paths.Last.len - 1] = "/" Then
       paths.Insert(paths.last & "*")
     Endif
   Next
-  
+
   globfree(sret)
-  
+
   Return paths
-  
+
 Catch
   Error.Propagate()
-  
+
 End  ' Gambas module file
 
 Public Sub Main()
-  
+
   Try chdir(env["PWD"])
   SharedMem.BeginNamed("briangsh", 4512000)
   With Sharedmem
     lprint(enumerate("**"))
   End With
   SharedMem.end()
-  
+
 End

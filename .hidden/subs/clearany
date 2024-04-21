@@ -3,10 +3,10 @@ sub ClearAny(objtype as string,parmset as string[])
 ''' by default will prompt to save all changed files
 '' Use : ClearAny <class|struct|sub> <["name1","name2"]>
 '' if no type and no list then just do everything
-''       --IgnoreErrors - ignore and error"
-''       --Verbose      - Be verbose as to what is cleared or saved"
-''       --AutoSave     - automatically save any new or changed subs in the image"
-''       --NoSave       - Do not save any new or changed subs in image"
+''       --IgnoreErrors - ignore and error
+''       --Verbose      - Be verbose as to what is cleared or saved
+''       --AutoSave     - automatically save any new or changed subs in the image
+''       --NoSave       - Do not save any new or changed subs in image
 
 Public  Verbose as boolean = false
 Public  IgnoreErrors as boolean = false

@@ -257,8 +257,8 @@ ClassesToLoad As String[] = [
   "texthighlighter"
 ]
 
-'Public Sub Myinit()
-Public Sub _init()
+Public Sub Myinit()
+  'Public Sub _init()
 
   Dim result As Integer
 
@@ -267,11 +267,25 @@ Public Sub _init()
   $ScriptHighlighter = File.Load("gb.highlight")
 
   Try Component.Load("gb.signal")
-  Try Component.Load($ScriptHighlighter)
   If Error Then
-    Print "Unable to locate";; $ScriptHighlighter;; Error.text
-    Quit 7
+    Print "Init Error : "; Error.text;; Error.where
+    Print "Gambas signal handler missing or not installed, aborting"
+    Quit 6
   Endif
+
+  Dim alternateHighlighter As String[] = Split($ScriptHighlighter, "\n", "\"", True, False)
+  For i As Integer = 0 To alternateHighlighter.max
+    $ScriptHighlighter = alternateHighlighter[i]
+    Try Component.Load($ScriptHighlighter)
+    If Error Then
+      If i = alternateHighlighter.max
+        Print "Unable to locate highlighter or alternate highlighter ";; alternateHighlighter.Join(",");; Error.text
+        Quit 7
+      Endif
+    Else
+      Break
+    Endif
+  Next
 
   Try Component.load($sharedmemlib)
   If Error Then
@@ -696,7 +710,7 @@ End
 
 Public Sub Main()
 
-  ' Myinit()
+  Myinit()
   $gshref = Me
   Try $version = File.Load("VERSION")
 
@@ -882,7 +896,11 @@ Public Sub Main()
     Source = "FILE"
     Dim runcmder As String = cmdLineParameters[0]
     If File.Dir(runcmder) = "" Or If runcmder[0] <> "/" Then
-      runcmder = Env["PWD"] &/ runcmder
+      If runcmder[0] = "~" Then
+        runcmder = User.Home &/ Right(runcmder, -1)
+      Else
+        runcmder = Env["PWD"] &/ IIf(runcmder[0] = ".", Right(runcmder, -1), runcmder)
+      Endif
     Endif
 
     If DoTrace Then Error "(Trace "; Now; ") ";; ("Execute gsh script file");; runcmder
@@ -1124,7 +1142,7 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
   Endif
 
 Catch
-  Error "GSH : Error on exit "; Error.text;; Error.where
+  Error "GSH : Error on exit [ "; Error.text;; Error.where; "]"
   Quit ExitValue
 
 End
@@ -1504,11 +1522,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
               If StartCopy > 0 Then Startcopy += 6 ' len of search string
               EndCopy = InStr(execline, "] with", 0, gb.ignorecase)
               If Endcopy > 0 Then
-                cmdjobsinfo = Mid(execline, StartCopy, endcopy - startcopy)
+                cmdjobsinfo = sharedmem!history[sharedmem!historycurrent - 1] 'Mid(execline, StartCopy, endcopy - startcopy)
               Else
-                cmdjobsinfo = execline
+                cmdjobsinfo = sharedmem!history[sharedmem!historycurrent - 1] 'execline
               Endif
-              sharedmem["pid.p" & MyProcess.id & Application.id] = Str(MyProcess.id) & "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & cmdjobsinfo & "\n"
+              sharedmem["pid.p" & MyProcess.id & "a" & Application.id] = Str(MyProcess.id) & "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & cmdjobsinfo & "\n"
 
               '"sharedmem[\"pid.p\" & mProc" & BaseName & Str(i) & ".id]= str(mProc" & BaseName & Str(i) & ".id)&\"|\"& format(now,\"mm/dd/yyyy hh:nn:ss.uu\")& \"|\" & " & cmdjobsinfo & "\n"
             Endif
@@ -1595,7 +1613,7 @@ Public Sub SysProc_kill()
   For i As Integer = ActiveProcesses.Max To 0
     Select Case ActiveProcesses[i].state
       Case Process.Crashed
-        sharedmem["pid.p" & ActiveProcesses[i].id & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Crashed]\n")
+        sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Crashed]\n")
         Error ("Job pid="); ActiveProcesses[i].id;; ("Crashed")
         ActiveProcesses.remove(i)
 
@@ -1603,12 +1621,12 @@ Public Sub SysProc_kill()
         Continue
 
       Case Process.Signaled
-        sharedmem["pid.p" & ActiveProcesses[i].id & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Signaled]\n")
+        sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Signaled]\n")
         Error ("Job pid="); ActiveProcesses[i].id;; ("Signaled")
         ActiveProcesses.remove(i)
 
       Case Process.stopped
-        sharedmem["pid.p" & ActiveProcesses[i].id & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Stopped]\n")
+        sharedmem["pid.p" & ActiveProcesses[i].id & "a" & "Application.id&"] &= " |" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Stopped]\n")
         Error ("Job pid="); ActiveProcesses[i].id;; ("Complete")
         ActiveProcesses.remove(i)
 

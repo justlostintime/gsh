@@ -1,10 +1,11 @@
-Sub hist(Optional StartingAt As Integer = 0, numberShown As Integer = 0) As Boolean 
-''' List history
+Sub hist(Optional StartingAt As Integer = 0, numberShown As Integer = 0) As Boolean
+''' List cli keyboard history
 ''Hist      print a list input lines to the stdout
 ''          as function hist(startingAt,NumberShown)
 ''          as command hist StartingAt Number Shown
 ''          uses the global collection $history
 ''          returns true if read, false otherwise
+''          $MaxHistory is used to set the depth of the history kept
 ''          $result contains the error text or "OK"
 ''
 with sharedmem

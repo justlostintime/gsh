@@ -50,4 +50,3 @@ Public Sub _new(Optional SetDefaults As Boolean = True, ops As String[] = ["+", 
   Endif
 
 End
-

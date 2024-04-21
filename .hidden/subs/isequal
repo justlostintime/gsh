@@ -1,8 +1,10 @@
-Sub isEqual(leftval As Variant, rightval As Variant) As Boolean 
+Sub isEqual(leftval As Variant, rightval As Variant) As Boolean
 ''' compare anything to anything
-'' Compares any data to any data, including array content and object
-'' object arrays
-'' simple data types
+'' Compares any data to any data, including :
+''   - array content
+''   - objects
+''   - object arrays
+''   - simple data types
 
 If TypeOf(leftval) <> TypeOf(rightval) Then Return False
 

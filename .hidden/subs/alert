@@ -1,7 +1,7 @@
-Sub alert(Summary As String, Optional message As String = "?", icon As String = "info") 
+Sub alert(Summary As String, Optional message As String = "?", icon As String = "info")
 ''' Display notification created by a script
 '' Displays a notification message on the users screen
-''  alert "Summary/; "Message to display" "stock Icon name or filename"
+''  alert "Summary" "Message to display" "stock Icon name or filename"
 ''  the stock icons can be found on ubuntu/deb system in /usr/share/icons
 !notify -send -i {icon} {summary} {message}
 End

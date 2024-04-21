@@ -1,4 +1,4 @@
-Sub update() As Boolean 
+Sub update() As Boolean
 ''' When a new profile.gsh is available update the environment with it
 ''update
 ''     update to the latest profile default functions
@@ -46,3 +46,5 @@ else
 endif
 
 end
+class sharedmem
+class mem

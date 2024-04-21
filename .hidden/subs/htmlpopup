@@ -1,5 +1,9 @@
-Sub htmlpopup(htmltext As String,optional Title as string = "HTML PAGE") as window  
-''' Display an html page in a popup window
+Sub htmlpopup(htmltext As String,optional Title as string = "HTML PAGE") as window
+''' Display an html page or URL in a popup window
+'' Display the passed html formatted text in a popup webview
+'' If the string starts with http or https then fetch the url and
+'' display it in a webview. Displayed pages are fully functional
+'' webpages.
 
 extern dup(oldCode as integer) as integer in "libc:6"
 extern dup2(newid as integer, replaceid as integer) as integer in "libc:6"

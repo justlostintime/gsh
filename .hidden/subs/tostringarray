@@ -1,5 +1,7 @@
 'nopreprocess
-Sub ToStringArray(sResult as string[],...) 
+class sharedmem
+class mem
+Sub ToStringArray(sResult as string[],...)
 '''Change anything to string[]
 '''Used internally by GSH to create lists
 ''ToStringArray

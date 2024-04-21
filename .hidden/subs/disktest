@@ -7,12 +7,12 @@ Sub disktest(...)
 '' It is possible to test raw devices but only read only testing is allowed
 '' this runs as a graphical popup or console test routine
 '' it defaults to graphical interface unless the -p parameter is passed
-''disktest  [-p|-print] file_or_dev_1 test2 test3....... \n"
-'' Example: disktest /dev/sda /tmp/testfile \n"
-''          To Use a /dev/..    you must sudo this command\n"
-''          Note: Physical Devices are always tested for read performance only\n"
-''          You may test a device or a mounted directory\n"
-''          -p | -print will direct all output to stdout"
+'' 
+'' Example: disktest /dev/sda /tmp/testfile
+''          To Use a /dev/..    you must sudo this command
+''          Note: Physical Devices are always tested for read performance only
+''          You may test a device or a mounted directory
+''          -p | -print will direct all output to stdout
 
 Use "gb.gui"
 

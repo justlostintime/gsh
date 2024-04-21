@@ -19,3 +19,4 @@ if system.exist("cowsay") then
  cowsay smile
 endif
 end
+class sharedmem
