@@ -1,8 +1,8 @@
 # Gambas Shell gsh
 
-Version 1.5.3.26
+Version 1.6.2
 
-**December 9, 2023**
+**June 22, 2024**
 
 # Introduction
 
