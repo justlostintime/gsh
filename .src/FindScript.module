@@ -7,8 +7,8 @@ extensions As Collection = ["sub": "gshp", "struct": "gshs", "class": "gshc"]
 
 Public Sub _call(scriptname As String, type As String) As String
 
-  Dim Paths As String[] = Split(SharedMem[type & "path"], ";")
-  Dim ext As String = extensions[type]
+  Dim Paths As String[] = Split(SharedMem[type & "path"], ";")                 ' split the path according to ;
+  Dim ext As String = extensions[type]                                                               ' get the extension to use
   Dim result As Integer = VerifyFileType.unknown
   Dim ScriptId As String = ""
 
@@ -21,6 +21,9 @@ Public Sub _call(scriptname As String, type As String) As String
     Endif
   Else
     For Each s As String In Paths
+      If s Like "/usr/share/gsh*" Then
+        s = gsh.GshRootPath &/ s
+      Endif
       Dim fullpath As String = s &/ ScriptName
       If Exist(fullpath) Then
         scriptid = fullpath

@@ -1,11 +1,21 @@
-* Sun Jun 23 2024 Brian G <justlostintime@gmail.com> 1.6.2
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
 
-* Sun Jun 23 2024 Brian G <justlostintime@gmail.com> 1.6.2
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
+
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
+
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
+
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
+
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
+
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
+
+* Mon Jun 24 2024 Brian G <justlostintime@gmail.com> 1.6.2
 
 * Sun Jun 23 2024 Brian G <justlostintime@gmail.com> 1.6.2
 - Get mime info set correctly
-
-* Sun Jun 23 2024 Brian G <justlostintime@gmail.com> 1.6.2
 
 * Sat Jun 22 2024 Brian G <justlostintime@gmail.com> 1.6.2
 - And again get the version info correct
@@ -15,8 +25,6 @@
 
 * Sat Jun 22 2024 Brian G <justlostintime@gmail.com> 1.6.2
 - Get the correct element installed for highlighting
-
-* Sat Jun 22 2024 Brian G <justlostintime@gmail.com> 1.6.2
 
 * Wed Mar 27 2024 Brian G <justlostintime@gmail.com> 1.6.2
 - Help system overhaul and testing system scripts
@@ -70,8 +78,6 @@
 * Thu Nov 30 2023 Brian G <justlostintime@gmail.com> 1.5.3
 - Updated how it locates editor, was not seeing full path names to editors
 
-* Mon Oct 16 2023 Brian G <justlostintime@gmail.com> 1.5.3
-
 * Fri Sep 29 2023 Brian G <justlostintime@gmail.com> 1.5.3
 - Updated alias to correctly keep intro and exit characters
 
@@ -124,8 +130,6 @@
 - fix globstar
 
 * Fri Nov 19 2021 Brian G <justlostintime@gmail.com> 1.3.84
-
-* Fri Nov 19 2021 Brian G <justlostintime@gmail.com> 1.3.84
 - with library
 
 * Fri Nov 19 2021 Brian G <justlostintime@gmail.com> 1.3.82
@@ -147,8 +151,6 @@
 - Updated documentation and help files
 
 * Wed Oct 27 2021 Brian G <justlostintime@gmail.com> 1.3.36
-
-* Wed Oct 27 2021 Brian G <justlostintime@gmail.com> 1.3.36
 - Fix the exported path to work correctly again
 
 * Wed Oct 27 2021 Brian G <justlostintime@gmail.com> 1.3.34
@@ -163,8 +165,6 @@
 
 * Wed Oct 13 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.3.4
 - Updates to support latest gambas version
-
-* Sun Oct 10 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.3.1
 
 * Fri Feb 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.96
 - Fix Passing sharedmem to local variables

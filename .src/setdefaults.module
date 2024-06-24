@@ -58,7 +58,7 @@ Public Sub _Call()
     If Not .Exist("subsPath") Then .subspath = user.home &/ "vars/subs;" & user.home &/ "vars/games;/usr/share/gsh/subs"
     If Not .exist("classPath") Then .classpath = user.home &/ "vars/class;/usr/share/gsh/class"
     If Not .Exist("structPath") Then .structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
-    If Not .Exist("scriptpath") Then .scriptpath = user.home &/ "vars/struct;/usr/share/gsh/scripts"
+    If Not .Exist("scriptpath") Then .scriptpath = user.home &/ "vars/scripts;/usr/share/gsh/scripts"
     If Not .exist("suggestcommand") Then .suggestcommand = False
 
     If Not .exist("DoTrace") Then               'the memory value always takes precidence

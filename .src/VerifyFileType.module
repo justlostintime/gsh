@@ -9,7 +9,7 @@ Public Const unknown As Integer = 4
 
 ValidExecTypes As String[] = ["!gshp", "!gshc", "!gshs", "/usr/bin/gsh", "/usr/bin/env gsh"]
 ValidExtensions As String[] = ["gshp", "gshc", "gshs"]
-SystemDirectories As String[] = ["/usr/share/gsh/subs", "/usr/share/gsh/class", "/usr/share/gsh/struct",
+SystemDirectories As String[] = [Env["APPDIR"] &/ "/usr/share/gsh/subs", Env["APPDIR"] &/ "/usr/share/gsh/class", Env["APPDIR"] &/ "/usr/share/gsh/struct",
   User.home & "vars/subs", User.home & "vars/class", User.home & "vars/struct"]
 String2index As Collection = ["subs": script_file, "class": class_file, "struct": struct_file]
 $FileTypes As String[] = ["Script plugin file", "Script class file", "Script structure file", "Executable gsh script file", "Unknown file type"]

@@ -1,4 +1,4 @@
-Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collection 
+Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collection
 '''Gets List of files from gsh system directories or local user directories
 ''lany(TypeOfFile,basDirectoryName) - Creates a collection from a subs directories
 ''          Returns a collections from the specified directories or in memory
@@ -6,12 +6,13 @@ Sub lany(Optional Stype As String = "sub", dirbase As String = "subs") As Collec
 ''          Defaults to the subs directory which includes Functions and Procedures
 With sharedmem
 
+    Dim GshLocalRoot As String = env["APPDIR"]
+    Dim SearchBase As String = GshLocalRoot &/ "/usr/share/gsh"
     Dim tolist As New Collection
-    Dim globdir As String[] = Dir("/usr/share/gsh" &/ dirbase, "*", gb.file)
+    Dim globdir As String[] = Dir(SearchBase &/ dirbase, "*", gb.file)
     Dim loadeddir As New String[]
 
 '   Get list of all the subroutines/scripts already loaded into memory
-
     For Each sSyms As SharedMemSymbol In .SymbolTable
         If sSyms.symname Like sType & ".*" Then
             Try loadeddir.add(Split(sSyms.symname, ".")[1])
@@ -23,30 +24,30 @@ With sharedmem
 
     For Each s As String In globdir
         If Not tolist.exist(s) Then tolist.add("", s)
-        tolist[s] = ["Default", "/usr/share/gsh/" &/ dirbase &/ s, s,"Default",stype]
+        tolist[s] = ["Default", SearchBase &/ dirbase &/ s, s, "Default", stype]
     Next
 
 '   Get a list of all the local user scripts
 
-    dim privateList as string[] = split(sharedmem[dirbase&"Path"],";")
-    for each sp as string in privateList
-       dim shortlist as string[]
-       if left(sp,14) == "/usr/share/gsh" then continue
-       try shortlist = Dir(sp, "*", gb.file)
-       if error then continue                                ' if the directory does not exsist then ignore it
+    Dim privateList As String[] = Split(sharedmem[dirbase & "Path"], ";")
+    For Each sp As String In privateList
+       Dim shortlist As String[]
+       If Left(sp, SearchBase.len) == SearchBase Then Continue
+       Try shortlist = Dir(sp, "*", gb.file)
+       If Error Then Continue                                ' if the directory does not exsist then ignore it
        For Each s In shortlist
-          tolist[s] = ["Personal", sp &/ s, s,"Personal",stype]
-       next
+          tolist[s] = ["Personal", sp &/ s, s, "Personal", stype]
+       Next
     Next
 
 '   Go through each script identify source and status
 
     For Each s In loadeddir
-        if tolist.exist(s) then
+        If tolist.exist(s) Then
           tolist[s][3] = "In-Mem"
-        else
-          tolist[s] = ["In-Mem", sType & "." & s, s,"In-Mem",stype]
-        endif
+        Else
+          tolist[s] = ["In-Mem", sType & "." & s, s, "In-Mem", stype]
+        Endif
     Next
 
 '    for each sp as string[] in tolist
@@ -60,5 +61,5 @@ End With
 Return tolist
 
 Catch
-	Error "List Any ";;sp;;Error.where;; error.text
+ Error "List Any ";; sp;; Error.where;; error.text
 End

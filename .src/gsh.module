@@ -13,6 +13,7 @@ Property Read gshref As Object Use $gshref
 Property Read sharedmemlib As String Use $sharedmemlib
 Property Read SCripterLib As String Use $scripterlib
 Property Read ScriptHighlighter As String Use $ScriptHighlighter
+Property Read GshRootPath As String Use $GshRootPath
 
 Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer", "Long", "Single", "Float", "Date", "String",
   "LongDate", "Pointer", "Variant", "Function", "Class", "NULL", "Object", "Not Array", "",
@@ -265,6 +266,7 @@ Public Sub Myinit()
   $sharedmemlib = File.Load("sharedmem")
   $ScripterLib = File.Load("gb.scripter")
   $ScriptHighlighter = File.Load("gb.highlight")
+  $GshRootPath = Env["APPDIR"]
 
   Try Component.Load("gb.signal")
   If Error Then
@@ -684,21 +686,21 @@ Private Sub VerifyAppDepend()
   Endif
 
   If Not Exist(User.home &/ "vars/subs/onstart") Then
-    Copy "/usr/share/gsh/subs/onstart" To User.home &/ "vars/subs/onstart"
+    Copy Env["APPDIR"] &/ "/usr/share/gsh/subs/onstart" To User.home &/ "vars/subs/onstart"
   Endif
   If Not Exist(User.home &/ "vars/subs/onexit") Then
-    Copy "/usr/share/gsh/subs/onexit" To User.home &/ "vars/subs/onexit"
+    Copy Env["APPDIR"] &/ "/usr/share/gsh/subs/onexit" To User.home &/ "vars/subs/onexit"
   Endif
 
   If Not Exist(User.home &/ "vars/profile.gsh")
-    Copy "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh"
+    Copy Env["APPDIR"] &/ "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh"
     Chmod User.home &/ "vars/profile.gsh" To "rwxr-x---"
   Else
     'Print "System Profile date " & Stat("/usr/share/gsh/profiles").lastmodified
     'Print "Local Profile date  " & Stat(User.home &/ "vars/profile.gsh").lastmodified
-    If Stat("/usr/share/gsh/profiles").lastmodified > Stat(User.home &/ "vars/profile.gsh").lastmodified Then
+    If Stat(Env["APPDIR"] &/ "/usr/share/gsh/profiles").lastmodified > Stat(User.home &/ "vars/profile.gsh").lastmodified Then
       If Exist(User.home &/ "vars/profile.gsh.new") Then Kill User.home &/ "vars/profile.gsh.new"
-      Copy "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh.new"
+      Copy Env["APPDIR"] &/ "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh.new"
       Chmod User.home &/ "vars/profile.gsh.new" To "rwxr-x---"
     Endif
   Endif
