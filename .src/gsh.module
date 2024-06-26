@@ -258,10 +258,43 @@ ClassesToLoad As String[] = [
   "texthighlighter"
 ]
 
+' Public Sub mycreen_resize()
+'   '
+'
+'   Print "Screen Resized"
+'   '
+'
+' End
+'
+' Class Screen
+' Class Window
+' Class Input
+'
+Public Sub init_screen()
+  '
+  '   Dim a As Component
+  '   Dim attr As Variant = Screen.
+  '   a = Component.Load("gb.ncurses")
+  '   Class.Load("screen")
+  '   Class.Load("window")
+  '   Class.Load("input")
+  '
+
+  'Screen.input = Input.Cooked
+  'Screen.Echo = 1
+  '   Object.attach(screen, Me, "myscreen")
+  '   File.Out.EndofLine = gb.Windows
+  '   Print "Screen Height:";; Str(Screen.height);; "Screen Width:";; Screen.width; "\r"
+  '
+
+End
+
 Public Sub Myinit()
   'Public Sub _init()
 
-  Dim result As Integer
+  ' Dim result As Integer
+
+  init_screen()
 
   $sharedmemlib = File.Load("sharedmem")
   $ScripterLib = File.Load("gb.scripter")
@@ -1222,8 +1255,9 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     Next
   Endif
 
+  Dim NewTask As LocalTask
   If nowait = True Then
-    Dim NewTask As New Localtask(sObject, Method, Parms)
+    NewTask = New Localtask(sObject, Method, Parms)
     Wait 0
     Return True
   Endif
@@ -1915,7 +1949,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
   Dim lastElement As String = ""
   Dim i As Integer
-  Dim execbuff As String
+  'Dim execbuff As String
   Dim HTypes As Integer[]
   Dim hStart As Integer = 0
   Dim filename As String
@@ -2538,9 +2572,9 @@ Sub editanything(funclass As String) As Boolean
 
   Dim cvBuffer As String[]
   Dim cvBufferString As String
-  Dim cvVariantBuffer As Variant
-  Dim cvLine As String
-  Dim cvLineSet As String[]
+  'Dim cvVariantBuffer As Variant
+  ' Dim cvLine As String
+  '  Dim cvLineSet As String[]
   Dim cvString As Variant
 
   If funclass <> "" Then
@@ -3100,7 +3134,7 @@ Catch
 
 End
 
-Private AutoGenSub As Integer = 0
+'Private AutoGenSub As Integer = 0
 
 Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As String             ' MaxGlobSize As 0 means unlimited
 
