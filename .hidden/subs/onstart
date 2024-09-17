@@ -1,13 +1,38 @@
-Sub onstart() As Boolean 
+Sub onstart() As Boolean ' executed when gsh starts an interactive session
 ''' Executed when gsh starts an interactive session
 ''onstart()  - Executed at startup of interactive session
 ''             Default version runs fortune if it is available
 
-if system.exist("fortune") then
-	shell "fortune" wait
-	print
-endif
-env["EDITOR"] = system.find("nano")
-$editor = system.find("nano")
-return true
-end
+If system.exist("fortune") Then
+        Dim stmnt As String
+        Dim lines As String[]
+        Exec ["fortune"] To stmnt
+        lines = Split(stmnt, "\n", "\"", False, True)
+        cls
+        Print "\e[37;42m\e[" & Str(lines.count - 1) & ";" & file.out.term.width & "H\e[1J\e[1;1H";
+        Print stmnt & "\e[0m"
+Endif
+
+Try env["EDITOR"] = system.find("kwrite")
+If Error Then
+    env["EDITOR"] = system.find("nano")
+Endif
+$editor = env["EDITOR"]
+
+If sharedmem.exist("nerdmode") And If Not $nerdmode Then
+    If Not sharedmem.exist("textfont") Then $TextFont = "mono"
+    If $textfont Like "*Nerd*" Then
+        $prompt = "\"\\e[36m\\e[37;46m\"&str(now)&\"\\e[36;101m\\e[37;101m\"&env[\"PWD\"]&\"\\e[0m\\e[91m\\e[0m\""
+        $nerdmode = True
+    Else
+        $nerdmode = False
+    Endif
+
+Endif
+
+Return True
+
+Catch
+   Print error.text
+   Return False
+End

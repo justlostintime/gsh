@@ -54,6 +54,8 @@ Public Sub _Call()
     If Not .exist("lambda") Then .lambda = ""
     If Not .Exist("noalias") Then .noalias = False
     If Not .Exist("noPreProcess") Then .noPreProcess = False
+    If Not .Exist("nerdfont") Then .nerdfont = False
+    If Not .Exist("textfont") Then .textfont = "mono"
 
     If Not .Exist("subsPath") Then .subspath = user.home &/ "vars/subs;" & user.home &/ "vars/games;/usr/share/gsh/subs"
     If Not .exist("classPath") Then .classpath = user.home &/ "vars/class;/usr/share/gsh/class"

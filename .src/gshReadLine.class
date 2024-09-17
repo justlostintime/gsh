@@ -4,6 +4,10 @@ Export
 Class SharedMem
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
+Extern rl_redisplay() In "libreadline:8"
+Extern rl_insert_text(text As String) As Integer In "libreadline:8"
+Extern rl_forced_update_display() As Integer In "libreadline:8"
+Extern rl_function_dumper(readable As Integer) In "libreadline:8"
 
 Extern c9_using_history() In "libreadline:9" Exec "using_history"
 Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
@@ -52,6 +56,8 @@ Public Sub Trace(onoff As Boolean)
 End
 
 Private Sub DetectReadlineVersion() As Integer
+
+  'rl_function_dumper(1)
 
   Try c9_using_history()
   If Not Error Then Return 9
@@ -171,6 +177,10 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
       If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
 
       ' sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
+
+      '  rl_insert_text("Thats it")
+      '  rl_redisplay()
+      '  rl_forced_update_display()
 
       rFree(pInput)
       ' sInput = Trim(sInput)
