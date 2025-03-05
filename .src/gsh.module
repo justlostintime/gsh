@@ -164,7 +164,7 @@ Public Sub application_signal(sig As Integer)
       Endif
       Return
 
-    Case Signal.SIGHUP, Signal.SIGABRT
+    Case Signal.SIGHUP, Signal.SIGABRT, Signal.SIGQUIT
       If RunningProcess <> Null Then
         Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup/abort(" & CStr(sig) & "): Sub Process PID=" & RunningProcess.handle)
         Signal.send(RunningProcess.Handle, Signal.SigKill)
@@ -841,6 +841,7 @@ Public Sub Main()
   Signal[Signal.SIGWINCH].catch
   Signal[Signal.SIGABRT].catch
   Signal[Signal.SIGCHLD].catch
+  Signal[Signal.SIGQUIT].catch
 
   Try EnvSync = New SyncEnv
   If Error Then

@@ -1,3 +1,6 @@
+* Wed Feb 26 2025 Brian G <justlostintime@gmail.com> 1.6.2
+- Updated compile for latest gambas 3.20.1
+
 * Wed Jun 26 2024 Brian G <justlostintime@gmail.com> 1.6.2
 - Updated version of sharedmem to latest version
 
