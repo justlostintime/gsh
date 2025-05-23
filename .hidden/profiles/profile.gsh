@@ -3,7 +3,7 @@
 '' Script for Shell Version 1.5 and above
 '' Functions in this file or the plugin directory are loaded as
 '' plugins each time the gsh starts or as needed by the shell.
-'' The comment lines starting with double ' will be printed by the help
+'' The comment lines starting with two single quote marks will be printed by the help
 '' function. See the /usr/share/gsh/plugin directory. Or
 '' your own plugins from ~/vars/plugin
 '' so :

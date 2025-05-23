@@ -165,14 +165,26 @@ Public Sub application_signal(sig As Integer)
       Return
 
     Case Signal.SIGHUP, Signal.SIGABRT, Signal.SIGQUIT
+      Dim reason As String = "Unknown"
+      Select sig
+        Case Signal.SIGHUP
+          reason = "SIGHUP"
+        Case Signal.SIGABT
+          reason = "SIGABT"
+        Case Signal.SIGQUIT
+          reason = "SIGQUIT"
+      End Select
+
+      ' Check if we are running someyhing
       If RunningProcess <> Null Then
-        Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup/abort(" & CStr(sig) & "): Sub Process PID=" & RunningProcess.handle)
-        Signal.send(RunningProcess.Handle, Signal.SigKill)
+        Try gshlogging(User.home &/ "vars/gsh.log", Subst("Process &1 Signal(&2)&3 &4 ", reason, CStr(sig), " Sub Process PID=", RunningProcess.handle))
+        Signal.send(RunningProcess.Handle, sig)
         RunningProcess = Null
         Return
       Endif
-      Try gshlogging(User.home &/ "vars/gsh.log", "Process SigHup/SigAbrt(" & CStr(sig) & "):PID=" & Application.id)
-      Signal.send(0, Signal.SigKill)
+      ' If sig = Signal.SIGHUP Then Return
+      Try gshlogging(User.home &/ "vars/gsh.log", Subst("Process &1 Signal(&2) &3 &4", reason, CStr(sig), " Application PID=", Application.id))
+      Signal.send(0, sig)
       ExitProgram()
 
     Case Signal.SIGTERM
@@ -1431,7 +1443,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
     ' Endif
 
-    ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\""
+    ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\",\"gb.signal\""
 
     For Each sinsert In UseTable
       ProgPart1 &= "," & sinsert
@@ -1452,14 +1464,14 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     CompilerDirectiveTable.Clear()
 
     Program = ProgPart1 & Program
-
+    Program &= "Public sub application_signal(sigtype as integer)\nif sigtype = 2 then\n' print \"Task Exit forced\"\n quit 0\nendif \nend\n"
     If bSingleUse Then
-      Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
+      Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\n signal[2].catch\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
     Else
-      Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+      Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\n signal[2].catch\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
     Endif
     Program &= ExecBuffer
-    Program &= "end with\nSharedMem.end()\n Catch\nError \"gsh error:\" & error.text \nquit 2\nend\n"
+    Program &= "end with\nSharedMem.end()\nquit process.lastvalue\nCatch\nError \"gsh error:\" & error.text \nquit 2\nend\n"
     'SharedMem["execprog"] = ExecBuffer
     If Not CompileOnly Then
       Dim ScriptName As String = Temp("gsh_") & ".gsh"

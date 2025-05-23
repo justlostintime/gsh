@@ -1,3 +1,21 @@
+* Fri May 23 2025 Brian G <justlostintime@gmail.com> 1.6.3
+- update to exit when ctrl c is sent correctly
+
+* Thu May 22 2025 Brian G <justlostintime@gmail.com> 1.6.3
+- Updated such that does not segfault when ctrl-c is sent
+
+* Wed Apr 09 2025 Brian G <justlostintime@gmail.com> 1.6.3
+- update mime type
+
+* Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
+
+* Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
+
+* Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
+
+* Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
+- Test KONSOL failed startup
+
 * Wed Mar 05 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - bug fix in gb.scripter
 

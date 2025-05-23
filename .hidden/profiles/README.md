@@ -4,12 +4,12 @@
  Script for Shell Version 1.5 and above
  Functions in this file or the plugin directory are loaded as
  plugins each time the gsh starts or as needed by the shell.
- The comment lines starting with double ' will be printed by the help
- function. See the /usr/share/gsh/plugin directory. Or
- your own plugins from ~/vars/plugin
- so :
+ The comment lines starting with two single quote will be printed by the help
+ function. See the /usr/share/gsh/plugin directory. Or your own plugins from ~/vars/plugin
+ for some examples. 
+ Here is an example of a help entry:
  '' this is help
- will be printed when detailed help is required
+ The above will be printed when detailed help is required
  may contain as many lines as required after the Sub declaration
  Extern, Include and Use may be declared in the body of any function
  each is treated as a stand alone Program
