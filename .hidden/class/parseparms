@@ -1,34 +1,62 @@
 'nopreprocess
 Class ParseParms
 Const noParms As Integer = 0
+Const ParmValue as Integer = 1
+Const ParmValid as Integer = 0
 Property Parms As Collection Use $Parms
 Property values As String[] Use $values
+Property options as collection use $options
 
 Public Sub _new(parmlist As String[], Expect As Collection, calledFrom As String)
-
- $Parms = New Collection(gb.IgnoreCase)
-  $values = New String[]
-
+ $options = expect
+ $options = expect
+ $Parms = New Collection(gb.IgnoreCase)           ' list of all passed parameters
+ $values = New String[]                           ' list of everything else passed not in param list
+ Dim result as variant[]
+ Dim s as string
   For i As Integer = 0 To parmlist.max
-    Dim s As String = parmlist[i]
-    If s[0] = "-" And If Expect.exist(Right(s, -1)) Then
-      Dim pcount As Integer = expect[Right(s, -1)]
-      If pcount = noParms Then
-        $Parms.add(True, Right(s, -1))
-        Continue
-      Endif
-      Dim aParms As New String[]
-      For j As Integer = 0 To pcount - 1
-        If parmlist[i + j][0] = "-" Then error.raise("Missing Value for Parameter " & Quote(s) & " in " & CalledFrom)
-        aParms.add(parmlist[i + j])
+    result = chkForParm(parmlist[i])
+    s = result[ParmValue]
+
+    If result[ParmValid] Then
+      Dim pcount As Integer = expect[s]           ' Check if the option has some value count of other parameters
+
+      If pcount = noParms Then                    ' if there are no other option parameters just add it to the parm list
+        $Parms.add(True, s)                       ' add it to the table as true option
+        continue
+      endif
+
+      ' if we get here that means there are a number of parameters for the option presented
+      Dim OptionParms As New String[]              ' the list of perameters for the selected option
+      For j As Integer = 0 To pcount - 1           ' loop through the provided identifiers until a new option entry is found
+        result = chkForParm(parmlist[i + j])     ' check if the entry is infact a parameter or an option
+        If result[ParmValid]  Then                 ' if it is an option and we have not found enough parameters then error out
+           error.raise("Missing Value for Parameter " & Quote(s) & " in " & CalledFrom)
+        endif
+        inc i                                      ' skip this evaluation of options
+        OptionParms.add(result[ParmValue])
       Next
-      $Parms.add(aParms, Right(s, -1))
-      i += (j + 1)
+      'Add the set of parameters to the actual Option table
+      $Parms.add(OptionParms, s)
     Else
       $values.add(s)
     Endif
   Next
 
 End
+
+public sub isValid(value as string) as boolean
+    return $Parms.exist(value)
+end
+
+sub chkForParm(Value as string) as variant[]
+    dim chkVal as string = value
+    if value[0] = "-" then chkVal = right(value,-1)
+    if $options.exist(chkVal) then
+      return [true,chkVal]
+    else
+      return [false,chkval]
+    endif
+end
 
 End Class

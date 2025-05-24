@@ -18,77 +18,100 @@ Sub jobs(...) As variant
 ''		    using sharedmem["pid.p[processid]"] example sharedmem["pid.p098765"]
 extern waitpid(pid As Integer, status As Pointer, options As Integer) As Integer In "libc:6"
 extern strerror(errno as integer) as string in "libc:6"
-Dim Parms as new parseparms(param.all,["on":true,"off":true,"any":true,"table":true],"Jobs")
-With sharedmem
+Dim Parms as new parseparms(param.all,["on":true,"off":true,"any":true,"all":true,"table":true,"keep":true],"Jobs")
 Dim pidstatus As Integer = 0
 Dim pidresult As Integer = 0
 Dim pStatus As Pointer = VarPtr(pidstatus)
 Dim Jobctl as object = classes["gsh"]
 Dim cTable as new collection
+Dim Keep as boolean = false
+Dim Table as boolean = false
+Dim Any as boolean = false
+Dim DoPrint as boolean = true
 
-    if Parms.Parms.exist("ON") then  object.call(Jobctl,"setjobctl",[true])
-        
-    if Parms.Parms.exist("OFF") then object.call(Jobctl,"setjobctl",[false])
-        
-    if Parms.Parms.count=0 and if Parms.Values.count = 1 then
-        for each varname as string in Parms.Values
-          dim sPid as string = "pid.p"&varname&"a"&application.id
-          If .exist(sPid) Then
-            Print .[sPid]
-          Else
-            .["result"] = "Error : Process ID Not found [" & varname & "]"
-            Print #file.err, .["result"]
-            Return False
-          Endif
-        next
-        return true
+With sharedmem
+    for each Entry as variant in Parms.Parms
+      select case upper(Parms.Parms.key)
+        case "ON"
+          object.call(Jobctl,"setjobctl",[true])
+          return true
+        case "OFF"
+          object.call(Jobctl,"setjobctl",[false])
+          return true
+        Case "TABLE"
+          DoPrint = False
+          table = true
+        Case "KEEP"
+          Keep = true
+        Case "ANY","ALL"
+          Any = true
+        Default
+          error.raise("Invalid jobs parameter " & upper(Parms.Parms.key))
+      end select
+    next
+
+    if Parms.Values.count > 0 then                  ' asked about a specific pids, just process them
+       for each varname as string in parms.values
+        dim sPid as string = "pid.p"&varname&"a"&application.id
+        If .exist(sPid) Then
+          Print .[sPid]
+        Else
+          .["result"] = "Error : Process ID Not found [" & varname & "]"
+          Print #file.err, .["result"]
+          Return False
+        Endif
+      next
+      return true
     endif
-    
-    dim DoPrint as boolean = true
-    if parms.parms.exist("table") then DoPrint = false
-        For Each s As SharedMemSymbol In SharedMem.SymbolTable
-            If s.symname Like "pid.p.*"&"a"&application.id or if parms.parms.exist("any") and s.symname  Like "pid.p.*" Then
-                Dim procsyms As String[]
-                Dim cmd As String
-                procsyms = Split(.[s.symname], "|\n", "", True)
-                if procsyms.count >= 3 then
-                    cmd = procsyms[2]
-                    if DoPrint Then Print procsyms[0];; procsyms[1];;
-                     if DoPrint Then print "\x1b[33m";
-                    If procsyms.count > 3 Then
-                        if DoPrint Then Print procsyms[3];;"\x1b[32m[Complete]\x1b[33m result="; procsyms[4];;"Duration=";(cdate(procsyms[3])-cdate(procsyms[1]))*100000;;
-                        if parms.parms.exist("table") then cTable.add(["Complete",procsyms],procsyms[3])
-                        if not parms.parms.exist("keep") then .Free(s.symname)
-                    Else
-                        pidresult = waitpid(CInt(procsyms[0]), pStatus, 1)
-                        If pidresult >= 0 Then
-                            if DoPrint Then Print "\x1b[31m[Running]\x1b[33m";;pidstatus;;pidresult;;
-                            if parms.parms.exist("table") then cTable.add(["Runing",procsyms],procsyms[3])
-                        Else
-                            if DoPrint Then Print "\x1b[31m[Exited]\x1b[33m Status="; pidstatus;;pidresult;;system.error;;strerror(system.error);;
-                            if parms.parms.exist("table") then cTable.add(["Exited",procsyms],procsyms[3])
-                            if not parms.parms.exist("keep") then  .Free(s.symname)
-                        Endif
-                    Endif
-                else
-                    if DoPrint Then print s.Symname;;"[Unknown]";;Process.LastValue;;procsyms.join("|");;
-                    if parms.parms.exist("table") then cTable.add(["Unknown",procsyms],"Unknown"&procsyms[0])
-                    if not parms.parms.exist("keep") then .Free(s.symname)
-                endif
-                if DoPrint Then print "\x1b[0m";cmd
-            Endif
-        Next
 
-.["result"] = "OK"
+    ' we get here if there are no specific pids that were requested, scan through the variable names looking for pid info
+    For Each s As SharedMemSymbol In SharedMem.SymbolTable
+      if left(s.symname,5) <> "pid.p" then continue
+      If any = true or if s.symname Like "pid.p*"&"a"&application.id Then
+        Dim procsyms As String[]
+        Dim cmd As String
+        procsyms = Split(.[s.symname], "|\n", "", True)
+        if procsyms.count >= 3 then
+          cmd = procsyms[2]
+          if DoPrint Then
+            Print procsyms[0];; procsyms[1];;
+            print "\x1b[33m";
+          endif
+          If procsyms.count > 3 Then
+            if DoPrint Then Print procsyms[3];;"\x1b[32m[Complete]\x1b[33m result="; procsyms[4];;"Duration=";(cdate(procsyms[3])-cdate(procsyms[1]))*100000;;
+            if table then cTable.add(["Complete",procsyms],procsyms[3])
+            if not keep then .Free(s.symname)
+          Else
+            pidresult = waitpid(CInt(procsyms[0]), pStatus, 1)
+            If pidresult >= 0 Then
+              if DoPrint Then Print "\x1b[31m[Running]\x1b[33m";;pidstatus;;pidresult;;
+              if Table then cTable.add(["Runing",procsyms],procsyms[3])
+            Else
+              if DoPrint Then Print "\x1b[31m[Exited]\x1b[33m Status="; pidstatus;;pidresult;;system.error;;strerror(system.error);;
+              if table then cTable.add(["Exited",procsyms],procsyms[3])
+              if not keep then  .Free(s.symname)
+            Endif
+          Endif
+        Else
+          if DoPrint Then print s.Symname;;"[Unknown]";;Process.LastValue;;procsyms.join("|");;
+          if table then cTable.add(["Unknown",procsyms],"Unknown"&procsyms[0])
+          if not keep then .Free(s.symname)
+        Endif
+        if DoPrint Then print "\x1b[0m";cmd
+      endif
+    Next
+
+    .["result"] = "OK"
+
 End With
 
-if parms.parms.exist("table ") then
+if table then
   return cTable
 else
   Return True
 endif
+
 catch
    error.raise("Jobs Error: "&error.text&error.where)
 
 End
-

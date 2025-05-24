@@ -577,7 +577,8 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
     If linktable.first <> sym Then
       If Not AlreadyLinked.Exist(LinkTable.First) Then
         AlreadyLinked.Add(LinkTable.first)
-        If RegExp.Match(linktable[linktable.first], "^class .*", RegExp.Caseless) Then
+        'If RegExp.Match(linktable[linktable.first], "^class .*", RegExp.Caseless) Then
+        If linktable.first Like "class*" Then
           ExtraClasses.add(PreProcBuffer(linktable[linktable.first], True, True), Split(linktable.first, ".")[1])
         Else
           ProcLinks &= PreProcBuffer(linktable[linktable.first], False, True)
@@ -1257,8 +1258,14 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
       Else
         s = "sharedmem" & s
       Endif
+      's = Eval(s)
     Endif
-    If s <> "" Then parms.Add(Eval(s))
+    If s <> "" Then
+      Try parms.Add(Eval(s))
+      If Error Then
+        parms.Add(s)
+      Endif
+    Endif
   Next
 
   If DoTrace Then
