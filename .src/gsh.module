@@ -1417,13 +1417,17 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
   If containsGlobal Or linktable.count > 0 Then
 
     AlreadyLinked = New String[]
+    ProgPart1 = "#!/usr/bin/env  /usr/bin/gbs3\n"
+    For Each sinsert As String In CompilerDirectiveTable
+      ProgPart1 &= sInsert & "\n"
+    Next
 
     While LinkTable.COUNT
       'Print "Inserting "; linktable[linktable.first]
       If Not AlreadyLinked.Exist(LinkTable.First) Then
         AlreadyLinked.Add(LinkTable.first)
-        If Left(linktable.first, 6) = "class." Then
-          Try Program &= PreProcBuffer(linktable[linktable.first], True, True)
+        If Left(linktable.first, 6) == "class." Or If Left(linktable.first, 7) == "struct." Then
+          Try ProgPart1 &= PreProcBuffer(linktable[linktable.first], True, True)
         Else
           Try Program &= PreProcBuffer(linktable[linktable.first], False, True)
         Endif
@@ -1433,16 +1437,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
       Endif
       linktable.Remove(linktable.first)
     Wend
+
     'public const chdirextern as string = "Extern chdir(Dest As String) As Integer In \"libc:6\""
     If Not ExternTable.Exist(chdirextern) Then
       ExternTable.Add(chdirextern)
     Endif
-
-    ProgPart1 = "#!/usr/bin/gbs3\n"
-
-    For Each sinsert As String In CompilerDirectiveTable
-      ProgPart1 &= sInsert & "\n"
-    Next
 
     ' If Component.IsLoaded("westwood.sharedmem") Then
     '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"

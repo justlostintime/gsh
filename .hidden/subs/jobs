@@ -1,4 +1,4 @@
-Sub jobs(...) As variant
+Sub jobs(...) As Variant
 ''' Job Control - list of current BG jobs
 '''               or turn job control on or off
 ''jobs <pid|on|off> prints a list of current background jobs
@@ -11,48 +11,56 @@ Sub jobs(...) As variant
 ''                  -ON for turning on job control
 ''                  -OFF for turning off job control
 ''                  -Keep Keep information after reporting
-''                  -Table return a table of all known tasks 
+''                  -Table return a table of all known tasks
 ''                  -Any list processes from all terminals/shells
 ''                  Default setting is job control off
 ''          job info can be accessed by Process
 ''		    using sharedmem["pid.p[processid]"] example sharedmem["pid.p098765"]
-extern waitpid(pid As Integer, status As Pointer, options As Integer) As Integer In "libc:6"
-extern strerror(errno as integer) as string in "libc:6"
-Dim Parms as new parseparms(param.all,["on":true,"off":true,"any":true,"all":true,"table":true,"keep":true],"Jobs")
+Extern waitpid(pid As Integer, status As Pointer, options As Integer) As Integer In "libc:6"
+Extern strerror(errno As Integer) As String In "libc:6"
+Dim Parms As New Parseparms(param.all, ["on": True, "off": True, "any": True, "all": True, "table": True, "keep": True], "Jobs")
 Dim pidstatus As Integer = 0
 Dim pidresult As Integer = 0
 Dim pStatus As Pointer = VarPtr(pidstatus)
-Dim Jobctl as object = classes["gsh"]
-Dim cTable as new collection
-Dim Keep as boolean = false
-Dim Table as boolean = false
-Dim Any as boolean = false
-Dim DoPrint as boolean = true
+Dim Jobctl As Object
+Dim cTable As New Collection
+Dim Keep As Boolean = False
+Dim Table As Boolean = False
+Dim Any As Boolean = False
+Dim DoPrint As Boolean = True
 
 With sharedmem
-    for each Entry as variant in Parms.Parms
-      select case upper(Parms.Parms.key)
-        case "ON"
-          object.call(Jobctl,"setjobctl",[true])
-          return true
-        case "OFF"
-          object.call(Jobctl,"setjobctl",[false])
-          return true
+    For Each Entry As Variant In Parms.Parms
+      Select Case Upper(Parms.Parms.key)
+        Case "ON"
+          Try Jobctl = classes["gsh"]
+          If Error Then
+             error.raise("Unable to set Job control on when assigning values or called as function")
+          Endif
+          object.call(Jobctl, "setjobctl", [True])
+          Return True
+        Case "OFF"
+          Try Jobctl = classes["gsh"]
+          If Error Then
+             error.raise("Unable to set Job control on when assigning values or called as function")
+          Endif
+          object.call(Jobctl, "setjobctl", [False])
+          Return True
         Case "TABLE"
           DoPrint = False
-          table = true
+          table = True
         Case "KEEP"
-          Keep = true
-        Case "ANY","ALL"
-          Any = true
+          Keep = True
+        Case "ANY", "ALL"
+          Any = True
         Default
-          error.raise("Invalid jobs parameter " & upper(Parms.Parms.key))
-      end select
-    next
+          error.raise("Invalid jobs parameter " & Upper(Parms.Parms.key))
+      End Select
+    Next
 
-    if Parms.Values.count > 0 then                  ' asked about a specific pids, just process them
-       for each varname as string in parms.values
-        dim sPid as string = "pid.p"&varname&"a"&application.id
+    If Parms.Values.count > 0 Then                  ' asked about a specific pids, just process them
+       For Each varname As String In parms.values
+        Dim sPid As String = "pid.p" & varname & "a" & application.id
         If .exist(sPid) Then
           Print .[sPid]
         Else
@@ -60,58 +68,58 @@ With sharedmem
           Print #file.err, .["result"]
           Return False
         Endif
-      next
-      return true
-    endif
+      Next
+      Return True
+    Endif
 
     ' we get here if there are no specific pids that were requested, scan through the variable names looking for pid info
     For Each s As SharedMemSymbol In SharedMem.SymbolTable
-      if left(s.symname,5) <> "pid.p" then continue
-      If any = true or if s.symname Like "pid.p*"&"a"&application.id Then
+      If Left(s.symname, 5) <> "pid.p" Then Continue
+      If any = True Or If s.symname Like "pid.p*" & "a" & application.id Then
         Dim procsyms As String[]
         Dim cmd As String
         procsyms = Split(.[s.symname], "|\n", "", True)
-        if procsyms.count >= 3 then
+        If procsyms.count >= 3 Then
           cmd = procsyms[2]
-          if DoPrint Then
+          If DoPrint Then
             Print procsyms[0];; procsyms[1];;
-            print "\x1b[33m";
-          endif
+            Print "\x1b[33m";
+          Endif
           If procsyms.count > 3 Then
-            if DoPrint Then Print procsyms[3];;"\x1b[32m[Complete]\x1b[33m result="; procsyms[4];;"Duration=";(cdate(procsyms[3])-cdate(procsyms[1]))*100000;;
-            if table then cTable.add(["Complete",procsyms],procsyms[3])
-            if not keep then .Free(s.symname)
+            If DoPrint Then Print procsyms[3];; "\x1b[32m[Complete]\x1b[33m result="; procsyms[4];; "Duration="; (CDate(procsyms[3]) - CDate(procsyms[1])) * 100000;;
+            If table Then cTable.add(["Complete", procsyms], procsyms[3])
+            If Not keep Then .Free(s.symname)
           Else
             pidresult = waitpid(CInt(procsyms[0]), pStatus, 1)
             If pidresult >= 0 Then
-              if DoPrint Then Print "\x1b[31m[Running]\x1b[33m";;pidstatus;;pidresult;;
-              if Table then cTable.add(["Runing",procsyms],procsyms[3])
+              If DoPrint Then Print "\x1b[31m[Running]\x1b[33m";; pidstatus;; pidresult;;
+              If Table Then cTable.add(["Runing", procsyms], procsyms[3])
             Else
-              if DoPrint Then Print "\x1b[31m[Exited]\x1b[33m Status="; pidstatus;;pidresult;;system.error;;strerror(system.error);;
-              if table then cTable.add(["Exited",procsyms],procsyms[3])
-              if not keep then  .Free(s.symname)
+              If DoPrint Then Print "\x1b[31m[Exited]\x1b[33m Status="; pidstatus;; pidresult;; system.error;; strerror(system.error);;
+              If table Then cTable.add(["Exited", procsyms], procsyms[3])
+              If Not keep Then .Free(s.symname)
             Endif
           Endif
         Else
-          if DoPrint Then print s.Symname;;"[Unknown]";;Process.LastValue;;procsyms.join("|");;
-          if table then cTable.add(["Unknown",procsyms],"Unknown"&procsyms[0])
-          if not keep then .Free(s.symname)
+          If DoPrint Then Print s.Symname;; "[Unknown]";; Process.LastValue;; procsyms.join("|");;
+          If table Then cTable.add(["Unknown", procsyms], "Unknown" & procsyms[0])
+          If Not keep Then .Free(s.symname)
         Endif
-        if DoPrint Then print "\x1b[0m";cmd
-      endif
+        If DoPrint Then Print "\x1b[0m"; cmd
+      Endif
     Next
 
     .["result"] = "OK"
 
 End With
 
-if table then
-  return cTable
-else
+If table Then
+  Return cTable
+Else
   Return True
-endif
+Endif
 
-catch
-   error.raise("Jobs Error: "&error.text&error.where)
+Catch
+   error.raise("Jobs Error: " & error.text & error.where)
 
 End
