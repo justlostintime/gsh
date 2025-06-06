@@ -1,111 +1,116 @@
-Sub playground(...) 
+Sub playground(...)
 ''' Access and present, execute  playground programs
 '' PlayGround(...)
 '' Pass a playground program to run
 '' if no name supplied then present a list of available
 '' playground programs to select from and run
 
-try component.load("gb.net")
-if error then
-  print "Playground requires gb.net and gb.net.curl be installed"
- return
-endif
-try component.load("gb.net.curl")
-if error then
-  print "Playground requires gb.net and gb.net.curl be installed"
- return
-endif
+Try component.load("gb.net")
+If Error Then
+  Print "Playground requires gb.net and gb.net.curl be installed"
+ Return
+Endif
+Try component.load("gb.net.curl")
+If Error Then
+  Print "Playground requires gb.net and gb.net.curl be installed"
+ Return
+Endif
 
-try class.load("httpClient")
-if error then
-  print "Playground was unable to load the class httpClient"
-  return
-endif
+Try class.load("httpClient")
+If Error Then
+  Print "Playground was unable to load the class httpClient"
+  Return
+Endif
 
-with sharedmem
-print "\ec"
+With sharedmem
+Print "\ec"
 Static Private hClient As New HttpClient
 Private BaseUrl As String
 Private STable As New String[]
 Static Private Examples As New Collection
-Static Private Choices as New string[]
-Static Private TheIndex as  new string[]
+Static Private Choices As New String[]
+Static Private TheIndex As New String[]
 
 sTable.clear()
 Choices.clear()
 TheIndex.clear()
 
-BaseUrl = "https://gambas.one/playground/examplesmobile.html"
-Private gClient as new httpClient as "responses"
-hClient.URL = BaseUrl
-hClient.Async = false
-hClient.TimeOut = 60
-hClient.Get()
+'BaseUrl = "https://gambas.one/playground/examplesmobile.html"
+'Private gClient As New HttpClient As "responses"
+'hClient.URL = BaseUrl
+'hClient.Async = False
+'hClient.TimeOut = 60
+'hClient.Get()
 
-print "Listing Playground Examples"
+Print "Listing Playground Examples"
+ Dim pindex As File
+ pindex = Open "/usr/share/gsh/examples/PlayGroundIndex" For Read
+ examples = Read #pindex As Collection
+ Close pindex
 
-if hClient.Status = 0 then
-   Dim x as integer
-   Print "Process Response"
-   ScrapeTextLines()
-   BuildExample()
-   Choices = new string[]
-   dim index as integer =  1
-   for each s as string in examples
+'If hClient.Status = 0 Then
+'   Dim x As Integer
+'   Print "Process Response"
+'   ScrapeTextLines()
+'   BuildExample()
+   Choices = New String[]
+   Dim index As Integer = 1
+   For Each s As String In examples
      choices.push(Examples.key)
-     TheIndex.push(subst("&1) &2",format(index,"##0"),examples.key))
-     inc index
-   next
-else
-   print "Unable to get playground list"
-   return
-endif
-DisplayListing(TheIndex)
-print
+     TheIndex.push(Subst("&1) &2", Format(index, "##0"), examples.key))
+     Inc index
+   Next
+'Else
+'   Print "Unable to get playground list"
+'   Return
+'Endif
 
-dim answer as string
+DisplayListing(TheIndex)
+Print
+
+Dim answer As String
 retryAnswer:
 Print "Enter the Number of the example you would like to work with 0 or Q to quit? > ";
-flush
-line input answer
-if answer = 0 or if answer == "q" then return
-if not isnumber(answer) or if cint(answer) > Choices.count or if cint(answer) < 1 then
-    print "Invalid Selection"
-    goto retryAnswer
-endif
+Flush
+Line Input answer
+If answer = 0 Or If answer == "q" Then Return
+If Not IsNumber(answer) Or If CInt(answer) > Choices.count Or If CInt(answer) < 1 Then
+    Print "Invalid Selection"
+    Goto retryAnswer
+Endif
 
-if not exist(user.home &/ "vars/playground")
-      mkdir User.home &/ "vars/playground"
-endif
+If Not Exist(user.home &/ "vars/playground")
+      Mkdir User.home &/ "vars/playground"
+Endif
 
-dim filename as string = lower(replace(Choices[cint(answer)-1]," ","_"))
-filename = replace(filename,"-","_")
-filename = replace(filename,"'","_")
-filename = replace(filename,"/","_")
-if isnumber(filename[0]) then filename  = "p_"&filename
-dim savepath as string = user.home &/"vars/playground" &/ filename
+Dim filename As String = Lower(Replace(Choices[CInt(answer) - 1], " ", "_"))
+filename = Replace(filename, "-", "_")
+filename = Replace(filename, "'", "_")
+filename = Replace(filename, "/", "_")
+If IsNumber(filename[0]) Then filename = "p_" & filename
+Dim savepath As String = user.home &/ "vars/playground" &/ filename
 
-dim editbuffer as string
-if exist(savepath) then
-    editbuffer  = file.load(savepath)
+Dim editbuffer As String
+If Exist(savepath) Then
+    editbuffer = file.load(savepath)
    'exec [sharedmem["$editor"],savepath] wait
-   SaveSub(filename,Editbuffer)
-else
-   editbuffer = editExample(Choices[cint(answer)-1])
-endif
+   SaveSub(filename, Editbuffer)
+Else
+   editbuffer = editExample(Choices[CInt(answer) - 1])
+Endif
 
-SaveSub(filename,editbuffer)
+SaveSub(filename, editbuffer)
 
-print "\ec"
-Print "Function loaded it may be executed by entering : ";filename
-Print " or edited by entering : edit "&filename
-end with
-end
+Print "\ec"
+Print "Function loaded it may be executed by entering : "; filename
+Print " or edited by entering : edit " & filename
+End With
+End
 
-sub SaveSub(sname as string, editbuffer as string)
-   EditBuffer = replace(editbuffer,"main()",sname&"()",gb.ignorecase)
-   sharedmem["sub."&sname] = editbuffer
-end
+Sub SaveSub(sname As String, editbuffer As String)
+   EditBuffer = Replace(editbuffer, "main()", sname & "()", gb.ignorecase)
+   sharedmem["sub." & sname] = editbuffer
+End
 
 Sub ScrapeTextLines()
 
@@ -135,39 +140,39 @@ Public Sub BuildExample()
   Next
 End
 
-sub editexample(index as string) as string
-   with sharedmem
+Sub editexample(index As String) As String
+   With sharedmem
    Dim MyUrl As String = "https://api.github.com/gists/" &/ Examples[Index]
-   Dim response as string =  httpclient.download(MyUrl)
+   Dim response As String = httpclient.download(MyUrl)
    Dim jsondb As Variant
-   jsondb = json.Decode(response , True)
-   Dim EditBuffer as string = ""
-   For Each v As JsonCollection In jsondb["files"]
+   jsondb = json.Decode(response, True)
+   Dim EditBuffer As String = ""
+   For Each v As Variant In jsondb["files"]
       Try EditBuffer &= v["content"]
       If Error Then
-           error Error.text;; ":" ;; Error.where
+           Error Error.text;; ":";; Error.where
       Endif
    Next
 
-   dim filename as string = replace(index," ","_")
-   dim savepath as string
-   savepath = user.home &/"vars/playground" &/ filename
+   Dim filename As String = Replace(index, " ", "_")
+   Dim savepath As String
+   savepath = user.home &/ "vars/playground" &/ filename
    'file.save(SavePath,EditBuffer)
    'exec [ sharedmem["$editor"], savepath] wait
    'Print "Saved to :";;Savepath
    'SaveSub(filename,Editbuffer)
-   return editbuffer
-   end with
-end
+   Return editbuffer
+   End With
+End
 
-Public sub DisplayListing(AllIndex as string[])
+Public Sub DisplayListing(AllIndex As String[])
 
   Dim colcount As Integer = 0
   Dim colwidth As Integer = 0
-  Dim termWidth as integer = 80
+  Dim termWidth As Integer = 80
   Dim colperiod As Integer = 0
   Dim CurrentElement As Integer = 0
-  Dim PrtText as string
+  Dim PrtText As String
 
   For Each ss As String In allindex
     If ss.len > colwidth Then colwidth = ss.len
@@ -182,11 +187,11 @@ Public sub DisplayListing(AllIndex as string[])
   For i As Integer = 0 To colperiod - 1
      For j As Integer = 0 To colcount - 1
        CurrentElement = i + (j * colperiod)
-       if CurrentElement < AllIndex.count then
+       If CurrentElement < AllIndex.count Then
            PrtText = Left(allindex[CurrentElement] & Space(colwidth), colwidth)
-       else
+       Else
            Prttext = Space(ColWidth)
-       endif
+       Endif
        Try Print PrtText;
      Next
      Print
