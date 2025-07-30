@@ -19,15 +19,25 @@ If Error Then
 Endif
 $editor = env["EDITOR"]
 
-If sharedmem.exist("nerdmode") And If Not $nerdmode Then
+Dim defaultNerd As String = "\"\\e[36m\\e[37;46m\"&str(now)&\"\\e[36;101m\\e[37;101m\"&env[\"PWD\"]&\"\\e[0m\\e[91m\\e[0m\""
+
+If sharedmem.exist("nerdmode") And If Not $nerdmode Then 
+        If Not sharedmem.exist("textfont") Then $TextFont = "mono"
+        If $textfont Like "*nerd*" Then
+            $prompt = defaultNerd
+            $nerdmode = True
+        Else
+            $nerdmode = False
+        Endif
+Else If $prompt = "\"$\"" Then
     If Not sharedmem.exist("textfont") Then $TextFont = "mono"
-    If $textfont Like "*Nerd*" Then
-        $prompt = "\"\\e[36m\\e[37;46m\"&str(now)&\"\\e[36;101m\\e[37;101m\"&env[\"PWD\"]&\"\\e[0m\\e[91m\\e[0m\""
+    If $textfont Like "*nerd*" Then
+        $prompt = defaultNerd
         $nerdmode = True
     Else
+        $prompt = "\"str(now)&\":\"&env[\"PWD\"]&\" > \""
         $nerdmode = False
     Endif
-
 Endif
 
 Return True
