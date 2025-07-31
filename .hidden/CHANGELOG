@@ -1,23 +1,8 @@
+* Thu Jul 31 2025 Brian G <justlostintime@gmail.com> 1.6.4
+- Added new builtin functions
+
 * Tue Jul 29 2025 Brian G <justlostintime@gmail.com> 1.6.4
 - Updated onstart to recover the prompt when messed up
-
-* Sat Jul 12 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Sat Jul 12 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Sat Jul 12 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Sat Jul 12 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Sat Jul 12 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Fri Jul 11 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Fri Jul 11 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Fri Jul 11 2025 Brian G <justlostintime@gmail.com> 1.6.4
-
-* Fri Jul 11 2025 Brian G <justlostintime@gmail.com> 1.6.3
 
 * Fri Jun 20 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - Gen after coplete install of new os
@@ -25,21 +10,11 @@
 * Mon Jun 16 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - Updated to correctly contain the needed libraries
 
-* Mon Jun 16 2025 Brian G <justlostintime@gmail.com> 1.6.3
-
 * Fri Jun 06 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - Updated playground script to work without the website
 
-* Wed Jun 04 2025 Brian G <justlostintime@gmail.com> 1.6.3
-
 * Mon May 26 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - Updated job control again, to fix table info returned as function
-
-* Sat May 24 2025 Brian G <justlostintime@gmail.com> 1.6.3
-
-* Sat May 24 2025 Brian G <justlostintime@gmail.com> 1.6.3
-
-* Fri May 23 2025 Brian G <justlostintime@gmail.com> 1.6.3
 
 * Fri May 23 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - update to exit when ctrl c is sent correctly
@@ -51,18 +26,10 @@
 - update mime type
 
 * Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
-
-* Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
-
-* Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
-
-* Mon Apr 07 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - Test KONSOL failed startup
 
 * Wed Mar 05 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - bug fix in gb.scripter
-
-* Wed Mar 05 2025 Brian G <justlostintime@gmail.com> 1.6.3
 
 * Wed Mar 05 2025 Brian G <justlostintime@gmail.com> 1.6.3
 - Reduce those auto installed packages
@@ -157,8 +124,6 @@
 * Thu Sep 07 2023 Brian G <justlostintime@gmail.com> 1.4.3
 - Add a small timeout to help fetch
 
-* Sun Jul 23 2023 Brian G <justlostintime@gmail.com> 1.4.3
-
 * Thu Apr 27 2023 Brian G <justlostintime@gmail.com> 1.4.2
 - Updated, fixed many system sub issues
 
@@ -167,8 +132,6 @@
 
 * Tue Feb 21 2023 Brian G <justlostintime@gmail.com> 1.4.1
 - Update the build directory
-
-* Tue Oct 11 2022 Brian G <justlostintime@gmail.com> 1.4.1
 
 * Sun Jun 26 2022 Brian G <justlostintime@gmail.com> 1.3.109
 - Added new command disktest
@@ -279,8 +242,6 @@
 * Tue Jan 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
 - Updated variable system to allow multi level variables
 
-* Tue Jan 05 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
-
 * Mon Jan 04 2021 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.94
 - Updated @var redirection to run correctly at runtime in a script
 
@@ -305,8 +266,6 @@
 - Fix a bucket load of bugs, cli interface
 
 * Tue Dec 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
-
-* Tue Dec 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
 - Fix very broken redirection caused by rewrite to support runtime file name resolution
 
 * Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
@@ -314,8 +273,6 @@
 
 * Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
 - fixed error reporting and recover from bad cli redirection
-
-* Mon Dec 28 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
 
 * Sun Dec 27 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.93
 - Fix && || usage
@@ -385,8 +342,6 @@
 - Fixed call variable as function
 
 * Sun Nov 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.83
-
-* Sun Nov 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.83
 - Updated the execute variable as function variable function
 
 * Sun Nov 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.83
@@ -415,12 +370,8 @@
 * Fri Oct 30 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.80
 - Updates to the help files
 
-* Thu Oct 29 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.80
-
 * Mon Oct 26 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.80
 - Update to source as service
-
-* Mon Oct 26 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.79
 
 * Fri Oct 23 2020 Brian G <scriptbuilder@westwoodsvcs.com> 1.2.78
 - Nano spec update
