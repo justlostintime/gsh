@@ -1,0 +1,8 @@
+Sub setn(Varname As String, func As String, Optional values As Variant = []) As Variant
+''' Execute a  shared objects function and return the resultant object
+'' This function will update a shared objects by calling provided method.
+''    then return a copy of the updated shared object.
+Dim xx As Variant = sharedmem[varname]
+object.call(xx, func, values)
+Return xx
+End

@@ -1,4 +1,4 @@
-Sub set(vArray as variant, Value as variant, ... ) as variant   
+Sub set(vArray As Variant, Value As Variant, ...) As Variant
 ''' Update gsh shell array element value
 ''    Update the content of an array or collection  that is stored in memory database - gsh shell variable
 ''    returns the updated array or collection
@@ -7,29 +7,41 @@ Sub set(vArray as variant, Value as variant, ... ) as variant
 ''    Rather slow as it gets the array as a copy then updates it
 ''    then returns it and the user needs to store it again
 ''
-select case Param.count
-case 0
+Dim ClassName As String 
+If TypeOf(vArray) <> gb.object Then error.raise("Set : Variable is not an array or collection")
+Classname = object.class(vArray).name
+
+If Right(classname, 2) <> "[]" Or If Lower(classname) <> "collection" Then
+    error.raise("Set : Invalid object type :" & classname)
+Endif
+
+If Lower(ClassName) = "collection" And If Param.count <> 1 Then
+    error.raise("Set : Collections require both a value and key")
+Endif
+
+Select Case Param.count
+Case 0
   vArray = Value
-case 1
- print object.class(vArray).name
- if typeof(vArray) = gb.object and if object.class(vArray).name == "collection" then
-   vArray[param[0]] = Value
- else
+Case 1       ' maybe an array or collection
+ 'Print object.class(vArray).name
+ 'If TypeOf(vArray) = gb.object And If object.class(vArray).name == "collection" Then
+ '  vArray[param[0]] = Value
+ 'Else
    vArray[Param[0]] = value
- endif
+ 'Endif
 
-case 2
-   vArray[param[0],param[1]] = Value
-case 3
-   vArray[param[0],param[1],param[2]] = Value
-default
-   error "Only 3 subscripts are supported"
-   return vArray
-end select
+Case 2
+   vArray[param[0], param[1]] = Value
+Case 3
+   vArray[param[0], param[1], param[2]] = Value
+Default
+   Error "Only 3 subscripts are supported"
+   Return vArray
+End Select
 
-return vArray
+Return vArray
 
-catch
-  error error.text
+Catch
+  Error error.text
 
 End
