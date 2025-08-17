@@ -1817,6 +1817,9 @@ Public Sub ReadBuffer() As String
 
   Return nextline
 
+Catch
+  Error.Propagate()
+
 End
 
 Public Sub ReadHistory() As String
@@ -1938,9 +1941,17 @@ Public Sub Reader(EndBlk As String[]) As String
     If source = "STDIN" Then ' only record keystroke entries
 
       If sInBuffer Like "*!!*" Then
-        sinbuffer = Replace(inbuffer, "!!", SharedMem["history"][SharedMem["historycurrent"] - 1])
+        Dim tmps As String[] = Split(sInBuffer, " ", "\"", False, True)
+        If tmps.exist("!!") Then
+          sinbuffer = ""
+          For Each detest As String In tmps
+            If detest = "!!" Then
+              detest = SharedMem["history"][SharedMem["historycurrent"] - 1]
+            Endif
+            sinbuffer &= " " & detest
+          Next
+        Endif
       Endif
-
       history = SharedMem["history"]
       History.add(sInBuffer, sharedMem["historycurrent"])
       Inc SharedMem["historycurrent"]
@@ -1952,9 +1963,35 @@ Public Sub Reader(EndBlk As String[]) As String
 
     sInBuffer = ReadQueue.pop()
 
+    If source = "STDIN" Then ' only record keystroke entries
+
+      If sInBuffer Like "*!!*" Then
+        tmps = Split(sInBuffer, " ", "\"", False, True)
+        If tmps.exist("!!") Then
+          sinbuffer = ""
+          For Each detest As String In tmps
+            If detest = "!!" Then
+              detest = SharedMem["history"][SharedMem["historycurrent"] - 1]
+            Endif
+            sinbuffer &= " " & detest
+          Next
+        Endif
+      Endif
+
+      history = SharedMem["history"]
+      History.add(sInBuffer, sharedMem["historycurrent"])
+      Inc SharedMem["historycurrent"]
+      If History.count > SharedMem["maxhistory"] Then History.remove(History.first)
+      SharedMem["history"] = history
+
+    Endif
+
   Endif
 
   Return Trim(sInBuffer)
+
+Catch
+  Error.Propagate()
 
 End
 

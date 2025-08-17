@@ -31,7 +31,7 @@ if MaxX = 0.0 or Maxy = 0.0 then
    SetAutoMax()
 endif
 
-dim PlotWindow as new window
+dim PlotWindow as new window as "mywindow"
 PlotWindow.height = WindowHeight
 PlotWindow.width = WindowWidth
 PlotWindow.title = title
@@ -57,8 +57,14 @@ catch
   print error.text, error.where
 
 End
+
 ' x = horizontal
 ' Y = vertical
+
+public sub mywindow_close()
+   quit 0
+end
+
 public sub Plotter_draw()
 PrintPlotInfo()
 draw.foreground = &h00ff00

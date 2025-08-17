@@ -2,7 +2,7 @@
 Title=Gambas Shell
 Startup=gsh
 Icon=shelllogo.png
-Version=1.6.5
+Version=1.6.6
 Component=gb.args
 Component=gb.image
 Component=gb.compress
@@ -35,7 +35,7 @@ Vendor=WESTWOOD
 Address=justlostintime@gmail.com
 Url=https://github.com/justlostintime/GambasShell/wiki
 License=General Public License
-PackageName=gsh-1.6.5
+PackageName=gsh-1.6.6
 PackageVersion=10
 CreateEachDirectory=1
 MimeTypes="text/plain *gbs"
