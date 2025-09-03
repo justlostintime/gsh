@@ -1,10 +1,10 @@
 Public Sub install_highlighter_syntax()
 '' Install the highlighter files for nano and vim
- Try shell.mkdir(user.home &/ ".nanorc/syntax")
- Try shell.mkdir(user.home &/ ".vim/after/syntax")
+ Try shell.mkdir(user.home &/ ".nano/syntax")
+ Try shell.mkdir(user.home &/ ".vim/syntax")
  Try shell.mkdir(user.home &/ ".vim/ftdetect")
- Try Kill user.home &/ ".nanorc/syntax/gambas.nanorc"
- Try Kill user.home &/ ".vim/after/syntax/gambas.vim"
- Copy "/usr/share/gsh/editors/gambas.nanorc" To user.home &/ ".nanorc/syntax/gambas.nanorc"
- Copy "/usr/share/gsh/editors/gambas.vim" To user.home &/ ".vim/syntax/gambas.vim"
+ Try Kill user.home &/ ".nano/syntax/gsh.nanorc"
+ Try Kill user.home &/ ".vim/syntax/gsh.vim"
+ Copy "/usr/share/gsh/editors/gambas.nanorc" To user.home &/ ".nano/syntax/gsh.nanorc"
+ Copy "/usr/share/gsh/editors/gambas.vim" To user.home &/ ".vim/syntax/gsh.vim"
 End
