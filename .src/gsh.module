@@ -763,7 +763,7 @@ Public Sub Main()
   Try $version = File.Load("VERSION")
 
   If Error Then
-    Print "GSH : VERSION file is missing, defaulting to application version"
+    Print ("GSH : VERSION file is missing, defaulting to application version")
     $version = Application.version
   Endif
   Try gshlogging(User.home &/ "vars/gsh.log", Args.all.Join(" "))
@@ -3485,14 +3485,13 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
       If syms[tcount] = "" Then Continue
       Dim sspacer As String = ""
       If tcount - 1 >= 0 Then
-
         If syms[tcount] = "." Then
           If types[tcount - 1] = Highlight.symbol Or syms[tcount - 1] = "ERROR" Then
             sspacer = ""
           Else
             sspacer = " "
           Endif
-        Else
+        Else If types[tcount - 1] <> Highlight.Function Then
           sspacer = " "
         Endif
       Endif
