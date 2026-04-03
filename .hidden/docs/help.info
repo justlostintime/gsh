@@ -1,6 +1,4 @@
-﻿ Gambas Shell V1.5.1
-
- help [<command name>]  command name will print a more detailed description
+﻿ help [<command name>]  command name will print a more detailed description
                       of the external commands found in the ~/vars/subs directory
                       if more than one match then you will be prompted with choices.
                       with no option displays, everything!

@@ -169,7 +169,7 @@ Public Sub application_signal(sig As Integer)
       Select sig
         Case Signal.SIGHUP
           reason = "SIGHUP"
-        Case Signal.SIGABT
+        Case Signal.SIGABRT
           reason = "SIGABT"
         Case Signal.SIGQUIT
           reason = "SIGQUIT"
@@ -614,8 +614,8 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
   Return True
   'Endif
 
-  linktable.Clear()
-  Return False
+  ' linktable.Clear()
+  ' Return False
 
 End
 
@@ -2015,8 +2015,8 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     ' Moved to function bellow here
 
     InBuffer = Reader(EndBlk)
-    While Right(inbuffer, 1) = "\\"                        ' allow line to be continued with a \ at the end of the line
-      InBuffer = Left(InBuffer, -1)                          ' we want to read the entire line into a single buffer for processing
+    While Right(inbuffer, 1) = "\\"                     ' allow line to be continued with a \ at the end of the line
+      InBuffer = Left(InBuffer, -1)                     ' we want to read the entire line into a single buffer for processing
       InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
     Wend
 
@@ -2090,7 +2090,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
       Error.Raise("Unkown command or function " & Quote(InBufParse[0]) & answers)
     Endif
 
-  StartAgain:
+StartAgain:
     Select Case HTypes[hstart]
       Case Highlight.Keyword
         Select Case Upper(InBufParse[parsepos])
@@ -2267,9 +2267,9 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             DoBlock(["NEXT"])
 
           Case "IF"
-            If inBufparse[InBufParse.max] == "THEN"
-              DoBlock(["ENDIF"])
-            Endif
+            'If inBufparse[InBufParse.max] == "THEN"
+            DoBlock(["END", "IF"])
+            'Endif
 
           Case "DO"
             DoBlock(["LOOP"])
@@ -2961,8 +2961,10 @@ Public Sub DoBlock(EndBlk As String[])
       Wait 0
     Wend
     Dec BlockLevel
+    Print "\e[1A\e[0K";
+    getline.WritePrompt(SetBlockIndent())
+    Print Lower(endblk.join(" "))
     ''debug "Exit DOBLK"
-
   End With
 Catch
   Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where
@@ -2984,7 +2986,7 @@ Private Sub FunctionCommandOrexecVar(symbol As String) As Boolean
 
 End
 
-Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As Integer
+Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As Boolean
 
   Dim sym As String = Lower(msym)
 
@@ -3034,7 +3036,7 @@ Catch
 
 End
 
-Private Sub isLocalClass(msym As String, Optional docompile As Boolean = True, doclasscheck As Boolean = False) As Integer
+Private Sub isLocalClass(msym As String, Optional docompile As Boolean = True, doclasscheck As Boolean = False) As Boolean
 
   Dim c As Class
   Dim sym As String = Lower(msym)
@@ -3066,7 +3068,7 @@ Catch
 
 End
 
-Private Sub isLocalstruct(msym As String, Optional docompile As Boolean = True) As Integer
+Private Sub isLocalstruct(msym As String, Optional docompile As Boolean = True) As Boolean
 
   Dim sym As String = Lower(msym)
 

@@ -1,3 +1,6 @@
+* Sat Dec 06 2025 Brian G <justlostintime@gmail.com> 1.6.7
+- Updated help system, added delay longer for fetching info
+
 * Sat Oct 18 2025 Brian G <justlostintime@gmail.com> 1.6.6
 - Fix Bug when processing functions
 

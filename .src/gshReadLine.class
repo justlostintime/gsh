@@ -100,6 +100,36 @@ Public Sub add_history(data As String)
 
 End
 
+Public Sub WritePrompt(BlockIndent As String)
+
+  Dim Prompt As String
+  Dim retryloop As Integer = 2
+
+retryprompt:
+  Wait 0
+  If DoTrace Then Error ("Trying to read from terminal")
+  If retryloop = 0 Then
+    Error ("Unable to evaluate any prompt type using ' $ '")
+    prompt = " $ "
+  Else
+
+    'Debug Line * * * *
+    'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
+
+    Try prompt = Eval(userprompt)
+    If Error Then
+      userprompt = DefaultPrompt
+      Dec retryloop
+      Goto retryprompt
+    Endif
+  Endif
+
+  Print prompt; BlockIndent;
+  Flush
+
+End
+
+
 Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = False) As String
 
   Dim pInput As Pointer
@@ -125,7 +155,7 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
     If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput
   Else
     Dim retryloop As Integer = 2
-  retryprompt:
+retryprompt:
     Wait 0
     If DoTrace Then Error ("Trying to read from terminal")
     If retryloop = 0 Then
@@ -147,8 +177,8 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
     If DoTrace Then Error ("Reading From Readline Version");; readlineversion
     ' SetBlockIndent()
     If gsh.BlockLevel = 0 Then    ' reach out to the gsh class to see what block level we are reading
-      Print "\n";                                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
-      Flush                                          ' Make sure it is printed
+      Print "\n";                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
+      Flush                       ' Make sure it is printed
     Endif
     Select Case ReadLineVersion
       Case 9

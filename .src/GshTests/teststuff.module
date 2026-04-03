@@ -3,6 +3,7 @@
 'Extern chdir(path As String) As Integer In "libc:6"
 Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
 Class Sharedmem
+Class Sharedclass
 
 Public Sub Main()
 

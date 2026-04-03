@@ -30,7 +30,7 @@ Public Sub LoadHelp()
     For Each s In GambasHelpUrls
       Result = GetHtmlListAsText(s)
       AppendCollection(GambasHelpList, result)
-      Wait 0.1
+      Wait 0.3
     Next
 
     GambasHelpIndex = GambasHelpList.Keys
@@ -257,9 +257,10 @@ Public Sub AllHelp() As String
   Dim HelpList As New String[]
   Dim Entry As String[]
 
-  HelpTxt = File.Load(Env["APPDIR"] &/ "/usr/share/gsh/docs/help.info")
+  HelpTxt = "Gambas Shell V" & File.Load("VERSION") & "\n"
+  HelpTxt &= File.Load(Env["APPDIR"] &/ "/usr/share/gsh/docs/help.info")
   HelpTxt &= ("\nUseful included Functions and Classes these may be edited to your taste\n"
-    "Functions Can be found in " & Env["APPDIR"] &/ "/usr/share/gsh/subs" & "  for Default versions or\n"
+    "GSH Functions Can be found in " & Env["APPDIR"] &/ "/usr/share/gsh/subs" & "  for Default versions or\n"
   "in ~/vars/subs for personal versions\n\n")
 
   helplist = GshHelpList.keys

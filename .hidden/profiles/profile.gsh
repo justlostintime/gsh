@@ -21,6 +21,7 @@ $profile = true  ' sets this to true on the first load of the profile. only done
 
 print "Gsh Profile Version";;$gshversion;;"Loaded"
 
+alias endif='end if'
 alias fgrep='fgrep --color=auto'
 alias grep='grep --color=auto'
 alias l='ls -CF'

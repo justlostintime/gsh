@@ -369,7 +369,7 @@ Private Sub ProcessLibrary(LibName As String) As String
   Endif
 
   If LibEntry = "" Then
-    error.raise("Library: [&1] not found", LibName)
+    error.raise(Subst("Library: [&1] not found", LibName))
   Endif
   Return LibEntry
 
