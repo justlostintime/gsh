@@ -1173,16 +1173,16 @@ End
 Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
 
-Sub multiSub(akey As String, data As String, Myreg As Regexp) As String
+Sub multiSub(akey As String, data As String, MyRegx As Regexp) As String
 
-  MyReg.Exec(data)
-  If MyReg.count <= 0 Then Return data
+  MyRegx.Exec(data)
+  If MyRegx.count <= 0 Then Return data
 
-  If MyReg.count > 0 Then data = MyReg[1].text
-  Dim evalset As String = "subst(" & Quote(AliasList[akey].join(" ")) & "," & MyReg[2].text & ")"
-  If MyReg.count > 1 Then Data &= Eval(evalset)
-  If MyReg.count = 3 And If MyReg[3].text <> "" Then
-    data &= multiSub(akey, MyReg[3].text, MyReg)
+  If MyRegx.count > 0 Then data = MyRegx[1].text
+  Dim evalset As String = "subst(" & Quote(AliasList[akey].join(" ")) & "," & MyRegx[2].text & ")"
+  If MyRegx.count > 1 Then Data &= Eval(evalset)
+  If MyRegx.count = 3 And If MyRegx[3].text <> "" Then
+    data &= multiSub(akey, MyRegx[3].text, MyRegx)
   Endif
 
   Return Data

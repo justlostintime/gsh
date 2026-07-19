@@ -38,7 +38,7 @@ Public Sub GetHtmlListAsText(TheUrl As String) As Collection
   sSource.url = TheUrl
   sSource.async = False
   sSource.timeout = 5
-  sSource.Get
+  mproc = sSource.Get()
 
   If sSource.status < 0 Then Return ""
   If Lof(sSource) Then

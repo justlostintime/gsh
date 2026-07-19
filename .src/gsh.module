@@ -1715,7 +1715,7 @@ Public Sub SystemRead_error(msg As String)
 
 End
 
-Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, DoAlias As Boolean = False) As String
+Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, DoAliasX As Boolean = False) As String
 
   Dim plist As String[]
   Dim OldDoAlias As New Boolean[]
@@ -1724,26 +1724,26 @@ Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, Do
   ''Debug "enter preprocbuffer"
   plist = Split(proc, "\n", "", True)
 
-  OldDoAlias.Push(DoAlias)
+  OldDoAlias.Push(DoAliasX)
   OldNoPreProcess.Push(NoPreProcess)
 
   For Each s As String In plist
     ' Debug "--> " & s
     If s == "'noalias" Then
-      DoAlias = False
+      DoAliasX = False
       Continue
     Else If s == "'nopreprocess" Then
       NoPreProcess = True
       Continue
     Else If s == "'doalias" Then
-      DoAlias = True
+      DoAliasX = True
       Continue
     Else If s == "'doPreProcess"
       NoPreProcess = False
       Continue
     Endif
 
-    If DoAlias Then s = CreateCmdProgram.AliasReplace(s)
+    If DoAliasX Then s = CreateCmdProgram.AliasReplace(s)
 
     If s <> "" Then
       If NoPreProcess = False Then
@@ -1754,7 +1754,7 @@ Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, Do
     Endif
   Next
 
-  DoAlias = OldDoAlias.first
+  DoAliasX = OldDoAlias.first
   NoPreProcess = OldNoPreProcess.first
   Return finalbuf
 

@@ -4,10 +4,10 @@ Export
 Class SharedMem
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
-Extern rl_redisplay() In "libreadline:8"
-Extern rl_insert_text(text As String) As Integer In "libreadline:8"
-Extern rl_forced_update_display() As Integer In "libreadline:8"
-Extern rl_function_dumper(readable As Integer) In "libreadline:8"
+'Extern rl_redisplay() In "libreadline:8"
+'Extern rl_insert_text(text As String) As Integer In "libreadline:8"
+'Extern rl_forced_update_display() As Integer In "libreadline:8"
+'Extern rl_function_dumper(readable As Integer) In "libreadline:8"
 
 Extern c9_using_history() In "libreadline:9" Exec "using_history"
 Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"

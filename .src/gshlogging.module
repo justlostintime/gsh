@@ -35,7 +35,7 @@ Public Sub _Call(logname As String, msg As String)
 
   Try Unlock locker
   If Error Then
-    Error "Log unlock failed :  " & Error.txt & " : " & msg
+    Error "Log unlock failed :  " & Error.text & " : " & msg
   Endif
 
 End
