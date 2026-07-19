@@ -1,4 +1,5 @@
 # gsh
+### New release 1.7.2 A lot of bug fixed, cleanups as found by two pass compiler
 
 ### NOTE GSH 1.6.2 no longer requires installation of other components
 gb.scripter and sharedmem are now built into the gsh shell and Do not need to be installed separately.
