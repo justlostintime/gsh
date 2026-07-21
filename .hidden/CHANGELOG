@@ -1,26 +1,14 @@
 * Tue Jul 21 2026 Brian G <justlostintime@gmail.com> 1.7.2
 - Final update to remove all warning created by two pass compiler
 
-* Mon Jul 20 2026 Brian G <justlostintime@gmail.com> 1.7.2
-
-* Mon Jul 20 2026 Brian G <justlostintime@gmail.com> 1.7.2
-
 * Sun Jul 19 2026 Brian G <justlostintime@gmail.com> 1.7.2
 - Updated readme, Fix errors found by two pass compiler
-
-* Fri Apr 03 2026 Brian G <justlostintime@gmail.com> 1.7.1
 
 * Sat Dec 06 2025 Brian G <justlostintime@gmail.com> 1.6.7
 - Updated help system, added delay longer for fetching info
 
 * Sat Oct 18 2025 Brian G <justlostintime@gmail.com> 1.6.6
 - Fix Bug when processing functions
-
-* Wed Sep 03 2025 Brian G <justlostintime@gmail.com> 1.6.6
-
-* Mon Aug 18 2025 Brian G <justlostintime@gmail.com> 1.6.6
-
-* Mon Aug 18 2025 Brian G <justlostintime@gmail.com> 1.6.6
 
 * Sun Aug 17 2025 Brian G <justlostintime@gmail.com> 1.6.6
 - Fix bug with using !! in command line
