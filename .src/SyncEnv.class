@@ -1,65 +1,82 @@
 ' Gambas class file
 
+''' This class interfaces to the linux environment variables allowing internal variables
+''' to be automatically synced to the appropriate linux environment variable.
+''' Of course this can be any usage that reqires the environment to reflect a change
+''' in the aps status without having to explicitly code this support at every instance of
+''' the gsh variables use.
+
 Export
 Class SharedMem
 
+'' holds the variables that are auto synced to the linux environment
 Property Read syncvars As Collection Use $syncvars
 
 Public Sub _new(Optional Variables As Collection = ["path": "PATH"])
 
-  $syncvars = New Collection(gb.ignorecase)
-  For Each s As String In Variables
-    Add(Variables.key, s)
-  Next
+    $syncvars = New Collection(gb.ignorecase)
+    For Each s As String In Variables
+        Add(Variables.key, s)
+    Next
 
 End
 
 Public Sub _free()
 
-  For Each s As String In $syncvars
-    Remove($syncvars.key)
-  Next
+    For Each s As String In $syncvars
+        Remove($syncvars.key)
+    Next
 
 End
 
 Public Sub Add(VarName As String, envEntry As String) As Boolean
 
-  $syncvars.Add(envEntry, VarName)
-  Try SharedMem.NotifyChange(Varname, Me, -1, "varchanged")
-  If Error Then
-    Error "SyncEnv.add NotifyChange Error:";; Error.Text
-    Return False
-  Endif
-  Return True
+    $syncvars.Add(envEntry, VarName)
+    Try SharedMem.NotifyChange(Varname, Me, -1, "varchanged")
+    If Error Then
+        Error "SyncEnv.add NotifyChange Error:";; Error.Text
+        Return False
+    Endif
+    Return True
 
 Catch
-  Error "SyncEnv.add Error:";; Error.Text;; Error.where
-  Return False
+    Error "SyncEnv.add Error:";; Error.Text;; Error.where
+    Return False
 
 End
 
 Public Sub Remove(varname As String) As Boolean
 
-  If Not $syncvars.Exist(varname) Then Return False
+    If Not $syncvars.Exist(varname) Then Return False
 
-  Try SharedMem.NotifyCancel(Varname, Me)
-  If Error Then
+    Try SharedMem.NotifyCancel(Varname, Me)
+    If Error Then
+        Try $syncvars.Remove(varname)
+        Error "SyncEnv.remove NotifyCancel Error:";; Error.text
+        Return False
+    Endif
+
     Try $syncvars.Remove(varname)
-    Error "SyncEnv.remove NotifyCancel Error:";; Error.text
-    Return False
-  Endif
-
-  Try $syncvars.Remove(varname)
-  Return True
+    Return True
 
 Catch
-  Error "SyncEnv.Remove Error:";; Error.Text;; Error.where
-  Return False
+    Error "SyncEnv.Remove Error:";; Error.Text;; Error.where
+    Return False
 
 End
 
 Public Sub varchanged(Value As Variant, Variable As String)
 
-  Env[$syncvars[Variable]] = Value
+    Env[$syncvars[Variable]] = Value
 
 End
+
+'' used to keep the internally synced variables up to date with any exported values in the environment
+Public Sub ImportChanges()                      'import all the synced variable values from the environmant
+
+    For Each s As Variant In $syncvars          ' get the name of the environment variable
+        $syncvars[$syncvars.key] = env[s]       ' set the internal varable equal to the environmental variable
+    Next
+
+End
+

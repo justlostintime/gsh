@@ -15,7 +15,7 @@ Public Sub _Call()
         .["gshversion"] = gsh.$version                 ' ;Application.Version                                         ' Use this later on to do version update stuff and verify all running versions are compatable
 
         If Not .exist("profile") Then .["profile"] = False
-        If Not .exist("globstar") Then .["globstar"] = False                  ' set to cause fileexpansion to see ** as meaning recurse, it dangerous
+        If Not .exist("globstar") Then .["globstar"] = False                  ' set to cause fileexpansion to see ** as meaning recurse, it is dangerous
         If sharedmem.exist("$alias") Then
             SharedMem["alias"] = SharedMem["$alias"]
             SharedMem.Free("$alias")
@@ -24,16 +24,16 @@ Public Sub _Call()
         Endif
 
         If Not .Exist("gshvarconverted") Then .["gshvarconverted"] = False                    ' indicate that the variables are not yet converted
-        If Not .exist("blockindent") Or If .["blockindent"] = "" Then .["blockindent"] = "  "        ' this is the block indent characters for entering blocks of code
-        If Not .Exist("history_expand") Then .["history_expand"] = False                                ' turns on bash style history expansion using the system readline call
-        If Not .exist("helpuseshtml") Then .helpuseshtml = False                                        ' Help will do a popup help when html is found
-        If Not .exist("execprog") Then .["execprog"] = "print \"Gambas Shell \""                      ' Used for debugging only
-        If Not .exist("lastexecutedblock") Then .lastexecutedblock = "print \"hello world\""            ' Used for debugging only
-        If Not .exist("executedblock") Then .lastexecutedblock = "print \"hello world\""                ' Used for debugging only
+        If Not .exist("blockindent") Or If .["blockindent"] = "" Then .["blockindent"] = "  " ' this is the block indent characters for entering blocks of code
+        If Not .Exist("history_expand") Then .["history_expand"] = False                      ' turns on bash style history expansion using the system readline call
+        If Not .exist("helpuseshtml") Then .helpuseshtml = False                              ' Help will do a popup help when html is found
+        If Not .exist("execprog") Then .["execprog"] = "print \"Gambas Shell \""              ' Used for debugging only
+        If Not .exist("lastexecutedblock") Then .lastexecutedblock = "print \"hello world\""  ' Used for debugging only
+        If Not .exist("executedblock") Then .lastexecutedblock = "print \"hello world\""      ' Used for debugging only
         If Not .exist("prompt") Then .prompt = gsh.DefaultPrompt
         If Not .exist("result") Then .result = "OK"
-        If Not .exist("maxhistory") Then .maxhistory = 300                                        ' define the max history length
-        If Not .exist("historycurrent") Then .historycurrent = 0                                  ' defines the current history level
+        If Not .exist("maxhistory") Then .maxhistory = 300                                    ' define the max history length
+        If Not .exist("historycurrent") Then .historycurrent = 0                              ' defines the current history level
         If Not .exist("history") Then .history = New Collection
         If Not .exist("editor") Then
             Try .editor = System.Find("nano")
@@ -62,6 +62,11 @@ Public Sub _Call()
         If Not .Exist("structPath") Then .structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
         If Not .Exist("scriptpath") Then .scriptpath = user.home &/ "vars/scripts;/usr/share/gsh/scripts"
         If Not .exist("suggestcommand") Then .suggestcommand = False
+
+        ' when EnvResync is set this will cause the internal variables to be read back from the environment after each time
+        ' a cli is executed. It defaults to false as it does cause overhead.
+        If Not .exist("EnvResync") Then .EnvResync = False
+
 
         If Not .exist("DoTrace") Then               'the memory value always takes precidence
             .DoTrace = gsh.DoTrace

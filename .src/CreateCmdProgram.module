@@ -614,7 +614,9 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         If NoErrRedirect[CurrentCmd] And NeedsSTDERRWrite[CurrentCmd] Then
             CmdErr[CurrentCmd] = DefaultErrSub(CurrentCmd, basename)
         Endif
-        If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"   ' do this only on first, allows to inject data to stream
+
+        ' do this only on first, allows to inject data to stream
+        If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"
     Next
 
     CmdFinal = ""
@@ -906,7 +908,7 @@ Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As 
 
     Dim aFunction As Boolean = False
     Dim DataSource As String
-    'Check if we will from a function or some other evaluated at runtime function
+    'Check if we will read from a function or some other evaluated at runtime function
     If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
         aFunction = True
         Dim execStartAt As Integer = i
