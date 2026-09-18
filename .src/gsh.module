@@ -1997,9 +1997,11 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
         InBuffer = Reader(EndBlk)
         original = InBuffer
+
         If source = "STDIN" Then
-            getline.RewriteLineHighlighted(InBuffer)
+            getline.RewriteLineHighlighted(original)
         Endif
+
         While Right(inbuffer, 1) = "\\"                     ' allow line to be continued with a \ at the end of the line
             InBuffer = Left(InBuffer, -1)                     ' we want to read the entire line into a single buffer for processing
             InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
@@ -2948,8 +2950,9 @@ Public Sub DoBlock(EndBlk As String[])
         Dec BlockLevel
         ' should not do this if reading from buffer
         If VarCommandSource = "" Then
-            Print "\e[1A]";
-            getline.RewriteLineHighlighted(Lower(endblk.join(" ")))
+            'Print "\e[1A";
+            getline.RewriteLineHighlighted(Lower(inBuffer))
+            Print
             ''debug "Exit DOBLK"
         Endif
     End With
