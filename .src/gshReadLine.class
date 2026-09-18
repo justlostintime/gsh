@@ -41,226 +41,234 @@ Public UserPrompt As String
 
 Public Sub _new(Optional sUserPrompt As String = Quote("$"), sDefaultPrompt As String = Quote("$"))
 
-  DoTrace = False
-  ReadLineVersion = -1
-  ReadLineVersion = DetectReadLineVersion()
-  DefaultPrompt = sDefaultPrompt
-  UserPrompt = sUserPrompt
+    DoTrace = False
+    ReadLineVersion = -1
+    ReadLineVersion = DetectReadLineVersion()
+    DefaultPrompt = sDefaultPrompt
+    UserPrompt = sUserPrompt
 
 End
 
 Public Sub Trace(onoff As Boolean)
 
-  DoTrace = onoff
+    DoTrace = onoff
 
 End
 
 Private Sub DetectReadlineVersion() As Integer
 
-  'rl_function_dumper(1)
+    'rl_function_dumper(1)
 
-  Try c9_using_history()
-  If Not Error Then Return 9
-  Try c8_using_history()
-  If Not Error Then Return 8
-  Try c7_using_history()
-  If Not Error Then Return 7
-  Try c6_using_history()
-  If Not Error Then Return 6
-  Try c5_using_history()
-  If Not Error Then Return 5
+    Try c9_using_history()
+    If Not Error Then Return 9
+    Try c8_using_history()
+    If Not Error Then Return 8
+    Try c7_using_history()
+    If Not Error Then Return 7
+    Try c6_using_history()
+    If Not Error Then Return 6
+    Try c5_using_history()
+    If Not Error Then Return 5
 
-  Return 4
+    Return 4
 
 End
 
 Public Sub add_history(data As String)
 
-  If readlineversion = -1 Then
-    readlineversion = DetectReadlineVersion()
-  Endif
+    If readlineversion = -1 Then
+        readlineversion = DetectReadlineVersion()
+    Endif
 
-  Select Case ReadLineVersion
-    Case 9
-      Try c9_using_history()
-      c9_add_history(data)
-    Case 8
-      Try c8_using_history()
-      c8_add_history(data)
-    Case 7
-      Try c7_using_history()
-      c7_add_history(data)
-    Case 6
-      Try c6_using_history()
-      c6_add_history(data)
-    Case 5
-      Try c5_using_history()
-      c5_add_history(data)
-  End Select
+    Select Case ReadLineVersion
+        Case 9
+            Try c9_using_history()
+            c9_add_history(data)
+        Case 8
+            Try c8_using_history()
+            c8_add_history(data)
+        Case 7
+            Try c7_using_history()
+            c7_add_history(data)
+        Case 6
+            Try c6_using_history()
+            c6_add_history(data)
+        Case 5
+            Try c5_using_history()
+            c5_add_history(data)
+    End Select
+
+End
+
+Public Sub RewriteLineHighlighted(text As String)
+
+    Print "\e[1A\e[0K";                   ' reposition the cursor to begining of the line
+    WritePrompt(gsh.SetBlockIndent())
+    Print gsh.ConsoleHighlight.ToANSI(text)
 
 End
 
 Public Sub WritePrompt(BlockIndent As String)
 
-  Dim Prompt As String
-  Dim retryloop As Integer = 2
+    Dim Prompt As String
+    Dim retryloop As Integer = 2
 
 retryprompt:
-  Wait 0
-  If DoTrace Then Error ("Trying to read from terminal")
-  If retryloop = 0 Then
-    Error ("Unable to evaluate any prompt type using ' $ '")
-    prompt = " $ "
-  Else
+    Wait 0
+    If DoTrace Then Error ("Trying to read from terminal")
+    If retryloop = 0 Then
+        Error ("Unable to evaluate any prompt type using ' $ '")
+        prompt = " $ "
+    Else
 
-    'Debug Line * * * *
-    'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
+        'Debug Line * * * *
+        'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
 
-    Try prompt = Eval(userprompt)
-    If Error Then
-      userprompt = DefaultPrompt
-      Dec retryloop
-      Goto retryprompt
+        Try prompt = Eval(userprompt)
+        If Error Then
+            userprompt = DefaultPrompt
+            Dec retryloop
+            Goto retryprompt
+        Endif
     Endif
-  Endif
 
-  Print prompt; BlockIndent;
-  Flush
+    Print prompt; BlockIndent;
+    Flush
 
 End
 
 
 Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = False) As String
 
-  Dim pInput As Pointer
-  Dim sInput As String
-  Dim Prompt As String
+    Dim pInput As Pointer
+    Dim sInput As String
+    Dim Prompt As String
 
-  If DoTrace Then Error ("Begin readline")
+    If DoTrace Then Error ("Begin readline")
 
-  'Debug Line * * * *
-  'Dim tprompt As String = "cdate(now)"
-  'Print "starting "; Eval("CDate(Now)");; Eval(tprompt);; " Readline _Call"
+    'Debug Line * * * *
+    'Dim tprompt As String = "cdate(now)"
+    'Print "starting "; Eval("CDate(Now)");; Eval(tprompt);; " Readline _Call"
 
-  If bDbaseServer Then
-    If DoTrace Then Error ("Begin server mode reads")
-    Dim rByte As Byte
-    sInput = ""
-    While True
-      Read #file.in, rByte
-      If rbyte = &H0A Then Break
-      sInput &= Chr(rbyte)
-    Wend
-    sInput = Trim(sInput)
-    If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput
-  Else
-    Dim retryloop As Integer = 2
-retryprompt:
-    Wait 0
-    If DoTrace Then Error ("Trying to read from terminal")
-    If retryloop = 0 Then
-      Error ("Unable to evaluate any prompt type using ' $ '")
-      prompt = " $ "
-    Else
-
-      'Debug Line * * * *
-      'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
-
-      Try prompt = Eval(userprompt)
-      If Error Then
-        userprompt = DefaultPrompt
-        Dec retryloop
-        Goto retryprompt
-      Endif
-    Endif
-
-    If DoTrace Then Error ("Reading From Readline Version");; readlineversion
-    ' SetBlockIndent()
-    If gsh.BlockLevel = 0 Then    ' reach out to the gsh class to see what block level we are reading
-      Print "\n";                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
-      Flush                       ' Make sure it is printed
-    Endif
-    Select Case ReadLineVersion
-      Case 9
-        pinput = c9_readline(Prompt & BlockIndent)
-      Case 8
-        pinput = c8_readline(Prompt & BlockIndent)
-      Case 7
-        pinput = c7_readline(prompt & BlockIndent)
-      Case 6
-        pinput = c6_readline(prompt & BlockIndent)
-      Case 5
-        pinput = c5_readline(prompt & BlockIndent)
-      Default
-        Error Prompt; "%"; BlockIndent;                 ' Use input line as we cant find readline unix version
-        Flush #File.err
-        Line Input sInput
+    If bDbaseServer Then
+        If DoTrace Then Error ("Begin server mode reads")
+        Dim rByte As Byte
+        sInput = ""
+        While True
+            Read #file.in, rByte
+            If rbyte = &H0A Then Break
+            sInput &= Chr(rbyte)
+        Wend
         sInput = Trim(sInput)
-    End Select
+        If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput
+    Else
+        Dim retryloop As Integer = 2
+retryprompt:
+        Wait 0
+        If DoTrace Then Error ("Trying to read from terminal")
+        If retryloop = 0 Then
+            Error ("Unable to evaluate any prompt type using ' $ '")
+            prompt = " $ "
+        Else
 
-    If ReadlineVersion > 4 Then
+            'Debug Line * * * *
+            'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
 
-      If IsNull(pinput) Then Return "QUIT"
+            Try prompt = Eval(userprompt)
+            If Error Then
+                userprompt = DefaultPrompt
+                Dec retryloop
+                Goto retryprompt
+            Endif
+        Endif
 
-      sInput = Trim(history_expand(pinput))
+        If DoTrace Then Error ("Reading From Readline Version");; readlineversion
+        ' SetBlockIndent()
+        If gsh.BlockLevel = 0 Then    ' reach out to the gsh class to see what block level we are reading
+            Print "\n";                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
+            Flush                       ' Make sure it is printed
+        Endif
+        Select Case ReadLineVersion
+            Case 9
+                pinput = c9_readline(Prompt & BlockIndent)
+            Case 8
+                pinput = c8_readline(Prompt & BlockIndent)
+            Case 7
+                pinput = c7_readline(prompt & BlockIndent)
+            Case 6
+                pinput = c6_readline(prompt & BlockIndent)
+            Case 5
+                pinput = c5_readline(prompt & BlockIndent)
+            Default
+                Error Prompt; "%"; BlockIndent;                 ' Use input line as we cant find readline unix version
+                Flush #File.err
+                Line Input sInput
+                sInput = Trim(sInput)
+        End Select
 
-      If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
+        If ReadlineVersion > 4 Then
 
-      ' sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
+            If IsNull(pinput) Then Return "QUIT"
 
-      '  rl_insert_text("Thats it")
-      '  rl_redisplay()
-      '  rl_forced_update_display()
+            sInput = Trim(history_expand(pinput))
 
-      rFree(pInput)
-      ' sInput = Trim(sInput)
+            If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
 
-      If sInput <> "" Then
-        'sInput = history_expand(sInput)
-        add_history(sInput)
-      Endif
+            ' sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
 
+            '  rl_insert_text("Thats it")
+            '  rl_redisplay()
+            '  rl_forced_update_display()
+
+            rFree(pInput)
+            ' sInput = Trim(sInput)
+
+            If sInput <> "" Then
+                'sInput = history_expand(sInput)
+                add_history(sInput)
+            Endif
+
+        Endif
+        If DoTrace Then Error ("Readline Complete")
     Endif
-    If DoTrace Then Error ("Readline Complete")
-  Endif
 
-  Wait 0
+    Wait 0
 
-  Return sInput
+    Return sInput
 
 Catch
-  Error.Propagate()
+    Error.Propagate()
 
 End
 
 Private Sub history_expand(data As Pointer) As String
 
-  Dim pExpansion As Pointer = 0
-  Dim Result As Integer = 0
-  Dim NewData As String = Trim(String(1, String@(data)))
+    Dim pExpansion As Pointer = 0
+    Dim Result As Integer = 0
+    Dim NewData As String = Trim(String(1, String@(data)))
 
-  If SharedMem["history_expand"] = False Then Return NewData
+    If SharedMem["history_expand"] = False Then Return NewData
 
-  Select Case ReadLineVersion
-    Case 9
-      Result = c9_history_expand(data, VarPtr(pExpansion))
-    Case 8
-      Result = c8_history_expand(data, VarPtr(pExpansion))
-    Case 7
-      Result = c7_history_expand(data, VarPtr(pExpansion))
-    Case 6
-      Result = c6_history_expand(data, VarPtr(pExpansion))
-    Case 5
-      Result = c5_history_expand(data, VarPtr(pExpansion))
-  End Select
-  If Result = 1 Or If Result = 0 Then
-    NewData = String(1, String@(pExpansion))              ' do this to force a copy of the string to our data segment
-    rFree(pExpansion)
-  Endif
+    Select Case ReadLineVersion
+        Case 9
+            Result = c9_history_expand(data, VarPtr(pExpansion))
+        Case 8
+            Result = c8_history_expand(data, VarPtr(pExpansion))
+        Case 7
+            Result = c7_history_expand(data, VarPtr(pExpansion))
+        Case 6
+            Result = c6_history_expand(data, VarPtr(pExpansion))
+        Case 5
+            Result = c5_history_expand(data, VarPtr(pExpansion))
+    End Select
+    If Result = 1 Or If Result = 0 Then
+        NewData = String(1, String@(pExpansion))              ' do this to force a copy of the string to our data segment
+        rFree(pExpansion)
+    Endif
 
-  Return NewData
+    Return NewData
 
 Catch
-  Error.Propagate()
+    Error.Propagate()
 
 End

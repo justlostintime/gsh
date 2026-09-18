@@ -1990,17 +1990,22 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Dim hStart As Integer = 0
     Dim filename As String
     Dim answer As String
+    Dim Original As String
 
     With sharedmem
         ' Moved to function bellow here
 
         InBuffer = Reader(EndBlk)
+        original = InBuffer
+        If source = "STDIN" Then
+            getline.RewriteLineHighlighted(InBuffer)
+        Endif
         While Right(inbuffer, 1) = "\\"                     ' allow line to be continued with a \ at the end of the line
             InBuffer = Left(InBuffer, -1)                     ' we want to read the entire line into a single buffer for processing
             InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
         Wend
 
-        If InStr(InBuffer, ":;") <> 0 Then '' Handle multi  statement lines change to :; from : as name spaces now use the : notation
+        If InStr(InBuffer, ":;") <> 0 Then '' Handle multi stmt lines change to :; from :, name spaces now use the : notation
             MultyParse.allowEolToClose = True
             Dim InList As String[] = Parser(InBuffer, MultyParse, False)
             If InList.count > 1 Then
@@ -2943,9 +2948,8 @@ Public Sub DoBlock(EndBlk As String[])
         Dec BlockLevel
         ' should not do this if reading from buffer
         If VarCommandSource = "" Then
-            Print "\e[1A\e[0K";
-            getline.WritePrompt(SetBlockIndent())
-            Print Lower(endblk.join(" "))
+            Print "\e[1A]";
+            getline.RewriteLineHighlighted(Lower(endblk.join(" ")))
             ''debug "Exit DOBLK"
         Endif
     End With
