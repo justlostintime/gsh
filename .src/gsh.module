@@ -1779,10 +1779,13 @@ Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
 
 End
 
+Public NotbufferRead As Boolean = True
+
 Public Sub ReadBuffer() As String
 
     Dim nextline As String
 
+    NotBufferRead = False
     If ReadFromBuffer_Buffer.count = 0 Then
         Source = savedsourcebuffer
         Return "QUIT"
@@ -1812,6 +1815,7 @@ Public Sub ReadHistory() As String
     Endif
 
     Wait 0
+
     Return ValLine
 
 Catch
@@ -1823,7 +1827,11 @@ Public Sub ReadFile() As String
 
     Dim thebuffer As String
 
-    If Eof(AppSource) Then Return "QUIT"
+    If Eof(AppSource) Then
+        NotBufferRead = False
+        Return "QUIT"
+    Endif
+
     Try Line Input #AppSource, thebuffer
     If Error Then
         Return "QUIT"
@@ -1932,7 +1940,8 @@ Public Sub Reader(EndBlk As String[]) As String
                     Next
                 Endif
             Endif
-            history = SharedMem["history"]
+
+            History = SharedMem["history"]
             History.add(sInBuffer, sharedMem["historycurrent"])
             Inc SharedMem["historycurrent"]
             If History.count > SharedMem["maxhistory"] Then History.remove(History.first)
@@ -1997,14 +2006,19 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
         InBuffer = Reader(EndBlk)
         original = InBuffer
-
-        If source = "STDIN" Then
+        If source = "STDIN" And If NotbufferRead Then
             getline.RewriteLineHighlighted(original)
+        Else
+            NotBufferRead = True
         Endif
-
         While Right(inbuffer, 1) = "\\"                     ' allow line to be continued with a \ at the end of the line
             InBuffer = Left(InBuffer, -1)                     ' we want to read the entire line into a single buffer for processing
             InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
+            If source = "STDIN" And If NotbufferRead Then
+                getline.RewriteLineHighlighted(original)
+            Else
+                NotBufferRead = True
+            Endif
         Wend
 
         If InStr(InBuffer, ":;") <> 0 Then '' Handle multi stmt lines change to :; from :, name spaces now use the : notation
@@ -2949,12 +2963,12 @@ Public Sub DoBlock(EndBlk As String[])
         Wend
         Dec BlockLevel
         ' should not do this if reading from buffer
-        If VarCommandSource = "" Then
-            'Print "\e[1A";
-            getline.RewriteLineHighlighted(Lower(inBuffer))
-            Print
-            ''debug "Exit DOBLK"
-        Endif
+        'If VarCommandSource = "" Then
+        '    'Print "\e[1A";
+        '   getline.RewriteLineHighlighted(Lower(inBuffer))
+        '   Print
+        ''debug "Exit DOBLK"
+        'Endif
     End With
 Catch
     Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where

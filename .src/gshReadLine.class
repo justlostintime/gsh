@@ -103,7 +103,7 @@ End
 Public Sub RewriteLineHighlighted(text As String)
 
     gsh.ConsoleHighlight.CanRewrite = True
-    Print "\e[1A\e[0K";                   ' reposition the cursor to begining of the line
+    Print "\e[1A\e[0K";                        ' reposition the cursor to begining of the line
     WritePrompt(gsh.SetBlockIndent())
     Print gsh.ConsoleHighlight.ToANSI(text);
 
