@@ -1827,8 +1827,8 @@ Public Sub ReadFile() As String
 
     Dim thebuffer As String
 
+    NotbufferRead = False
     If Eof(AppSource) Then
-        NotBufferRead = False
         Return "QUIT"
     Endif
 
@@ -1860,6 +1860,7 @@ Public Sub readline() As String
 
     Dim sbuffer As String
 
+    NotbufferRead = True
     getline.DoTrace = DoTrace
     getline.UserPrompt = SharedMem["prompt"]
     'Debug Line * * * *
@@ -2008,16 +2009,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
         original = InBuffer
         If source = "STDIN" And If NotbufferRead Then
             getline.RewriteLineHighlighted(original)
-        Else
-            NotBufferRead = True
         Endif
+
         While Right(inbuffer, 1) = "\\"                     ' allow line to be continued with a \ at the end of the line
             InBuffer = Left(InBuffer, -1)                     ' we want to read the entire line into a single buffer for processing
             InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
             If source = "STDIN" And If NotbufferRead Then
                 getline.RewriteLineHighlighted(original)
-            Else
-                NotBufferRead = True
             Endif
         Wend
 
@@ -2962,13 +2960,13 @@ Public Sub DoBlock(EndBlk As String[])
             Wait 0
         Wend
         Dec BlockLevel
-        ' should not do this if reading from buffer
-        'If VarCommandSource = "" Then
-        '    'Print "\e[1A";
-        '   getline.RewriteLineHighlighted(Lower(inBuffer))
-        '   Print
-        ''debug "Exit DOBLK"
-        'Endif
+        'should Not Do this If reading From buffer
+        If VarCommandSource = "" And If NotBufferRead Then
+            'Print "\e[1A";
+            getline.RewriteLineHighlighted(Lower(inBuffer))
+            Print
+            'debug "Exit DOBLK"
+        Endif
     End With
 Catch
     Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where
