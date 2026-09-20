@@ -100,12 +100,16 @@ Public Sub add_history(data As String)
 
 End
 
-Public Sub RewriteLineHighlighted(text As String)
+Public Sub RewriteLineHighlighted(text As String, Optional NoHighlight As Boolean = False)
 
     gsh.ConsoleHighlight.CanRewrite = True
-    Print "\e[1A\e[0K";                        ' reposition the cursor to begining of the line
+    Print "\e[1F\e[2K";                        ' reposition the cursor to begining of the line
     WritePrompt(gsh.SetBlockIndent())
-    Print gsh.ConsoleHighlight.ToANSI(text);
+    If NoHighlight Then
+        Print text;
+    Else
+        Print gsh.ConsoleHighlight.ToANSI(text);
+    Endif
 
 End
 

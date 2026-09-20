@@ -1861,6 +1861,7 @@ Public Sub readline() As String
     Dim sbuffer As String
 
     NotbufferRead = True
+
     getline.DoTrace = DoTrace
     getline.UserPrompt = SharedMem["prompt"]
     'Debug Line * * * *
@@ -1952,7 +1953,7 @@ Public Sub Reader(EndBlk As String[]) As String
     Else
 
         sInBuffer = ReadQueue.pop()
-
+        NotbufferRead = False
         If source = "STDIN" Then ' only record keystroke entries
 
             If sInBuffer Like "*!!*" Then
@@ -2001,34 +2002,51 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
     Dim filename As String
     Dim answer As String
     Dim Original As String
+    Dim multipart As Boolean
 
     With sharedmem
         ' Moved to function bellow here
 
         InBuffer = Reader(EndBlk)
-        original = InBuffer
-        If source = "STDIN" And If NotbufferRead Then
-            getline.RewriteLineHighlighted(original)
-        Endif
 
-        While Right(inbuffer, 1) = "\\"                     ' allow line to be continued with a \ at the end of the line
-            InBuffer = Left(InBuffer, -1)                     ' we want to read the entire line into a single buffer for processing
-            InBuffer &= Reader(EndBlk)                        ' get the next buffer segment
-            If source = "STDIN" And If NotbufferRead Then
-                getline.RewriteLineHighlighted(original)
-            Endif
+        multipart = IIf(InStr(InBuffer, ":;") > 0, True, False)
+
+        While Right(inbuffer, 1) = "\\"                 ' allow line to be continued with a \ at the end of the line
+            Dim segment As String
+            InBuffer = Left(InBuffer, -1)               ' we want to read the entire line into a single buffer for processing
+            segment = Reader(EndBlk)                    ' get the next buffer segment
+            If Not Multipart Then multipart = IIf(InStr(segment, ":;") > 0, True, False)
+            inbuffer &= segment
         Wend
 
-        If InStr(InBuffer, ":;") <> 0 Then '' Handle multi stmt lines change to :; from :, name spaces now use the : notation
+        If Not Multipart Then original = Inbuffer
+
+        If Multipart Then '' Handle multi stmt lines change to :; from :, name spaces now use the : notation
             MultyParse.allowEolToClose = True
             Dim InList As String[] = Parser(InBuffer, MultyParse, False)
             If InList.count > 1 Then
                 InBuffer = InList[0]
+                Original = Left(gsh.ConsoleHighlight.ToANSI(Inbuffer), -6)
                 For i As Integer = 1 To InList.Max
-                    If InList[i] <> ":;" Then ReadQueue.Add(InList[i], 0)
+                    If InList[i] <> ":;" Then
+                        ReadQueue.Add(InList[i], 0)
+                        original &= " :; " & Left(gsh.ConsoleHighlight.ToANSI(InList[i]), -6)
+                    Endif
                 Next
+                original &= "\r\n"
+            Endif
+
+            If source = "STDIN" And If NotbufferRead Then
+                getline.RewriteLineHighlighted(original, True)
+            Endif
+
+        Else
+            If source = "STDIN" And If NotbufferRead Then
+                getline.RewriteLineHighlighted(original)
             Endif
         Endif
+
+
 
         If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed
         If DoAlias Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)
