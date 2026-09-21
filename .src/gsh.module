@@ -3237,7 +3237,7 @@ End
 
 'Private AutoGenSub As Integer = 0
 
-Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As String             ' MaxGlobSize As 0 means unlimited
+Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, writeto As Boolean = False) As String             ' MaxGlobSize As 0 means unlimited
 
     Dim OutBuf As String = ""
     Dim Syms As String[]
@@ -3309,13 +3309,12 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             types.Add(Highlight.operator, 0)
         Else
             If SharedMem.exist("sub." & syms[0]) Then
-                'If syms.count = 1 Then
-                '    syms.Add("(")
-                '    syms.Add(")")
-                '    types.Add(Highlight.Operator)
-                '    types.Add(Highlight.operator)
-                'Else
-                If syms.count = 1 Or If syms[1] <> "(" Then
+                If writeto And If syms.count = 1 Then  ' write to is internal only one parm ever
+                    syms.Add("(")
+                    syms.Add(")")
+                    types.Add(Highlight.Operator)
+                    types.Add(Highlight.operator)
+                Else If syms.count = 1 Or If syms[1] <> "(" Then
                     Dim NewLineDef As String = MakeIntoCall(syms[0], InVar)
                     Syms = Highlight.Analyze(NewLineDef)
                     types = highlight.types

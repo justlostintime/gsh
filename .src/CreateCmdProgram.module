@@ -869,7 +869,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
     Else
         If sym = ">" Or sym = "&>" Then
             If CmdTypes[CurrentCmd][i] <> Highlight.function Then
-                CmdBeforeExec.Add(gsh.preProcesses(CmdList[CurrentCmd][i]) & " = \"\"\n")     ' Define a line to set it to zero only if not append
+                CmdBeforeExec.Add(gsh.preProcesses(CmdList[CurrentCmd][i]) & " = \"\"\n", False, True)     ' Define a line to set it to zero only if not append
             Endif
         Endif
 
@@ -897,7 +897,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
                 Endif
                 CmdErr[CurrentCmd] &= sSinkObject
             Else
-                sSinkObject = gsh.preProcesses(CmdList[CurrentCmd][i])
+                sSinkObject = gsh.preProcesses(CmdList[CurrentCmd][i], False, True)
                 If sSinkObject Like "*()" Then
                     sSinkObject = Left(sSinkobject, -1) & "sInput)\n"  ' call a function with the data
                 Else
