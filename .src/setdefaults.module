@@ -62,14 +62,16 @@ Public Sub _Call()
         If Not .Exist("structPath") Then .structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
         If Not .Exist("scriptpath") Then .scriptpath = user.home &/ "vars/scripts;/usr/share/gsh/scripts"
         If Not .exist("suggestcommand") Then .suggestcommand = False
+        If Not .exist("usehighlight") Then .usehighlight = False            ' By default for now highlight is off
+        If Not .exist("dotrace") Then .dotrace = False                      ' internal tracing function
 
         ' when EnvResync is set this will cause the internal variables to be read back from the environment after each time
         ' a cli is executed. It defaults to false as it does cause overhead.
         If Not .exist("EnvResync") Then .EnvResync = False
 
 
-        If Not .exist("DoTrace") Then               'the memory value always takes precidence
-            .DoTrace = gsh.DoTrace
+        If Not .exist("dotrace") Then               'the memory value always takes precidence
+            .dotrace = gsh.DoTrace
         Else
             If gsh.TraceState = -1 Then gsh.DoTrace = .DoTrace
         Endif

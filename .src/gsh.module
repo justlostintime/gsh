@@ -21,14 +21,14 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
     "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
-    "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "lambda", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
-    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdfont"]
+    "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
+    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdfont", "usehighlight"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
 
-'Public ConsoleHighlight As New ConsoleHighlight
 Public ConsoleHighlight As TextHighlighter
+Public BashHighlight As TextHighlighter
 
 Public ReadQueue As New String[]     ' Used to push items to be read first
 
@@ -357,6 +357,7 @@ Public Sub Myinit()
     Next
 
     ConsoleHighlight = TextHighlighter["gambas"]
+    BashHighlight = TextHighlighter["sh"]
 
     SharedMem.DoInit()
 
@@ -2026,23 +2027,38 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Dim InList As String[] = Parser(InBuffer, MultyParse, False)
             If InList.count > 1 Then
                 InBuffer = InList[0]
-                Original = Left(gsh.ConsoleHighlight.ToANSI(Inbuffer), -6)
+                If .usehighlight Then
+                    Original = Left(gsh.ConsoleHighlight.ToANSI(Inbuffer), -6)
+                Else
+                    Original = InBuffer
+                Endif
+
                 For i As Integer = 1 To InList.Max
                     If InList[i] <> ":;" Then
                         ReadQueue.Add(InList[i], 0)
-                        original &= " :; " & Left(gsh.ConsoleHighlight.ToANSI(InList[i]), -6)
+                        If .usehighlight Then
+                            original &= " :; " & Left(gsh.ConsoleHighlight.ToANSI(InList[i]), -6)
+                        Else
+                            Original &= " :; " & InList[i]
+                        Endif
                     Endif
                 Next
                 original &= "\r\n"
             Endif
 
             If source = "STDIN" And If NotbufferRead Then
-                getline.RewriteLineHighlighted(original, True)
+                If .usehighlight Then getline.RewriteLineHighlighted(original, True)
+                If Not .usehighlight Then Print
             Endif
 
         Else
             If source = "STDIN" And If NotbufferRead Then
-                getline.RewriteLineHighlighted(original)
+                If .usehighlight Then
+                    getline.RewriteLineHighlighted(original)
+                Else
+                    getline.RewriteLineHighlighted(original, True)
+                    Print
+                Endif
             Endif
         Endif
 
@@ -2979,13 +2995,19 @@ Public Sub DoBlock(EndBlk As String[])
         Wend
         Dec BlockLevel
         'should Not Do this If reading From buffer
-        If VarCommandSource = "" And If NotBufferRead Then
+
+        If .usehighlight And If VarCommandSource = "" And If NotBufferRead Then
             'Print "\e[1A";
             getline.RewriteLineHighlighted(Lower(inBuffer))
             Print
             'debug "Exit DOBLK"
+        Else If VarCommandSource = "" And If NotBufferRead Then
+            getline.RewriteLineHighlighted(Lower(inBuffer), True)
+            Print
         Endif
+
     End With
+
 Catch
     Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where
     gshlogging(User.home &/ "vars/gsh.log", errormsg)

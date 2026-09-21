@@ -1,3 +1,19 @@
+* Mon Sep 21 2026 Brian G <justlostintime@gmail.com> 1.7.2
+- And one more time fixing highlight bugs
+
+* Mon Sep 21 2026 Brian G <justlostintime@gmail.com> 1.7.2
+
+* Mon Sep 21 2026 Brian G <justlostintime@gmail.com> 1.7.2
+- And one more time fix bug in highlight support
+
+* Sun Sep 20 2026 Brian G <justlostintime@gmail.com> 1.7.2
+- Make UseHighlight default to off for now as it is experimental
+
+* Sun Sep 20 2026 Brian G <justlostintime@gmail.com> 1.7.2
+
+* Sun Sep 20 2026 Brian G <justlostintime@gmail.com> 1.7.2
+- Fix muli statement lines
+
 * Sat Sep 19 2026 Brian G <justlostintime@gmail.com> 1.7.2
 - Fix new highlight function
 

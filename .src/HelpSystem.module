@@ -4,13 +4,13 @@ Class SharedMem
 Class TextHighlighter
 
 Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki",
-  "https://gambaswiki.org/wiki/cat",
-  "https://gambaswiki.org/wiki/lang",
-  "https://gambaswiki.org/wiki/comp",
-  "https://gambaswiki.org/wiki/comp/gb",
-  "https://gambaswiki.org/wiki/comp/gb.qt4",
-  "https://gambaswiki.org/wiki/def",
-  "https://gambaswiki.org/wiki/error"]
+    "https://gambaswiki.org/wiki/cat",
+    "https://gambaswiki.org/wiki/lang",
+    "https://gambaswiki.org/wiki/comp",
+    "https://gambaswiki.org/wiki/comp/gb",
+    "https://gambaswiki.org/wiki/comp/gb.qt4",
+    "https://gambaswiki.org/wiki/def",
+    "https://gambaswiki.org/wiki/error"]
 
 Public GambasHelpList As New Collection(gb.ignorecase)
 Public GshHelpList As New Collection(gb.ignorecase)
@@ -22,147 +22,147 @@ Public SearchCommand As String = ""
 
 Public Sub LoadHelp()
 
-  Dim Result As Collection
-  Dim s As Variant
+    Dim Result As Collection
+    Dim s As Variant
 
-  If GambasHelpList.count = 0 Then
+    If GambasHelpList.count = 0 Then
 
-    For Each s In GambasHelpUrls
-      Result = GetHtmlListAsText(s)
-      AppendCollection(GambasHelpList, result)
-      Wait 0.3
-    Next
+        For Each s In GambasHelpUrls
+            Result = GetHtmlListAsText(s)
+            AppendCollection(GambasHelpList, result)
+            Wait 0.3
+        Next
 
-    GambasHelpIndex = GambasHelpList.Keys
+        GambasHelpIndex = GambasHelpList.Keys
 
-  Endif
+    Endif
 
-  GshHelpList = gsh.GetAllThings()                      ' creates the AllthingsNames and AllThingsType as element of gsh class
-  GshHelpIndex = GshHelpList.keys
+    GshHelpList = gsh.GetAllThings()                      ' creates the AllthingsNames and AllThingsType as element of gsh class
+    GshHelpIndex = GshHelpList.keys
 
 End
 
 Public Sub SearchHelp(Pattern As String, SourceDict As Collection, SourceIndex As String[]) ' output is added to SearchResults
 
-  Dim index As Integer = 0
+    Dim index As Integer = 0
 
-  While index >= 0 And index < SourceIndex.count
-    index = SourceIndex.Find(Pattern, gb.like, index)
-    If index < 0 Then Break
-    SearchResults.Add(SourceDict[SourceIndex[index]], SourceIndex[index])
-    Inc index
-  Wend
-  SearchIndex.Clear()
-  For Each s As Variant In SearchResults
-    SearchIndex.Add(SearchResults.key)
-  Next
-  SearchIndex.Sort()
+    While index >= 0 And index < SourceIndex.count
+        index = SourceIndex.Find(Pattern, gb.like, index)
+        If index < 0 Then Break
+        SearchResults.Add(SourceDict[SourceIndex[index]], SourceIndex[index])
+        Inc index
+    Wend
+    SearchIndex.Clear()
+    For Each s As Variant In SearchResults
+        SearchIndex.Add(SearchResults.key)
+    Next
+    SearchIndex.Sort()
 
 End
 
 Public Sub AskSearchItem() As Variant ' uses the search index
 
-  Dim Index As Integer = 0
-  Dim sIndex As String
+    Dim Index As Integer = 0
+    Dim sIndex As String
 
-  If SearchIndex.count = 0 Then Return ""
-  If SearchIndex.count = 1 Then
-    SearchCommand = SearchIndex[0]
-    Return SearchResults[SearchIndex[0]]
-  Endif
-  Print "Please select Choice using number"
-  For Each s As String In SearchIndex
-    Print index; ")";; s
-    Inc Index
-  Next
-  Line Input sIndex
-  Try index = CInt(sIndex)
-  If Error Then Return ""
-  SearchCommand = SearchIndex[Index]
-  Return SearchResults[SearchIndex[index]]
+    If SearchIndex.count = 0 Then Return ""
+    If SearchIndex.count = 1 Then
+        SearchCommand = SearchIndex[0]
+        Return SearchResults[SearchIndex[0]]
+    Endif
+    Print "Please select Choice using number"
+    For Each s As String In SearchIndex
+        Print index; ")";; s
+        Inc Index
+    Next
+    Line Input sIndex
+    Try index = CInt(sIndex)
+    If Error Then Return ""
+    SearchCommand = SearchIndex[Index]
+    Return SearchResults[SearchIndex[index]]
 
 End
 
 Public Sub AppendCollection(Dest As Collection, src As Collection)
 
-  For Each s As String In src
-    Dest.Add(s, src.key)
-  Next
+    For Each s As String In src
+        Dest.Add(s, src.key)
+    Next
 
 End
 
 Public Sub GetHelpDetailedText(Command As String) As String
 
-  Dim sSource As New HttpClient As "hclient"
-  Dim buffer As String = ""
-  Dim Result As Variant
+    Dim sSource As New HttpClient As "hclient"
+    Dim buffer As String = ""
+    Dim Result As Variant
 
-  command = "*" & Replace(UnQuote(command), " ", "*") & "*"
-  SearchResults.Clear()
-  SearchHelp(command, GshHelpList, GshHelpIndex)
-  SearchHelp(command, GambasHelpList, GambasHelpIndex)
-  Result = AskSearchItem()
-  Command = SearchCommand
+    command = "*" & Replace(UnQuote(command), " ", "*") & "*"
+    SearchResults.Clear()
+    SearchHelp(command, GshHelpList, GshHelpIndex)
+    SearchHelp(command, GambasHelpList, GambasHelpIndex)
+    Result = AskSearchItem()
+    Command = SearchCommand
 
-  If TypeOf(Result) = gb.object Then
-    buffer = Getlivehelp(helpgetfile(Result[1]), result, Command, False)
-  Else If Result <> "" Then
-    sSource.url = "https://gambaswiki.org" &/ Result
-    sSource.async = False
-    sSource.timeout = 5
-    sSource.Get
-    If sSource.status < 0 Then Return ""
-    If Lof(sSource) Then
-      buffer = Read #sSource, Lof(sSource)
+    If TypeOf(Result) = gb.object Then
+        buffer = Getlivehelp(helpgetfile(Result[1]), result, Command, False)
+    Else If Result <> "" Then
+        sSource.url = "https://gambaswiki.org" &/ Result
+        sSource.async = False
+        sSource.timeout = 5
+        sSource.Get
+        If sSource.status < 0 Then Return ""
+        If Lof(sSource) Then
+            buffer = Read #sSource, Lof(sSource)
+        Else
+            buffer = ""
+        Endif
+        buffer = GetHtmlPage(buffer, Command, False)
     Else
-      buffer = ""
+        Buffer = Result
     Endif
-    buffer = GetHtmlPage(buffer, Command, False)
-  Else
-    Buffer = Result
-  Endif
 
-  Return Buffer
+    Return Buffer
 
 End
 
 Public Sub GetHtmlListAsText(TheUrl As String) As Collection
 
-  Dim sSource As New HttpClient As "hclient"
-  Dim buffer As String
-  Dim aTmps, aSets As String[]
-  Dim result As New Collection(gb.ignorecase)
+    Dim sSource As New HttpClient As "hclient"
+    Dim buffer As String
+    Dim aTmps, aSets As String[]
+    Dim result As New Collection(gb.ignorecase)
 
-  sSource.url = TheUrl
-  sSource.async = False
-  sSource.timeout = 5
-  sSource.Get
+    sSource.url = TheUrl
+    sSource.async = False
+    sSource.timeout = 5
+    sSource.Get
 
-  If sSource.status < 0 Then Return ""
-  If Lof(sSource) Then
-    buffer = Read #sSource, Lof(sSource)
-  Else
-    buffer = ""
-  Endif
-  '"<a href=\"/wiki/cat/bit\">Bits Manipulation Functions</a><br>"
-  If buffer <> "" And If Not (buffer Like "*This page does not exist*") Then
-    atmps = Split(buffer, "\n\r", "\"\"", True, True)
-    For Each s As String In atmps
-      If s Begins "<a href=" Then
-        aSets = Split(s, "<>=", "\"\"", True, True)
-        aSets[2] = Replace(aSets[2], "amp;", "")
-        If aSets[2] = "span class" Then
-          aSets[2] = File.Name(UnQuote(aSets[1]))
-        Endif
-        If Right(aSets[2], 1) = "$" Then
-          result.Add(UnQuote(aSets[1]), Left(aSets[2], -1))
-        Endif
-        result.Add(UnQuote(aSets[1]), aSets[2])
-      Endif
-    Next
-  Endif
+    If sSource.status < 0 Then Return ""
+    If Lof(sSource) Then
+        buffer = Read #sSource, Lof(sSource)
+    Else
+        buffer = ""
+    Endif
+    '"<a href=\"/wiki/cat/bit\">Bits Manipulation Functions</a><br>"
+    If buffer <> "" And If Not (buffer Like "*This page does not exist*") Then
+        atmps = Split(buffer, "\n\r", "\"\"", True, True)
+        For Each s As String In atmps
+            If s Begins "<a href=" Then
+                aSets = Split(s, "<>=", "\"\"", True, True)
+                aSets[2] = Replace(aSets[2], "amp;", "")
+                If aSets[2] = "span class" Then
+                    aSets[2] = File.Name(UnQuote(aSets[1]))
+                Endif
+                If Right(aSets[2], 1) = "$" Then
+                    result.Add(UnQuote(aSets[1]), Left(aSets[2], -1))
+                Endif
+                result.Add(UnQuote(aSets[1]), aSets[2])
+            Endif
+        Next
+    Endif
 
-  Return Result
+    Return Result
 
 End
 
@@ -170,170 +170,170 @@ Public ReadBuffer As String = ""
 
 Public Sub mProcget_read()
 
-  Dim buffer As String
+    Dim buffer As String
 
-  buffer = Read #Last, -256
-  ReadBuffer &= buffer
+    buffer = Read #Last, -256
+    ReadBuffer &= buffer
 
 End
 
 Private Sub GetLiveHelp(msymbol As String[], defInfo As String[], Title As String, Optional Summary As Boolean = False) As String
 
-  'Dim ch As New ConsoleHighlight
-  Dim ch As TextHighlighter = TextHighlighter["gambas"]
-  Dim helptxt As String = ""
-  Dim SynText As String = ""
-  Dim MatchInfo As String
-  Dim Synopsis As String = "\n"
-  Dim SeeAlso As String = ""
-  Dim Description As String = ""
-  Dim found As Boolean = False
+    'Dim ch As New ConsoleHighlight
+    Dim ch As TextHighlighter = TextHighlighter["gambas"]
+    Dim helptxt As String = ""
+    Dim SynText As String = ""
+    Dim MatchInfo As String
+    Dim Synopsis As String = "\n"
+    Dim SeeAlso As String = ""
+    Dim Description As String = ""
+    Dim found As Boolean = False
 
-  Select Case defInfo[4]
-    Case "class"
-      MatchInfo = ".*(?:CLASS).*"
-    Case "struct"
-      MatchInfo = ".*(?:STRUCT).*"
-    Case "sub"
-      MatchInfo = ".*(?:SUB|FUNCTION|PROCEDURE).*"
-    Default
-      MatchInfo = ".*(?:SUB|CLASS|FUNCTION|PROCEDURE|STRUCT).*"
-  End Select
+    Select Case defInfo[4]
+        Case "class"
+            MatchInfo = ".*(?:CLASS).*"
+        Case "struct"
+            MatchInfo = ".*(?:STRUCT).*"
+        Case "sub"
+            MatchInfo = ".*(?:SUB|FUNCTION|PROCEDURE).*"
+        Default
+            MatchInfo = ".*(?:SUB|CLASS|FUNCTION|PROCEDURE|STRUCT).*"
+    End Select
 
-  For Each sText As String In msymbol
-    stext = Trim(stext)
+    For Each sText As String In msymbol
+        stext = Trim(stext)
 
-    If Left(stext, 9) == "Inherits " Or Left(stext, 9) == "#include " Then
-      SeeAlso &= "\t" & Right(stext, -9) & "\n"
-      Continue
+        If Left(stext, 9) == "Inherits " Or Left(stext, 9) == "#include " Then
+            SeeAlso &= "\t" & Right(stext, -9) & "\n"
+            Continue
+        Endif
+
+        If Left(stext, 4) = "''''" Or Left(stext, 4) == "use " Then
+            SeeAlso &= "\t" & Right(stext, -4) & "\n"
+            Continue
+        Endif
+
+        If Left(stext, 3) = "'''" Then
+            Synopsis &= "\t" & Right(stext, -3) & "\n"
+            Continue
+        Endif
+
+        If Left(stext, 2) = "''" Then
+            Description &= "\t" & Right(stext, -2) & "\n"
+            Continue
+        Endif
+
+        If stext[0] = "'" Then Continue
+
+        If Not found Then
+            If RegExp.Match(stext, MatchInfo, RegExp.Caseless) Then
+                'If skey Like ".*SUB.*" Or If sKey Like ".*CLASS.*" Or If skey Like ".*FUNCTION.*" Or If sKey Like ".*PROCEDURE.*" Then
+                SynText = sText
+                found = True
+            Endif
+        Endif
+
+    Next
+
+    If SynText = "" Then syntext = msymbol[0]
+
+    If Summary = False Then
+        helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & SynText & Synopsis & "\n\nDESCRIPTION\n" & Description & "\n\nSEE\n" & "\t" & defInfo[1] & "\n" & SeeAlso
+    Else
+        ' Return ch.ToConsole(helptxt)
+        Return ch.ToANSI(SynText) & Synopsis
     Endif
 
-    If Left(stext, 4) = "''''" Or Left(stext, 4) == "use " Then
-      SeeAlso &= "\t" & Right(stext, -4) & "\n"
-      Continue
-    Endif
-
-    If Left(stext, 3) = "'''" Then
-      Synopsis &= "\t" & Right(stext, -3) & "\n"
-      Continue
-    Endif
-
-    If Left(stext, 2) = "''" Then
-      Description &= "\t" & Right(stext, -2) & "\n"
-      Continue
-    Endif
-
-    If stext[0] = "'" Then Continue
-
-    If Not found Then
-      If RegExp.Match(stext, MatchInfo, RegExp.Caseless) Then
-        'If skey Like ".*SUB.*" Or If sKey Like ".*CLASS.*" Or If skey Like ".*FUNCTION.*" Or If sKey Like ".*PROCEDURE.*" Then
-        SynText = sText
-        found = True
-      Endif
-    Endif
-
-  Next
-
-  If SynText = "" Then syntext = msymbol[0]
-
-  If Summary = False Then
-    helptxt = "NAME\n\t" & Upper(Title) & "\n\nSYNOPSIS\n\t" & SynText & Synopsis & "\n\nDESCRIPTION\n" & Description & "\n\nSEE\n" & "\t" & defInfo[1] & "\n" & SeeAlso
-  Else
-    ' Return ch.ToConsole(helptxt)
-    Return ch.ToANSI(SynText) & Synopsis
-  Endif
-
-  Return helpTxt
+    Return helpTxt
 Catch
-  Error.Propagate()
+    Error.Propagate()
 
 End
 
 Public Sub AllHelp() As String
 
-  Dim HelpTxt As String = ""
-  Dim TmpBuffer As String[]
-  Dim HelpList As New String[]
-  Dim Entry As String[]
+    Dim HelpTxt As String = ""
+    Dim TmpBuffer As String[]
+    Dim HelpList As New String[]
+    Dim Entry As String[]
 
-  HelpTxt = "Gambas Shell V" & File.Load("VERSION") & "\n"
-  HelpTxt &= File.Load(Env["APPDIR"] &/ "/usr/share/gsh/docs/help.info")
-  HelpTxt &= ("\nUseful included Functions and Classes these may be edited to your taste\n"
-    "GSH Functions Can be found in " & Env["APPDIR"] &/ "/usr/share/gsh/subs" & "  for Default versions or\n"
-  "in ~/vars/subs for personal versions\n\n")
+    HelpTxt = "Gambas Shell V" & File.Load("VERSION") & "\n"
+    HelpTxt &= File.Load(Env["APPDIR"] &/ "/usr/share/gsh/docs/help.info")
+    HelpTxt &= ("\nUseful included Functions and Classes these may be edited to your taste\n"
+        "GSH Functions Can be found in " & Env["APPDIR"] &/ "/usr/share/gsh/subs" & "  for Default versions or\n"
+    "in ~/vars/subs for personal versions\n\n")
 
-  helplist = GshHelpList.keys
-  helplist.Sort()
+    helplist = GshHelpList.keys
+    helplist.Sort()
 
-  For Each ss As String In helplist
-    entry = GshHelpList[ss]
-    TmpBuffer = helpgetfile(entry[1])
-    Helptxt &= Getlivehelp(TmpBuffer, entry, ss, True)
-    helptxt &= "\n"
-  Next
+    For Each ss As String In helplist
+        entry = GshHelpList[ss]
+        TmpBuffer = helpgetfile(entry[1])
+        Helptxt &= Getlivehelp(TmpBuffer, entry, ss, True)
+        helptxt &= "\n"
+    Next
 
-  helptxt &= "\nGambas Language Index\n\n"
-  Helptxt &= SortedInCol(GambasHelpIndex)
-  Return HelpTxt
+    helptxt &= "\nGambas Language Index\n\n"
+    Helptxt &= SortedInCol(GambasHelpIndex)
+    Return HelpTxt
 
 Catch
-  Error.Raise("Help System Error:" & ss & "  Detected :" & Error.text & ":" & Error.where)
+    Error.Raise("Help System Error:" & ss & "  Detected :" & Error.text & ":" & Error.where)
 
 End
 
 Sub helpgetfile(path As String) As String[]
 
-  Dim func As String
+    Dim func As String
 
-  If path[0] = "/" Then
-    Try func = file.load(path)
-    If Error Then
-      Error ("unable to read ") & path
-      Return Null
+    If path[0] = "/" Then
+        Try func = file.load(path)
+        If Error Then
+            Error ("unable to read ") & path
+            Return Null
+        Endif
+    Else
+        func = sharedmem[path]
     Endif
-  Else
-    func = sharedmem[path]
-  Endif
-  'func = ConsoleHighlight.ToConsole(func)
-  Return Split(func, "\n", "\"\"", False, True)
+    'func = ConsoleHighlight.ToConsole(func)
+    Return Split(func, "\n", "\"\"", False, True)
 
 End
 
 Public Sub SortedInCol(AList As String[]) As String
 
-  Dim colcount As Integer = 0
-  Dim colwidth As Integer = 0
-  Dim colperiod As Integer = 0
-  Dim CurrentElement As Integer = 0
-  Dim allIndex As String[] = aList
-  Dim Result As String = ""
+    Dim colcount As Integer = 0
+    Dim colwidth As Integer = 0
+    Dim colperiod As Integer = 0
+    Dim CurrentElement As Integer = 0
+    Dim allIndex As String[] = aList
+    Dim Result As String = ""
 
-  allindex.Sort()
-  While allIndex[0][0] = "."
-    allindex.Remove(0)
-  Wend
+    allindex.Sort()
+    While allIndex[0][0] = "."
+        allindex.Remove(0)
+    Wend
 
-  For Each ss As String In allindex
-    If ss.len > colwidth Then colwidth = ss.len
-  Next
-
-  colwidth += 2
-
-  colcount = CInteger(env["COLUMNS"]) / colwidth
-  colperiod = allindex.count / colcount
-  colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
-  For i As Integer = 0 To colperiod - 1
-    For j As Integer = 0 To colcount - 1
-      CurrentElement = i + (j * colperiod)
-      If currentelement < allindex.count Then
-        Result &= Left(allindex[CurrentElement] & Space(colwidth), colwidth)
-      Endif
+    For Each ss As String In allindex
+        If ss.len > colwidth Then colwidth = ss.len
     Next
-    Result &= "\n"
-  Next
 
-  Return Result
+    colwidth += 2
+
+    colcount = CInteger(env["COLUMNS"]) / colwidth
+    colperiod = allindex.count / colcount
+    colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
+    For i As Integer = 0 To colperiod - 1
+        For j As Integer = 0 To colcount - 1
+            CurrentElement = i + (j * colperiod)
+            If currentelement < allindex.count Then
+                Result &= Left(allindex[CurrentElement] & Space(colwidth), colwidth)
+            Endif
+        Next
+        Result &= "\n"
+    Next
+
+    Return Result
 
 End
 
@@ -341,113 +341,113 @@ Public HelpFromHtml As String
 
 Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint As Boolean = True) As String
 
-  Dim mproc As Process
-  'Dim ch As New ConsoleHighlight
-  Dim ch As TextHighlighter = TextHighlighter["gambas"]
+    Dim mproc As Process
+    'Dim ch As New ConsoleHighlight
+    Dim ch As TextHighlighter = TextHighlighter["gambas"]
 
-  helpfromhtml = ""
-  If Not System.Exist("html2text") Then
-    Print "Please install the application 'html2text'  in order to display full gambas help information"
-    Print " source = " & CmdName
-  Endif
-  SharedMem["lasthtmlhelp"] = sSource
-  mproc = Exec ["html2text", "-ascii", "-width", "80", "-nobs", "-style", "compact"] For Read Write As "mrProcget"
-
-  Write #mproc, sSource
-  ' Flush #mproc
-  mproc.closeinput
-  mproc.wait
-  ' While mproc.state = Process.Running
-  '   Wait 0
-  ' Wend
-  If process.LastValue <> 0 Then
-    Print "Help Html conversion Failed "
-    Return ""
-  Endif
-
-  SharedMem["lasthelp"] = helpfromhtml
-
-  Dim Sections As New Collection(gb.ignorecase)
-  Dim atmps As String[]
-  Dim tmps As String
-  Dim secBuf As String = ""
-  Dim secName As String = ""
-  Dim Command As String
-  Dim GotCmd As Boolean = False
-  Dim SectionIndex As New String[]
-
-  tmps = Replace(helpfromhtml, "&#x27;", "'")
-  atmps = Split(Replace(tmps, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
-  For Each s As String In aTmps
-    If Left(s, 4) = "****" Then
-      If secName <> "" Then
-        Sections.Add(secBuf, secName)
-        SecBuf = ""
-      Endif
-      SectionIndex.Add(Trim(Replace(s, "*", "")))
-      SecName = Replace(SectionIndex.last, " ", "")
-      If GotCmd = False Then
-        Command = secName
-        Gotcmd = True
-      Endif
-    Else
-      If secname <> "" Then secBuf &= s & "\n"
+    helpfromhtml = ""
+    If Not System.Exist("html2text") Then
+        Print "Please install the application 'html2text'  in order to display full gambas help information"
+        Print " source = " & CmdName
     Endif
-  Next
-  If secName <> "" Then
-    Sections.Add(SecBuf, secName)
-  Endif
+    SharedMem["lasthtmlhelp"] = sSource
+    mproc = Exec ["html2text", "-ascii", "-width", "80", "-nobs", "-style", "compact"] For Read Write As "mrProcget"
 
-  helpfromhtml = ""
-
-  ' HelpFromHtml = "NAME\n\n\t" & Upper(CmdName) & "\n\nSYNOPSIS\n\n"
-  ' tmps = Replace(Sections[Command], "[email_protected]", CmdName, gb.ignorecase)
-  '
-  ' HelpFromHtml &= tmps & "\n"
-  '
-  ' If Sections.Exist("errors") Or Sections.Exist("error") Then
-  '   HelpFromHtml &= "\nERRORS\n\n"
-  '   tmps = IIf(Sections.Exist("error"), Sections["error"], Sections["errors"])
-  '   HelpFromHtml &= tmps
-  ' Endif
-  '
-  ' If Sections.Exist("example") Or Sections.Exist("examples") Then
-  '   HelpFromHtml &= "\nEXAMPLE\n\n"
-  '   tmps = IIf(Sections.Exist("example"), Sections["example"], Sections["examples"])
-  '   tmps = ch.ToConsole(tmps)
-  '   HelpFromHtml &= tmps & "\n"
-  ' Endif
-  '
-  ' If Sections.Exist("seealso") Then
-  '   HelpFromHtml &= "\nSEE ALSO\n\n"
-  '   HelpFromHtml &= Sections["seealso"]
-  ' Endif
-
-  HelpFromHtml = "NAME\n"
-  For Each s As String In SectionIndex
-    HelpFromHtml &= s & "\n"
-    If s Like "Example" Or If s Like "Examples" Then
-      ' HelpFromHtml &= ch.ToConsole(Sections[Replace(s, " ", "")])
-      HelpFromHtml &= ch.ToANSI(Sections[Replace(s, " ", "")])
-    Else
-      HelpFromHtml &= Sections[Replace(s, " ", "")]
+    Write #mproc, sSource
+    ' Flush #mproc
+    mproc.closeinput
+    mproc.wait
+    ' While mproc.state = Process.Running
+    '   Wait 0
+    ' Wend
+    If process.LastValue <> 0 Then
+        Print "Help Html conversion Failed "
+        Return ""
     Endif
-    HelpFromHtml &= "\n\n"
-  Next
 
-  If DoPrint Then
-    Print helpfromhtml
-  Endif
+    SharedMem["lasthelp"] = helpfromhtml
 
-  Return helpfromhtml
+    Dim Sections As New Collection(gb.ignorecase)
+    Dim atmps As String[]
+    Dim tmps As String
+    Dim secBuf As String = ""
+    Dim secName As String = ""
+    Dim Command As String
+    Dim GotCmd As Boolean = False
+    Dim SectionIndex As New String[]
+
+    tmps = Replace(helpfromhtml, "&#x27;", "'")
+    atmps = Split(Replace(tmps, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
+    For Each s As String In aTmps
+        If Left(s, 4) = "****" Then
+            If secName <> "" Then
+                Sections.Add(secBuf, secName)
+                SecBuf = ""
+            Endif
+            SectionIndex.Add(Trim(Replace(s, "*", "")))
+            SecName = Replace(SectionIndex.last, " ", "")
+            If GotCmd = False Then
+                Command = secName
+                Gotcmd = True
+            Endif
+        Else
+            If secname <> "" Then secBuf &= s & "\n"
+        Endif
+    Next
+    If secName <> "" Then
+        Sections.Add(SecBuf, secName)
+    Endif
+
+    helpfromhtml = ""
+
+    ' HelpFromHtml = "NAME\n\n\t" & Upper(CmdName) & "\n\nSYNOPSIS\n\n"
+    ' tmps = Replace(Sections[Command], "[email_protected]", CmdName, gb.ignorecase)
+    '
+    ' HelpFromHtml &= tmps & "\n"
+    '
+    ' If Sections.Exist("errors") Or Sections.Exist("error") Then
+    '   HelpFromHtml &= "\nERRORS\n\n"
+    '   tmps = IIf(Sections.Exist("error"), Sections["error"], Sections["errors"])
+    '   HelpFromHtml &= tmps
+    ' Endif
+    '
+    ' If Sections.Exist("example") Or Sections.Exist("examples") Then
+    '   HelpFromHtml &= "\nEXAMPLE\n\n"
+    '   tmps = IIf(Sections.Exist("example"), Sections["example"], Sections["examples"])
+    '   tmps = ch.ToConsole(tmps)
+    '   HelpFromHtml &= tmps & "\n"
+    ' Endif
+    '
+    ' If Sections.Exist("seealso") Then
+    '   HelpFromHtml &= "\nSEE ALSO\n\n"
+    '   HelpFromHtml &= Sections["seealso"]
+    ' Endif
+
+    HelpFromHtml = "NAME\n"
+    For Each s As String In SectionIndex
+        HelpFromHtml &= s & "\n"
+        If s Like "Example" Or If s Like "Examples" Then
+            ' HelpFromHtml &= ch.ToConsole(Sections[Replace(s, " ", "")])
+            HelpFromHtml &= ch.ToANSI(Sections[Replace(s, " ", "")])
+        Else
+            HelpFromHtml &= Sections[Replace(s, " ", "")]
+        Endif
+        HelpFromHtml &= "\n\n"
+    Next
+
+    If DoPrint Then
+        Print helpfromhtml
+    Endif
+
+    Return helpfromhtml
 
 End
 
 Public Sub mrProcget_read()
 
-  Dim buffer As String
+    Dim buffer As String
 
-  buffer = Read #Last, -256
-  helpfromhtml &= buffer
+    buffer = Read #Last, -256
+    helpfromhtml &= buffer
 
 End
