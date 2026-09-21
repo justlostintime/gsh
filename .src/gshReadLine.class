@@ -104,6 +104,7 @@ Public Sub RewriteLineHighlighted(text As String, Optional NoHighlight As Boolea
 
     gsh.ConsoleHighlight.CanRewrite = True
     Print "\e[1F\e[2K";                        ' reposition the cursor to begining of the line
+    Flush
     WritePrompt(gsh.SetBlockIndent())
     If NoHighlight Then
         Print text;
@@ -195,15 +196,15 @@ retryprompt:
         Endif
         Select Case ReadLineVersion
             Case 9
-                pinput = c9_readline(Prompt & BlockIndent)
+                pinput = c9_readline(Prompt & BlockIndent & "\x00")
             Case 8
-                pinput = c8_readline(Prompt & BlockIndent)
+                pinput = c8_readline(Prompt & BlockIndent & "\x00")
             Case 7
-                pinput = c7_readline(prompt & BlockIndent)
+                pinput = c7_readline(prompt & BlockIndent & "\x00")
             Case 6
-                pinput = c6_readline(prompt & BlockIndent)
+                pinput = c6_readline(prompt & BlockIndent & "\x00")
             Case 5
-                pinput = c5_readline(prompt & BlockIndent)
+                pinput = c5_readline(prompt & BlockIndent & "\x00")
             Default
                 Error Prompt; "%"; BlockIndent;                 ' Use input line as we cant find readline unix version
                 Flush #File.err

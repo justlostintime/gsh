@@ -729,6 +729,8 @@ Catch
 
 End
 
+cmdterm As String[] = ["<", "<<", "<<<", ">", ">>", ">>>", "|<", "|>"]
+
 Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
     Dim aFunction As Boolean = False
@@ -767,19 +769,27 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
 
     If CmdList[CurrentCmd][i] Like "*fileexpand*" Or If (Not aFunction And CmdList[CurrentCmd][i][0] = "(") Then
         If CmdList[CurrentCmd][i] Like "*fileexpand*" Then
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase) & "))") & "\n"
+            Dim stepone As String = Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase)
+            stepone = Mid(stepone, 2, -1)
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & stepone & "))") & "\n"
         Else
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & "expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
         Endif
     Else
         Dim DataSource As String
         If CmdTypes[CurrentCmd][i] = Highlight.Function Then
-            DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , " & DataSource & ")") & "\n"
+            Dim RawFunction As New String[]
+            While i <= CmdList[CurrentCmd].Max
+                If CmdTerm.exist(CmdList[CurrentCmd][i]) Then Break
+                RawFunction.add(CmdList[CurrentCmd][i])
+                Inc i
+            Wend
+            DataSource = gsh.PreProcesses(RawFunction.join(" "))
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & DataSource & ")))") & "\n"
         Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & "expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
         Else
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & "expandfn(" & Quote(CmdList[CurrentCmd][i]) & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & Quote(CmdList[CurrentCmd][i]) & ")))") & "\n"
         Endif
     Endif
     Return i
@@ -1001,7 +1011,13 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
     Endif
 
     If CmdTypes[CurrentCmd][i] = Highlight.Function Then
-        DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
+        Dim RawFunction As New String[]
+        While i <= CmdList[CurrentCmd].Max
+            If CmdTerm.exist(CmdList[CurrentCmd][i]) Then Break
+            RawFunction.add(CmdList[CurrentCmd][i])
+            Inc i
+        Wend
+        DataSource = gsh.PreProcesses(RawFunction.join(" "))
     Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
         DataSource = CmdList[CurrentCmd][i]
     Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables

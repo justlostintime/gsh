@@ -57,7 +57,7 @@ Public Const DefaultPrompt As String = "\"\\x01\\x1b[31m\\x02\" & application.id
 Public DefaultHelp As String[] = [System.find("less"), "-c"]
 
 Public BlockLevel As Integer = 0
-Public BlockIndent As String = "\x00"
+Public BlockIndent As String = ""
 
 Public InBufParse As String[]
 Public SymbolTable As New Collection
@@ -772,7 +772,6 @@ Public Sub Main()
     'Print "starting "; CDate(Now)
 
     Dim DontExit As Boolean
-    Dim i As Integer
 
     'System.Language = "fr_FR"
     'System.Language = "en_US"
@@ -1848,9 +1847,9 @@ Sub SetBlockIndent() As String
 
     With sharedmem
         If blocklevel = 0 Then
-            blockindent = "\x00"
+            blockindent = ""
         Else
-            blockindent = String(blocklevel, .["blockindent"]) & "\x00"
+            blockindent = String(blocklevel, .["blockindent"])
         Endif
     End With
     Return blockindent
@@ -3176,6 +3175,8 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
 
     Next
 
+    If Not gotmin Then MinCount = interface.count ' added sept 21 2026
+
     Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
 
     ' Scan it for comments... forgot about this
@@ -3308,23 +3309,23 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False) As
             types.Add(Highlight.operator, 0)
         Else
             If SharedMem.exist("sub." & syms[0]) Then
-                If syms.count = 1 Then
-                    syms.Add("(")
-                    syms.Add(")")
-                    types.Add(Highlight.Operator)
-                    types.Add(Highlight.operator)
-                Else
-                    If syms[1] <> "(" Then
-                        Dim NewLineDef As String = MakeIntoCall(syms[0], InVar)
-                        Syms = Highlight.Analyze(NewLineDef)
-                        types = highlight.types
+                'If syms.count = 1 Then
+                '    syms.Add("(")
+                '    syms.Add(")")
+                '    types.Add(Highlight.Operator)
+                '    types.Add(Highlight.operator)
+                'Else
+                If syms.count = 1 Or If syms[1] <> "(" Then
+                    Dim NewLineDef As String = MakeIntoCall(syms[0], InVar)
+                    Syms = Highlight.Analyze(NewLineDef)
+                    types = highlight.types
 
-                        If NewLineDef = "" Then
-                            Error SharedMem["result"]
-                            Return ""
-                        Endif
+                    If NewLineDef = "" Then
+                        Error SharedMem["result"]
+                        Return ""
                     Endif
                 Endif
+                'Endif
             Endif
             bLookup = False
         Endif
