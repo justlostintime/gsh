@@ -2598,6 +2598,7 @@ End
 Sub lambdaExpression(eblk As String[])
 
     Dim variables As String = GetLastLine(execbuffer)
+    Dim lbuff As String = ""
 
     execbuffer = removeLastLine(execbuffer)
     Dim savebuf2 As String = execbuffer
@@ -2609,9 +2610,11 @@ Sub lambdaExpression(eblk As String[])
     execbuffer = removeLastLine(execbuffer)
 
     Dim lambdaname As String = "lambda" & Str(linktable.count)
+    lbuff = "sub " & lambdaname & "(...) as variant\n" & execbuffer & "\nend\n"
+
     lambdabuffer &= "sub " & lambdaname & "(...) as variant\n" & execbuffer & "\nend\n"
 
-    linktable.Add(lambdabuffer, lambdaname)
+    linktable.Add(lbuff, lambdaname)
     execbuffer = savebuf2 & lambdaname & "("
 
     Dim parms As String[] = Split(Variables, " \t,()", "\"\"", True, True)
