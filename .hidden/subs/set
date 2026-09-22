@@ -7,11 +7,11 @@ Sub set(vArray As Variant, Value As Variant, ...) As Variant
 ''    Rather slow as it gets the array as a copy then updates it
 ''    then returns it and the user needs to store it again
 ''
-Dim ClassName As String 
-If TypeOf(vArray) <> gb.object Then error.raise("Set : Variable is not an array or collection")
-Classname = object.class(vArray).name
+Dim ClassName As String
+If TypeOf(vArray) <> gb.object Then error.raise("Set : Variable is not an array or collection type=" & TypeOf(vArray))
+Classname = Lower(object.class(vArray).name)
 
-If Right(classname, 2) <> "[]" Or If Lower(classname) <> "collection" Then
+If Right(classname, 2) <> "[]" And If classname <> "collection" Then
     error.raise("Set : Invalid object type :" & classname)
 Endif
 
