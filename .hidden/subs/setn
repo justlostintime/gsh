@@ -1,8 +1,11 @@
-Sub setn(Varname As String, func As String, Optional values As Variant = []) As Variant
+Sub setn(Varname As As variant, func As String, Optional values As Variant = []) As Variant
 ''' Execute a  shared objects function and return the resultant object
 '' This function will update a shared objects by calling provided method.
-''    then return a copy of the updated shared object.
-Dim xx As Variant = sharedmem[varname]
+''    then return a copy of the updated shared object. The original is unchanged.
+'' usage is like $a = setn($a,"sort",[gb.Ascent])
+'' this will return the sorted array and we store it back to $a
+''  This is same as $a = ($a).sort(gb.assent) ' the () are required to work on the actual array
+Dim xx As Variant = IIf(TypeOf(Varname) = gb.string, sharedmem[varname], varname)
 object.call(xx, func, values)
 Return xx
 End

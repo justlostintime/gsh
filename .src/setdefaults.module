@@ -69,7 +69,6 @@ Public Sub _Call()
         ' a cli is executed. It defaults to false as it does cause overhead.
         If Not .exist("EnvResync") Then .EnvResync = False
 
-
         If Not .exist("dotrace") Then               'the memory value always takes precidence
             .dotrace = gsh.DoTrace
         Else
