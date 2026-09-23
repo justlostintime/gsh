@@ -1,9 +1,9 @@
-Sub ListLastCompile() 
+Sub ListLastCompile()
 ''' List the last compiled script
 
-    Dim ConsoleHighlight As New gshHighlight
+    Dim ConsoleHighlight As New GshHighlight
 
-    Dim InText As  string = sharedmem.LastCompiledScript
+    Dim InText As String = sharedmem.LastCompiledScript
 
     Print ConsoleHighlight.ToConsole(InText)
 

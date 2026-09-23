@@ -2299,9 +2299,9 @@ StartAgain:
                         DoBlock(["NEXT"])
 
                     Case "IF"
-                        'If inBufparse[InBufParse.max] == "THEN"
-                        DoBlock(["END", "IF"])
-                        'Endif
+                        If inBufparse[InBufParse.max] == "THEN"
+                            DoBlock(["END", "IF"])
+                        Endif ' check if then needs a endif
 
                     Case "DO"
                         DoBlock(["LOOP"])

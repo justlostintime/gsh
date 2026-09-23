@@ -1,13 +1,13 @@
-Sub listlastscript() 
+Sub listlastscript()
 ''' Summary of last script executed
 '' Lists a short form of the last script executed
 '' if you want the details then just enter
 '' list
 '' this will list the fully linked script
 
-    Dim ConsoleHighlight As New gshHighlight
+    Dim ConsoleHighlight As New GshHighlight
 
-    Dim InText As  string = sharedmem.execprog
+    Dim InText As String = sharedmem.execprog
 
     Print ConsoleHighlight.ToConsole(InText)
 

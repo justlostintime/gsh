@@ -1,0 +1,89 @@
+Sub lscripts(Optional filename As String = "") As Boolean
+''' List all scripts in the script path, source/name
+'' lscripts(<filename>) list all available scripts and source to console
+''   if a filename is provided then locate and display the file content
+''   and origin.
+Dim result As Boolean = True
+With sharedmem
+  Dim sources As String[] = Split(.scriptpath, ";", "\"", True, True)
+  
+  If sources.count = 0 Then
+    Error "lscripts : scriptpath variable not set or not defined"
+    Return False
+  Else If validatePaths(sources) = False Then
+    Return False
+  Endif
+  
+  If filename = "" Then 
+   result = doListing(sources)
+  Else
+   result = dofilelist(sources, filename)
+  Endif
+  
+  Return result
+End With
+End
+
+Sub ValidatePath(sources As String[])
+  For Each s path As String In sources
+    If Not Exist(s) Then
+      Error "Lscripts : Invalid path entry";; Quote(s)
+      Return False
+    Endif
+  Next
+  Return True
+End
+
+Sub doListing(sources As String[])
+  For Each s As String In sources
+    Print s;
+    Dim files As String[] = Dir(s, "", gb.file).sort()
+    Print " "; files.count;; "Files"
+    For Each fn As String In files
+      Print "  "; fn
+    Next
+  Next
+  Return True
+End
+
+Sub doFileList(sources As String[], filename As String)
+  Dim GetHighlight As New GshHighLight
+  Dim locations As New String[]
+  For Each dn As String In sources
+    If Exist(dn &/ filename) Then locations.add(dn)
+  Next
+  
+  If location.count = 0 Then 
+    Print filename;; "not Found"
+    Return False
+  Endif
+  
+  If locations.count > 1 Then
+    Print filename;; "Found in more than one location"
+    For Each s As String In locations
+      Print "   ";; s &/ filename
+    Next
+    Return False
+  Endif
+  
+  Dim program As String
+  program = file.load(locations.first &/ filename)
+  Print GetHighlight.ToConsole(program)
+  Return True
+    
+End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

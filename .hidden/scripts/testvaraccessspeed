@@ -1,15 +1,32 @@
 #!/usr/bin/env gsh
-Do
+' script name testvaraccessspeed
+Begin
+ Fast Unsafe
+ Struct intcount
+  counter As Integer
+ End Struct 
  With sharedmem
    Print "Test each of the methods for access/updating a gsh variable, this can take a while"
    Print "The test for each type is execute 1,000,000 times\n"
-   Print "Test Speed to Access script Variables using $varname access method, locking"
-   Dim starttime As Float = Timer
-   Dim i As Integer = 0
+   
+   Dim starttime As Float
    Dim a As Pointer
    Dim b As SharedMemSymbol
+   Dim i As Integer = 0
+   Dim g As Variant
+   
+   Print "Test Speed to Access native variant type in gambas"
+   g = 59
+   starttime = Timer
+   For i = 0 To 1000000
+     If i % 100000 = 0 Then Print g
+     g = g + 1
+   Next
+   Print "Total time "; Timer - starttime
 
+   Print "Test Speed to Access script Variables using $varname access method, locking"
    $i = 59
+   starttime = Timer
    For i = 0 To 1000000
      If i % 100000 = 0 Then Print $i
      Inc $i
@@ -37,15 +54,26 @@ Do
    Print "Total time "; Timer - starttime
 
    Print "Test Speed to Access script Variables using integer@ptr access method, no locking"
-   starttime = Timer
    $i = 99
    b = .symboltable["i"]
    a = b.Dataptr()
    Print a, Integer@(a)
+   starttime = Timer
    For i = 0 To 1000000
       If i % 100000 = 0 Then Print Integer@(a)
       Integer@(a) = Integer@(a) + 1
    Next
    Print "Total time "; Timer - starttime
+   
+   Print "Test Speed to Access script Variables using struct direct access method, no locking"
+   Dim vptr As Intcount
+   vptr = a
+   starttime = Timer
+   For i = 0 To 1000000
+      If i % 100000 = 0 Then Print vptr.counter
+      Inc vptr.counter
+   Next
+   Print "Total time "; Timer - starttime
+   
 End With
-done
+End
