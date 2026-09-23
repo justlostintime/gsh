@@ -1398,9 +1398,6 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
 
         AlreadyLinked = New String[]
         ProgPart1 = "#!/usr/bin/env  /usr/bin/gbs3\n"
-        For Each sinsert As String In CompilerDirectiveTable
-            ProgPart1 &= sInsert & "\n"
-        Next
 
         While LinkTable.COUNT
             'Print "Inserting "; linktable[linktable.first]
@@ -1428,6 +1425,10 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         ' Else If Component.IsLoaded("sharedmem") Then
         '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
         ' Endif
+
+        For Each sinsert As String In CompilerDirectiveTable
+            ProgPart1 &= sInsert & "\n"
+        Next
 
         ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\",\"gb.signal\""
 

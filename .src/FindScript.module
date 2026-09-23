@@ -7,41 +7,41 @@ extensions As Collection = ["sub": "gshp", "struct": "gshs", "class": "gshc"]
 
 Public Sub _call(scriptname As String, type As String) As String
 
-  Dim Paths As String[] = Split(SharedMem[type & "path"], ";")                 ' split the path according to ;
-  Dim ext As String = extensions[type]                                                               ' get the extension to use
-  Dim result As Integer = VerifyFileType.unknown
-  Dim ScriptId As String = ""
+    Dim Paths As String[] = Split(SharedMem[type & "path"], ";")                 ' split the path according to ;
+    Dim ext As String = extensions[type]                                                               ' get the extension to use
+    Dim result As Integer = VerifyFileType.unknown
+    Dim ScriptId As String = ""
 
-  If File.Dir(scriptname) <> "" Then
-    If Exist(scriptname) Then
-      scriptid = scriptname
-    Else If Exist(ScriptName & "." & ext)
-      scriptid = ScriptName & "." & ext
-      Goto fastVerify
+    If File.Dir(scriptname) <> "" Then
+        If Exist(scriptname) Then
+            scriptid = scriptname
+        Else If Exist(ScriptName & "." & ext)
+            scriptid = ScriptName & "." & ext
+            Goto fastVerify
+        Endif
+    Else
+        For Each s As String In Paths
+            If s Like "/usr/share/gsh*" Then
+                s = gsh.GshRootPath &/ s
+            Endif
+            Dim fullpath As String = s &/ ScriptName
+            If Exist(fullpath) Then
+                scriptid = fullpath
+                Break
+            Endif
+        Next
     Endif
-  Else
-    For Each s As String In Paths
-      If s Like "/usr/share/gsh*" Then
-        s = gsh.GshRootPath &/ s
-      Endif
-      Dim fullpath As String = s &/ ScriptName
-      If Exist(fullpath) Then
-        scriptid = fullpath
-        Break
-      Endif
-    Next
-  Endif
 
-  If scriptid <> "" Then
-    result = VerifyFileType(scriptid)
-    If gsh.tracelevel > 2 Then Error "FindScript - File type discovered for :";; Left(scriptid & Space(35), 35);; "type :";; VerifyFileType.FileTypes(result)
-  Endif
+    If scriptid <> "" Then
+        result = VerifyFileType(scriptid)
+        If gsh.tracelevel > 2 Then Error "FindScript - File type discovered for :";; Left(scriptid & Space(35), 35);; "type :";; VerifyFileType.FileTypes(result)
+    Endif
 
 fastVerify:
-  Return scriptid
+    Return scriptid
 
 Catch
-  Dim msg As String = Error.text & Error.where
-  Error.Raise(msg)
+    Dim msg As String = Error.text & Error.where
+    Error.Raise(msg)
 
 End
