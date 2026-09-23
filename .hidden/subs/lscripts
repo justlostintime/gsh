@@ -10,7 +10,7 @@ With sharedmem
   If sources.count = 0 Then
     Error "lscripts : scriptpath variable not set or not defined"
     Return False
-  Else If validatePaths(sources) = False Then
+  Else If ValidatePaths(sources) = False Then
     Return False
   Endif
   
@@ -24,8 +24,8 @@ With sharedmem
 End With
 End
 
-Sub ValidatePath(sources As String[])
-  For Each s path As String In sources
+Sub ValidatePaths(sources As String[]) As Boolean
+  For Each s As String In sources
     If Not Exist(s) Then
       Error "Lscripts : Invalid path entry";; Quote(s)
       Return False
@@ -34,7 +34,7 @@ Sub ValidatePath(sources As String[])
   Return True
 End
 
-Sub doListing(sources As String[])
+Sub doListing(sources As String[]) As Boolean
   For Each s As String In sources
     Print s;
     Dim files As String[] = Dir(s, "", gb.file).sort()
@@ -46,14 +46,14 @@ Sub doListing(sources As String[])
   Return True
 End
 
-Sub doFileList(sources As String[], filename As String)
+Sub doFileList(sources As String[], filename As String) As Boolean
   Dim GetHighlight As New GshHighLight
   Dim locations As New String[]
   For Each dn As String In sources
     If Exist(dn &/ filename) Then locations.add(dn)
   Next
   
-  If location.count = 0 Then 
+  If locations.count = 0 Then
     Print filename;; "not Found"
     Return False
   Endif
@@ -72,18 +72,3 @@ Sub doFileList(sources As String[], filename As String)
   Return True
     
 End
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
