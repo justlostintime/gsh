@@ -357,7 +357,7 @@ Public Sub Myinit()
     Next
 
     ConsoleHighlight = TextHighlighter["gambas"]
-    BashHighlight = TextHighlighter["sh"]
+    'BashHighlight = TextHighlighter["sh"]
 
     SharedMem.DoInit()
 
@@ -1420,15 +1420,14 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             ExternTable.Add(chdirextern)
         Endif
 
+        For Each sinsert As String In CompilerDirectiveTable
+            ProgPart1 &= sInsert & "\n"
+        Next
         ' If Component.IsLoaded("westwood.sharedmem") Then
         '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
         ' Else If Component.IsLoaded("sharedmem") Then
         '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
         ' Endif
-
-        For Each sinsert As String In CompilerDirectiveTable
-            ProgPart1 &= sInsert & "\n"
-        Next
 
         ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\",\"gb.signal\""
 
@@ -1451,14 +1450,18 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         CompilerDirectiveTable.Clear()
 
         Program = ProgPart1 & Program
-        Program &= "Public sub application_signal(sigtype as integer)\nif sigtype = 2 then\n' print \"Task Exit forced\"\n quit 0\nendif \nend\n"
+        Program &= "Public sub application_signal(sigtype as integer)\nif sigtype = 2 then\n'print \"Task Exit forced\"\n"
+            "quit 0\nelse\n'Error \"Some other signal hit :\";sigtype\nendif \nend\n"
         If bSingleUse Then
             Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\n signal[2].catch\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
         Else
-            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\n signal[2].catch\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nsignal[2].catch\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
         Endif
         Program &= ExecBuffer
-        Program &= "end with\nSharedMem.end()\nquit process.lastvalue\nCatch\nError \"gsh error:\" & error.text \nquit 2\nend\n"
+        ' temp remove quit with value, it really needs it though
+        Program &= "end with\nSharedMem.end()\n'error \"end of script\";;process.lastvalue\nsignal[2].reset\n"
+            "quit process.lastvalue\nCatch\n"
+            "Error \"Gsh error in script:\" & quote(error.text);;\"Where :\";error.where\nquit 2\nend\n"
         'SharedMem["execprog"] = ExecBuffer
         If Not CompileOnly Then
             Dim ScriptName As String = Temp("gsh_") & ".gsh"
@@ -1470,10 +1473,10 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             SharedMem.prevexecprog = SharedMem.execprog
             SharedMem.execprog = "Executed on :" & Str(Now) & "\n" & ExecProg
 
-            If TraceLevel >= 20 Then
-                File.Save(user.home & "/vars/ExecProg.gbs", program)
-                Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
-            Endif
+            'If TraceLevel >= 20 Then
+            File.Save(user.home & "/vars/ExecProg.gbs", program)
+            Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
+            'Endif
 
             If gbscomponent And If Not NoWait Then
                 If jobctl Then RunningProcessStart = Now
@@ -1521,7 +1524,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                             If Not IsNumber(errline) Then
                                 Error CompileResult
                             Else
-                                Error "gsh Error :";;
+                                Error "Gsh Error in "; ScriptName;; ":";;
                                 For ii As Integer = 4 To errtemp.max
                                     Print errtemp[ii];;
                                 Next
@@ -3280,8 +3283,8 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
         syms[0] = "'" & syms[0]
     Endif
 
-    If syms.count >= 1 And syms.count <= 2 And syms[0] = "FAST" Then
-        If syms.count = 1 Or If syms[1] = "UNSAFE" Then
+    If syms.count >= 1 And syms.count <= 2 And syms[0] == "FAST" Then
+        If syms.count = 1 Or If syms[1] == "UNSAFE" Then
             If Not CompilerDirectiveTable.exist(InVar) Then
                 CompilerDirectiveTable.Add(InVar)
                 Return "'" & InVar

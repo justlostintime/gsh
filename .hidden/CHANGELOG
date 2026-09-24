@@ -1,4 +1,7 @@
 * Wed Sep 23 2026 Brian G <justlostintime@gmail.com> 1.7.2
+- fix compiler directives being ignored
+
+* Wed Sep 23 2026 Brian G <justlostintime@gmail.com> 1.7.2
 
 * Wed Sep 23 2026 Brian G <justlostintime@gmail.com> 1.7.2
 - Added new function lscripts to list all gsh scripts and locations from the scriptpath

@@ -1,0 +1,155 @@
+#!/usr/bin/env gsh
+
+for o as integer = 0 to 10 
+error  "count =";o
+
+'Begin
+with sharedmem
+
+print "Test for simple numeric expansion"
+for each i as variant in $"0..10"
+  print i;;
+  echo {i}
+next
+print "\n************************************************************************************"
+
+print "test for alphnumeric expansion"
+for each i as variant in $"a..z"
+  print i;;
+  echo {i}
+next
+print "\n************************************************************************************"
+
+print "Test for complex expansion"
+for each i as variant in $"mTemp{0..10}dogs"
+  print i;;
+  echo {i}
+next
+print "\n************************************************************************************"
+
+print "Test for simple filename expansion"
+for each i as variant in $"~/*"
+  print i;;
+  echo {i}
+next
+print "\n************************************************************************************"
+
+print "Test for simple filename expansion with globstar and **"
+.globstar = true
+for each i as variant in $"~/vars/**"
+  print i;;
+  echo {i}
+next
+print "\n************************************************************************************"
+.globstar = false
+
+print "Test for simple filename expansion with globstar = false and **"
+.globstar = false
+for each i as variant in $"~/vars/**"
+  print i;;
+  echo {i}
+next
+
+print "\n************************************************************************************"
+
+print "Test for simple pipe fitting"
+ls ~/vars | cat | tr [a-z] [A-Z] | cat
+print "\n************************************************************************************"
+
+Print "Test execution control &&"
+ls && ls / && ls /usr
+print "\n************************************************************************************"
+
+print "Test execution control ||"
+ls /dfgdgd || echo "Directory not found"
+print "\n************************************************************************************"
+
+print "Test Pipe fitting to multiple tasks"
+ls / |> cat | tr [a-z] [A-Z]
+print "\n************************************************************************************"
+
+print "Test Pipe fitting from multiple tasks"
+ls / | cat |< ls /usr |< ls ~/vars | tr [a-z] [A-Z]
+print "\n************************************************************************************"
+
+print "Test redirected output to a variable"
+
+public lsout as string = ""
+ls / > lsout
+print "\n Redirected to a variable \n";;lsout
+
+print "\n************************************************************************************"
+
+print "Test redirected output to a file"
+ls /usr > ./testout
+print "\n Redirected to a local file \n";;file.load(expandfn("./testout"))
+print "\n************************************************************************************"
+
+Print "Test Execution of a variable content as a program
+.j = "Print quote(\"Hello Var Execution test\")"
+'?? @j
+print "\n************************************************************************************"
+
+Print "Test all the cli parameters possible"
+echo "Echo ->" $# $$ $! $UID $GID $*
+print "Print ->";; $# ;;$$ ;;$!;; $UID;; $GID
+print "\n************************************************************************************"
+
+Print "Test Enumeration"
+
+print "lprint(enumerate(\"/home/brian/tmp/*{0..9}*\"))"
+lprint(enumerate("/home/brian/tmp/*{0..9}*"))
+
+print "lprint(enumerate(\"dshsdahdhsd,asddasd,adsasdd,asdasdasd\"))"
+lprint(enumerate("dshsdahdhsd,asddasd,adsasdd,asdasdasd"))
+
+print "lprint(getenum(\"1..10\"))"
+lprint(enumerate("1..10"))
+
+print "lprint(getenum(\"10..1\"))"
+lprint(enumerate("10..1"))
+lprint(enumerate("this{10..1}over"))
+
+print "lprint(enumerate(\"{10..1}\"))"
+lprint(enumerate("{10..1}"))
+
+print "lprint(enumerate(\"{10..1}over\"))"
+lprint(enumerate("{10..1}over"))
+
+print "lprint(enumerate(\"this{10..1}\"))"
+lprint(enumerate("this{10..1}"))
+
+print "lprint(enumerate(\"this{that, 10..1, c{a..y}}\"))"
+lprint(enumerate("this{that,10..1,c{a..y}}"))
+
+print "lprint(enumerate(Application.name & \"this{that, 10..1, c{a..y}}{6..9}\"))"
+lprint(enumerate(Application.name & "this{that,10..1,c{a..y}}{6..9}"))
+
+print "lprint(enumerate(Application.name & \"this{that, 10..1, c{a..y}}XXX{6..9}\"))"
+lprint(enumerate(Application.name & "this{that,10..1,c{a..y}}XXX{6..9}"))
+
+print "lprint(enumerate(Application.name & \"this{that, 10..1, c{a..y}}XXX{6..9}-a\" & Space(5) & \"o\"))"
+lprint(enumerate(Application.name & "this{that,10..1,c{a..y}}XXX{6..9}-a" & Space(5) & "o"))
+
+print "lprint $\"this{that,10..1,c{a..y}}XXX{6..9}-a\")"
+lprint($"this{that,10..1,c{a..y}}XXX{6..9}-a")
+
+print "\n*****************************************************************************************"
+Print "Test Back ticks"
+print `quote(user.name)`
+print  application.id;;
+print  `application.id`
+
+Print "\n****************************************************************************************"
+print "Test Redirection"
+ls > ~/vars/gshtest.log
+ls ~xxxxxvvvvvv &>> ~/vars/gshtest.log
+
+end with
+print "End of Loop"
+
+'end
+next
+
+$p = "print \"hello\""
+print "done"
