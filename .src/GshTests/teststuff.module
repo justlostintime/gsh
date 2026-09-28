@@ -1,7 +1,7 @@
 ' Gambas module file
 
 'Extern chdir(path As String) As Integer In "libc:6"
-Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Use "/usr/lib/gambas3/westwood/sharedmem:3.22-3.22.gambas"
 Class Sharedmem
 Class Sharedclass
 
@@ -14,6 +14,7 @@ Public Sub Main()
     Dim s As String = "float@ @{ }\"#'application.name'\" assdf #[\"this stuff\"] @[\"more stuff\"] integer@ @bogus >> > <> !! !> &> ^ mod"
     Dim sl As String[] = Highlight.Analyze(s)
     Dim i As Integer = 0
+    Dim sym As String
 
     For Each p As String In sl
         Print p; " = "; Highlight.Types[i]
@@ -24,15 +25,15 @@ Public Sub Main()
 
     o = Classes["String[]"].New()
     Print "component :";
-    For Each sym As String In Classes["component"].symbols
+    For Each sym In Classes["component"].symbols
         Print sym;;
     Next
     Print "\nclass :";
-    For Each sym As String In Classes["class"].symbols
+    For Each sym In Classes["class"].symbols
         Print sym;;
     Next
     Print "\nteststuff :";
-    For Each sym As String In Classes["teststuff"].symbols
+    For Each sym In Classes["teststuff"].symbols
         Print sym;;
     Next
     Print

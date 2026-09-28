@@ -3,57 +3,57 @@
 ' test commit too
 ' Gambas module
 ' change
-Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Use ":westwood/sharedmem:3.22"
 Class Sharedmem
 
 Public Sub rr_Read()
 
-  Dim sLine As String
+    Dim sLine As String
 
-  Read #Last, sLine, -256
-  SharedMem["r"] &= sLine
-  'Print "Read ="; SharedMem["r"];
-  'If Right(SharedMem["r"], 4) = "quit" Then mmProc.kill
+    Read #Last, sLine, -256
+    SharedMem["r"] &= sLine
+    'Print "Read ="; SharedMem["r"];
+    'If Right(SharedMem["r"], 4) = "quit" Then mmProc.kill
 
 End
 
 Public Sub rr_Kill()
 
-  Print "Test command Killed"
+    Print "Test command Killed"
 
 End
 
 Public Sub rr_error(merror As String)
 
-  Print "Error = "; merror
+    Print "Error = "; merror
 
 End
 
 Public Sub main()
 
-  Dim mmProc As Process
+    Dim mmProc As Process
 
-  With sharedmem
-    .BeginNamed("briangsh", 1512000)
+    With sharedmem
+        .BeginNamed("briangsh", 1512000)
 
-    .["r"] = ""
+        .["r"] = ""
 
-    mmProc = Exec ["cc", "xcv"] For Write As "rr"
+        mmProc = Exec ["cc", "xcv"] For Write As "rr"
 
-    .["f"] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nccccccccccccccccccccccccccccccccccccc\n"
-    Write #mmproc, .f
-    Write #mmProc, "quit\n"
-    Wait 2
-    mmProc.kill()
+        .["f"] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\nccccccccccccccccccccccccccccccccccccc\n"
+        Write #mmproc, .f
+        Write #mmProc, "quit\n"
+        Wait 2
+        mmProc.kill()
 
-    While mmproc.state = process.Running
-      Wait 0
-    Wend
+        While mmproc.state = process.Running
+            Wait 0
+        Wend
 
-    Print "recieved - \n"; .r; "\nEnd Recieve"
+        Print "recieved - \n"; .r; "\nEnd Recieve"
 
-    .end()
+        .end()
 
-  End With
+    End With
 
 End

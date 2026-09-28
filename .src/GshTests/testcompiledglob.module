@@ -1,8 +1,6 @@
 ' Gambas module file
 
 Extern chdir(Dest As String) As Integer In "libc:6"
-Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
-Class Sharedmem
 
 Public Struct glob_t   'The structure definition used by the glob system function
     ''          Some size_t functions are implemented as prointer as size_t
@@ -40,7 +38,7 @@ End
 Public lastchk As Boolean
 
 Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant  ' process a text value with enumeration
-    '' Will return an enumerated text vale as an array of string values
+    '' Will return an enumerated text value as an array of string values
     '' much like the bash braced enumeration
     ' If value Not Like "*\\{*\\}*" Or If value Not Like "*[\\*~\\/]*" Or If value Not Like "*{./}*" Or If value <> "." Then
     '     Return IIf(CheckOnly = True, False, Null)
@@ -60,11 +58,15 @@ Sub enumerate(value As String, Optional CheckOnly As Boolean = False) As Variant
             IntermResults.Insert(firstset)
         Else
             For Each sGlob As String In FirstSet
-                IntermResults.Insert(fileexpand(sGlob))
+                Dim a As Variant = fileexpand(sGlob)
+                If Not IsNull(a) Then IntermResults.Insert(a)
             Next
         Endif
     Next
     Return IntermResults
+Catch
+    Print Error.text
+    Return []
 
 End
 
@@ -167,80 +169,78 @@ Sub fprint(filename As Variant, ...) As Boolean  ' print anything to a file
 
     Dim vParms As Variant[]
     Dim mFile As Variant
+    Dim s As String
 
-    With sharedmem
-        If TypeOf(filename) = gb.string Then
-            If file.dir(filename) = "" Then
-                filename = user.home &/ "vars" &/ filename
-            Endif
-            Try mFile = Open filename For Write Create
-            If Error Then
-                .["result"] = error.text
-                Print #file.err, "fprint :"; error.text
-                Return False
-            Endif
-        Else
-            mFile = filename
+    If TypeOf(filename) = gb.string Then
+        If file.dir(filename) = "" Then
+            filename = user.home &/ "vars" &/ filename
         Endif
-        vParms = param.all
-        For Each v As Variant In vParms
-            Select Case TypeOf(v)
-                Case gb.object
-                    Select Case object.class(v).name
-                        Case "String[]"
-                            For Each s As String In v
-                                Print #mFile, s
-                            Next
-                        Case "Byte[]"
-                            v.write(mfile)
-                        Case "Variant[]"
-                            For Each vs As Variant In v
-                                fprint(mfile, vs)
-                            Next
-                        Case "Integer[]"
-                            For Each i As Variant In v
-                                Print #mFile, i;;
-                            Next
-                            Print #mfile
-                        Case "Collection"
-                            For Each vs In v
-                                'Print #mFile, v.key; "="; vs
-                                Print #mFile, Quote(v.Key);; ":";;
-                                fprint(mfile, vs)
-                            Next
-                        Case "Class"
-                            Print #mFile, "Class :"; v.name;; "Refs="; v.count
-                            Print "  Symbols :";
-                            For Each s As String In v.symbols
-                                Print #mFile, s;;
-                            Next
-                            Print #mFile
-                        Case "String"
-                            Print #mFile, v
-                        Default
-                            If object.class(v).exist("_print") Then
-                                v._print(mFile)
+        Try mFile = Open filename For Write Create
+        If Error Then
+            Print #file.err, "fprint :"; error.text
+            Return False
+        Endif
+    Else
+        mFile = filename
+    Endif
+    vParms = param.all
+    For Each v As Variant In vParms
+        Select Case TypeOf(v)
+            Case gb.object
+                Select Case object.class(v).name
+                    Case "String[]"
+                        For Each s In v
+                            Print #mFile, s
+                        Next
+                    Case "Byte[]"
+                        v.write(mfile)
+                    Case "Variant[]"
+                        For Each vs As Variant In v
+                            fprint(mfile, vs)
+                        Next
+                    Case "Integer[]"
+                        For Each i As Variant In v
+                            Print #mFile, i;;
+                        Next
+                        Print #mfile
+                    Case "Collection"
+                        For Each vs In v
+                            'Print #mFile, v.key; "="; vs
+                            Print #mFile, Quote(v.Key);; ":";;
+                            fprint(mfile, vs)
+                        Next
+                    Case "Class"
+                        Print #mFile, "Class :"; v.name;; "Refs="; v.count
+                        Print "  Symbols :";
+                        For Each s In v.symbols
+                            Print #mFile, s;;
+                        Next
+                        Print #mFile
+                    Case "String"
+                        Print #mFile, v
+                    Default
+                        If object.class(v).exist("_print") Then
+                            v._print(mFile)
+                        Else
+                            If object.class(v).exist("_write") Then
+                                v._write(mfile)
                             Else
-                                If object.class(v).exist("_write") Then
-                                    v._write(mfile)
-                                Else
-                                    Print #mFile, v;;
-                                Endif
+                                Print #mFile, v;;
                             Endif
-                    End Select
-                Case gb.class
-                    Print #mFile, "Class :"; v.name;; "Refs="; v.count
-                    Print #mFile, "  Symbols :";;
-                    For Each s As String In v.symbols
-                        Print #mFile, s;;
-                    Next
-                    Print #mFile
-                Default
-                    Print #mFile, v
-            End Select
-        Next
-        .["result"] = "OK"
-    End With
+                        Endif
+                End Select
+            Case gb.class
+                Print #mFile, "Class :"; v.name;; "Refs="; v.count
+                Print #mFile, "  Symbols :";;
+                For Each s In v.symbols
+                    Print #mFile, s;;
+                Next
+                Print #mFile
+            Default
+                Print #mFile, v
+        End Select
+    Next
+
     If TypeOf(filename) = gb.string Then Close mfile
     Return True
 
@@ -287,12 +287,12 @@ End  ' Gambas module file
 
 Public Sub Main()
 
-    enumerate("**", False)
+    Class.Load("glob_const")
+
+    ' Dim x As Variant = enumerate("**", False)
     Try chdir(env["PWD"])
-    SharedMem.BeginNamed("briangsh", 4512000)
-    With Sharedmem
-        lprint(enumerate("**", False))
-    End With
-    SharedMem.end()
+    lprint(enumerate("**", False))
+    'lprint(x)
+    Quit 0
 
 End

@@ -38,6 +38,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     Dim OutputList As New String[]
     Dim QuoteLevel As Integer = 0
     Dim OpenQuote As String
+    Dim i As Integer
 
     If inline = "" Then Return OutputList
 
@@ -238,7 +239,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
         Dim CurrentLine As Integer = 0
         Dim LastSegmentStart As Integer = 0
         Dim InSpecialSet As Integer = 0
-        Dim i As Integer = 0
+        i = 0
         Do
             If i >= p.syms.count Then Break
             If p.types[i] = Highlight.added
@@ -275,7 +276,7 @@ Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, Includ
     Else
         SpecialVariables(p.syms, p.types)
 
-        For i As Integer = 0 To p.syms.Max
+        For i = 0 To p.syms.Max
             If p.types[i] = Highlight.Symbol Then
                 If gsh.isLocalFunc(p.syms[i]) Then
                     p.types[i] = Highlight.Function          ' if it is a function it must be defined to at minimum output a string or to input a string or both

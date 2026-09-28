@@ -159,7 +159,7 @@ Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, Ret
 
     lines = Parser(Source, Null, True)
 
-    For i As Integer = 0 To lines.max
+    For i = 0 To lines.max
         If Lines[i] = "" Then Continue
         If i > 0 Then lines[i] = AliasReplace(lines[i])
         Select Case lines[i]

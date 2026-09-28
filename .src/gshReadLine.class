@@ -38,6 +38,7 @@ Private ReadLineVersion As Integer
 Public DoTrace As Boolean
 Public DefaultPrompt As String
 Public UserPrompt As String
+Property Read isTerminal As Boolean Use $isTerminal
 
 Public Sub _new(Optional sUserPrompt As String = Quote("$"), sDefaultPrompt As String = Quote("$"))
 
@@ -46,6 +47,7 @@ Public Sub _new(Optional sUserPrompt As String = Quote("$"), sDefaultPrompt As S
     ReadLineVersion = DetectReadLineVersion()
     DefaultPrompt = sDefaultPrompt
     UserPrompt = sUserPrompt
+    $isTerminal = File.In.IsTerm
 
 End
 
@@ -102,6 +104,8 @@ End
 
 Public Sub RewriteLineHighlighted(text As String, Optional NoHighlight As Boolean = False)
 
+    If Not $isTerminal Then Return
+
     gsh.ConsoleHighlight.CanRewrite = True
     Print "\e[1F\e[2K";                        ' reposition the cursor to begining of the line
     Flush
@@ -118,6 +122,8 @@ Public Sub WritePrompt(BlockIndent As String)
 
     Dim Prompt As String
     Dim retryloop As Integer = 2
+
+    If Not $isTerminal Then Return
 
 retryprompt:
     Wait 0
@@ -167,6 +173,12 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
         Wend
         sInput = Trim(sInput)
         If DoTrace Then Error "(Trace "; Now; ") ";; "Read line ="; sInput
+    Else If Not $isTerminal Then
+        If Not Eof(File.in) Then
+            Line Input #File.in, sInput
+        Else
+            Return "QUIT"
+        Endif
     Else
         Dim retryloop As Integer = 2
 retryprompt:

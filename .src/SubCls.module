@@ -108,7 +108,7 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
     End With
 
     ' Now add all "Use" lines from the source code
-    For Each sUse As String In gsh.usetable
+    For Each sUse In gsh.usetable
         sUse = UnQuote(sUse)
 
         cObject.bUSEIncluded = True

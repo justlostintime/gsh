@@ -1,26 +1,26 @@
 ' Gambas module file
 
-Use "/usr/lib/gambas3/westwood/sharedmem:3.19.gambas"
+Use ":westwood/sharedmem:3.22"
 Class Sharedmem
 
 Public Sub main()
 
-  Dim command As String = ""
+    Dim command As String = ""
 
-  SharedMem.Begin(1280000)
-  With sharedmem
-    ' the following is needed by the cmdprogram generator
-    .subspath = "~/vars/subs"
-    .classpath = "~/vars/class"
-    .structpath = "~/vars/structs"
+    SharedMem.Begin(1280000)
+    With sharedmem
+        ' the following is needed by the cmdprogram generator
+        .subspath = "~/vars/subs"
+        .classpath = "~/vars/class"
+        .structpath = "~/vars/structs"
 
-    While command <> "quit"
-      Line Input command
-      'Dim a As String = "Bye Bye Birdy &1"
-      'command = "echo  \"hello\" {a} {subst(a,\"100\")}"
-      Print CreateCmdProgram(command)
-    Wend
-    SharedMem.end()
-  End With
+        While command <> "quit"
+            Line Input command
+            'Dim a As String = "Bye Bye Birdy &1"
+            'command = "echo  \"hello\" {a} {subst(a,\"100\")}"
+            Print CreateCmdProgram(command)
+        Wend
+        SharedMem.end()
+    End With
 
 End

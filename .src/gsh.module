@@ -562,6 +562,7 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
     Dim proc As String = ""
     Dim FinalProgram As String = ""
     Dim ExtraClasses As New Collection
+    Dim sinsert As String
 
     proc = PreProcBuffer(buffer, False, True)
     If IsNull(proc) Then Return False
@@ -589,11 +590,11 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
         linktable.Remove(linktable.first)
     Wend
 
-    For Each sinsert As String In CompilerDirectiveTable
+    For Each sinsert In CompilerDirectiveTable
         FinalProgram &= sInsert & "\n"
     Next
 
-    For Each sinsert As String In StructTable
+    For Each sinsert In StructTable
         FinalProgram &= sInsert & "\n"
     Next
 
@@ -953,13 +954,14 @@ Public Sub Main()
     Endif
 
     getline = New GshReadLine
+
     If TraceLevel > 0 Then
         DoTrace = True
         SharedMem["DoTrace"] = DoTrace
     Endif
 
     ' Then assume it is an interactive session
-    If Not bDbaseServer Then ' dont do this if in service mode
+    If bDbaseServer = False And If getline.isTerminal Then ' dont do this if in service mode
 
         onstartrcdate = Stat(User.home &/ "vars/subs/onstart").lastmodified
         If Not SharedMem.exist("onstartrcdate") Then SharedMem["onstartrcdate"] = ""
@@ -1066,7 +1068,7 @@ interactive:
             Endif
         Endif
 
-        If Not bDbaseServer Then settitle()
+        If Not bDbaseServer And If getline.isTerminal Then settitle()
 
         Try chdir(Env["PWD"])
         If Error Then Error Error.Text
@@ -1075,7 +1077,7 @@ interactive:
 
     Wend
 
-    If Not bDbaseServer Then execlocal(["onexit()"])
+    If Not bDbaseServer And If getline.isTerminal Then execlocal(["onexit()"])
     Wait 0.001
     '  Signal.send(0, Signal.SigKill)
     ExitProgram()
@@ -1306,8 +1308,8 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     Dim Program As String = ""
     Dim ProgPart1 As String = ""
     Dim AlreadyLinked As String[]
+    Dim sinsert As String
     'Dim prop As String
-    Dim sInsert As String
     ' Dim ProjectDirectory As String
     Dim eCmd As String[]
     Dim execline As String
@@ -1420,7 +1422,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             ExternTable.Add(chdirextern)
         Endif
 
-        For Each sinsert As String In CompilerDirectiveTable
+        For Each sinsert In CompilerDirectiveTable
             ProgPart1 &= sInsert & "\n"
         Next
         ' If Component.IsLoaded("westwood.sharedmem") Then
@@ -1429,7 +1431,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
         ' Endif
 
-        ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\",\"gb.signal\""
+        ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\":westwood/sharedmem:3\",\"gb.signal\""
 
         For Each sinsert In UseTable
             ProgPart1 &= "," & sinsert
@@ -1883,6 +1885,7 @@ End
 Public Sub Reader(EndBlk As String[]) As String
 
     Dim sInBuffer As String = ""
+    Dim detest As String
 
     If DoTrace Then Error "(Trace "; Now; ") ";; "Source input="; source
     If ReadQueue.count = 0 Then
@@ -1938,7 +1941,7 @@ Public Sub Reader(EndBlk As String[]) As String
                 Dim tmps As String[] = Split(sInBuffer, " ", "\"", False, True)
                 If tmps.exist("!!") Then
                     sinbuffer = ""
-                    For Each detest As String In tmps
+                    For Each detest In tmps
                         If detest = "!!" Then
                             detest = SharedMem["history"][SharedMem["historycurrent"] - 1]
                         Endif
@@ -1964,7 +1967,7 @@ Public Sub Reader(EndBlk As String[]) As String
                 tmps = Split(sInBuffer, " ", "\"", False, True)
                 If tmps.exist("!!") Then
                     sinbuffer = ""
-                    For Each detest As String In tmps
+                    For Each detest In tmps
                         If detest = "!!" Then
                             detest = SharedMem["history"][SharedMem["historycurrent"] - 1]
                         Endif
@@ -2036,7 +2039,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                     Original = InBuffer
                 Endif
 
-                For i As Integer = 1 To InList.Max
+                For i = 1 To InList.Max
                     If InList[i] <> ":;" Then
                         ReadQueue.Add(InList[i], 0)
                         If .usehighlight Then
@@ -2050,15 +2053,15 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
             Endif
 
             If source = "STDIN" And If NotbufferRead Then
-                If .usehighlight Then getline.RewriteLineHighlighted(original, True)
-                If Not .usehighlight Then Print
+                If .usehighlight And If getline.isTerminal Then getline.RewriteLineHighlighted(original, True)
+                If Not .usehighlight And If getline.isTerminal Then Print
             Endif
 
         Else
             If source = "STDIN" And If NotbufferRead Then
-                If .usehighlight Then
+                If .usehighlight And If getline.isTerminal Then
                     getline.RewriteLineHighlighted(original)
-                Else
+                Else If getline.isTerminal Then
                     getline.RewriteLineHighlighted(original, True)
                     Print
                 Endif
@@ -2100,7 +2103,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
         If InBufParse.max >= EndBlk.max Then
             Dim Truth As Integer = 0
-            For i As Integer = 0 To EndBlk.max
+            For i = 0 To EndBlk.max
                 ''debug "Compare for endblock "; inbufparse[i]; " to "; Endblk[i]
                 If Upper(InBufParse[i]) <> EndBlk[i] Then
                     Break
@@ -2671,6 +2674,7 @@ Sub editanything(funclass As String) As Boolean
     ' Dim cvLine As String
     '  Dim cvLineSet As String[]
     Dim cvString As Variant
+    Dim s As Variant
 
     If funclass <> "" Then
         If funclass Like "sub.*" Or If funclass Like "class.*" Or If funclass Like "struct.*" Then cvString = Trim(cvString)
@@ -2723,7 +2727,7 @@ Sub editanything(funclass As String) As Boolean
 
                     Case "Boolean[]"
                         cvBufferString = ""
-                        For Each s As Variant In cvString
+                        For Each s In cvString
                             cvBufferString &= IIf(s, "True", "False") & "\n"
                         Next
                         cvBufferString = editbuffer(cvBufferString)
@@ -2738,7 +2742,7 @@ Sub editanything(funclass As String) As Boolean
 
                     Case "Integer[]", "Long[]", "Float[]", "Short[]", "Date[]"
                         cvBufferString = ""
-                        For Each s As Variant In cvString
+                        For Each s In cvString
                             cvBufferString &= Str(s) & "\n"
                         Next
                         cvBufferString = editbuffer(cvBufferString)
@@ -3002,12 +3006,11 @@ Public Sub DoBlock(EndBlk As String[])
         Dec BlockLevel
         'should Not Do this If reading From buffer
 
-        If .usehighlight And If VarCommandSource = "" And If NotBufferRead Then
-            'Print "\e[1A";
+        If .usehighlight And If VarCommandSource = "" And If NotBufferRead And If getline.isTerminal Then
             getline.RewriteLineHighlighted(Lower(inBuffer))
             Print
             'debug "Exit DOBLK"
-        Else If VarCommandSource = "" And If NotBufferRead Then
+        Else If VarCommandSource = "" And If NotBufferRead And If getline.isterminal Then
             getline.RewriteLineHighlighted(Lower(inBuffer), True)
             Print
         Endif
@@ -3163,7 +3166,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
     Dim InBrace As Integer = 0
     Dim interface As New String[]
     Dim GotMin As Boolean = False
-    For Each si As String In interfaceDef
+    For Each si In interfaceDef
         If si = "(" Then
             Inc Inbrace
             Continue

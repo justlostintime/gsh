@@ -2,7 +2,7 @@
 
 '#!/usr/bin/gbs3
 Extern chdir(Dest As String) As Integer In "libc:6"
-Use "/usr/lib/gambas3/westwood/sharedmem:3"
+Use "/usr/lib/gambas3/westwood/sharedmem:3.22-3.22.gambas"
 Class Sharedmem
 
 Private cmdBuild As New String[]
@@ -17,6 +17,7 @@ Sub ToStringArray(sResult As String[], ...)  'Change anything to string[]
     ''          result contains the error text or "OK"
 
     Dim vParms As Variant[]
+    Dim s As String
 
     With sharedmem
         vParms = param.all
@@ -46,7 +47,7 @@ Sub ToStringArray(sResult As String[], ...)  'Change anything to string[]
                         Case "Class"
                             sresult.add("Class:" & v.name)
                             sresult.add("Refs:" & v.count)
-                            For Each s As String In v.symbols
+                            For Each s In v.symbols
                                 sResult.add("Symbol:" & s)
                             Next
                             sResult.add("End Class")
@@ -62,7 +63,7 @@ Sub ToStringArray(sResult As String[], ...)  'Change anything to string[]
                 Case gb.class
                     sresult.add("Class:" & v.name)
                     sresult.add("Refs:" & v.count)
-                    For Each s As String In v.symbols
+                    For Each s In v.symbols
                         sResult.add("Symbol:" & s)
                     Next
                     sResult.add("End Class")

@@ -344,6 +344,7 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
     Dim mproc As Process
     'Dim ch As New ConsoleHighlight
     Dim ch As TextHighlighter = TextHighlighter["gambas"]
+    Dim s As String
 
     helpfromhtml = ""
     If Not System.Exist("html2text") Then
@@ -378,7 +379,7 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
 
     tmps = Replace(helpfromhtml, "&#x27;", "'")
     atmps = Split(Replace(tmps, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
-    For Each s As String In aTmps
+    For Each s In aTmps
         If Left(s, 4) = "****" Then
             If secName <> "" Then
                 Sections.Add(secBuf, secName)
@@ -424,7 +425,7 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
     ' Endif
 
     HelpFromHtml = "NAME\n"
-    For Each s As String In SectionIndex
+    For Each s In SectionIndex
         HelpFromHtml &= s & "\n"
         If s Like "Example" Or If s Like "Examples" Then
             ' HelpFromHtml &= ch.ToConsole(Sections[Replace(s, " ", "")])
