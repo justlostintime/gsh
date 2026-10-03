@@ -5,6 +5,6 @@
 'Keymap vi_movement_map = rl_get_keymap_by_name("vi-movement");
 '/ / How it links the 'v' key to that function in vi command mode
 'rl_bind_key_in_map('v', vi_edit_and_execute_command, vi_movement_keymap);
-
+'once more
 
 
