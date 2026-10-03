@@ -2,49 +2,44 @@
 
 Export
 Class SharedMem
+Class GshReadLineVars
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
-'Extern rl_redisplay() In "libreadline:8"
-'Extern rl_insert_text(text As String) As Integer In "libreadline:8"
-'Extern rl_forced_update_display() As Integer In "libreadline:8"
-'Extern rl_function_dumper(readable As Integer) In "libreadline:8"
+Extern strncpy(dest As Pointer, src As String, len As Integer) As Pointer In "libc:6"
 
-Extern c9_using_history() In "libreadline:9" Exec "using_history"
-Extern c9_readline(prompt As String) As Pointer In "libreadline:9" Exec "readline"
-Extern c9_add_history(Item As String) In "libreadline:9" Exec "add_history"
-Extern c9_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:9" Exec "history_expand"
+' Read line function must be imported
+Extern rl_bind_key_in_map(mchar As Integer, func As Pointer, keymap As Pointer) In "libreadline"
+Extern rl_get_keymap_by_name(mapname As String) As Pointer In "libreadline"
+Extern rl_get_keymap() As Pointer In "libreadline"
+Extern using_history() In "libreadline"
+Extern readline(prompt As String) As Pointer In "libreadline"
+Extern add_history(Item As String) In "libreadline:8"
+Extern history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline"
+Extern rl_initialize() In "libreadline"
+Extern rl_resize_terminal() In "libreadline"
+Extern rl_add_defun(entry As String, func As Pointer, parm As Integer) In "libreadline"
+Extern rl_copy_text(iStart As Integer, iEnd As Integer) As Pointer In "libreadline"
+Extern rl_bind_keyseq(seq As String, rl_command_func_t As Pointer) As Integer In "libreadline"
+Extern rl_replace_line(new_buffer As String, start As Integer) In "libreadline"
+Extern rl_delete_text(Start As Integer, end As Integer) In "libreadline"
+Extern rl_redisplay() In "libreadline"
+Extern rl_insert_text(text As String) As Integer In "libreadline"
+Extern rl_forced_update_display() As Integer In "libreadline"
+Extern rl_function_dumper(readable As Integer) In "libreadline"
 
-Extern c8_using_history() In "libreadline:8" Exec "using_history"
-Extern c8_readline(prompt As String) As Pointer In "libreadline:8" Exec "readline"
-Extern c8_add_history(Item As String) In "libreadline:8" Exec "add_history"
-Extern c8_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:8" Exec "history_expand"
-
-Extern c7_using_history() In "libreadline:7" Exec "using_history"
-Extern c7_readline(prompt As String) As Pointer In "libreadline:7" Exec "readline"
-Extern c7_add_history(Item As String) In "libreadline:7" Exec "add_history"
-Extern c7_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:7" Exec "history_expand"
-
-Extern c6_using_history() In "libreadline:6" Exec "using_history"
-Extern c6_readline(prompt As String) As Pointer In "libreadline:6" Exec "readline"
-Extern c6_add_history(Item As String) In "libreadline:6" Exec "add_history"
-Extern c6_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:6" Exec "history_expand"
-
-Extern c5_using_history() In "libreadline:5" Exec "using_history"
-Extern c5_readline(prompt As String) As Pointer In "libreadline:5" Exec "readline"
-Extern c5_add_history(Item As String) In "libreadline:5" Exec "add_history"
-Extern c5_history_expand(Item As Pointer, Expansion As Pointer) As Integer In "libreadline:5" Exec "history_expand"
-
-Private ReadLineVersion As Integer
 Public DoTrace As Boolean
 Public DefaultPrompt As String
 Public UserPrompt As String
+Public Queue As New String[]
+
 Property Read isTerminal As Boolean Use $isTerminal
+Property rl_var As Rlvars Use $rl_var
 
 Public Sub _new(Optional sUserPrompt As String = Quote("$"), sDefaultPrompt As String = Quote("$"))
 
     DoTrace = False
-    ReadLineVersion = -1
-    ReadLineVersion = DetectReadLineVersion()
+    $rl_var = New Rlvars
+    SetVEdit()
     DefaultPrompt = sDefaultPrompt
     UserPrompt = sUserPrompt
     $isTerminal = File.In.IsTerm
@@ -57,50 +52,6 @@ Public Sub Trace(onoff As Boolean)
 
 End
 
-Private Sub DetectReadlineVersion() As Integer
-
-    'rl_function_dumper(1)
-
-    Try c9_using_history()
-    If Not Error Then Return 9
-    Try c8_using_history()
-    If Not Error Then Return 8
-    Try c7_using_history()
-    If Not Error Then Return 7
-    Try c6_using_history()
-    If Not Error Then Return 6
-    Try c5_using_history()
-    If Not Error Then Return 5
-
-    Return 4
-
-End
-
-Public Sub add_history(data As String)
-
-    If readlineversion = -1 Then
-        readlineversion = DetectReadlineVersion()
-    Endif
-
-    Select Case ReadLineVersion
-        Case 9
-            Try c9_using_history()
-            c9_add_history(data)
-        Case 8
-            Try c8_using_history()
-            c8_add_history(data)
-        Case 7
-            Try c7_using_history()
-            c7_add_history(data)
-        Case 6
-            Try c6_using_history()
-            c6_add_history(data)
-        Case 5
-            Try c5_using_history()
-            c5_add_history(data)
-    End Select
-
-End
 
 Public Sub RewriteLineHighlighted(text As String, Optional NoHighlight As Boolean = False)
 
@@ -149,6 +100,15 @@ retryprompt:
 
 End
 
+Public Sub gsh_add_history(text As String)
+
+    Try using_history()
+    add_history(text)
+
+End
+
+
+
 
 Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = False) As String
 
@@ -184,69 +144,49 @@ Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = 
 retryprompt:
         Wait 0
         If DoTrace Then Error ("Trying to read from terminal")
-        If retryloop = 0 Then
-            Error ("Unable to evaluate any prompt type using ' $ '")
-            prompt = " $ "
+        If Queue.count = 0 Then
+            If retryloop = 0 Then
+                Error ("Unable to evaluate any prompt type using ' $ '")
+                prompt = " $ "
+            Else
+
+                'Debug Line * * * *
+                'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
+
+                Try prompt = Eval(userprompt)
+                If Error Then
+                    userprompt = DefaultPrompt
+                    Dec retryloop
+                    Goto retryprompt
+                Endif
+            Endif
+
+            If DoTrace Then Error ("Reading From Readline Version");; $rl_var!rl_library_version
+            ' SetBlockIndent()
+            If gsh.BlockLevel = 0 Then    ' reach out to the gsh class to see what block level we are reading
+                Print "\n";                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
+                Flush                       ' Make sure it is printed
+            Endif
+            pinput = readline(Prompt & BlockIndent & "\x00")
+
+            If Queue.count = 0 Then ' we did not used the edit function
+                If IsNull(pinput) Then Return "QUIT"
+
+                sInput = Trim(gsh_history_expand(pinput))
+
+                If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
+
+                rFree(pInput)
+            Endif
         Else
-
-            'Debug Line * * * *
-            'Print "starting "; Eval("CDate(Now) & \" > \"");; Eval(tprompt);; Eval(userprompt);; " try prompt "
-
-            Try prompt = Eval(userprompt)
-            If Error Then
-                userprompt = DefaultPrompt
-                Dec retryloop
-                Goto retryprompt
-            Endif
+            sInput = Trim(gsh_history_expand(Queue.Pop()))
+            Print sInput
         Endif
 
-        If DoTrace Then Error ("Reading From Readline Version");; readlineversion
-        ' SetBlockIndent()
-        If gsh.BlockLevel = 0 Then    ' reach out to the gsh class to see what block level we are reading
-            Print "\n";                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
-            Flush                       ' Make sure it is printed
+        If sInput <> "" Then
+            gsh_add_history(sInput)
         Endif
-        Select Case ReadLineVersion
-            Case 9
-                pinput = c9_readline(Prompt & BlockIndent & "\x00")
-            Case 8
-                pinput = c8_readline(Prompt & BlockIndent & "\x00")
-            Case 7
-                pinput = c7_readline(prompt & BlockIndent & "\x00")
-            Case 6
-                pinput = c6_readline(prompt & BlockIndent & "\x00")
-            Case 5
-                pinput = c5_readline(prompt & BlockIndent & "\x00")
-            Default
-                Error Prompt; "%"; BlockIndent;                 ' Use input line as we cant find readline unix version
-                Flush #File.err
-                Line Input sInput
-                sInput = Trim(sInput)
-        End Select
 
-        If ReadlineVersion > 4 Then
-
-            If IsNull(pinput) Then Return "QUIT"
-
-            sInput = Trim(history_expand(pinput))
-
-            If DoTrace Then Error "(Trace "; Now; ") ";; "Readline Input ="; String@(pinput)
-
-            ' sInput = String(1, String@(pInput)) ' do this to force a copy of the string to our data segment
-
-            '  rl_insert_text("Thats it")
-            '  rl_redisplay()
-            '  rl_forced_update_display()
-
-            rFree(pInput)
-            ' sInput = Trim(sInput)
-
-            If sInput <> "" Then
-                'sInput = history_expand(sInput)
-                add_history(sInput)
-            Endif
-
-        Endif
         If DoTrace Then Error ("Readline Complete")
     Endif
 
@@ -259,7 +199,7 @@ Catch
 
 End
 
-Private Sub history_expand(data As Pointer) As String
+Private Sub gsh_history_expand(data As Pointer) As String
 
     Dim pExpansion As Pointer = 0
     Dim Result As Integer = 0
@@ -267,18 +207,8 @@ Private Sub history_expand(data As Pointer) As String
 
     If SharedMem["history_expand"] = False Then Return NewData
 
-    Select Case ReadLineVersion
-        Case 9
-            Result = c9_history_expand(data, VarPtr(pExpansion))
-        Case 8
-            Result = c8_history_expand(data, VarPtr(pExpansion))
-        Case 7
-            Result = c7_history_expand(data, VarPtr(pExpansion))
-        Case 6
-            Result = c6_history_expand(data, VarPtr(pExpansion))
-        Case 5
-            Result = c5_history_expand(data, VarPtr(pExpansion))
-    End Select
+    Result = history_expand(data, VarPtr(pExpansion))
+
     If Result = 1 Or If Result = 0 Then
         NewData = String(1, String@(pExpansion))              ' do this to force a copy of the string to our data segment
         rFree(pExpansion)
@@ -288,5 +218,54 @@ Private Sub history_expand(data As Pointer) As String
 
 Catch
     Error.Propagate()
+
+End
+
+Public Sub SetVEdit()
+
+    Dim keymap As Pointer
+
+    rl_initialize()
+
+    keymap = rl_get_keymap_by_name("vi-command")
+    If Not IsNull(keymap) Then
+        rl_bind_key_in_map(Asc("v"), myedit, keymap)
+    Endif
+
+End
+
+Public Sub myedit(count As Integer, key As Integer) As Integer
+
+    Debug "myedit ";; count;; key
+    Dim NewBuffer As String[]
+
+    newBuffer = Split(readlineopenedit($rl_var!rl_line_buffer), "\n", "\"", True, True)
+
+    rl_delete_text(0, $rl_var!rl_end)
+    $Rl_var!rl_done = 1
+
+    If NewBuffer.count > 1 Then
+        For i As Integer = newBuffer.max DownTo 0
+            Queue.Push(newBuffer[i])
+        Next
+    Endif
+
+    Return 0
+
+End
+
+Public Sub readlineopenedit(text As String) As String
+
+    Dim edit As String
+    Dim filename As String = Temp("myedit")
+
+    File.Save(filename, text)
+    Try edit = Env["EDITOR"]
+    If Error Or If edit = "" Then
+        edit = "/usr/bin/vi"
+    Endif
+    Exec [edit, filename] Wait
+    text = File.Load(filename)
+    Return text
 
 End

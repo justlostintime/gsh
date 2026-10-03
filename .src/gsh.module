@@ -8,6 +8,7 @@ Class Script
 Class ScriptCompileErrors
 Class CompileErrorMsg
 Class TextHighlighter
+Class Rlvars
 
 Property Read gshref As Object Use $gshref
 Property Read sharedmemlib As String Use $sharedmemlib
@@ -22,7 +23,7 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
     "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
     "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
-    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdfont", "usehighlight"]
+    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdfont", "usehighlight", "scriptpath", "#newvar", "notifylist"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
@@ -98,7 +99,6 @@ Public LocalRunning As Boolean = False
 Private gshrcdate As Date = Now
 Private onstartrcdate As Date = Now
 Private onexitrcdate As Date = Now
-Private getline As GshReadLine
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
 Private DoAlias As Boolean = True
@@ -120,6 +120,7 @@ Public TraceLevel As Integer = 1
 Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
 Public gbscomponent As Boolean = False
+Public getline As GshReadLine
 
 Public EnvSync As SyncEnv
 
@@ -242,6 +243,7 @@ Public Sub TestModuleAccess() As Boolean
 End
 
 ClassesToLoad As String[] = [
+    "rlvars",
     "ScripterExecute",
     "Script",
     "ScriptCompileErrors",
@@ -1007,7 +1009,7 @@ Public Sub Main()
         SetTitle()
 
         For Each sh As String In history
-            getline.add_history(sh & "\x00")
+            getline.gsh_add_history(sh & "\x00")
         Next
 
         execlocal(["onstart()"])                            ' only if we are not a service
@@ -1921,7 +1923,7 @@ Public Sub Reader(EndBlk As String[]) As String
 
             Case "HISTORY"
                 sinBuffer = Trim(ReadHistory())
-                getline.add_history(sinBuffer)
+                getline.gsh_add_history(sinBuffer)
                 If DoTrace Then Error "(Trace "; Now; ") ";; ("Read History '"); sinbuffer; "'"
 
             Case "FILE"

@@ -1,0 +1,10 @@
+' Gambas module file
+
+'/ / How Bash exposes its custom code To Readline
+'rl_add_defun("vi-edit-and-execute-command", vi_edit_and_execute_command, -1);
+'Keymap vi_movement_map = rl_get_keymap_by_name("vi-movement");
+'/ / How it links the 'v' key to that function in vi command mode
+'rl_bind_key_in_map('v', vi_edit_and_execute_command, vi_movement_keymap);
+
+
+

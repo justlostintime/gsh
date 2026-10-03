@@ -1,0 +1,11 @@
+' Gambas module file
+
+Public Sub main()
+
+    Dim reader As New Rlvars
+
+    For Each v As Variant In reader
+        Print reader.key;; "=";; Quote(v)
+    Next
+
+End

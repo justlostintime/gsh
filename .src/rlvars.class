@@ -1,0 +1,180 @@
+' Gambas class file
+
+Create Static
+
+Extern strncpy(dest As Pointer, src As String, len As Integer) As Pointer In "libc:6"
+
+Private Const rl_datatype As Integer = 0
+Private Const rl_varAddress As Integer = 1
+
+Property Read key As String Use $key
+Property Read count As Integer
+
+
+' entries are the variable name and the gambas datatype
+Private variables As Collection = ["rl_line_buffer": [gb.String, CPointer(0)], "rl_point": [gb.integer, CPointer(0)], "rl_end": [gb.integer, CPointer(0)],
+    "rl_mark": [gb.integer, CPointer(0)], "rl_done": [gb.integer, CPointer(0)], "rl_eof_found": [gb.integer, CPointer(0)],
+    "rl_num_chars_to_read": [gb.integer, CPointer(0)], "rl_pending_input": [gb.integer, CPointer(0)], "rl_dispatching": [gb.integer, CPointer(0)],
+    "rl_erase_empty_line": [gb.integer, CPointer(0)], "rl_prompt": [gb.String, CPointer(0)], "rl_display_prompt": [gb.String, CPointer(0)],
+    "rl_already_prompted": [gb.integer, CPointer(0)], "rl_library_version": [gb.String, CPointer(0)], "rl_readline_version": [gb.integer, CPointer(0)],
+    "rl_gnu_readline_p": [gb.integer, CPointer(0)], "rl_terminal_name": [gb.String, CPointer(0)], "rl_readline_name": [gb.String, CPointer(0)],
+    "rl_instream": [gb.pointer, CPointer(0)], "rl_outstream": [gb.pointer, CPointer(0)], "rl_prefer_env_winsize": [gb.integer, CPointer(0)],
+    "rl_last_func": [gb.function, CPointer(0)], "rl_startup_hook": [gb.function, CPointer(0)], "rl_pre_input_hook": [gb.function, CPointer(0)], "rl_event_hook": [gb.function, CPointer(0)], "rl_getc_function": [gb.function, CPointer(0)], "rl_signal_event_hook": [gb.function, CPointer(0)], "rl_timeout_event_hook": [gb.function, CPointer(0)], "rl_input_available_hook": [gb.function, CPointer(0)],
+    "rl_redisplay_function": [gb.function, CPointer(0)], "rl_prep_term_function": [gb.function, CPointer(0)],
+    "rl_deprep_term_function": [gb.function, CPointer(0)],
+    "rl_macro_display_hook": [gb.function, CPointer(0)], "rl_executing_keymap": [gb.pointer, CPointer(0)], "rl_binding_keymap": [gb.pointer, CPointer(0)],
+    "rl_executing_macro": [gb.String, CPointer(0)], "rl_executing_key": [gb.integer, CPointer(0)], "rl_executing_keyseq": [gb.String, CPointer(0)],
+    "rl_key_sequence_length": [gb.integer, CPointer(0)], "rl_readline_state": [gb.integer, CPointer(0)], "rl_explicit_arg": [gb.integer, CPointer(0)],
+    "rl_numeric_arg": [gb.integer, CPointer(0)], "rl_editing_mode": [gb.integer, CPointer(0)]
+]
+
+Public Sub _unknown(...) As Variant ' this will only work for simple datatypes and reading arrays
+    'Dim x As SharedMemSymbol
+
+    'Print "Select Var : "; Param.name; " Count : "; Param.count
+
+    If Not Variables.Exist(Param.name) And If Param.count = 0 Then
+        Error.Raise("UnKnown  Variable '" & Param.Name & "'")
+    Endif
+
+    If Param.count = 0 Then
+        Return _get(Param.name)
+    Else
+        _put(Param[0], Param.name)
+    Endif
+
+End
+
+'' Named interface for variables
+Static Public Sub _property(...) As Boolean
+    'Print "Get Property def for : "; Param.name
+
+    Return True
+
+End
+
+Public Sub _put(Value As Variant, varname As String)
+
+    If Not variables.Exist(varname) Then
+        Error.Raise("Readline Unknown Variable :" & varname)
+    Endif
+
+    Dim typdef As Variant[] = Variables[varname]
+    Dim typeVar As Integer = typdef[0]
+
+    If TypeOf(value) <> typevar Then
+        Error.Raise("Readline Variable type mismatch expected :" & typevar & " got " & TypeOf(value))
+    Endif
+
+    Select Case typeVar
+        Case gb.Integer
+            Integer@(typdef[rl_varAddress]) = value
+
+        Case gb.String
+            Dim pActual As Pointer = Pointer@(typdef[rl_varAddress])
+            If pactual Then
+                strncpy(pActual, value, value.len)
+                Byte@(pactual + value.len) = 0
+            Endif
+
+        Case gb.Pointer
+            Pointer@(typdef[rl_varAddress]) = value
+
+        Case gb.function
+            Pointer@(typdef[rl_varAddress]) = CPointer(value)
+    End Select
+
+End
+
+Public Sub _get(varname As String) As Variant
+
+    Dim sCurrentText As String
+
+    If Not variables.Exist(varname) Then
+        Error.Raise("Readline Unknown Variable :" & varname)
+    Endif
+
+
+    Dim typdef As Variant[] = Variables[varname]
+    Dim typeVar As Integer = typdef[rl_datatype]
+
+    If typdef[rl_varAddress] = Null Then
+        Return Null
+    Endif
+    Select Case typeVar
+        Case gb.Integer
+            Return Integer@(typdef[rl_varAddress])
+
+        Case gb.String
+            Dim pVarAddress As Pointer = typdef[rl_varAddress]
+            Dim pActualBuffer As Pointer = Pointer@(pVarAddress)
+            If pActualBuffer Then
+                ' Convert the raw C-string pointer to a Gambas string
+                Return String@(pActualBuffer)
+            Else
+                Return Null
+            Endif
+
+        Case gb.Pointer
+            Return Pointer@(typdef[rl_varAddress])
+
+        Case gb.function
+            Return Pointer@(typdef[rl_varAddress])
+    End Select
+
+Catch
+    Stop
+
+End
+
+Private nextlist As New String[]
+'' This returns a sorted  enumerated list of current variable values
+
+Public Sub _next() As Variant
+
+    If Enum.Index = Null Then
+        nextlist.Clear()
+        If Variables.count = 0 Then
+            Enum.Stop()
+            Return
+        Endif
+
+        For Each s As Variant In Variables
+            nextlist.Add(Variables.key)
+        Next
+        'nextlist.Sort()
+        Enum.index = 0
+    Else
+        If Enum.index = nextlist.Max Then
+            Enum.Stop()
+            Return
+        Endif
+        Inc Enum.index
+    Endif
+
+    $key = nextlist[Enum.index]
+
+    Return _get($key)
+
+Catch
+    Error "With";; $key;; "Error :";; Error.text
+
+End
+
+
+Public Sub _new()
+
+    For Each p As Variant[] In variables
+
+        p[1] = System.GetExternSymbol("libreadline", variables.key)
+        variables[variables.key] = p
+
+    Next
+
+End
+
+Private Function count_Read() As Integer
+
+    Return variables.count
+
+End

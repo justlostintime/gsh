@@ -1,7 +1,7 @@
 ' Gambas module file
 
 'Extern chdir(path As String) As Integer In "libc:6"
-Use "/usr/lib/gambas3/westwood/sharedmem:3.22-3.22.gambas"
+Use ":westwood/sharedmem:3.22-3.99"
 Class Sharedmem
 Class Sharedclass
 
