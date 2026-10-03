@@ -1,2 +1,8 @@
 set horizontal-scroll-mode on
 set enable-bracketed-paste off
+set editing-mode vi
+set keymap vi-insert
+"\C-l": clear-screen
+
+set keymap vi-command
+"\C-l": clear-screen
