@@ -6,5 +6,9 @@
 .hidden/docs/* linguist-documentation
 .hidden/documentation/* linguist-documentation
 
-#
+# Treat all .txt files as Markdown
+*.md linguist-language=Markdown
+
+# Treat *.h as c files
+*.h linguist-language=C
 
