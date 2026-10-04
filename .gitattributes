@@ -1,1 +1,10 @@
-linguist-language=BASIC
+# Mark everything as BASIC
+* linguist-language=BASIC
+
+#Mark documentation class
+.hidden/doc/* linguist-documentation
+.hidden/docs/* linguist-documentation
+.hidden/documentation/* linguist-documentation
+
+#
+

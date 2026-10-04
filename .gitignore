@@ -1,5 +1,4 @@
 #---- Gambas files to ignore (v9)
-*.gambas
 .lock
 *~
 core
