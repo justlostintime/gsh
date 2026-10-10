@@ -5,7 +5,7 @@ Class SharedMem
 Class GshReadLineVars
 
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
-Extern strncpy(dest As Pointer, src As String, len As Integer) As Pointer In "libc:6"
+'Extern strncpy(dest As Pointer, src As String, len As Integer) As Pointer In "libc:6"
 
 ' Read line function must be imported
 Extern rl_bind_key_in_map(mchar As Integer, func As Pointer, keymap As Pointer) In "libreadline"

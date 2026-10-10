@@ -313,7 +313,7 @@ Public Sub Myinit()
     $sharedmemlib = File.Load("sharedmem")
     $ScripterLib = File.Load("gb.scripter")
     $ScriptHighlighter = File.Load("gb.highlight")
-    $GshRootPath = Env["APPDIR"]
+    $GshRootPath = IIf(Not Exist("/usr/share/gsh/subs"), Application.path, Env["APPDIR"])
 
     Try Component.Load("gb.signal")
     If Error Then
@@ -730,27 +730,36 @@ Private Sub VerifyAppDepend()
     If Not Exist(User.home &/ "vars/struct") Then
         Mkdir User.Home &/ "vars/struct"
     Endif
+    If Not Exist(User.home &/ "vars/scripts") Then
+        Mkdir User.Home &/ "vars/scripts"
+    Endif
 
     If Not Exist(User.home &/ ".gshrc") Then
         Shell "touch " & User.home &/ ".gshrc" Wait
     Endif
+    ' APPDIR is added as this is the path inside an appimage
+    Dim sourceFile As String = Env["APPDIR"] &/ "/usr/share/gsh/subs"
+    If Not Exist(sourceFile) Then sourceFile = Application.Path &/ ".hidden/subs"
 
     If Not Exist(User.home &/ "vars/subs/onstart") Then
-        Copy Env["APPDIR"] &/ "/usr/share/gsh/subs/onstart" To User.home &/ "vars/subs/onstart"
-    Endif
-    If Not Exist(User.home &/ "vars/subs/onexit") Then
-        Copy Env["APPDIR"] &/ "/usr/share/gsh/subs/onexit" To User.home &/ "vars/subs/onexit"
+        Copy SourceFile &/ "onstart" To User.home &/ "vars/subs/onstart"
     Endif
 
-    If Not Exist(User.home &/ "vars/profile.gsh")
-        Copy Env["APPDIR"] &/ "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh"
+    If Not Exist(User.home &/ "vars/subs/onexit") Then
+        Copy sourceFile &/ "onexit" To User.home &/ "vars/subs/onexit"
+    Endif
+
+    sourceFile = Env["APPDIR"] &/ "/usr/share/gsh/profiles/"
+    If Not Exist(sourceFile) Then sourceFile = Application.Path &/ ".hidden/profiles"
+    If Not Exist(User.home &/ "vars/profile.gsh") Then
+        Copy sourceFile &/ "profile.gsh" To User.home &/ "vars/profile.gsh"
         Chmod User.home &/ "vars/profile.gsh" To "rwxr-x---"
     Else
         'Print "System Profile date " & Stat("/usr/share/gsh/profiles").lastmodified
         'Print "Local Profile date  " & Stat(User.home &/ "vars/profile.gsh").lastmodified
-        If Stat(Env["APPDIR"] &/ "/usr/share/gsh/profiles").lastmodified > Stat(User.home &/ "vars/profile.gsh").lastmodified Then
+        If Stat(sourceFile &/ "profile.gsh").lastmodified > Stat(User.home &/ "vars/profile.gsh").lastmodified Then
             If Exist(User.home &/ "vars/profile.gsh.new") Then Kill User.home &/ "vars/profile.gsh.new"
-            Copy Env["APPDIR"] &/ "/usr/share/gsh/profiles/profile.gsh" To User.home &/ "vars/profile.gsh.new"
+            Copy sourceFile &/ "profile.gsh" To User.home &/ "vars/profile.gsh.new"
             Chmod User.home &/ "vars/profile.gsh.new" To "rwxr-x---"
         Endif
     Endif

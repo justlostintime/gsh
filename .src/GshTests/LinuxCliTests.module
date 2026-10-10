@@ -1,6 +1,6 @@
 ' Gambas module file
 
-Use ":westwood/sharedmem:3.22"
+Use ":westwood/sharedmem:3.22-3.99"
 Class Sharedmem
 
 Public Sub main()

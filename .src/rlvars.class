@@ -88,7 +88,7 @@ End
 
 Public Sub _get(varname As String) As Variant
 
-    Dim sCurrentText As String
+    '    Dim sCurrentText As String
 
     If Not variables.Exist(varname) Then
         Error.Raise("Readline Unknown Variable :" & varname)
