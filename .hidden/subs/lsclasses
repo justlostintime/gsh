@@ -1,88 +1,91 @@
-Sub lsclasses(Optional classname As String = "",...)
+Sub lsclasses(Optional classname As String = "", ...)
 ''' List All or specific Loaded class - from classes object
 '' lsclasses  List all the classes in the current environment
 '' if classname is set to filter=used  then only list classes refrenced by application
 '' Else all loaded classes will be displayed.
 '' Red Line are internal objects, Green are Gambas Classes
-dim bUsed as boolean = false
-dim s as  string
-dim css as class
-dim sClass as new string[]
-dim scClass as new collection(gb.ignorecase)
-Dim MaxLength as integer = 0
-Dim cmodule as class
+Dim bUsed As Boolean = False
+Dim s As String
+Dim css As Class
+Dim sClass As New String[]
+Dim scClass As New Collection(gb.ignorecase)
+Dim MaxLength As Integer = 0
+Dim cmodule As Class
+Dim knames As String[] = ["Ummm", "Variable", "Property", "Method  ", "Event   ", "Constant"]
 
-if classname == "filter=used" then
-  bUsed = true
+If classname == "filter=used" Then
+  bUsed = True
   classname = ""
-endif
+Endif
 
-for each css in classes
+For Each css In classes
     sClass.add(css.name)
-    scclass.add(css,css.name)
-    if css.name.len > MaxLength then
+    scclass.add(css, css.name)
+    If css.name.len > MaxLength Then
       MaxLength = css.name.len
-    endif
-next
+    Endif
+Next
 
-if classname = "" then
-    print "Listing of";;scclass.count;;"classes, Sorted Count ";
-    print sClass.count
+If classname = "" Then
+    Print "Listing of";; scclass.count;; "classes, Sorted Count ";
+    Print sClass.count
     sClass.sort(gb.ignorecase)
 
-    for each s in sClass
-       if bUsed and if scclass[s].count = 0 then continue
-       try cmodule = classes[s]
-       if error then
-          print "\e[31m";
-       else
-          print "\e[32m"
-       endif
+    For Each s In sClass
+       If bUsed And If scclass[s].count = 0 Then Continue
+       Try cmodule = classes[s]
+       If Error Then
+          Print "\e[31m";
+       Else
+          Print "\e[32m"
+       Endif
 
-       try print left(s&space(MaxLength+1),MaxLength+1);; "Hidden=";left(str(scclass[s].hidden),1) ;;"Ref=";format(scclass[s].count,"##0");" Symbols ";iif(scclass[s].symbols.count = 0,"None","[");
-       if error then
-          print left(s&Space(MaxLength+1),MaxLength+1);;error.text
-          continue
-       endif
+       Try Print Left(s & Space(MaxLength + 1), MaxLength + 1);; "Hidden="; Left(Str(scclass[s].hidden), 1);; "Ref="; Format(scclass[s].count, "##0"); " Symbols "; IIf(scclass[s].symbols.count = 0, "None", "[");
+       If Error Then
+          Print Left(s & Space(MaxLength + 1), MaxLength + 1);; error.text
+          Continue
+       Endif
 
-       dim jj as integer = 0
-       dim m as string
-       Dim sSym as string[] = scclass[s].symbols
+       Dim jj As Integer = 0
+       Dim m As String
+       Dim sSym As String[] = scclass[s].symbols
        sSym.sort()
-       for jj = 0 to ssym.max
+       For jj = 0 To ssym.max
           m = sSym[jj]
-          if jj > 0 and jj mod 10 = 0 then
-            print "\n"; space(maxlength+19);
-          endif
-          print m;iif(jj< ssym.max, ",","");
-          flush
-       next
-       print "]"
-    next
-print "\e[0m"
+          If jj > 0 And jj Mod 10 = 0 Then
+            Print "\n"; Space(maxlength + 19);
+          Endif
+          Print m; IIf(jj < ssym.max, ",", "");
+          Flush
+       Next
+       Print "]"
+    Next
+Print "\e[0m"
 
-else
+Else
     css = scclass[classname]
-    print "Process Class ";classname
-    if css = null then
-       print "Class ";classname; " not found"
-    else
-       Print Left(css.name&space(MaxLength+1),MaxLength+1 ) ;; "Ref="; Format(css.count, "##0")
-       print "Public symbols for";; classname
-       dim table as string[] = css.symbols
+    Print "Process Class "; classname
+    If css = Null Then
+       Print "Class "; classname; " not found"
+    Else
+       Print Left(css.name & Space(MaxLength + 1), MaxLength + 1);; "Ref="; Format(css.count, "##0")
+       Print "Public symbols for";; classname
+       Dim table As String[] = css.symbols
        table = table.sort()
-       for each m as string in table
-          print classname&"."&m
-       next
-    endif
+       For Each m As String In table
+          With classes[classname][m]
+          Print "  "; IIf(.ReadOnly, "Read", "R/W ");; Left(.name & Space(25), 25) & ":";; knames[.kind], IIf(.static, "Static ", "Dynamic"), Quote(.type), IIf(knames[.kind] == "constant", .value, "");; IIf(Trim(knames[.kind]) == "method", m & "(" & .signature & ")", "");; IIf(Trim(knames[.kind]) == "event", Right(m, -1) & "(" & .signature & ")", "")
+          End With
+       Next
+    Endif
 
-endif
+Endif
 
-print "Green = Gambas class, Red are internal objects, anything with ^ to start is overlayed by inheritance"
+Print "Green = Gambas class, Red are internal objects, anything with ^ to start is overlayed by inheritance"
 
 Catch
-  flush
-  print  error.text,error.where
-  flush
-  print
+  Flush
+  Print error.text, error.where
+  Flush
+  Print
 End
