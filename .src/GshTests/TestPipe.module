@@ -9,77 +9,77 @@ Class SharedMem
 
 Public Sub application_signal(sig As Integer)
 
-  Print "Sig caught"; sig
+    Print "Sig caught"; sig
 
 End
 
 Public Sub mRead0_read()
 
-  With sharedmem
-    Dim sInput As String
-    sInput = Read #Last, -256
-    Write #mTaskWrite, sInput
-  End With
+    With sharedmem
+        Dim sInput As String
+        sInput = Read #Last, -256
+        Write #mTaskWrite, sInput
+    End With
 
 End
 
 Public Sub mRead0_kill()
-  'Print "Closed task pipe"
+    'Print "Closed task pipe"
 
-  Flush
-  Wait 0
-  Write #mTaskWrite, Chr(4)
-  Flush #mTaskWrite
-  Wait 0
-  mTaskWrite.Close()
+    Flush
+    Wait 0
+    Write #mTaskWrite, Chr(4)
+    Flush #mTaskWrite
+    Wait 0
+    mTaskWrite.Close()
 
 End
 
 Public Sub Tasky_read(sInput As String)
-  'Print "InText"; sInput
+    'Print "InText"; sInput
 
-  Write #mProc1, sInput
-  'mProc1.closeinput()
+    Write #mProc1, sInput
+    'mProc1.closeinput()
 
 End
 
 Public Sub Tasky_kill()
-  ''Print "Tasky kill"
+    ''Print "Tasky kill"
 
-  mProc1.CloseInput()
+    mProc1.CloseInput()
 
 End
 
 Public Sub Tasky_error(msg As String)
 
-  Print "tasky error"; msg
+    Print "tasky error"; msg
 
 End
 
 Public Sub Main()
 
-  Dim data As String = "abcdefghijklmnopqrstuvwxyz\n"
+    Dim data As String = "abcdefghijklmnopqrstuvwxyz\n"
 
-  For i As Integer = 0 To 80
-    data &= Str(i) & "abcdefghijklmnopqrstuvwxyz\n"
-  Next
+    For i As Integer = 0 To 80
+        data &= Str(i) & "abcdefghijklmnopqrstuvwxyz\n"
+    Next
 
-  SharedMem.BeginNamed("briangsh", 1512000)
-  With Sharedmem
-    mTaskWrite = Open Pipe "/tmp/testtask" For Write
-    mProc1 = Exec ["less"] With .["env"] For Write As "mRead1"
-    mTask0 = New TestTask As "Tasky"
-    mTask0.inpipename = "/tmp/testtask"
-    Wait 0
-    mProc0 = Exec ["cat"] With .["env"] For Read Write As "mRead0"
-    Write #mProc0, data
-    mProc0.closeinput()
+    SharedMem.BeginNamed("briangsh", 1512000)
+    With Sharedmem
+        mTaskWrite = Open Pipe "/tmp/testtask" For Write
+        mProc1 = Exec ["less"] With .["env"] For Write As "mRead1"
+        mTask0 = New TestTask As "Tasky"
+        mTask0.inpipename = "/tmp/testtask"
+        Wait 0
+        mProc0 = Exec ["cat"] With .["env"] For Read Write As "mRead0"
+        Write #mProc0, data
+        mProc0.closeinput()
 
-    While mProc0.state = process.running Or mProc1.state = process.running
-      Wait 0
-    Wend
+        While mProc0.state = process.running Or mProc1.state = process.running
+            Wait 0
+        Wend
 
-  End With
-  SharedMem.end()
+    End With
+    SharedMem.end()
 
 End

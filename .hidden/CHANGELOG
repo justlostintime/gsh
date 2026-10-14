@@ -1,3 +1,6 @@
+* Mon Oct 12 2026 Brian G <justlostintime@gmail.com> 1.7.3
+- Updated lsclasses to give full details
+
 * Tue Oct 06 2026 Brian G <justlostintime@gmail.com> 1.7.3
 - Really fix paths this time, including path when inside appimage
 
