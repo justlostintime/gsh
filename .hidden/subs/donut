@@ -1,0 +1,139 @@
+' Gambas Script File Created 01/10/2021 20:11:31.237
+' Original Donut program by Andy Sloane
+' https://www.a1k0n.net/2011/07/20/donut-math.html
+' Gambas module file
+Fast Unsafe
+Const theta_spacing As Float = 0.01
+Const phi_spacing As Float = 0.01
+
+Const R1 As Float = 1.00
+Const R2 As Float = 2.00
+Const K2 As Float = 5.0
+Const ShadeSource As String = " .,-~:;=!*$#@"
+Private Shader As Byte[] = byte[].fromstring(ShadeSource)
+Private myterm As Stream = File.out
+Private screen_width As Float = myterm.term.width
+Private screen_height As Float = myterm.term.height
+Private frameRate As Float = 0.0
+
+'Calculate K1 based On screen size: the maximum x - distance occurs
+'roughly at the edge Of the torus, which Is At x = R1 + R2, z = 0. we
+'want that To be displaced 3 / 8 ths Of the width Of the screen, which
+'Is 3 / 4 th Of the way From the center To the side Of the screen.
+'screen_width * 3 / 8 = K1 * (R1 + R2) / (K2 + 0)
+'screen_width * K2 * 3 / (8 * (R1 + R2)) = K1
+
+Private K1 As Float = screen_width * K2 * 1.00 / (9.00 * (R1 + R2))
+Private iterations As Long = 0
+
+Public Sub donut()
+
+  Print "Hello world"
+  Print "\e[2J"
+  Dim a, b As Float
+  Dim fTimer, fSecTimer, fLastTimer As Float
+  
+  Dec screen_height
+  fSecTimer = Timer
+  While True
+    If iterations > 200
+       Dim curtime As Long = CInt((Timer - fsecTimer) * 1000)
+       framerate = (iterations * 1000) / curtime
+       iterations = 0
+       fsectimer = Timer
+    Endif
+
+    fTimer = Timer
+    render_frame(a, b)
+    Wait 0
+    a += 0.07
+    b += 0.03
+    Inc iterations 
+    fLastTimer = Timer - fTimer
+    Print Format(fLastTimer, "0.####"); "s";;
+    Print Format(framerate, "#.###0"); "fps";
+  Wend
+Catch
+Print "loop error :";; error.text
+End
+
+Public Sub render_frame(a As Float, b As Float)
+  'precompute sines And cosines Of A And B
+  Dim cosA As Float = Cos(A)
+  Dim sinA As Float = Sin(A)
+  Dim cosB As Float = Cos(B)
+  Dim sinB As Float = Sin(B)
+  Dim boutput As New Byte[screen_width, screen_height]
+  Dim zbuffer As New Float[screen_width, screen_height]
+  Dim sBuffer As String
+  
+  bOutput.Fill(32)
+  
+  For theta As Float = 0.00 To 6.27 Step theta_spacing ' < pi * 2 6.28
+    Dim costheta As Float = Cos(theta)
+    Dim sintheta As Float = Sin(theta)
+    Dim theta1 As Float = (sinA * sintheta) 
+    Dim Theta2 As Float = (costheta * sinB)
+    Dim Theta3 As Float = (cosA * costheta)
+    Dim Theta4 As Float = (cosA * sintheta)
+    Dim Theta5 As Float = (costheta * sinA)
+    Dim circlex As Float = r2 + (r1 * costheta)
+    Dim circley As Float = r1 * sintheta
+    
+    For phi As Float = 0.00 To 6.27 Step phi_spacing '  < pi * 2 6.28
+      Dim cosphi As Float = Cos(phi)
+      Dim sinphi As Float = Sin(phi)
+
+      'calc luminance
+     'Dim L As Float = (cosphi * costheta * sinB) - (cosA * costheta * sinphi) - (sinA * sintheta) + (cosB * ((cosA * sintheta) - (costheta * sinA * sinphi)))
+      Dim L As Float = (cosphi * Theta2) - (Theta3 * sinphi) - Theta1 + (cosB * (Theta4 - (Theta5 * sinphi)))
+      ' L ranges From -sqrt(2) To + sqrt(2).If it 's < 0, the surface
+      ' Is Pointing away From us, so we won 't bother trying to plot it.
+      If L > 0 Then
+         
+      
+        Dim x As Float = circlex * (cosb * cosphi + sina * sinb * sinphi) - (circley * cosa * sinB)
+        Dim y As Float = circlex * (sinb * cosphi - sina * cosb * sinphi) + (circley * cosa * cosB)
+      
+        Dim z As Float = k2 + cosa * circlex * sinphi + circley * sina
+        Dim ooz As Float = 1.00 / z
+      
+        'x And y projection.note that y Is Negated here, because y
+        'goes up In 3D space but down On 2D displays.
+        Dim xp As Integer = CInt(screen_width / 2.00 + k1 * ooz * x)
+        Dim yp As Integer = CInt(screen_height / 2.00 - k1 * ooz * y)
+        
+    If xp < 0 Then
+     xp = 0
+    Else If xp >= screen_width Then
+     xp = screen_width - 1
+    Endif
+    
+    If yp < 0 Then
+     yp = 0
+    Else If yp >= screen_height Then
+     yp = screen_height - 1
+    Endif
+        
+        If ooz > zbuffer[xp, yp] Then
+          zbuffer[xp, yp] = ooz
+          'bOutput[xp, yp] = Asc(" .,-~:;=!*$#@", 1 + Abs(CInt(L * 8)))
+          bOutput[xp, yp] = Shader[1 + Abs(CInt(L * 8))]
+        Endif
+      Endif
+      
+    Next
+    
+  Next
+  'print to the screen
+  Print "\e[J\e[H";
+  Flush
+  sBuffer = ""
+  For j As Integer = 0 To screen_height - 1
+    For i As Integer = 0 To screen_width - 1
+   sBuffer &= Chr(bOutput[i, j])
+    Next
+    sBuffer &= "\n"
+  Next
+  Print Left$(sBuffer, -1);
+End
