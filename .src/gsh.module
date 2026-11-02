@@ -7,7 +7,7 @@ Class ScripterExecute
 Class Script
 Class ScriptCompileErrors
 Class CompileErrorMsg
-Class TextHighlighter
+Class Texthighlighter
 Class Rlvars
 
 Property Read gshref As Object Use $gshref
@@ -28,8 +28,8 @@ Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "e
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
 
-Public ConsoleHighlight As TextHighlighter
-Public BashHighlight As TextHighlighter
+Public ConsoleHighlight As Texthighlighter
+Public BashHighlight As Texthighlighter
 
 Public ReadQueue As New String[]     ' Used to push items to be read first
 
@@ -358,8 +358,8 @@ Public Sub Myinit()
         Endif
     Next
 
-    ConsoleHighlight = TextHighlighter["gambas"]
-    'BashHighlight = TextHighlighter["sh"]
+    ConsoleHighlight = texthighlighter["gambas"]
+    BashHighlight = TextHighlighter["sh"]
 
     SharedMem.DoInit()
 
@@ -1230,7 +1230,9 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     Endif
 
     If Not SubCls.Exist(sObject) Then Return False                  ' its not in the compiled list
+
     If SubCls.changed(sObject) Then Return False                    ' we changed it in this session so will reflect this after start
+
     If SubCls.HasGui(sObject) Then Return False
     '  If SubCls.HasUse(sObject) Then Return False                     ' If it compiled with a use comp then run externally
     ' In the mean time we will execute this as a script until its reloaded
@@ -1277,6 +1279,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
 
     LocalRunning = True
     Try Object.Call(SubCls[sObject], method, parms)
+
     If Error Then
         LocalRunning = False
         If Error.text <> "Terminated" Then
@@ -2007,7 +2010,7 @@ End
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 
-Public Sub IfReader(EndBlk As String[]) As Boolean
+Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
 
     'Debug Line * * * *
     'Print "starting "; CDate(Now); " If Reader "; Quote(EndBlk.join())
@@ -3006,7 +3009,7 @@ Catch
 
 End
 
-Public Sub DoBlock(EndBlk As String[])
+Fast Unsafe Public Sub DoBlock(EndBlk As String[])
 
     With sharedmem
         Inc blockLevel

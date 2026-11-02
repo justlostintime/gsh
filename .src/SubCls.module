@@ -1,6 +1,7 @@
 ' Gambas module file
 
 Export
+'Fast Unsafe
 Class SharedMem
 
 Public Struct subload
@@ -326,7 +327,7 @@ Public Sub getTable() As Collection
 
 End
 
-Private Sub ProcessLibrary(LibName As String) As String
+Fast Unsafe Private Sub ProcessLibrary(LibName As String) As String
 
     Dim sSplitLine As String[] = Split(LibName, ":", "", True)
     Dim LibEntry As String

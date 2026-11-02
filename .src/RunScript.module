@@ -2,67 +2,67 @@
 
 Public Sub RunScript(cmd As String) As Boolean
 
-  Return _call(cmd)
+    Return _call(cmd)
 
 End
 
 Public Sub _call(cmd As String) As Boolean
 
-  Dim oldCommandMode As Boolean = gsh.CommandMode
-  Dim OldSource As String = gsh.Source
-  Dim oldAppSource As File = gsh.AppSource
-  Dim fPath As String
+    Dim oldCommandMode As Boolean = gsh.CommandMode
+    Dim OldSource As String = gsh.Source
+    Dim oldAppSource As File = gsh.AppSource
+    Dim fPath As String
 
-  cmd = Trim(Replace(cmd, "\"", ""))
+    cmd = Trim(Replace(cmd, "\"", ""))
 
-  If File.Dir(fPath) = "" Then
-    fpath = Env["PWD"] &/ cmd
-    If Not Exist(fpath) Then
-      fPath = User.home &/ "vars" &/ cmd
-      If Not Exist(fpath) Then
-        fpath = System.Find(cmd)
-        If IsNull(fPath) Then
-          fpath = cmd
+    If File.Dir(fPath) = "" Then
+        fpath = Env["PWD"] &/ cmd
+        If Not Exist(fpath) Then
+            fPath = User.home &/ "vars" &/ cmd
+            If Not Exist(fpath) Then
+                fpath = System.Find(cmd)
+                If IsNull(fPath) Then
+                    fpath = cmd
+                Endif
+            Endif
         Endif
-      Endif
     Endif
-  Endif
 
-  fpath = CreateCmdProgram.getfullpath(fpath)
+    fpath = CreateCmdProgram.getfullpath(fpath)
 
-  gsh.CommandMode = True
-  gsh.Source = "FILE"
+    gsh.CommandMode = True
+    gsh.Source = "FILE"
 
-  Try gsh.AppSource = Open fpath For Read
-  If Error Then
-    Error ("Error : Gsh script: "); cmd; " -  "; Error.text
+    Try gsh.AppSource = Open fpath For Read
+    If Error Then
+        Error ("Error : Gsh script: "); cmd; " -  "; Error.text
+        gsh.appSource = oldAppSource
+        gsh.Source = OldSource
+        gsh.CommandMode = OldCommandMode
+        Return False
+    Else
+        Dim SaveQueue As String[] = gsh.ReadQueue.Copy()
+        gsh.ReadQueue.clear()
+        While gsh.IfReader(["QUIT"])
+            gsh.ProcessProg()
+            Wait 0
+        Wend
+        gsh.ReadQueue.Insert(SaveQueue)
+    Endif
+
+    Close gsh.AppSource
     gsh.appSource = oldAppSource
     gsh.Source = OldSource
     gsh.CommandMode = OldCommandMode
-    Return False
-  Else
-    Dim SaveQueue As String[] = gsh.ReadQueue.Copy()
-    gsh.ReadQueue.clear()
-    While gsh.IfReader(["QUIT"])
-      gsh.ProcessProg()
-      Wait 0
-    Wend
-    gsh.ReadQueue.Insert(SaveQueue)
-  Endif
-
-  Close gsh.AppSource
-  gsh.appSource = oldAppSource
-  gsh.Source = OldSource
-  gsh.CommandMode = OldCommandMode
-  Return IIf(gsh.ReadQueue.count > 0, False, True)
+    Return IIf(gsh.ReadQueue.count > 0, False, True)
 
 Catch
 
-  Close gsh.AppSource
-  gsh.appSource = oldAppSource
-  gsh.Source = OldSource
-  gsh.CommandMode = OldCommandMode
-  Error "gsh RunScript :";; Error.Text;; Error.where
-  Return IIf(gsh.ReadQueue.count > 0, False, True)
+    Close gsh.AppSource
+    gsh.appSource = oldAppSource
+    gsh.Source = OldSource
+    gsh.CommandMode = OldCommandMode
+    Error "gsh RunScript :";; Error.Text;; Error.where
+    Return IIf(gsh.ReadQueue.count > 0, False, True)
 
 End

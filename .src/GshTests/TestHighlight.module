@@ -4,13 +4,13 @@ Styles As String[] = ["Background", "Normal", "Selection", "Alternate", "Highlig
     "Function", "Operator", "Symbol", "Number", "String", "Breakpoint", "Current", "Datatype", "Preprocessor", "Escape", "Label", "Constant", "Class", "Id", "Element",
     "Property", "Pseudo", "Rule", "Important", "File", "Header", "Position", "Markup", "Attribute", "Value", "Entity", "WebMarkup", "WebComment", "WebArgument"]
 
-Class TextHighlighter
+Class Texthighlighter
 
 Public Sub main()
 
     'Dim x As New ConsoleHighlight
     Component.Load("gb.eval.highlight")
-    Dim x As TextHighlighter = TextHighlighter["gambas"]
+    Dim x As Texthighlighter = texthighlighter["gambas"]
     '  Dim y As TextHighlighterTheme = New TextHighlighterTheme
 
     ' Print "Settings :\n"; Split(y.Settings, ";").Join("\n"); "\n End if settings\n"

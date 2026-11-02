@@ -1,0 +1,197 @@
+#!/usr/bin/env gbs3
+' Gambas Script File Created 01/10/2021 20:11:31.237
+' Original Donut program by Andy Sloane
+' https://www.a1k0n.net/2011/07/20/donut-math.html
+'
+' Usage:  ./donutSpinerFixed        Press Ctrl-C to stop.
+'
+' Changes from donutSpinner:
+'  - runs under gbs3 (the original shebang pointed at gsh, which cannot compile it)
+'  - has a Main, so the program actually starts
+'  - Ctrl-C / SIGTERM / SIGHUP set a flag; the loop ends and the cursor and
+'    screen are restored (the original left the cursor hidden)
+'  - no debug output (Hello world, linetrace)
+'  - errors are not swallowed in render_frame; they end the program with a message
+'  - frame is built in one Byte[] (rows + newlines) and printed with one ToString()
+'  - output and z buffers are allocated once and cleared with Fill() each frame
+'  - points that project off screen are skipped instead of piling up on the border
+'  - terminal resize is detected each frame and the buffers are rebuilt
+
+Fast Unsafe
+Use "gb.signal"
+
+Const theta_spacing As Float = 0.01
+Const phi_spacing As Float = 0.01
+Const TwoPi As Float = 6.28
+
+Const R1 As Float = 1.00
+Const R2 As Float = 2.00
+Const K2 As Float = 5.0
+Const ShadeSource As String = " .,-~:;=!*$#@"
+
+Private Shader As Byte[]
+Private ShadeMax As Integer
+
+Private screen_width As Integer     ' columns
+Private screen_height As Integer    ' rows used by the donut (last row is the status line)
+Private K1 As Float
+Private bOutput As Byte[]           ' (screen_width + 1) * screen_height, includes a newline per row
+Private zBuffer As Float[]          ' screen_width * screen_height
+
+Private bQuit As Boolean
+
+Public Sub Main()
+
+  Dim a, b As Float
+  Dim fFrameStart, fFrameTime, fRateStart, fElapsed, fFrameRate As Float
+  Dim iFrames As Integer
+  Dim sTime, sRate As String
+
+  Signal[Signal.SIGINT].Catch
+  Signal[Signal.SIGTERM].Catch
+  Signal[Signal.SIGHUP].Catch
+
+  Shader = Byte[].FromString(ShadeSource)
+  ShadeMax = Shader.Max
+
+  Print "\e[2J";
+  fRateStart = Timer
+
+  While Not bQuit
+    CheckScreenSize()
+
+    fFrameStart = Timer
+    render_frame(a, b)
+    fFrameTime = Timer - fFrameStart
+
+    a += 0.07
+    b += 0.03
+
+    Inc iFrames
+    fElapsed = Timer - fRateStart
+    If fElapsed >= 1.0 Then
+      fFrameRate = iFrames / fElapsed
+      iFrames = 0
+      fRateStart = Timer
+    Endif
+
+    sTime = Format(fFrameTime, "0.0000")
+    sRate = Format(fFrameRate, "0.0")
+    Print sTime; "s  "; sRate; " fps\e[K";
+    Flush
+
+    Wait 0   ' signals are delivered here
+  Wend
+
+Finally
+  ' Show the cursor again, clear the screen and home the cursor
+  Print "\e[?25h\e[2J\e[H";
+  Flush
+
+Catch
+  Error "donutSpinerFixed error:";; Error.Text;; "at";; Error.Where
+  Quit 1
+
+End
+
+'' Called by gb.signal for the signals caught in Main
+Public Sub Application_Signal(iSignal As Integer)
+
+  bQuit = True
+
+End
+
+'' Read the terminal size and (re)build the buffers if it changed
+Private Sub CheckScreenSize()
+
+  Dim w As Integer = File.Out.Term.Width
+  Dim h As Integer = File.Out.Term.Height - 1   ' keep the last row for the status line
+
+  If w < 2 Then w = 2
+  If h < 2 Then h = 2
+  If w = screen_width And If h = screen_height Then Return
+
+  screen_width = w
+  screen_height = h
+
+  ' K1 scales the projection to the screen width. With the divisor 9 the torus
+  ' edge (x = R1 + R2, z = 0) lands at screen_width / 9 from the center; the
+  ' parts closest to the viewer project further out. Increase the divisor to
+  ' make the donut smaller, decrease it to make it bigger.
+  K1 = screen_width * K2 / (9.00 * (R1 + R2))
+
+  bOutput = New Byte[(screen_width + 1) * screen_height]
+  zBuffer = New Float[screen_width * screen_height]
+  Print "\e[2J";
+
+End
+
+Public Sub render_frame(a As Float, b As Float)
+
+  Dim cosA As Float = Cos(a)
+  Dim sinA As Float = Sin(a)
+  Dim cosB As Float = Cos(b)
+  Dim sinB As Float = Sin(b)
+  Dim stride As Integer = screen_width + 1
+  Dim halfW As Float = screen_width / 2.00
+  Dim halfH As Float = screen_height / 2.00
+  Dim theta, phi As Float
+  Dim costheta, sintheta, theta1, theta2, theta3, theta4, theta5, circlex, circley As Float
+  Dim cosphi, sinphi, L, x, y, z, ooz As Float
+  Dim xp, yp, iShade, j As Integer
+
+  ' Clear the buffers and put a newline at the end of every row
+  bOutput.Fill(32)
+  zBuffer.Fill(0)
+  For j = 1 To screen_height
+    bOutput[j * stride - 1] = 10
+  Next
+
+  For theta = 0.00 To TwoPi Step theta_spacing
+    costheta = Cos(theta)
+    sintheta = Sin(theta)
+    theta1 = sinA * sintheta
+    theta2 = costheta * sinB
+    theta3 = cosA * costheta
+    theta4 = cosA * sintheta
+    theta5 = costheta * sinA
+    circlex = R2 + (R1 * costheta)
+    circley = R1 * sintheta
+
+    For phi = 0.00 To TwoPi Step phi_spacing
+      cosphi = Cos(phi)
+      sinphi = Sin(phi)
+
+      ' Luminance, ranges from -sqrt(2) to +sqrt(2). If it's <= 0 the surface
+      ' is pointing away from us, so we won't bother trying to plot it.
+      L = (cosphi * theta2) - (theta3 * sinphi) - theta1 + (cosB * (theta4 - (theta5 * sinphi)))
+      If L <= 0 Then Continue
+
+      x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - (circley * cosA * sinB)
+      y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + (circley * cosA * cosB)
+      z = K2 + cosA * circlex * sinphi + circley * sinA
+      ooz = 1.00 / z
+
+      ' x and y projection. y is negated because y goes up in 3D space
+      ' but down on 2D displays.
+      xp = CInt(halfW + K1 * ooz * x)
+      yp = CInt(halfH - K1 * ooz * y)
+
+      ' Skip points that fall off screen (Unsafe: no array bounds checking here)
+      If xp < 0 Or If xp >= screen_width Then Continue
+      If yp < 0 Or If yp >= screen_height Then Continue
+
+      If ooz > zBuffer[yp * screen_width + xp] Then
+        zBuffer[yp * screen_width + xp] = ooz
+        iShade = 1 + CInt(L * 8)
+        If iShade > ShadeMax Then iShade = ShadeMax
+        bOutput[yp * stride + xp] = Shader[iShade]
+      Endif
+    Next
+  Next
+
+  ' Hide the cursor while drawing, home it and print the whole frame at once.
+  ' The last byte of the buffer is a newline, which moves us to the status line.
+  Print "\e[?25l\e[H"; bOutput.ToString();
+
+End

@@ -1,3 +1,15 @@
+* Sat Oct 31 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Final for corrected jit implementation
+
+* Thu Oct 22 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- get version number correct
+
+* Thu Oct 22 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- try again, did not take
+
+* Thu Oct 22 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Added fast to some critical function 20% speed increase over all, but down side 30 second delay on first use
+
 * Mon Oct 12 2026 Brian G <justlostintime@gmail.com> 1.7.3
 - Updated lsclasses to give full details
 

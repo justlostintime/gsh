@@ -1,7 +1,7 @@
 ' Gambas module file
 
 Class SharedMem
-Class TextHighlighter
+Class Texthighlighter
 
 Public GambasHelpUrls As String[] = ["https://gambaswiki.org/wiki",
     "https://gambaswiki.org/wiki/cat",
@@ -180,7 +180,7 @@ End
 Private Sub GetLiveHelp(msymbol As String[], defInfo As String[], Title As String, Optional Summary As Boolean = False) As String
 
     'Dim ch As New ConsoleHighlight
-    Dim ch As TextHighlighter = TextHighlighter["gambas"]
+    Dim ch As Texthighlighter = texthighlighter["gambas"]
     Dim helptxt As String = ""
     Dim SynText As String = ""
     Dim MatchInfo As String
@@ -343,7 +343,7 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
 
     Dim mproc As Process
     'Dim ch As New ConsoleHighlight
-    Dim ch As TextHighlighter = TextHighlighter["gambas"]
+    Dim ch As Texthighlighter = texthighlighter["gambas"]
     Dim s As String
 
     helpfromhtml = ""

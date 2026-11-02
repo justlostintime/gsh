@@ -1,5 +1,6 @@
 ' Gambas class file
 
+Fast Unsafe
 Class Sharedmem
 
 'These are the defaults
@@ -30,7 +31,7 @@ Static Private Sub SymsInsert(p As ParseParm, sym As String, type As Integer)
 End
 
 '' process the input line and split it into seperate commands
-Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, IncludeBreak As Boolean = False, BreakOnEscape As Boolean = True) As String[]
+Fast Unsafe Static Public Sub _call(InLine As String, Optional p As Parseparm = Null, IncludeBreak As Boolean = False, BreakOnEscape As Boolean = True) As String[]
 
     Dim CurrentType As Integer = Highlight.Symbol
     Dim streamPos As Integer = 0

@@ -1,5 +1,6 @@
 ' Gambas module file
 
+Fast Unsafe
 Export
 
 Class Sharedmem
@@ -148,7 +149,7 @@ End
 
 Private AutoFuncName As Integer = 0
 
-Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns a correctly created program to run the command
+Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns a correctly created program to run the command
 
     Dim lines As New String[]
     Dim FinalProgram As String = ""
@@ -236,7 +237,7 @@ Public Sub IsGlob(Exp As String) As Boolean
 
 End
 
-Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
+Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
 
     Dim CurrentCmd As Integer                             ' Index of the command we are processing
     Dim i As Integer                                                    ' Index of current symbol within the command
@@ -731,7 +732,7 @@ End
 
 cmdterm As String[] = ["<", "<<", "<<<", ">", ">>", ">>>", "|<", "|>"]
 
-Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
+Fast Unsafe Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
     Dim aFunction As Boolean = False
     'Check if we will from a function or some other evaluated at runtime function
@@ -796,7 +797,7 @@ Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd A
 
 End
 
-Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As Integer, sym As String, CmdErr As String[], CmdIo As String[], CmdList As String[][], CmdTypes As Integer[][], CmdBeforeExec As String[], CmdKill As String[], Optional WriteError As Boolean = False) As Integer
+Fast Unsafe Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As Integer, sym As String, CmdErr As String[], CmdIo As String[], CmdList As String[][], CmdTypes As Integer[][], CmdBeforeExec As String[], CmdKill As String[], Optional WriteError As Boolean = False) As Integer
 
     Dim notfile As Boolean = False
     Dim fullname As String
@@ -912,7 +913,7 @@ Private Sub GenerateRedirectOut(i As Integer, BaseName As String, CurrentCmd As 
 
 End
 
-Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
+Fast Unsafe Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
     Static BufferCounter As Long = 0
 
@@ -972,7 +973,7 @@ Private Sub GenerateInLineInput(i As Integer, BaseName As String, CurrentCmd As 
 
 End
 
-Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
+Fast Unsafe Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
     Dim aFunction As Boolean = False
     Dim DataSource As String
@@ -1032,7 +1033,7 @@ Private Sub GenerateStringInput(i As Integer, BaseName As String, CurrentCmd As 
 
 End
 
-Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As String
+Fast Unsafe Private Sub preprocess(val As String, Optional NoQuote As Boolean = False) As String
 
     Select Case val[0]
         Case "\""
@@ -1207,7 +1208,7 @@ Sub multiSub(akey As String, data As String, MyRegx As Regexp) As String
 
 End
 
-Public Sub AliasReplace(Data As String) As String
+Fast Unsafe Public Sub AliasReplace(Data As String) As String
     'Dim bChanged As Boolean = False
     'Dim aList As String[] = Split(Trim(data), " \t!|", "\"\"", True, True)
 
