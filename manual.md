@@ -736,10 +736,9 @@ Let's run our new function.
 Improper script code:
 
 ```
-   dim a as string = "this"       ' gsh does not run this line, it prints an error explaining
-                                  ' that a top level Dim does nothing: each top level line or
-                                  ' block is compiled and run as its own program, so 'a' would
-                                  ' be gone before the next line.
+   dim a as string = "this"       ' gsh does not run this line, it prints a one line error:
+                                  ' each top level line or block is compiled and run as its own
+                                  ' program, so 'a' would be gone before the next line.
    ? a                            ' This will print an unknown variable error.
 ```
 Put the Dim and the code that uses it in one block (do ... done, begin ... end,
