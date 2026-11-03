@@ -1280,21 +1280,7 @@ End
 '' Explain why a top level Dim does nothing and what to use instead
 Private Sub TopLevelDimMessage(sVar As String) As String
 
-    Dim sMsg As String
-
-    sMsg = "\x1b[33mgsh: 'Dim " & sVar & "' ignored - a top level Dim does nothing.\x1b[0m\n"
-    sMsg &= "  gsh compiles and runs each top level line or block (If, For, While ...) as its own\n"
-    sMsg &= "  program, so " & sVar & " would be gone before the next line runs. Instead either:\n"
-    sMsg &= "  - put the Dim and the code that uses it in one block:\n"
-    sMsg &= "        do\n"
-    sMsg &= "          Dim " & sVar & " As Integer = 5\n"
-    sMsg &= "          Print " & sVar & "\n"
-    sMsg &= "        done\n"
-    sMsg &= "    (begin ... end, lambda ... end and { ... } work the same way)\n"
-    sMsg &= "  - or use a global variable, which keeps its value between blocks:\n"
-    sMsg &= "        $" & sVar & " = 5\n"
-    sMsg &= "        Print $" & sVar
-    Return sMsg
+    Return "\x1b[33mgsh: top level 'Dim " & sVar & "' ignored, put it in a do..done/begin..end block or use $" & sVar & "\x1b[0m"
 
 End
 
