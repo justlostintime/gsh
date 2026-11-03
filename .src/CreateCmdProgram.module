@@ -93,13 +93,13 @@ Public Sub getfullpath(filename As String) As String
     Dim expandedList As String[]
     Dim pwds As New String[]
 
-    Select Case filename[0]
-        Case "/", "~", ".", ".."
-            ' do nothing
-            filename = filename
-        Default
-            filename = "." &/ filename
-    End Select
+    ' Paths already anchored to /, ~, . or .. are left alone. Anything else,
+    ' including hidden names like .hidden/x, is relative to the current directory.
+    If filename Begins "/" Or If filename Begins "~" Or If filename = "." Or If filename = ".." Or If filename Begins "./" Or If filename Begins "../" Then
+        ' do nothing
+    Else
+        filename = "." &/ filename
+    Endif
 
     expandedList = DoGlob(filename)
 

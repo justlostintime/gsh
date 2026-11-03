@@ -163,7 +163,10 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
     If Exist($sPluginPath &/ sName & ".gambas") Then Kill $sPluginPath &/ sName & ".gambas"
 
     ' Compile, archive, load and finally get the plugin class
-    Dim scmd As String = "gbc3 -b 3.18 -a  " & sPath & " 2>&1"
+    ' No -b (forced bytecode version): plugins are compiled and loaded on this machine, so the
+    ' local compiler default always matches the runtime. Forcing old bytecode (-b 3.18) made
+    ' JIT (Fast) subs crash with "Stack mismatch in JIT function" on newer runtimes.
+    Dim scmd As String = "gbc3 -a  " & sPath & " 2>&1"
     Shell scmd To sRes ' include the -g flag to have Debug enabled
     If Process.LastValue Then
         'Error "Compile error sPath=[" & sPath & "]"

@@ -40,6 +40,18 @@ Public LambdaLevel As Integer = 0
 Public FunctionLevel As Integer = 0
 Public CompileScript As String = ""
 Public CompileOnly As Boolean = False
+
+'' Script scoped subs: a Sub defined inside a script file is stored under a unique
+'' name gss_<pid>_<run>_<script>_<name> so it never overwrites or collides with an
+'' existing sub, and it is deleted when the script ends.
+Public ScriptSubPrefix As String = ""                ' "" when not running a script file
+Public ScriptSubMap As New Collection                ' lower(name) -> unique name
+Private ScriptRunCount As Integer = 0
+'' Const declarations made at the top level of the running script. Each top level line
+'' runs as its own program, so these are re-declared in every later program and in the
+'' script's own subs.
+Public ScriptConstTable As New String[]
+Private CompileDepth As Integer = 0                   ' > 0 while a sub/class is being compiled
 Public InBuffer As String
 Public NoPreProcess As Boolean = False
 Public NoLinkCheck As Boolean = False
@@ -578,7 +590,7 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
     Endif
 
     While LinkTable.COUNT
-        If linktable.first <> sym Then
+        If Lower(linktable.first) <> Lower(sym) Then          ' never link a sub into itself
             If Not AlreadyLinked.Exist(LinkTable.First) Then
                 AlreadyLinked.Add(LinkTable.first)
                 'If RegExp.Match(linktable[linktable.first], "^class .*", RegExp.Caseless) Then
@@ -600,6 +612,7 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
         FinalProgram &= sInsert & "\n"
     Next
 
+    If ScriptSubPrefix <> "" And If Lower(sym) Begins "sub." & ScriptSubPrefix Then AddScriptConsts()   ' script subs see the script's Consts
     For Each sinsert In ExternTable
         FinalProgram &= sInsert & "\n"
     Next
@@ -697,13 +710,20 @@ Private Sub Compile(sym As String, Optional componly As Boolean = False) As Bool
     StructTable = New String[]
     CompilerDirectiveTable = New String[]
 
-    result = CompileBuffer(sym, proc, componly)
+    Inc CompileDepth
+    Try result = CompileBuffer(sym, proc, componly)
+    Dim bFailed As Boolean = Error
+    Dim sFailText As String = Error.Text
+    Dec CompileDepth
 
+    ' Restore the caller's tables even when the compile failed
     linktable = saveLinks
     usetable = saveuse
     externtable = saveextern
     structtable = savestruct
     CompilerDirectiveTable = saveDirective
+
+    If bFailed Then Error.Raise(sFailText)
     Return result
 
 End
@@ -930,6 +950,9 @@ Public Sub Main()
         ExitProgram(Process.LastValue)
     Endif
 
+    ' Drop script subs left over from gsh processes that were killed or crashed
+    SweepStaleScriptSubs()
+
     ' Check for a list of script files on the command line
     If cmdLineParameters.count > 0 And If cmdLineParameters[0][0] <> "-" Then
         If DoTrace Then Error "(Trace "; Now; ") ";; ("Command line scripts to execute cnt="); cmdLineParameters.count
@@ -940,7 +963,8 @@ Public Sub Main()
             If runcmder[0] = "~" Then
                 runcmder = User.Home &/ Right(runcmder, -1)
             Else
-                runcmder = Env["PWD"] &/ IIf(runcmder[0] = ".", Right(runcmder, -1), runcmder)
+                ' Only strip a "./" prefix, names like .hidden/x or ../x must keep their dots
+                runcmder = Env["PWD"] &/ IIf(runcmder Begins "./", Mid$(runcmder, 3), runcmder)
             Endif
         Endif
 
@@ -950,6 +974,8 @@ Public Sub Main()
             Error "Gsh script not found : "; runcmder
             ExitProgram(1)
         Endif
+
+        ScriptScopeStart(runcmder)      ' subs defined by this script get unique names, freed in ExitProgram
 
         While IfReader(["QUIT"])
             Try ProcessProg()
@@ -1162,6 +1188,8 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
 
     Try gshlogging(User.home &/ "vars/gsh.log", "GSH Exits program PID= " & Application.Id & ",Exit code=" & ExitValue)
 
+    Try FreeScriptSubs()                ' delete subs created by a running script
+
     gshlogging.EndLog
     gshlogging.logrotate()
 
@@ -1186,6 +1214,129 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
 Catch
     Error "GSH : Error on exit [ "; Error.text;; Error.where; "]"
     Quit ExitValue
+
+End
+
+'' Start a script scope for subs defined in the script file ScriptPath.
+'' Returns the previous scope so nested scripts can restore it with ScriptScopeEnd.
+Public Sub ScriptScopeStart(ScriptPath As String) As Variant[]
+
+    Dim saved As Variant[] = [ScriptSubPrefix, ScriptSubMap, ScriptConstTable]
+    Dim sBase As String = Lower(File.BaseName(ScriptPath))
+
+    sBase = RegExp.Replace(sBase, "[^a-z0-9_]", "_")
+    If sBase = "" Then sBase = "script"
+    Inc ScriptRunCount
+    ScriptSubPrefix = "gss_" & CStr(Application.Id) & "_" & CStr(ScriptRunCount) & "_" & sBase & "_"
+    ScriptSubMap = New Collection
+    ScriptConstTable = New String[]
+    Return saved
+
+End
+
+'' Delete the subs defined by the current script and restore the previous scope
+Public Sub ScriptScopeEnd(Optional saved As Variant[] = Null)
+
+    FreeScriptSubs()
+    If saved Then
+        ScriptSubPrefix = saved[0]
+        ScriptSubMap = saved[1]
+        ScriptConstTable = saved[2]
+    Else
+        ScriptSubPrefix = ""
+        ScriptSubMap = New Collection
+        ScriptConstTable = New String[]
+    Endif
+
+End
+
+'' Remove every sub created by the current script from the in memory database
+Public Sub FreeScriptSubs()
+
+    For Each sUnique As String In ScriptSubMap
+        If SharedMem.exist("sub." & sUnique) Then Try SharedMem.Free("sub." & sUnique)
+    Next
+    ScriptSubMap.Clear()
+
+End
+
+'' Remove script subs left behind by gsh processes that no longer exist (killed, crashed)
+Public Sub SweepStaleScriptSubs()
+
+    Dim aParts As String[]
+
+    For Each sym As String In SharedMem.Variables("sub.gss_*")
+        aParts = Split(sym, "_")                    ' sub.gss, pid, run, ...
+        If aParts.count < 3 Then Continue
+        If aParts[1] = CStr(Application.Id) Then Continue
+        If Not Exist("/proc" &/ aParts[1]) Then Try SharedMem.Free(sym)
+    Next
+
+Catch
+    If DoTrace Then Error "(Trace "; Now; ") SweepStaleScriptSubs :"; Error.text
+
+End
+
+'' Explain why a top level Dim does nothing and what to use instead
+Private Sub TopLevelDimMessage(sVar As String) As String
+
+    Dim sMsg As String
+
+    sMsg = "\x1b[33mgsh: 'Dim " & sVar & "' ignored - a top level Dim does nothing.\x1b[0m\n"
+    sMsg &= "  gsh compiles and runs each top level line or block (If, For, While ...) as its own\n"
+    sMsg &= "  program, so " & sVar & " would be gone before the next line runs. Instead either:\n"
+    sMsg &= "  - put the Dim and the code that uses it in one block:\n"
+    sMsg &= "        do\n"
+    sMsg &= "          Dim " & sVar & " As Integer = 5\n"
+    sMsg &= "          Print " & sVar & "\n"
+    sMsg &= "        done\n"
+    sMsg &= "    (begin ... end, lambda ... end and { ... } work the same way)\n"
+    sMsg &= "  - or use a global variable, which keeps its value between blocks:\n"
+    sMsg &= "        $" & sVar & " = 5\n"
+    sMsg &= "        Print $" & sVar
+    Return sMsg
+
+End
+
+'' Remember a top level Const declaration of the running script
+Private Sub RecordScriptConst(sDecl As String)
+
+    If ScriptSubPrefix = "" Or If CompileDepth > 0 Then Return
+    If ScriptConstTable.Exist(sDecl) Then Return
+
+    ' Keep only the first declaration of a name. A redeclaration fails to compile on its
+    ' own line; it must not be carried into every later program of the script.
+    Dim sName As String = ConstName(sDecl)
+    For Each sOld As String In ScriptConstTable
+        If ConstName(sOld) = sName Then Return
+    Next
+    ScriptConstTable.Add(sDecl)
+
+End
+
+'' Lower case name declared by a "[Public|Private] Const Name As ..." line
+Private Sub ConstName(sDecl As String) As String
+
+    Dim aWords As String[] = Split(sDecl, " \t", "", True)
+
+    For iPos As Integer = 0 To aWords.Max - 1
+        If Upper(aWords[iPos]) = "CONST" Then Return Lower(aWords[iPos + 1])
+    Next
+    Return ""
+
+End
+
+'' Put the script's Const declarations in front of the module level declarations
+'' (ExternTable) of the program being built
+Private Sub AddScriptConsts()
+
+    If ScriptConstTable.Count = 0 Then Return
+
+    Dim merged As String[] = ScriptConstTable.Copy()
+    For Each sDecl As String In ExternTable
+        If Not merged.Exist(sDecl) Then merged.Add(sDecl)
+    Next
+    ExternTable = merged
 
 End
 
@@ -1220,7 +1371,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     If UseTable.count > 0 Then Return False                         ' If this command has any kind of use parameters we can not process
 
     Dim method As String = lsplit[0]
-    Dim sObject As String = "sub." & method
+    Dim sObject As String = "sub." & Lower(method)          ' cache keys are always lower case
     lsplit.Remove(0)
 
     If Not isLocalFunc(method) Then Return False
@@ -1285,7 +1436,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
         If Error.text <> "Terminated" Then
             If DoTrace Then
                 Error (("Local Execute error in :") & Method & ":" & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
-                SubCls.doListing(SharedMem["sub." & method], Split(Error.where, ".")[2])
+                SubCls.doListing(SharedMem[sObject], Split(Error.where, ".")[2])
             Endif
             Error.Raise(("gsh local execute error :") & Method & " at line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
         Else
@@ -1456,6 +1607,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             ProgPart1 &= sInsert & "\n"
         Next
 
+        AddScriptConsts()                   ' top level Const declarations of the running script
         For Each sinsert In ExternTable
             ProgPart1 &= sInsert & "\n"
         Next
@@ -1863,7 +2015,7 @@ Catch
 
 End
 
-Sub SetBlockIndent() As String
+Public Sub SetBlockIndent() As String
 
     With sharedmem
         If blocklevel = 0 Then
@@ -2166,6 +2318,15 @@ StartAgain:
                         Inc ParsePos
                         Goto StartAgain
 
+                    Case "DIM"
+                        ' A top level Dim runs as its own program, the variable is gone before the
+                        ' next line. Do not run it, explain blocks instead.
+                        If BlockLevel = 0 And If Not InLambda And If hstart = 0 Then
+                            ExecBuffer = removeLastLine(ExecBuffer)
+                            Error TopLevelDimMessage(IIf(InBufParse.count > 1, InBufParse[1], "x"))
+                            Return True
+                        Endif
+
                     Case "SUB", "FUNCTION", "PROCUDURE"
                         If InLambda Then
                             lambdaSubFuncClass(["END"])
@@ -2203,6 +2364,17 @@ StartAgain:
                             Endif
                             execbuffer &= "\n"
 
+                            ' Inside a script file the sub gets a unique name based on the script, so it
+                            ' never overwrites an existing sub and can be deleted when the script ends.
+                            ' Calls to it are renamed by PreProcesses using ScriptSubMap.
+                            If autocompile And If ScriptSubPrefix <> "" And If BlockLevel = 0 Then
+                                Dim sOrigName As String = Lower(InBufParse[parsepos + 1])
+                                Dim sUniqueName As String = ScriptSubPrefix & sOrigName
+                                ExecBuffer = RegExp.Replace(ExecBuffer, "(^|\\s)(SUB|FUNCTION|PROCEDURE)\\s+" & InBufParse[parsepos + 1] & "\\b", "&1&2 " & sUniqueName, RegExp.Caseless)
+                                ScriptSubMap[sOrigName] = sUniqueName
+                                InBufParse[parsepos + 1] = sUniqueName
+                            Endif
+
                             If autocompile Then
                                 If Not sharedmem.exist("sub." & Lower(InBufParse[parsepos + 1])) Then
                                     LastElement = "sub." & Lower(InBufParse[parsepos + 1])
@@ -2222,12 +2394,14 @@ StartAgain:
                                     'SharedMem[lastelement] = "Sub " & Lower(InBufParse[parsepos + 1]) & "()\nEnd\n"
                                 Else
                                     If CommandMode Then
-                                        Error.Raise("Error :" & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & " Aready Defined")
+                                        ' Consume the body first, otherwise it leaks into the next program as top level code
                                         NoPreProcess = True
                                         DoAlias = False
                                         DoBlock(["END"])
                                         DoAlias = True
                                         NoPreProcess = False
+                                        ExecBuffer = ""
+                                        Error.Raise("Error :" & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & " Already Defined")
                                     Else
                                         Error.Raise(("Use Edit to change :") & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & (" ... Already Defined\n") & SharedMem["sub." & Lower(InBufParse[parsepos + 1])])
                                     Endif
@@ -3172,7 +3346,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
     Dim nowait As Boolean = False
     Dim MinCount As Integer = 0
 
-    Dim Funcdef As String = getSubdef(Split(SharedMem["sub." & funcname], "\n", "\"\"", True))
+    Dim Funcdef As String = getSubdef(Split(SharedMem["sub." & Lower(funcname)], "\n", "\"\"", True))
     'Dim interface As String[] = Split(FuncDef, "(,)", "\"\"", True, True)
     ParmParser.braces = ["(", ")", "{", "}"]
     Dim interfaceDef As String[] = Parser(FuncDef, ParmParser, False, False)
@@ -3289,6 +3463,16 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
         Next
     Endif
 
+    ' Rename references to subs defined by the running script to their unique names
+    If ScriptSubMap.Count > 0 Then
+        For tCount = 0 To Syms.Max
+            If types[tCount] <> Highlight.Symbol Then Continue
+            If Not ScriptSubMap.Exist(Lower(Syms[tCount])) Then Continue
+            If tCount > 0 And If Syms[tCount - 1] = "." Then Continue    ' member access, not our sub
+            Syms[tCount] = ScriptSubMap[Lower(Syms[tCount])]
+        Next
+    Endif
+
     If syms.count = 0 Or If types[0] = Highlight.Comment Or If types[0] = Highlight.Help Then
         Return InVar
     Endif
@@ -3332,7 +3516,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
             syms.Add("!", 0)
             types.Add(Highlight.operator, 0)
         Else
-            If SharedMem.exist("sub." & syms[0]) Then
+            If SharedMem.exist("sub." & Lower(syms[0])) Then
                 If writeto And If syms.count = 1 Then  ' write to is internal only one parm ever
                     syms.Add("(")
                     syms.Add(")")
@@ -3584,11 +3768,13 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
                 Endif
             Else If (syms[PublicCheck] = "PUBLIC" Or syms[PublicCheck] = "PRIVATE" Or syms[PublicCheck] = "CONST") Then
                 If syms.count > (3 + PublicCheck) And If types[1 + PublicCheck] = Highlight.symbol And If types[2 + PublicCheck] = Highlight.keyword And syms[2 + PublicCheck] = "AS" Then
+                    If syms[PublicCheck] = "CONST" Then RecordScriptConst(Trim(OutBuf))
                     If Not ExternTable.Exist(Trim(OutBuf)) Then
                         ExternTable.Add(Trim(OutBuf))
                         Outbuf = "'" & OutBuf
                     Endif
                 Else If syms.count > (4 + PublicCheck) And If syms[PublicCheck + 1] = "CONST" And If types[2 + PublicCheck] = Highlight.symbol And If types[3 + PublicCheck] = Highlight.keyword And syms[3 + PublicCheck] = "AS" Then
+                    RecordScriptConst(Trim(OutBuf))
                     If Not ExternTable.Exist(Trim(OutBuf)) Then
                         ExternTable.Add(Trim(OutBuf))
                         Outbuf = "'" & OutBuf
