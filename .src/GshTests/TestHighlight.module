@@ -9,7 +9,7 @@ Class Texthighlighter
 Public Sub main()
 
     'Dim x As New ConsoleHighlight
-    Component.Load("gb.eval.highlight")
+    Component.Load("gb.highlight")
     Dim x As Texthighlighter = texthighlighter["gambas"]
     '  Dim y As TextHighlighterTheme = New TextHighlighterTheme
 

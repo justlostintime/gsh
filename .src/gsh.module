@@ -1582,7 +1582,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         '   ProgPart1 &= " Use " & $sharedmemlibary & "\nClass Sharedmem\n"
         ' Endif
 
-        ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\":westwood/sharedmem:3\",\"gb.signal\""
+        ProgPart1 &= "Class Sharedmem\nClass SharedmemSymbol\nClass SharedMemWaitQueue\nClass Mem\n Use " & "\"westwood.sharedmem:3\",\"gb.signal\""
 
         For Each sinsert In UseTable
             ProgPart1 &= "," & sinsert
@@ -2529,7 +2529,9 @@ StartAgain:
                     Case "COMPILE", "PROGRAM"
 
                         CompileOnly = True
-                        data = getlastline(execbuffer)
+                        ' Take the output name from the raw input line, execbuffer has been
+                        ' tokenized so a path like /tmp/x would read as "/ tmp / x"
+                        data = Trim(InBuffer)
                         execbuffer = removeLastLine(execbuffer)
                         DoBlock(["END", Upper(inBufParse[0])])
 
@@ -2538,19 +2540,27 @@ StartAgain:
                         ProcessProg()
                         execbuffer = ""
                         CompileOnly = False
-                        Try filename = Split(data, " ,\t")[1]
+                        Try filename = Split(data, " ,\t", "\"", True)[1]
                         If Error Then
                             filename = User.home &/ "bin" &/ "script.out"
                         Else
                             filename = UnQuote(filename)
-                            If File.Dir(filename) = "" Then filename = User.home &/ "bin" &/ filename
+                            ' compile takes the name of the executable only, it is always written to ~/bin
+                            If InStr(filename, "/") > 0 Or If filename Begins "~" Then
+                                Error ("compile takes an executable name only, not a path : ") & filename & (" , it is written to ") & User.home &/ "bin"
+                                Return True
+                            Endif
+                            filename = User.home &/ "bin" &/ filename
                         Endif
 
+                        ' Report and carry on, raising here escapes the script reader loop and
+                        ' crashes gsh with Null object when compile is used in a script
                         Try File.Save(filename, CompileScript)
                         If Error Then
-                            Error.raise(("Unable to create ") & filename)
+                            Error ("Unable to create ") & filename & " : " & Error.text
+                        Else
+                            Try Chmod filename To "rwxr-x--x"
                         Endif
-                        Chmod filename To "rwxr-x--x"
                         Return True
 
                     Case "LAMBDA", "BEGIN"
