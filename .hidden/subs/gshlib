@@ -41,7 +41,7 @@ Sub gshlib(...) As Collection
         Next
     Endif
 
-    Use "westwood.sharedmem:3", "gb.net", "gb.net.curl", "gb.term", "gb.util", "gb.eval.highlight", "gb.pcre"
+    Use "westwood.sharedmem:3", "gb.net", "gb.net.curl", "gb.term", "gb.util", "gb.eval", "gb.highlight", "gb.pcre"
     Extern chdir(Dest As String) As Integer In "libc:6"
     Private BaseUrl As String
     Private sMainIndex As Collection

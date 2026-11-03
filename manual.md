@@ -95,7 +95,7 @@ Gambas3 Modules used:
 \- gambas3-dev \>= 3.18.0\
 \- gambas3-gb-signal \>= 3.18.0\
 \- gambas3-gb-pcre \>= 3.18.0\
-\- gambas3-gb-eval-highlight \>= 3.18.0\
+\- gambas3-gb-highlight \>= 3.18.0\
 \- gambas3-gb-args \>= 3.18.0\
 \- gambas3-westwood-sharedmem \>= 3.18.0\
 \- gambas3-westwood-gb-scripter \>= 3.18.0
