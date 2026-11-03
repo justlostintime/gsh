@@ -12,6 +12,7 @@ Public Sub _call(cmd As String) As Boolean
     Dim OldSource As String = gsh.Source
     Dim oldAppSource As File = gsh.AppSource
     Dim fPath As String
+    Dim SavedScope As Variant[] = Null
 
     cmd = Trim(Replace(cmd, "\"", ""))
 
@@ -41,6 +42,7 @@ Public Sub _call(cmd As String) As Boolean
         gsh.CommandMode = OldCommandMode
         Return False
     Else
+        SavedScope = gsh.ScriptScopeStart(fpath)        ' subs defined by this script are freed when it ends
         Dim SaveQueue As String[] = gsh.ReadQueue.Copy()
         gsh.ReadQueue.clear()
         While gsh.IfReader(["QUIT"])
@@ -48,6 +50,7 @@ Public Sub _call(cmd As String) As Boolean
             Wait 0
         Wend
         gsh.ReadQueue.Insert(SaveQueue)
+        gsh.ScriptScopeEnd(SavedScope)
     Endif
 
     Close gsh.AppSource
@@ -58,6 +61,7 @@ Public Sub _call(cmd As String) As Boolean
 
 Catch
 
+    If SavedScope Then Try gsh.ScriptScopeEnd(SavedScope)
     Close gsh.AppSource
     gsh.appSource = oldAppSource
     gsh.Source = OldSource
