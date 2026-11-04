@@ -136,9 +136,9 @@ lprint($"this{that,10..1,c{a..y}}XXX{6..9}-a")
 
 print "\n*****************************************************************************************"
 Print "Test Back ticks"
-print `quote(user.name)`
+print `echo {quote(user.name)}`
 print  application.id;;
-print  `application.id`
+print  `echo {application.id}`
 
 Print "\n****************************************************************************************"
 print "Test Redirection"

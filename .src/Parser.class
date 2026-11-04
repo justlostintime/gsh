@@ -108,7 +108,7 @@ Fast Unsafe Static Public Sub _call(InLine As String, Optional p As Parseparm = 
                     Continue
                 Endif
             Endif
-        Else If streampos + 1 < InLine.len And If p.operators.Exist(InLine[StreamPos] & InLine[StreamPos + 1]) Then ' look ahead, limit 2
+        Else If streampos + 1 < InLine.len And If p.operators.Exist(InLine[StreamPos] & InLine[StreamPos + 1]) And If Not (sym.len > 0 And IsDigit(InLine[StreamPos])) Then ' look ahead, limit 2, 2> only at the start of a word
             If CurrentType <> Highlight.operator Then
                 If sym.len > 0 Then
                     SymsInsert(p, sym, CurrentType)
@@ -131,7 +131,10 @@ Fast Unsafe Static Public Sub _call(InLine As String, Optional p As Parseparm = 
             Endif
         Endif
 
-        If p.quotes.Exist(InLine[streampos]) Then  ' check for a quote character
+        ' a ' straight after a letter or digit (it's) does not start a ' quote, so a :; after it still splits the line
+        Dim bApostrophe As Boolean = False
+        If InLine[streampos] = "'" And If streampos > 0 Then bApostrophe = IsLetter(InLine[streampos - 1]) Or IsDigit(InLine[streampos - 1])
+        If p.quotes.Exist(InLine[streampos]) And If Not bApostrophe Then  ' check for a quote character
             If BreakOnEscape And If sym.len > 0 Then
                 SymsInsert(p, sym, CurrentType)
                 sym = ""
@@ -169,7 +172,10 @@ Fast Unsafe Static Public Sub _call(InLine As String, Optional p As Parseparm = 
                     Inc QuoteLevel
                 Endif
 
-                If InLine[StreamPos] = currentquote Then
+                ' inside a '...' quote a ' followed by a letter or digit (it's) is text, not the closing quote
+                Dim bInnerApostrophe As Boolean = False
+                If currentquote = "'" And If InLine[StreamPos] = "'" And If StreamPos + 1 < InLine.len Then bInnerApostrophe = IsLetter(InLine[StreamPos + 1]) Or IsDigit(InLine[StreamPos + 1])
+                If InLine[StreamPos] = currentquote And If Not bInnerApostrophe Then
                     If OpenQuote <> currentquote Then
                         Dec QuoteLevel
                         If QuoteLevel = 0 Then
@@ -200,6 +206,7 @@ Fast Unsafe Static Public Sub _call(InLine As String, Optional p As Parseparm = 
                 Inc StreamPos
 
                 If streampos >= InLine.len Then
+                    If p.allowEolToClose Then Break     ' a ' comment runs to the end of the line
                     Error.raise("Unmatched Quote at eol [" & currentquote & "]  in :" & Quote(inline))
                 Endif
 
@@ -344,7 +351,8 @@ Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integ
         Return False
     Endif
 
-    If p.syms.count = 0 Then                                 'this is the command to execute
+    ' The command position is the first word or the first word after a pipe
+    If p.syms.count = 0 Or If ["|", "!", "|>", "|<"].Exist(p.syms.Last) Then          'this is the command to execute
         Dim files As String[]
         files = CreateCmdProgram.DoGlob(var)
         If Files.count = 1 And If files[0] = var Then
@@ -352,8 +360,8 @@ Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integ
             p.types.Add(Highlight.added)
             Return False
         Else If Files.count > 1 Then
-            Error "To many matches:";; Quote(var); "->"; Quote(files.Join(","))
-            Return False
+            ' Must stop here, returning without adding the command would make the next word the command
+            Error.Raise("Too many matches for command " & Quote(var) & " -> " & files.Join(", "))
         Else
             p.syms.Add(Files[0])
             p.types.Add(Highlight.symbol)
@@ -361,7 +369,7 @@ Static Private Sub FileExpandInsert(p As ParseParm, var As String, type As Integ
     Else
         p.syms.add("(")
         p.types.Add(Highlight.Operator)
-        p.syms.Add("fileexpand(" & Quote(var) & ")")
+        p.syms.Add("fileexpand(" & Quote(IIf(var Begins "@", Mid$(var, 2), var)) & ")")   ' @name forces a file name, drop the @
         p.types.Add(Highlight.custom)
         p.syms.add(")")
         p.types.Add(Highlight.Operator)
@@ -390,6 +398,8 @@ Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' repla
                     newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
                 Case "$#"
                     newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
+                Case "$?"  ' exit status of the last CLI command, set after each command line completes
+                    newsyms.Add("(IIf(SharedMem.Exist(\"laststatus\"), SharedMem[\"laststatus\"], 0))")
                 Case "$$"  ' insert the curent pid
                     newsyms.Add(Application.id)
                 Case "$!"

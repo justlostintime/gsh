@@ -879,6 +879,20 @@ If you want the content evaluated you must us braces and brackets
 ```
    echo {(myvar + 5)}    ' more on this later
 ```
+Because braces always mean substitution, an empty `{}` is an error. Commands
+that use `{}` as a literal placeholder, such as `find -exec` and `xargs -I`,
+need it quoted. The `;` that ends `-exec` needs no escape in **gsh**:
+```
+   find . -name "*.txt" -exec ls -l "{}" ;
+   ls | xargs -I "{}" echo file "{}"
+```
+As in Gambas, `'` starts a comment, and a `'` at the start of a word comments
+out the rest of a cli line. A word that contains `'`, such as `it's`, is an
+error and must be quoted:
+```
+   echo "it's here"      ' prints: it's here
+   echo it's here        ' error: A word containing ' must be quoted
+```
 
 ### Let's Look at Aliases and Alias Substitution
 

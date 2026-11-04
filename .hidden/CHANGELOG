@@ -1,3 +1,15 @@
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix alias definition issues
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- update so ' behaves as expected
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Fix command not found error
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Fix empty {} issues
+
 * Tue Nov 03 2026 Brian G <justlostintime@gmail.com> 1.7.4
 - more fixes, shorter error message
 
