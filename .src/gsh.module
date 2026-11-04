@@ -53,6 +53,7 @@ Private ScriptRunCount As Integer = 0
 Public ScriptConstTable As New String[]
 Private CompileDepth As Integer = 0                   ' > 0 while a sub/class is being compiled
 Public InBuffer As String
+Public InBufferRaw As String                ' InBuffer as typed, before alias expansion, for error messages
 Public NoPreProcess As Boolean = False
 Public NoLinkCheck As Boolean = False
 Public CommandMode As Boolean = False
@@ -924,7 +925,7 @@ Public Sub Main()
             If DoTrace Then Print "(Trace "; Now; ") ";; ("***********************************\nVariable program call defined as \n ");; codebuffer;; "\n*********************\n"
 
             OpenBuffer(codebuffer)
-            While IfReader(["QUIT"])
+            While ScriptReadLine()
                 Try ProcessProg()
                 If Error Then
                     Error Error.text
@@ -977,7 +978,7 @@ Public Sub Main()
 
         ScriptScopeStart(runcmder)      ' subs defined by this script get unique names, freed in ExitProgram
 
-        While IfReader(["QUIT"])
+        While ScriptReadLine()
             Try ProcessProg()
             If Error Then
                 Error Error.text
@@ -1067,7 +1068,7 @@ Public Sub Main()
             ExitProgram(1)
         Endif
 
-        While IfReader(["QUIT"])
+        While ScriptReadLine()
             Try ProcessProg()
             If Error Then
                 Error Error.text
@@ -1274,6 +1275,23 @@ Public Sub SweepStaleScriptSubs()
 
 Catch
     If DoTrace Then Error "(Trace "; Now; ") SweepStaleScriptSubs :"; Error.text
+
+End
+
+'' Read the next line or block of a script, file or variable program.
+'' An error raised while reading (CLI parse errors, bad redirects ...) used to escape the
+'' script loop and crash gsh with "Null object" or a JIT "Stack mismatch". Report it and stop.
+Private Sub ScriptReadLine() As Boolean
+
+    Dim bMore As Boolean
+
+    Try bMore = IfReader(["QUIT"])
+    If Error Then
+        Error Error.text
+        ExecBuffer = ""
+        Return False
+    Endif
+    Return bMore
 
 End
 
@@ -1606,10 +1624,12 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         Program = ProgPart1 & Program
         Program &= "Public sub application_signal(sigtype as integer)\nif sigtype = 2 then\n'print \"Task Exit forced\"\n"
             "quit 0\nelse\n'Error \"Some other signal hit :\";sigtype\nendif \nend\n"
+        ' signal 13 (SIGPIPE) is ignored: writing into a pipe command that has already exited
+        ' (echo x | true) then gives an error the generated Try catches, instead of killing the program
         If bSingleUse Then
-            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\n signal[2].catch\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
+            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\n signal[2].catch\nsignal[13].ignore\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
         Else
-            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nsignal[2].catch\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nsignal[2].catch\nsignal[13].ignore\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
         Endif
         Program &= ExecBuffer
         ' temp remove quit with value, it really needs it though
@@ -2223,6 +2243,7 @@ Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
 
 
         If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed
+        InBufferRaw = InBuffer
         If DoAlias Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)
 
         InBufParse = Highlight.Analyze(InBuffer)
@@ -2247,6 +2268,7 @@ Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
             Endif
         Endif
 
+        CreateCmdProgram.CompileDepth = 0                  ' a failed compile can leave it set
         Dim newCmdLine As String = Preprocesses(InBuffer)
 
         If newCmdLine = "" Then Return True
@@ -3501,7 +3523,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
         Return Syms.Join(" ")
     Endif
 
-    If (invar[0] = "." And invar[1] = "/") Or If (invar[0] = "~" And invar[1] = "/") Or If invar[0] = "/" Or If invar[0] = "*" Then
+    If (invar[0] = "." And invar[1] = "/") Or If InVar Begins "../" Or If (invar[0] = "~" And invar[1] = "/") Or If invar[0] = "/" Or If invar[0] = "*" Then
         syms.Add("!", 0)
         types.Add(Highlight.operator, 0)
 

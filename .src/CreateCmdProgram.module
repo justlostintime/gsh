@@ -50,16 +50,18 @@ Public Sub MakeAbs(newdir As String) As String
 
     If sPathSplit.count = 0 Then
         Return newdir
-    Else If sPathSplit.count = 1 Then
+    Else If sPathSplit.count = 1 And If Not (newdir Begins "./" Or newdir Begins "../") Then
         Return newdir
     Else
+        ' a relative path such as ../bin/x or tools/x starts at the current directory
+        If Not (newdir Begins "/" Or newdir Begins "~") Then pwds.Insert(Split(env["PWD"], "/", "", True))
         For Each Sdir As String In sPathSplit
             Select Case SDir
                 Case "~"
                     If pwds.count = 0 Then pwds.insert(Split(user.home, "/", "", True))
 
                 Case "."
-                    If pwds.count = 0 Then pwds.insert(Split(env["PWD"], "/", "", True))
+                    ' current directory, already the start of a relative path
 
                 Case ".."
                     If pwds.count > 0 Then pwds.remove(pwds.max)
@@ -70,11 +72,12 @@ Public Sub MakeAbs(newdir As String) As String
             End Select
 
             Dim RealPath As String = "/" & pwds.join("/")
-            Dim StatInfo As Integer = Stat(RealPath).mode
             If Not Exist(RealPath) Then
-                Error.Raise("Command Not Found :[" & RealPath & "]")
-            Else If (StatInfo And &h49) = 0
-                Error.Raise("Command file : [" & RealPath & "] Not executable")
+                Error.Raise("Command Not Found :[" & RealPath & "] in: " & UserLine())
+            Endif
+            Dim StatInfo As Integer = Stat(RealPath).mode
+            If (StatInfo And &h49) = 0 Then
+                Error.Raise("Command file : [" & RealPath & "] Not executable in: " & UserLine())
             Endif
 
         Next
@@ -148,6 +151,48 @@ Public Sub _call(Source As String, Optional AsFunction As Boolean = False) As St
 End
 
 Private AutoFuncName As Integer = 0
+Public CompileDepth As Integer = 0                         ' > 0 while a CLI line is compiling, reset by gsh for each line read
+Private CompileSource As String = ""                      ' the CLI line being compiled, after alias expansion
+
+'' The CLI line for error messages, as the user typed it (before alias expansion) when it is
+'' the line gsh is processing, otherwise the line handed to Compile.
+Public Sub UserLine() As String
+
+    If gsh.InBufferRaw <> "" And If CompileSource <> "" And If InStr(gsh.InBuffer, Trim(CompileSource)) > 0 Then
+        Return Trim(gsh.InBufferRaw)
+    Endif
+    Return Trim(CompileSource)
+
+End
+
+'' A ' starts a comment, so a word such as it's would silently lose the rest of the line.
+'' Raise an error instead, the word must be quoted "it's". A ' at the start of a word is a comment.
+Private Sub CheckApostrophe(sLine As String)
+
+    Dim i As Integer
+    Dim c As String
+    Dim sQuote As String = ""
+
+    For i = 1 To Len(sLine)
+        c = Mid$(sLine, i, 1)
+        If sQuote <> "" Then                       ' inside "..." or `...`, skip escaped characters
+            If c = "\\" Then
+                Inc i
+            Else If c = sQuote Then
+                sQuote = ""
+            Endif
+        Else If c = "\"" Or c = "`" Then
+            sQuote = c
+        Else If c = "'" Then
+            If i > 1 Then
+                c = Mid$(sLine, i - 1, 1)
+                If IsLetter(c) Or IsDigit(c) Then Error.Raise("A word containing ' must be quoted, for example \"it's\" in: " & UserLine())
+            Endif
+            Return                                 ' the rest of the line is a comment
+        Endif
+    Next
+
+End
 
 Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns a correctly created program to run the command
 
@@ -158,6 +203,9 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
     Dim AndOrLevelStack As New Integer[]
     Dim i As Integer
 
+    CompileSource = Source
+    If CompileDepth = 0 Then CheckApostrophe(Source)       ' only the line itself, not `...` inside its arguments
+    Inc CompileDepth
     lines = Parser(Source, Null, True)
 
     For i = 0 To lines.max
@@ -167,13 +215,13 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
             Case "!"
                 Continue
             Case "&&"
-                If I = 0 Then Error.Raise("&& may not be at start of line")
-                If I = lines.max Then Error.Raise("&& may not be at end of line")
+                If I = 0 Then Error.Raise("&& may not be at start of line: " & UserLine())
+                If I = lines.max Then Error.Raise("&& may not be at end of line: " & UserLine())
                 Inc AndOrLevel
                 FinalProgram &= "If Process.LastValue = 0 then ' &&" & AndOrLevel & "\n"
             Case "||"
-                If I = 0 Then Error.Raise("|| may not be at start of line")
-                If I = lines.max Then Error.Raise("|| may not be at end of line")
+                If I = 0 Then Error.Raise("|| may not be at start of line: " & UserLine())
+                If I = lines.max Then Error.Raise("|| may not be at end of line: " & UserLine())
                 Inc AndOrLevel
                 FinalProgram &= "If Process.LastValue <> 0 then ' ||" & AndOrLevel & "\n"
             Case "("
@@ -182,9 +230,15 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
                 Inc BraceLevel
                 FinalProgram &= "If True then\n"
             Case ")"
+                If BraceLevel <= 0 Then Error.raise("Incorrect(unbalanced) usage of '()' Braces in: " & UserLine())
                 FinalProgram &= "Endif\n"
                 Dec BraceLevel
                 AndOrLevel = AndOrLevelStack.Pop()
+                ' A group is a command for && and ||, close the test that guarded it
+                If AndOrLevel Then
+                    FinalProgram &= "EndIf\n"
+                    Dec AndOrLevel
+                Endif
 
             Default
                 FinalProgram &= DoProcess(lines[i], AsFunction, ReturnSet)
@@ -195,8 +249,11 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
         End Select
     Next
 
-    If BraceLevel > 0 Or BraceLevel < 0 Then Error.raise("Incorrect(unbalanced)  usage of '()' Braces in CLI")
-    If AndOrLevel Then Finalprogram &= "Endif\n"
+    If BraceLevel > 0 Or BraceLevel < 0 Then Error.raise("Incorrect(unbalanced) usage of '()' Braces in: " & UserLine())
+    While AndOrLevel > 0
+        Finalprogram &= "Endif\n"
+        Dec AndOrLevel
+    Wend
     '   FinalProgram &= "Catch\nError \"gsh error:\" & error.text \n"
 
     If AsFunction Then
@@ -213,6 +270,7 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
         FinalProgram = AutoName & "()"
     Endif
 
+    Dec CompileDepth
     Return FinalProgram
 
 End
@@ -223,17 +281,59 @@ Public Sub IsGlob(Exp As String) As Boolean
         Case "@", "/", "~"
             Return True
 
-        Case "."
-            If exp[1] = "/" Then Return True
-            If exp.len = 1 Then Return True
+        Case "$"                                   ' variables and $? $# ... are never file patterns
             Return False
 
-        Default
-            If InStr(exp, "*") Then Return True
-
+        Case "."
+            If exp Begins "./" Or If exp Begins "../" Then Return True
+            ' a plain . or .. is an argument (grep -c .), not a path to expand
     End Select
 
+    If InStr(exp, "*") Or If InStr(exp, "?") Then Return True
+    If InStr(exp, "[", 2) And If InStr(exp, "]", InStr(exp, "[", 2)) Then Return True   ' file[12].txt, not $[expr]
+
     Return False
+
+End
+
+'' A redirect target that is a plain file name, as in "> out.txt" or "< data".
+'' $variables, sub names (sinks/sources), (expressions) and {blocks} are not files.
+Private Sub IsPlainFileTarget(sTarget As String, iType As Integer) As Boolean
+
+    If sTarget = "" Then Return False
+    If iType = Highlight.Function Or If iType = Highlight.String Then Return False
+    Select Case sTarget[0]
+        Case "$", "(", "{", "\""
+            Return False
+    End Select
+    If InStr(sTarget, "(") Then Return False
+    If IsDeclaredVariable(sTarget) Then Return False      ' public lsout as string : ls / > lsout
+    Return True
+
+End
+
+'' True if sName is a hoisted Public/Private variable of the program being built (ExternTable).
+'' Output sinks run in their own generated sub, so a Dim local can not be a target anyway.
+Private Sub IsDeclaredVariable(sName As String) As Boolean
+
+    Dim sPattern As String
+    Dim sLine As String
+
+    If Not RegExp.Match(sName, "^[A-Za-z_][A-Za-z0-9_]*$") Then Return False   ' out.txt can not be a variable
+    sPattern = "^\\s*(static\\s+)?(public|private)\\s+([A-Za-z0-9_\\s,]*,\\s*)?" & sName & "\\s*(,|\\s+as\\b)"
+
+    For Each sLine In gsh.ExternTable
+        If RegExp.Match(sLine, sPattern, RegExp.Caseless) Then Return True
+    Next
+    Return False
+
+End
+
+'' Strip the @ that forces a name to be a file when it clashes with a command or keyword
+Private Sub FileTargetName(sTarget As String) As String
+
+    If sTarget Begins "@" Then Return Mid$(sTarget, 2)
+    Return sTarget
 
 End
 
@@ -270,6 +370,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
     Dim x As String[]
     Dim y As Integer[]
     Dim z As Integer[]                                                 ' Gambas class file
+    Dim ErrToOut As New Integer[]                          ' commands with 2>&1, stderr follows stdout
 
     CmdExec = New String[]                                  ' this will contain the exec line for each command
     CmdIo = New String[]                                       ' this will contain the read functions for each command or rd wr if inside pipe stream
@@ -338,7 +439,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                 CmdWriteTo.Add(-2)
                 CmdWriters.add(z)
                 CmdPipeType.add("|")
-                GoSub SetNeedsSTDERRWrite
+                SetNeedsSTDERRWrite(CmdCount, CmdPipeType, NeedsSTDERRWrite)
                 Inc CmdCount
                 CurrentRead = CmdCount
                 Inc i
@@ -364,7 +465,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                 CmdWriteTo.Add(-3)                                         ' -3 tells us this is a tee for the pipe fitting
                 CmdWriters.add(z)
                 CmdPipeType.add("|>")
-                GoSub SetNeedsSTDERRWrite
+                SetNeedsSTDERRWrite(CmdCount, CmdPipeType, NeedsSTDERRWrite)
                 Inc CmdCount
                 Inc i
                 NoOutRedirect.Add(True)
@@ -419,18 +520,44 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
 
         BuildBlock = ""
 
+        ' an empty {} is not a substitution, a literal {} (find -exec, xargs -I) must be quoted as "{}"
+        For i = 0 To CmdList[CurrentCmd].max - 1
+            If CmdList[CurrentCmd][i] = "{" And If CmdList[CurrentCmd][i + 1] = "}" Then
+                Error.Raise("Empty {} substitution, quote it as \"{}\" for a literal in: " & UserLine())
+            Endif
+        Next
+
         For i = 0 To CmdList[CurrentCmd].max
             If i > CmdList[CurrentCmd].max Then Break ' we change the size of the array so need a live check
             Sym = CmdList[CurrentCmd][i]
             type = CmdTypes[currentCmd][i]
             If i = 0 And CurrentCmd > 0 Then ' verify that this is a valid command
                 If type <> Highlight.function And If type <> Highlight.label Then
-                    Try sym = System.find(sym)
-                    If Error Or If sym = "" Then Error.Raise("Pipe Fitting error: Command/Function [" & CmdList[CurrentCmd][i] & "] Unknown")
+                    If InStr(sym, "/") Then
+                        sym = MakeAbs(sym)                         ' ../bin/x or ./x in a pipe, raises if not found
+                    Else
+                        Try sym = System.find(sym)
+                        If Error Or If sym = "" Then Error.Raise("Pipe Fitting error: Command/Function [" & CmdList[CurrentCmd][i] & "] Unknown in: " & UserLine())
+                    Endif
                 Endif
             Endif
 
+            ' sh style stderr redirects map onto the gsh ones, 2> is &> and 2>> is &>>
+            If sym = "2>" Then
+                sym = "&>"
+            Else If sym = "2>>" Then
+                sym = "&>>"
+            Endif
+
             Select Case sym
+
+                Case "2>&1"   ' stderr goes where ever stdout goes, the error sub is built after all pipes are known
+                    If Not ErrToOut.Exist(CurrentCmd) Then ErrToOut.Add(CurrentCmd)
+                    NeedsSTDIOWrite[CurrentCmd] = True
+                    NoErrRedirect[CurrentCmd] = False
+
+                Case "2>&"
+                    Error.Raise("Only 2>&1 is supported for stderr duplication in: " & UserLine())
 
                 Case "&" ' error redirection we hope or send to bg
                     If CurrentCmd = CmdList.max And i = CmdList[CurrentCmd].max Then 'we have a background request
@@ -438,13 +565,13 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                         Continue
                     Else
                         ' ignore the & if not in last position
-                        Error.Raise(" & not last symbol in command for background request")
+                        Error.Raise("& must be the last symbol for a background request in: " & UserLine())
                     Endif
 
                 Case "&>", "&>>"   ' redirect error stream to object or file, clear or append
                     Inc i
                     If i > CmdList[CurrentCmd].max Then
-                        Error.Raise("Missing Error redirection destination &> &>> [" & CmdList[CurrentCmd].join(" ") & " ... ]")
+                        Error.Raise("Missing error redirection destination after " & sym & " in: " & UserLine())
                     Endif
 
                     i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, True)
@@ -455,7 +582,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                 Case ">", ">>" ' Output redirect features
                     Inc i
                     If i > CmdList[CurrentCmd].max Then
-                        Error.Raise("Missing output redirection destination > >> [" & CmdList[CurrentCmd].join(" ") & " ...]")
+                        Error.Raise("Missing output redirection destination after " & sym & " in: " & UserLine())
                     Endif
 
                     i = GenerateRedirectOut(i, BaseName, CurrentCmd, sym, CmdErr, CmdIo, CmdList, CmdTypes, CmdBeforeExec, CmdKill, False)
@@ -467,7 +594,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                     Inc i
 
                     If i > CmdList[CurrentCmd].max Then
-                        Error.Raise("Missing input redirection destination < [" & CmdList[CurrentCmd].join(" ") & " ...]")
+                        Error.Raise("Missing input redirection source after < in: " & UserLine())
                     Endif
 
                     i = GenerateRedirectInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
@@ -476,7 +603,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                     Inc i
 
                     If i > CmdList[CurrentCmd].max Then
-                        Error.Raise("Missing input termination string < [" & CmdList[CurrentCmd].join(" ") & " ...]")
+                        Error.Raise("Missing input termination string after << in: " & UserLine())
                     Endif
 
                     i = GenerateInlineInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
@@ -485,7 +612,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                     Inc i
 
                     If i > CmdList[CurrentCmd].max Then
-                        Error.Raise("Missing input string/Variable < [" & CmdList[CurrentCmd].join(" ") & " ...]")
+                        Error.Raise("Missing input string/variable after <<< in: " & UserLine())
                     Endif
 
                     i = GenerateStringInput(i, BaseName, CurrentCmd, CmdList, CmdTypes, CmdWrite)
@@ -493,7 +620,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                 Case "!>" ' Write the return value from the exec to this variable
                     Inc i
                     If i > CmdList[CurrentCmd].max Then
-                        Error.Raise("Missing CLI return code destination !> [" & CmdList[CurrentCmd].join(" ") & "... ]")
+                        Error.Raise("Missing CLI return code destination after !> in: " & UserLine())
                     Endif
                     CmdKill[CurrentCmd] &= gsh.PreProcesses(CmdList[CurrentCmd][i]) & " = mProc" & BaseName & Str(CurrentCmd) & ".value\n"
                     'Case "{"
@@ -515,7 +642,9 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                                 sym = MakeAbs(sym)
                                 If Not IsNull(sym) Then
                                     Dim currentcmdname As String = "Cmd" & BaseName & CurrentCmd
-                                    gsh.LinkTable.add("Const " & currentcmdname & " As String = " & Quote(System.Find(sym)), currentcmdname)
+                                    Dim sFound As String = System.Find(sym)
+                                    If sFound = "" Then Error.Raise("Command Not Found :[" & sym & "] in: " & UserLine())
+                                    gsh.LinkTable.add("Const " & currentcmdname & " As String = " & Quote(sFound), currentcmdname)
                                     CmdExec[CurrentCmd] &= "tostringarray(CmdBuild," & currentcmdname
                                 Endif
 
@@ -588,9 +717,9 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
 
         If CmdWriteTo[CurrentCmd] >= 0 Then   ' we need to do the write to the next command in pipe
             If CmdIo[CurrentCmd] = "" Then CmdIo[CurrentCmd] = SetIoSub(CurrentCmd, basename)
-            CmdIo[CurrentCmd] &= "write #mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ", sInput, sInput.len\n"
+            CmdIo[CurrentCmd] &= "Try write #mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ", sInput, sInput.len\n"
             If CmdKill[CurrentCmd] = "" Then CmdKill[CurrentCmd] = SetKillSub(CurrentCmd, basename)
-            CmdKill[CurrentCmd] &= "if mClose" & BaseName & Str(CmdWriteTo[CurrentCmd]) & "() then mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ".closeinput()\n"
+            CmdKill[CurrentCmd] &= "if mClose" & BaseName & Str(CmdWriteTo[CurrentCmd]) & "() then Try mProc" & BaseName & Str(CmdWriteTo[CurrentCmd]) & ".closeinput()\n"
             If CmdWrite[CmdWriteTo[CurrentCmd]] = "" Then
                 CmdWrite[CmdWriteTo[CurrentCmd]] = " "
             Endif
@@ -599,12 +728,12 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
         Else If CmdReadFrom[CurrentCmd] >= 0 Then ' we are a read from we have to add this
             If CmdIo[CmdReadFrom[CurrentCmd]] = "" Then CmdIo[CmdReadFrom[CurrentCmd]] = SetIoSub(CmdReadFrom[CurrentCmd], basename)
             If CmdKill[CmdReadFrom[CurrentCmd]] = "" Then CmdKill[CmdReadFrom[CurrentCmd]] = SetKillSub(CmdReadFrom[CurrentCmd], basename)
-            CmdIo[CmdReadFrom[CurrentCmd]] &= "write #mProc" & BaseName & Str(CurrentCmd) & ", sInput, sInput.len\n"
-            CmdKill[CmdReadFrom[CurrentCmd]] &= "if mClose" & BaseName & Str(CurrentCmd) & "() then mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"
+            CmdIo[CmdReadFrom[CurrentCmd]] &= "Try write #mProc" & BaseName & Str(CurrentCmd) & ", sInput, sInput.len\n"
+            CmdKill[CmdReadFrom[CurrentCmd]] &= "if mClose" & BaseName & Str(CurrentCmd) & "() then Try mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"
             CmdWriters[CurrentCmd].add(CmdReadFrom[CurrentCmd])
         Endif
 
-        If NoOutRedirect[CurrentCmd] And NeedsSTDIOWrite[CurrentCmd] Then
+        If NoOutRedirect[CurrentCmd] And NeedsSTDIOWrite[CurrentCmd] And CmdReadFrom.Find(CurrentCmd, CurrentCmd + 1) = -1 Then ' piped output is written to the next command, not the terminal
             If CmdIo[CurrentCmd] = "" Then
                 CmdIo[CurrentCmd] &= DefaultIoSub(CurrentCmd, basename)
             Else
@@ -617,10 +746,22 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
         Endif
 
         ' do this only on first, allows to inject data to stream
-        If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"
+        If CmdWrite[CurrentCmd] <> "" And CurrentCmd = 0 Then CmdWrite[CurrentCmd] &= "Try mProc" & BaseName & Str(CurrentCmd) & ".closeinput()\n"
     Next
 
     CmdFinal = ""
+
+    ' 2>&1 : the error sub does the same writes as the stdout sub (file, variable, next command or terminal)
+    For Each j In ErrToOut
+        Dim sOutBody As String = CmdIo[j]
+        Dim iBodyStart As Integer = InStr(sOutBody, "lof(last)\n")
+        If iBodyStart > 0 Then
+            sOutBody = Mid$(sOutBody, iBodyStart + Len("lof(last)\n"))
+        Else
+            sOutBody = "write #File.out, sInput, sInput.len\n"
+        Endif
+        CmdErr[j] = SetErrSub(j, BaseName) & "Dim sInput As String = msg\n" & sOutBody
+    Next
 
     For Each sym In CmdIo   ' setup all the read functions
         Dim Vset As String[] = Split(sym, "|", "\"\"", True, True)
@@ -701,36 +842,39 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
 
     If Not (NoReadWrite And ReturnSet) Then
         CmdFinal &= "mProc" & BaseName & Str(CmdList.Max) & ".wait()\n"
+        ' wait for the other pipe stages too, a writer still running (echo x | true) left
+        ' its events pending and the generated program hung in Quit
+        For i = CmdList.Max - 1 DownTo 0
+            CmdFinal &= "mProc" & BaseName & Str(i) & ".wait()\n"
+        Next
+        ' exit status of the last command in the pipe, $? in CLI and Gambas lines (global "?") and $laststatus
+        CmdFinal &= "SharedMem[\"laststatus\"] = mProc" & BaseName & Str(CmdList.Max) & ".value\nSharedMem[\"?\"] = SharedMem[\"laststatus\"]\n"
     Endif
 
     If Not WaitCompletion Then CmdFinal &= "&"
     Return CmdFinal
 
-SetNeedsSTDERRWrite:      ' set the the last writer to also need to write std err
+    ' No Catch/Error.Propagate here: in this JIT (Fast) function it left the JIT stack unbalanced,
+    ' so any CLI error (missing redirect target ...) crashed gsh later with "Stack mismatch in JIT function"
 
-    If cmdcount = 1 Then
-        NeedsSTDERRWrite[0] = True
-        Return
-    Endif
+End
+
+'' Set the last writer before a pipe to also write std err.
+'' CmdCount is still the command before the pipe, search back from it for the writer
+'' (the old cmdcount = 1 shortcut marked command 0, losing stderr of the 2nd command).
+'' This was a GoSub, an error raised in DoProcess then crashed the JIT with "Stack mismatch".
+Private Sub SetNeedsSTDERRWrite(CmdCount As Integer, CmdPipeType As String[], NeedsSTDERRWrite As Boolean[])
 
     For icounter As Integer = CmdCount DownTo 0
-
         If CmdPipeType[icounter] = "!" Or CmdPipeType[icounter] = "|" Then
             NeedsSTDERRWrite[icounter] = True
             Return
         Endif
-
     Next
-
-    Return
-
-Catch
-    If gsh.DoTrace Then Error "Function #="; CurrentCmd, Error.text, Error.where
-    Error.Propagate()
 
 End
 
-cmdterm As String[] = ["<", "<<", "<<<", ">", ">>", ">>>", "|<", "|>"]
+cmdterm As String[] = ["<", "<<", "<<<", ">", ">>", ">>>", "|<", "|>", "&>", "&>>", "!>", "2>", "2>>", "2>&1"]
 
 Fast Unsafe Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
@@ -790,7 +934,7 @@ Fast Unsafe Private Sub GenerateRedirectInput(i As Integer, BaseName As String, 
         Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
             CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
         Else
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & Quote(CmdList[CurrentCmd][i]) & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & Quote(FileTargetName(CmdList[CurrentCmd][i])) & ")))") & "\n"
         Endif
     Endif
     Return i
@@ -841,13 +985,17 @@ Fast Unsafe Private Sub GenerateRedirectOut(i As Integer, BaseName As String, Cu
         CmdList[CurrentCmd][i] = "(expandfn(" & CmdList[CurrentCmd][i] & "))"
     Endif
 
-    If (CmdList[CurrentCmd][i][0] = "(" And InStr(CmdList[CurrentCmd][i], "...") = 0) Or If IsGlob(CmdList[CurrentCmd][i]) Then
+    If (CmdList[CurrentCmd][i][0] = "(" And InStr(CmdList[CurrentCmd][i], "...") = 0) Or If IsGlob(CmdList[CurrentCmd][i]) Or If IsPlainFileTarget(CmdList[CurrentCmd][i], CmdTypes[CurrentCmd][i]) Then
         notfile = False
         If CmdList[CurrentCmd][i][0] = "(" Then                  ' allow any expression to be source of file name
             fullname = gsh.preprocesses(Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase))
             notfile = True
         Else
-            fullname = CmdList[CurrentCmd][i]
+            fullname = FileTargetName(CmdList[CurrentCmd][i])
+            If Not (fullname Begins "/") Then                    ' ~/x, ../x, x : resolve against the current directory when run
+                fullname = gsh.preprocesses("expandfn(" & Quote(fullname) & ")")
+                notfile = True
+            Endif
         Endif
 
         fileext = "RE" & Rand(56, 67890)
@@ -1125,7 +1273,7 @@ Public ShelliParse As ParseParm
 
 Public Sub _init()
 
-    ShellParse = New ParseParm(False, ["&", ">", ">>", "<", "<<", "<<<", "&>", "&>>", "|", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>"], ["\"", "\"", "(", ")", "`", "`"])
+    ShellParse = New ParseParm(False, ["&", ">", ">>", "<", "<<", "<<<", "&>", "&>>", "|", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>", "2>", "2>>", "2>&", "2>&1"], ["\"", "\"", "(", ")", "`", "`"])
     ShellParse.braces = []
     ShellParse.seperators = [" ", "\t", "\n"]
     ShellParse.DoFileExpand = True
@@ -1190,7 +1338,7 @@ Public Sub InitAlias()
 End
 
 ' Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
-Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]"], ["\n"], True)
+Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)   ' same as gsh.module, a ' comment is not split
 
 Sub multiSub(akey As String, data As String, MyRegx As Regexp) As String
 
@@ -1261,6 +1409,7 @@ DoAliasAgain:
     Next
 
     If InStr(data, ":") <> 0 Then
+        MultyParse.allowEolToClose = True                 ' a ' comment runs to the end of the line
         used = parser(data, MultyParse)
         'used = Split(data, ":", "\"\"", True, True)
         If gsh.ReadQueue.count > 0 Then
@@ -1317,13 +1466,63 @@ Public Sub alias(cmd As String) As String[]  ' return a list of command line cha
 
 End
 
+'' Split an alias line into ["alias", name] (delete) or ["alias", name, body].
+'' A '...' body ends at a ' followed by the end of the line or a space, so a ' inside a word (it's) is
+'' part of the body. After the body only a ' comment may follow. An unquoted body runs to a ' comment.
+Private Sub SplitAliasDef(cmdline As String) As String[]
+
+    Dim sRest As String = Trim(cmdline)
+    Dim iEq As Integer
+    Dim sName, sValue, sBody, sAfter As String
+    Dim i As Integer
+
+    If Upper(Left(sRest, 7)) = "UNALIAS" Then
+        sRest = Trim(Mid$(sRest, 8))
+    Else If Upper(Left(sRest, 5)) = "ALIAS" Then
+        sRest = Trim(Mid$(sRest, 6))
+    Endif
+    iEq = InStr(sRest, "=")
+    If iEq = 0 Then Error.Raise("Not enough info to define alias '=' is missing: " & cmdline)
+
+    sName = Trim(Left(sRest, iEq - 1))
+    sValue = Trim(Mid$(sRest, iEq + 1))
+    If sName = "" Then Error.Raise("alias: no name given before '=': " & cmdline)
+
+    If sValue = "" Then Return ["alias", sName]
+
+    If Left(sValue) = "'" Then
+        For i = 2 To Len(sValue)
+            If Mid$(sValue, i, 1) = "'" Then
+                If i = Len(sValue) Then Break
+                If IsSpace(Mid$(sValue, i + 1, 1)) Then Break
+            Endif
+        Next
+        If i > Len(sValue) Then Error.Raise("alias: missing closing ' in: " & cmdline)
+        sBody = Mid$(sValue, 2, i - 2)
+        sAfter = Trim(Mid$(sValue, i + 1))
+        If sAfter <> "" And If Left(sAfter) <> "'" Then Error.Raise("alias: unexpected text after the closing ' : " & sAfter & " in: " & cmdline)
+    Else
+        sBody = sValue                                           ' unquoted, runs to a ' comment at the start of a word
+        For i = 2 To Len(sValue)
+            If Mid$(sValue, i, 1) = "'" And If IsSpace(Mid$(sValue, i - 1, 1)) Then
+                sBody = Trim(Left(sValue, i - 1))
+                Break
+            Endif
+        Next
+    Endif
+
+    If Trim(sBody) = "" Then Error.Raise("alias: no definition provided: " & cmdline)
+    Return ["alias", sName, sBody]
+
+End
+
 Public Sub setalias(cmdline As String)
 
     Dim body As String[]
     Dim cmd As String[]
     Dim Params As String[]
 
-    cmd = Split(cmdline, " =", "''", True, False)
+    cmd = SplitAliasDef(cmdline)
 
     If cmd.count = 2 Then
         params = Split(cmd[1], "()")
