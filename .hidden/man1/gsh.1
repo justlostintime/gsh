@@ -33,6 +33,8 @@ Size of in memory Database Dictionary and index(Default 2.5m)
 .TP
 \fB\ -f --from\fR
  Execute the content of a global variable as independant script, returns output
+.br
+ gsh -f name -- args, the arguments after -- are passed to the script
 .TP
 \fB\ -h --help\fR
  Display this help
@@ -57,6 +59,11 @@ Defines the ammount of storage needed for the In Memory Database(default 20.5m)
 .TP
 \fB\-r --runline <shell executable code>\fR
 Execute the following command line
+.br
+gsh -r name -- args, the sub name is followed by -- and then its arguments. A sub in a pipe is run this way
+.TP
+\fB\ --\fR
+Ends the gsh options. Everything after it is passed to the -r sub or the -f script, so arguments such as -x are not read as gsh options, gsh -r mysub -- -x --color=auto
 .TP
 \fB\ -s --shmname <Database name>\fR
 Shared Memory Name for application

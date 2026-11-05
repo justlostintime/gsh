@@ -87,6 +87,8 @@
             -p --port    Any of the following integer port number,
                          devicename example USBtty, Unix named pipe path
             -r --runline Execute the following command line
+                         gsh -r name -- args, -- ends the gsh options
+                         so -x style args go to the sub
             -s --shmname The name of the in memory database to use
                          defaults to username
                          Two in memory files are created, data segment

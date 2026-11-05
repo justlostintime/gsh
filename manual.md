@@ -504,6 +504,7 @@ or
       The default size is 2.5m.
   -f --from Executes the content of a global variable. 
        The global variable may contain any gsh script
+       gsh -f name -- args, the arguments after -- are passed to the script.
   -h --help Gets this information.
   -i --image Loads a specific image from an image file upon start. 
        The Image can be viewed as the total environment. 
@@ -515,6 +516,8 @@ or
        This is used mainly if you are not using the default image.
        Mostly gsh will detect if the image is already loaded.
   -r --runline Executes the following command line.
+       gsh -r name -- args, the name of the sub is followed by -- and then
+       its arguments. A sub in a pipe is run this way.
   -s --shmname The name of the in memory database to use.
        Defaults to username. Two in-memory files are created, data segment and 
        Index/Collection segment
@@ -522,6 +525,9 @@ or
   -t --trace Turns on tracing in scripts.
   -V --version Displays the version number.
   -v --version Displays the version information as gsh starts.
+  -- Ends the gsh options. Everything after it is passed to the -r sub or
+       the -f script, so arguments such as -x are not read as gsh options:
+       gsh -r mysub -- -x --color=auto
 ```
 ## Keyboard Input and Configuration
 
@@ -2015,6 +2021,16 @@ $mv = "x" does not hide the mv command.
  !@c | tr a-z A-Z                'prints HI
  echo abc | @c                   'prints hi
  ls x || @c                      'prints hi when ls fails
+```
+On a line by itself @name runs the variable but its output is not used,
+the same as any other value that is not used. Use the result in a
+statement, or put a ! in front to run the variable as a command:
+```
+ $c = "Print \"hi\""
+ @c                              ' runs, nothing is shown
+ ? @c & " more data"             ' prints hi more data
+ !@c                             ' runs the variable as a separate process, prints hi
+ echo {(@c)}                     ' prints hi
 ```
 #### Parameters \$0-\$n and \$\#
 
