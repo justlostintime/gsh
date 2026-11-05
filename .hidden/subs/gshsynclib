@@ -19,6 +19,7 @@
 ' Boston, MA  02110-1301  USA
 '
 Sub gshsynclib()
+    ''' Add the default content to the local copy of the gsh library
    Use "gb.util"
 
     Dim source As String = env["gshproject"]

@@ -1,3 +1,33 @@
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- correct 2> to somewhere style redirection and update documentation to reflect new redirection
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Fix bug in variables being run a fucntions, incorrectly without @varname style
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix break point in running plugins
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix more () at cli level
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix () used at the cli level
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix passing to sub function command line correctly
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Various patches
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- redirection bugs
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Sub fix
+
+* Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix evaluation of functions inside sh cli commands
+
 * Wed Nov 04 2026 Brian G <justlostintime@gmail.com> 1.7.4
 - fix alias definition issues
 

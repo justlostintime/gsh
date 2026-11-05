@@ -152,6 +152,7 @@ End
 
 Private AutoFuncName As Integer = 0
 Public CompileDepth As Integer = 0                         ' > 0 while a CLI line is compiling, reset by gsh for each line read
+Private GroupOperators As String[] = ["!", "(", ")", ":;", "&&", "||"]   ' the operator pieces Compile splits a line into
 Private CompileSource As String = ""                      ' the CLI line being compiled, after alias expansion
 
 '' The CLI line for error messages, as the user typed it (before alias expansion) when it is
@@ -210,9 +211,11 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
 
     For i = 0 To lines.max
         If Lines[i] = "" Then Continue
-        If i > 0 Then lines[i] = AliasReplace(lines[i])
+        If i > 0 And If Not GroupOperators.Exist(lines[i]) Then lines[i] = AliasReplace(lines[i])   ' an operator is never an alias
         Select Case lines[i]
             Case "!"
+                Continue
+            Case ":;"                                  ' inside a !( ... ) group, run the next command
                 Continue
             Case "&&"
                 If I = 0 Then Error.Raise("&& may not be at start of line: " & UserLine())
@@ -508,7 +511,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
     Loop Until i > syms.max
 
     For CurrentCmd = 0 To CmdList.Max
-        If currentCmd > 0 Then
+        If currentCmd > 0 And If CmdTypes[currentcmd][0] <> Highlight.Label Then   ' @name runs a variable, it is never an alias
             DoAlias(CmdList, CmdTypes, currentcmd)
         Endif
         Dim bFirst As Boolean = True
@@ -631,6 +634,11 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                             Case Highlight.function    ' remember we used this to mean local function
                                 gsh.PreProcesses("tostringarray()")
                                 CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-r\"," & Quote(sym)
+                                ' in a sh style line a sub is run as a command, !name a b, never as a function call !name(...)
+                                If i < CmdList[CurrentCmd].Max And If CmdList[CurrentCmd][i + 1] Begins "(" Then
+                                    Dim sSynopsis As String = SubSynopsis(sym)
+                                    Error.Raise("A sub in a sh style line is run as a command, write " & sym & " followed by its arguments, not " & sym & CmdList[CurrentCmd][i + 1] & " in: " & UserLine() & If(sSynopsis <> "", "\n  " & sym & " : " & sSynopsis, ""))
+                                Endif
 
                             Case Highlight.label
                                 gsh.PreProcesses("tostringarray()")
@@ -876,36 +884,66 @@ End
 
 cmdterm As String[] = ["<", "<<", "<<<", ">", ">>", ">>>", "|<", "|>", "&>", "&>>", "!>", "2>", "2>>", "2>&1"]
 
+'' Collapse a {...} or (...) group that starts at token i into the single token "(...)", removing the
+'' other tokens from both CmdList and CmdTypes. Spaces inside strings are kept. Returns i.
+' The ''' synopsis line of a sub, from its stored source or its file in the subs path, "" if none
+Private Sub SubSynopsis(sName As String) As String
+
+    Dim sSource As String = ""
+    Dim sKey As String = "sub." & Lower(sName)
+
+    If SharedMem.Exist(sKey) Then
+        sSource = SharedMem[sKey]
+    Else
+        For Each sDir As String In Split(SharedMem["subspath"], ";", "", True)
+            If Exist(sDir &/ sName) Then
+                Try sSource = File.Load(sDir &/ sName)
+                Break
+            Endif
+        Next
+    Endif
+
+    For Each sLine As String In Split(sSource, "\n")
+        sLine = Trim(sLine)
+        If sLine Begins "'''" And If Not (sLine Begins "''''") Then Return Trim(Mid(sLine, 4))
+    Next
+    Return ""
+
+End
+
+Private Sub CollapseBraces(i As Integer, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][]) As Integer
+
+    Dim execStartAt As Integer = i
+    Dim execBraceLevel As Integer = 0
+    Dim execfunction As String = ""
+
+    While i < CmdList[CurrentCmd].count
+        If CmdList[CurrentCmd][i] = "{" Then CmdList[CurrentCmd][i] = "("
+        If CmdList[CurrentCmd][i] = "}" Then CmdList[CurrentCmd][i] = ")"
+        If CmdList[CurrentCmd][i] = "(" Then Inc execBraceLevel
+        execFunction &= CmdList[CurrentCmd][i]
+        If CmdList[CurrentCmd][i] = ")" Then Dec execBraceLevel
+        If execBraceLevel = 0 Then Break
+        Inc i
+    Wend
+
+    If execBraceLevel <> 0 Or If i = execStartAt + 1 Then Error.Raise("Missing } or nothing inside { } in: " & UserLine())
+
+    CmdList[CurrentCmd][execStartAt] = execFunction
+    CmdTypes[CurrentCmd][execStartAt] = CmdTypes[CurrentCmd][execStartAt + 1]
+    CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt)
+    CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt)
+    Return execStartAt
+
+End
+
 Fast Unsafe Private Sub GenerateRedirectInput(i As Integer, BaseName As String, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][], CmdWrite As String[]) As Integer
 
     Dim aFunction As Boolean = False
     'Check if we will from a function or some other evaluated at runtime function
     If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
         aFunction = True
-        Dim execStartAt As Integer = i
-        Dim execBraceLevel As Integer = 0
-        Dim execfunction As String = ""
-        While i < CmdList[CurrentCmd].count
-            If CmdList[CurrentCmd][i] = "{" Then CmdList[CurrentCmd][i] = "("
-            If CmdList[CurrentCmd][i] = "}" Then CmdList[CurrentCmd][i] = ")"
-            If CmdList[CurrentCmd][i] = "(" Then
-                Inc execBraceLevel
-            Endif
-            execFunction &= CmdList[CurrentCmd][i]
-
-            If CmdList[CurrentCmd][i] = ")" Then
-                Dec execBraceLevel
-            Endif
-            If execBraceLevel = 0 Then Break
-            Inc i
-        Wend
-        'we could id an unbalance brace error, but let compiler find it for us instead
-        Inc i
-        CmdList[CurrentCmd][execStartAt] = Replace(execFunction, " ", "")
-        CmdTypes[CurrentCmd][execStartAt] = CmdTypes[CurrentCmd][execStartAt + 1]
-        CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
-        CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
-        i = execStartAt
+        i = CollapseBraces(i, CurrentCmd, CmdList, CmdTypes)
     Endif
 
     If CmdTypes[CurrentCmd][i] = Highlight.string Then
@@ -929,6 +967,7 @@ Fast Unsafe Private Sub GenerateRedirectInput(i As Integer, BaseName As String, 
                 RawFunction.add(CmdList[CurrentCmd][i])
                 Inc i
             Wend
+            Dec i                                   ' i is now the last token used, the caller's Next moves past it
             DataSource = gsh.PreProcesses(RawFunction.join(" "))
             CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & DataSource & ")))") & "\n"
         Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
@@ -956,29 +995,7 @@ Fast Unsafe Private Sub GenerateRedirectOut(i As Integer, BaseName As String, Cu
 
     'Check if we will send to a function or some other evaluated at runtime function
     If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
-        Dim execStartAt As Integer = i
-        Dim execBraceLevel As Integer = 0
-        Dim execfunction As String = ""
-        While i < CmdList[CurrentCmd].count
-            If CmdList[CurrentCmd][i] = "{" Then CmdList[CurrentCmd][i] = "("
-            If CmdList[CurrentCmd][i] = "}" Then CmdList[CurrentCmd][i] = ")"
-            If CmdList[CurrentCmd][i] = "(" Then
-                Inc execBraceLevel
-            Endif
-            execFunction &= CmdList[CurrentCmd][i]
-
-            If CmdList[CurrentCmd][i] = ")" Then
-                Dec execBraceLevel
-            Endif
-            If execBraceLevel = 0 Then Break
-            Inc i
-        Wend
-        'we could id an unbalance brace error, but let compiler find it for us instead
-        Inc i
-        CmdList[CurrentCmd][execStartAt] = Replace(execFunction, " ", "")
-        CmdTypes[CurrentCmd][execStartAt] = CmdTypes[CurrentCmd][execStartAt + 1]
-        CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
-        i = execStartAt
+        i = CollapseBraces(i, CurrentCmd, CmdList, CmdTypes)
     Endif
 
     If CmdTypes[CurrentCmd][i] = Highlight.string Then
@@ -1034,7 +1051,8 @@ Fast Unsafe Private Sub GenerateRedirectOut(i As Integer, BaseName As String, Cu
             Endif
         Else
             If cmdlist[CurrentCmd][i][0] = "$" Then ' if it is not there just make it
-                If Not SharedMem.exist(cmdlist[CurrentCmd][i]) Then SharedMem[Right(cmdlist[CurrentCmd][i], -1)] = ""
+                ' globals are stored without the $, checking "$name" never matched so >> and &>> cleared the variable
+                If Not SharedMem.exist(Right(cmdlist[CurrentCmd][i], -1)) Then SharedMem[Right(cmdlist[CurrentCmd][i], -1)] = ""
             Endif
 
             If WriteError Then
@@ -1070,30 +1088,7 @@ Fast Unsafe Private Sub GenerateInLineInput(i As Integer, BaseName As String, Cu
     'Check if we will read from a function or some other evaluated at runtime function
     If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
         aFunction = True
-        Dim execStartAt As Integer = i
-        Dim execBraceLevel As Integer = 0
-        Dim execfunction As String = ""
-        While i < CmdList[CurrentCmd].count
-            If CmdList[CurrentCmd][i] = "{" Then CmdList[CurrentCmd][i] = "("
-            If CmdList[CurrentCmd][i] = "}" Then CmdList[CurrentCmd][i] = ")"
-            If CmdList[CurrentCmd][i] = "(" Then
-                Inc execBraceLevel
-            Endif
-            execFunction &= CmdList[CurrentCmd][i]
-
-            If CmdList[CurrentCmd][i] = ")" Then
-                Dec execBraceLevel
-            Endif
-            If execBraceLevel = 0 Then Break
-            Inc i
-        Wend
-        'we could id an unbalance brace error, but let compiler find it for us instead
-        Inc i
-        CmdList[CurrentCmd][execStartAt] = Replace(execFunction, " ", "")
-        CmdTypes[CurrentCmd][execStartAt] = CmdTypes[CurrentCmd][execStartAt + 1]
-        CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
-        CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
-        i = execStartAt
+        i = CollapseBraces(i, CurrentCmd, CmdList, CmdTypes)
     Endif
 
     If CmdTypes[CurrentCmd][i] = Highlight.string Then
@@ -1129,30 +1124,7 @@ Fast Unsafe Private Sub GenerateStringInput(i As Integer, BaseName As String, Cu
     'Check if we will from a function or some other evaluated at runtime function
     If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
         aFunction = True
-        Dim execStartAt As Integer = i
-        Dim execBraceLevel As Integer = 0
-        Dim execfunction As String = ""
-        While i < CmdList[CurrentCmd].count
-            If CmdList[CurrentCmd][i] = "{" Then CmdList[CurrentCmd][i] = "("
-            If CmdList[CurrentCmd][i] = "}" Then CmdList[CurrentCmd][i] = ")"
-            If CmdList[CurrentCmd][i] = "(" Then
-                Inc execBraceLevel
-            Endif
-            execFunction &= CmdList[CurrentCmd][i]
-
-            If CmdList[CurrentCmd][i] = ")" Then
-                Dec execBraceLevel
-            Endif
-            If execBraceLevel = 0 Then Break
-            Inc i
-        Wend
-        'we could id an unbalance brace error, but let compiler find it for us instead
-        Inc i
-        CmdList[CurrentCmd][execStartAt] = Replace(execFunction, " ", "")
-        CmdTypes[CurrentCmd][execStartAt] = CmdTypes[CurrentCmd][execStartAt + 1]
-        CmdList[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
-        CmdTypes[CurrentCmd].Delete(execStartAt + 1, i - execStartAt - 1)
-        i = execStartAt
+        i = CollapseBraces(i, CurrentCmd, CmdList, CmdTypes)
     Endif
 
     If CmdTypes[CurrentCmd][i] = Highlight.string Then
@@ -1166,12 +1138,17 @@ Fast Unsafe Private Sub GenerateStringInput(i As Integer, BaseName As String, Cu
             RawFunction.add(CmdList[CurrentCmd][i])
             Inc i
         Wend
+        Dec i                                       ' i is now the last token used, the caller's Next moves past it
         DataSource = gsh.PreProcesses(RawFunction.join(" "))
     Else If CmdTypes[CurrentCmd][i] = Highlight.string Then
         DataSource = CmdList[CurrentCmd][i]
     Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
         DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
     Else
+        ' name(...) that is not a plugin or sub run as a command, left("abc", 2), is an expression and must be written {(...)}
+        If i < CmdList[CurrentCmd].Max And If CmdList[CurrentCmd][i + 1] Begins "(" Then
+            Error.Raise("Use {(" & CmdList[CurrentCmd][i] & CmdList[CurrentCmd][i + 1] & ")} to send the result of an expression with <<< in: " & UserLine())
+        Endif
         DataSource = Quote(gsh.PreProcesses(CmdList[CurrentCmd][i]))                               ' what ever else we find turn it into a string
     Endif
 
@@ -1204,7 +1181,9 @@ Fast Unsafe Private Sub preprocess(val As String, Optional NoQuote As Boolean = 
             Return Quote(UnQuote(Eval(gsh.PreProcesses(val))))
     End Select
 
-    Return IIf(NoQuote, UnQuote(gsh.PreProcesses(val)), Quote(val))
+    ' not IIf, it evaluates both sides and would run every plain argument through PreProcesses
+    If NoQuote Then Return UnQuote(gsh.PreProcesses(val))
+    Return Quote(val)
 
 Catch
     Error.Propagate()
@@ -1338,7 +1317,7 @@ Public Sub InitAlias()
 End
 
 ' Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
-Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)   ' same as gsh.module, a ' comment is not split
+Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'", "(", ")"], ["\n"], True)   ' same as gsh.module, a ' comment is not split
 
 Sub multiSub(akey As String, data As String, MyRegx As Regexp) As String
 
@@ -1408,7 +1387,7 @@ DoAliasAgain:
         Endif
     Next
 
-    If InStr(data, ":") <> 0 Then
+    If InStr(data, ":;") <> 0 Then                       ' only :; splits a line, a : alone ("libc:6") is left as it is
         MultyParse.allowEolToClose = True                 ' a ' comment runs to the end of the line
         used = parser(data, MultyParse)
         'used = Split(data, ":", "\"\"", True, True)
