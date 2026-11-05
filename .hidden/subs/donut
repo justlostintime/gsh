@@ -3,159 +3,140 @@
 ' https://www.a1k0n.net/2011/07/20/donut-math.html
 ' Gambas module file
 Fast Unsafe
-Const theta_spacing As Float = 0.01
-Const phi_spacing As Float = 0.01
-
-Const R1 As Float = 1.00
-Const R2 As Float = 2.00
-Const K2 As Float = 5.0
-Const ShadeSource As String = " .,-~:;=!*$#@"
-Private Shader As Byte[] = byte[].fromstring(ShadeSource)
-Private myterm As Stream = File.out
-Private screen_width As Float = myterm.term.width
-Private screen_height As Float = myterm.term.height
-Private frameRate As Float = 0.0
-
-'Calculate K1 based On screen size: the maximum x - distance occurs
-'roughly at the edge Of the torus, which Is At x = R1 + R2, z = 0. we
-'want that To be displaced 3 / 8 ths Of the width Of the screen, which
-'Is 3 / 4 th Of the way From the center To the side Of the screen.
-'screen_width * 3 / 8 = K1 * (R1 + R2) / (K2 + 0)
-'screen_width * K2 * 3 / (8 * (R1 + R2)) = K1
-
-Private K1 As Float = screen_width * K2 * 1.00 / (9.00 * (R1 + R2))
-Private iterations As Long = 0
 
 Public Sub donut()
-  signal[signal.SIGINT].catch
-  signal[signal.SIGHUP].catch
+''' Display a spinning ascii donut in the terminal
+'' Press Ctrl-C to stop. The donut follows the terminal size when it is resized.
+'' gsh sets system_break when Ctrl-C is pressed, the loop checks it after each frame.
+'' No Catch or Finally here, they are not safe in Fast Unsafe (JIT) code.
 
-  Print "Hello world"
-  Print "\e[2J\e[?25l"
+  Dim theta_spacing As Float = 0.01
+  Dim phi_spacing As Float = 0.01
+  Dim TwoPi As Float = 6.28
+  Dim R1 As Float = 1.00
+  Dim R2 As Float = 2.00
+  Dim K2 As Float = 5.0
+  Dim Shader As Byte[] = Byte[].FromString(" .,-~:;=!*$#@")
+  Dim ShadeMax As Integer = Shader.Max
+
+  Dim screen_width, screen_height, iCols, iRows, stride As Integer   ' not w: a line starting with w would run /usr/bin/w
+  Dim K1, halfW, halfH As Float
+  Dim bOutput As Byte[]               ' (screen_width + 1) * screen_height, includes a newline per row
+  Dim zBuffer As Float[]              ' screen_width * screen_height
+
   Dim a, b As Float
-  Dim fTimer, fSecTimer, fLastTimer As Float
-  
-  Dec screen_height
-  fSecTimer = Timer
-  While True
-    If iterations > 200
-       Dim curtime As Long = CInt((Timer - fsecTimer) * 1000)
-       framerate = (iterations * 1000) / curtime
-       iterations = 0
-       fsectimer = Timer
+  Dim fFrameStart, fFrameTime, fRateStart, fElapsed, fFrameRate As Float
+  Dim iFrames As Integer
+
+  Dim cosA, sinA, cosB, sinB As Float
+  Dim theta, phi As Float
+  Dim costheta, sintheta, theta1, theta2, theta3, theta4, theta5, circlex, circley As Float
+  Dim cosphi, sinphi, L, x, y, z, ooz As Float
+  Dim xp, yp, iShade, j As Integer
+
+  Print "\e[2J";
+  fRateStart = Timer
+
+  While Not system_break
+    ' Read the terminal size and rebuild the buffers when it changes, the last row is the status line
+    iCols = File.Out.Term.Width
+    iRows = File.Out.Term.Height - 1
+    If iCols < 2 Then iCols = 2
+    If iRows < 2 Then iRows = 2
+    If iCols <> screen_width Or If iRows <> screen_height Then
+      screen_width = iCols
+      screen_height = iRows
+      stride = screen_width + 1
+      halfW = screen_width / 2.00
+      halfH = screen_height / 2.00
+      ' K1 scales the projection to the screen width. Increase the divisor to
+      ' make the donut smaller, decrease it to make it bigger.
+      K1 = screen_width * K2 / (9.00 * (R1 + R2))
+      bOutput = New Byte[stride * screen_height]
+      zBuffer = New Float[screen_width * screen_height]
+      Print "\e[2J";
     Endif
 
-    fTimer = Timer
-    render_frame(a, b)
-    Wait 0
+    fFrameStart = Timer
+
+    cosA = Cos(a)
+    sinA = Sin(a)
+    cosB = Cos(b)
+    sinB = Sin(b)
+
+    ' Clear the buffers and put a newline at the end of every row
+    bOutput.Fill(32)
+    zBuffer.Fill(0)
+    For j = 1 To screen_height
+      bOutput[j * stride - 1] = 10
+    Next
+
+    For theta = 0.00 To TwoPi Step theta_spacing
+      costheta = Cos(theta)
+      sintheta = Sin(theta)
+      theta1 = sinA * sintheta
+      theta2 = costheta * sinB
+      theta3 = cosA * costheta
+      theta4 = cosA * sintheta
+      theta5 = costheta * sinA
+      circlex = R2 + (R1 * costheta)
+      circley = R1 * sintheta
+
+      For phi = 0.00 To TwoPi Step phi_spacing
+        cosphi = Cos(phi)
+        sinphi = Sin(phi)
+
+        ' Luminance, ranges from -sqrt(2) to +sqrt(2). If it's <= 0 the surface
+        ' is pointing away from us, so we won't bother trying to plot it.
+        L = (cosphi * theta2) - (theta3 * sinphi) - theta1 + (cosB * (theta4 - (theta5 * sinphi)))
+        If L <= 0 Then Continue
+
+        x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - (circley * cosA * sinB)
+        y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + (circley * cosA * cosB)
+        z = K2 + cosA * circlex * sinphi + circley * sinA
+        ooz = 1.00 / z
+
+        ' x and y projection. y is negated because y goes up in 3D space
+        ' but down on 2D displays.
+        xp = CInt(halfW + K1 * ooz * x)
+        yp = CInt(halfH - K1 * ooz * y)
+
+        ' Skip points that fall off screen (Unsafe: no array bounds checking here)
+        If xp < 0 Or If xp >= screen_width Then Continue
+        If yp < 0 Or If yp >= screen_height Then Continue
+
+        If ooz > zBuffer[yp * screen_width + xp] Then
+          zBuffer[yp * screen_width + xp] = ooz
+          iShade = 1 + CInt(L * 8)
+          If iShade > ShadeMax Then iShade = ShadeMax
+          bOutput[yp * stride + xp] = Shader[iShade]
+        Endif
+      Next
+    Next
+
+    ' Home the cursor and print the whole frame at once. The last byte of the
+    ' buffer is a newline, which moves us to the status line.
+    Print "\e[H"; bOutput.ToString();
+
+    fFrameTime = Timer - fFrameStart
     a += 0.07
     b += 0.03
-    Inc iterations 
-    fLastTimer = Timer - fTimer
-    Dim sx As String = Format(fLastTimer, "0.####")
-    Print sx; "s";;
-    sx = Format(framerate, "#.###0")
-    Print sx; "fps";
-    'flush
+
+    Inc iFrames
+    fElapsed = Timer - fRateStart
+    If fElapsed >= 1.0 Then
+      fFrameRate = iFrames / fElapsed
+      iFrames = 0
+      fRateStart = Timer
+    Endif
+
+    Print Format(fFrameTime, "0.0000"); "s  "; Format(fFrameRate, "0.0"); " fps\e[K";
+    Flush
+
+    Wait 0                                ' lets the Ctrl-C signal in, it sets system_break
   Wend
-Finally
-  Print "\e[2J\e[?25h"
-  
-Catch
-  Print "\e[2J\e[?25h"
-End
 
-Public Sub render_frame(a As Float, b As Float)
-  'precompute sines And cosines Of A And B
-  Dim linetrace As Integer = 0
-  Dim cosA As Float = Cos(A)
-  Dim sinA As Float = Sin(A)
-  Dim cosB As Float = Cos(B)
-  Dim sinB As Float = Sin(B)
-  Dim boutput As New Byte[screen_width, screen_height]
-  Dim zbuffer As New Float[screen_width, screen_height]
-  Dim sBuffer As String
-linetrace = 1
-  bOutput.Fill(32)
-linetrace = 2
-  For theta As Float = 0.00 To 6.27 Step theta_spacing ' < pi * 2 6.28
-    Dim costheta As Float = Cos(theta)
-    Dim sintheta As Float = Sin(theta)
-    Dim theta1 As Float = (sinA * sintheta) 
-    Dim Theta2 As Float = (costheta * sinB)
-    Dim Theta3 As Float = (cosA * costheta)
-    Dim Theta4 As Float = (cosA * sintheta)
-    Dim Theta5 As Float = (costheta * sinA)
-    Dim circlex As Float = r2 + (r1 * costheta)
-    Dim circley As Float = r1 * sintheta
-linetrace = 3
-    For phi As Float = 0.00 To 6.27 Step phi_spacing '  < pi * 2 6.28
-      Dim cosphi As Float = Cos(phi)
-      Dim sinphi As Float = Sin(phi)
-linetrace = 4
-      'calc luminance
-     'Dim L As Float = (cosphi * costheta * sinB) - (cosA * costheta * sinphi) - (sinA * sintheta) + (cosB * ((cosA * sintheta) - (costheta * sinA * sinphi)))
-      Dim L As Float = (cosphi * Theta2) - (Theta3 * sinphi) - Theta1 + (cosB * (Theta4 - (Theta5 * sinphi)))
-      ' L ranges From -sqrt(2) To + sqrt(2).If it 's < 0, the surface
-      ' Is Pointing away From us, so we won 't bother trying to plot it.
-linetrace = 5
-      If L > 0 Then
-         
-      
-        Dim x As Float = circlex * (cosb * cosphi + sina * sinb * sinphi) - (circley * cosa * sinB)
-        Dim y As Float = circlex * (sinb * cosphi - sina * cosb * sinphi) + (circley * cosa * cosB)
-linetrace = 6
-        Dim z As Float = k2 + cosa * circlex * sinphi + circley * sina
-        Dim ooz As Float = 1.00 / z
-linetrace = 7
-        'x And y projection.note that y Is Negated here, because y
-        'goes up In 3D space but down On 2D displays.
-        Dim xp As Integer = CInt(screen_width / 2.00 + k1 * ooz * x)
-        Dim yp As Integer = CInt(screen_height / 2.00 - k1 * ooz * y)
-linetrace = 8
-    If xp < 0 Then
-     xp = 0
-    Else If xp >= screen_width Then
-     xp = screen_width - 1
-    Endif
-linetrace = 9
-    If yp < 0 Then
-     yp = 0
-    Else If yp >= screen_height Then
-     yp = screen_height - 1
-    Endif
-linetrace = 10
-        If ooz > zbuffer[xp, yp] Then
-          zbuffer[xp, yp] = ooz
-          'bOutput[xp, yp] = Asc(" .,-~:;=!*$#@", 1 + Abs(CInt(L * 8)))
-linetrace = 11
-          bOutput[xp, yp] = Shader[1 + Abs(CInt(L * 8))]
-        Endif
-      Endif
-linetrace = 12
-    Next
-linetrace = 13
-  Next
-linetrace = 14
-linetrace = 145
-'  Flush
-linetrace = 15
-  sBuffer = ""
-  For j As Integer = 0 To screen_height - 1
-linetrace = 16
-    For i As Integer = 0 To screen_width - 1
-linetrace = 17
-   sBuffer &= Chr(bOutput[i, j])
-linetrace = 18
-    Next
-    sBuffer &= "\n"
-linetrace = 19
-  Next
-'print to the screen
-  Print "\e[J\e[H";
-  Print Left$(sBuffer, -1);
-linetrace = 20
+  Print "\e[2J\e[H";
+  Flush
 
-  Catch
-  Print "Error in render:";; error.text;; "Where ID="; linetrace
 End

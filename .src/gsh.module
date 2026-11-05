@@ -109,6 +109,7 @@ Private RunningProcess As Process = Null
 Private RunningProcessStart As Date
 Private AutoCompile As Boolean = True
 Public LocalRunning As Boolean = False
+Private LocalRunningObject As String = ""              ' the sub running in this process, "sub.name", Ctrl-C sets its system_break
 Private gshrcdate As Date = Now
 Private onstartrcdate As Date = Now
 Private onexitrcdate As Date = Now
@@ -222,6 +223,18 @@ Public Sub application_signal(sig As Integer)
             Endif
 
             If LocalRunning Then
+                ' Every compiled sub has a public system_break. The first Ctrl-C sets it, the sub checks it
+                ' and returns. A second Ctrl-C while it still runs stops a sub that does not check it with
+                ' Terminated, except a Fast (JIT) sub: raising through JIT code crashes gsh.
+                If LocalRunningObject <> "" Then
+                    Dim bAlreadySet As Boolean = False
+                    Try bAlreadySet = Object.GetProperty(SubCls[LocalRunningObject], "system_break")
+                    If Not bAlreadySet Then
+                        Try Object.SetProperty(SubCls[LocalRunningObject], "system_break", True)
+                        If Not Error Then Return
+                    Endif
+                    If IsFastSub(LocalRunningObject) Then Return
+                Endif
                 LocalRunning = False
                 Error.Raise("Terminated")
             Endif
@@ -244,6 +257,18 @@ Public Sub application_signal(sig As Integer)
             ' Endif
             Return
     End Select
+
+End
+
+'' True if the source of a stored sub has a Fast line, it is compiled by the JIT
+Private Sub IsFastSub(sObject As String) As Boolean
+
+    If Not SharedMem.Exist(sObject) Then Return False
+    For Each sLine As String In Split(SharedMem[sObject], "\n")
+        sLine = Trim(sLine)
+        If Lower(sLine) = "fast" Or If Lower(sLine) Begins "fast " Then Return True
+    Next
+    Return False
 
 End
 
@@ -906,7 +931,11 @@ Public Sub Main()
 
     If LocalFunRun <> "" Then
         VarCommandSource = "~$$"
-        LocalFunRun = LocalFunRun & " " & cmdLineParameters.Join(" ")
+        ' the line is parsed again, so keep an argument with spaces or quotes as one argument
+        For Each sRunArg As String In cmdLineParameters
+            If sRunArg = "" Or If InStr(sRunArg, " ") Or If InStr(sRunArg, "\t") Or If InStr(sRunArg, "\"") Then sRunArg = Quote(sRunArg)
+            LocalFunRun &= " " & sRunArg
+        Next
     Endif
 
     'Check for a request to execute a variable
@@ -1433,9 +1462,13 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     Endif
 
     LocalRunning = True
+    LocalRunningObject = sObject
+    Try Object.SetProperty(SubCls[sObject], "system_break", False)
     Try Object.Call(SubCls[sObject], method, parms)
+    Dim bLocalError As Boolean = Error
+    LocalRunningObject = ""
 
-    If Error Then
+    If bLocalError Then
         LocalRunning = False
         If Error.text <> "Terminated" Then
             If DoTrace Then
@@ -1606,7 +1639,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             ProgPart1 &= "," & sinsert
         Next
 
-        ProgPart1 &= "\n"
+        ProgPart1 &= "\nPublic system_break As Boolean\n"         ' subs check it, Ctrl-C ends a generated program itself
         For Each sinsert In StructTable
             ProgPart1 &= sInsert & "\n"
         Next
@@ -1659,6 +1692,8 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                     For Each err As CompileErrorMsg In ScriptCompileErrors
                         Print err.text
                     Next
+                    Dim sGroupHint As String = CommandGroupHint(program)
+                    If sGroupHint <> "" Then Print sGroupHint
                 Else If jobctl Then
                     Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
                 Endif
@@ -2165,7 +2200,7 @@ Catch
 
 End
 
-Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'"], ["\n"], True)
+Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'", "(", ")"], ["\n"], True)   ' a :; inside ( ) belongs to a !( ... ) command group
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 
 Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
@@ -3253,6 +3288,8 @@ Public Sub isLocalFunc(msym As String, Optional docompile As Boolean = True) As 
         Endif
     Endif
 
+    If ScriptSubMap.Exist(sym) Then sym = ScriptSubMap[sym]     ' a sub defined by the running script is stored under its unique name
+
     Dim fullSymName As String = "sub." & sym
     If Not SharedMem.exist(fullSymName) Then
         Dim LocalPath As String = FindScript(sym, "subs")
@@ -3354,6 +3391,30 @@ Catch
 
 End
 
+' After a failed compile: a line starting with ( is Gambas code, if it holds a command it was meant as !( ... )
+Private Sub CommandGroupHint(sProgram As String) As String
+
+    For Each sLine As String In Split(sProgram, "\n")
+        sLine = Trim(sLine)
+        If Not (sLine Begins "(") Then Continue
+        Dim sWord As String = ""
+        For iPos As Integer = 2 To Len(sLine)
+            Dim c As String = Mid(sLine, iPos, 1)
+            If c = " " Or If c = "\t" Or If c = "(" Or If c = ")" Then
+                If sWord <> "" Then Break
+            Else
+                sWord &= c
+            Endif
+        Next
+        If sWord = "" Then Continue
+        If isKeyword(sWord) Or If isLocalFunc(sWord, False) Then Continue
+        If Not System.Exist(sWord) Then Continue
+        Return "A line starting with ( is Gambas code, put a ! in front, !( ... ), to run it as a group of commands"
+    Next
+    Return ""
+
+End
+
 Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "<<", "<<<", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
 Private ParmParser As New ParseParm(False, ["'"], ["\"", "\"", "[", "]"], [","])
 
@@ -3408,7 +3469,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
         NoWait = True
     Endif
 
-    Dim sCodeLine As String = CmdLine[0] & "("
+    Dim sCodeLine As String = FuncName & "("              ' FuncName, not CmdLine[0]: a script sub has been renamed to its unique name
     Dim types As Integer[]
     Dim syms As String[]
     Dim DataTypePos As Integer = 0

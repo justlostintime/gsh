@@ -1,4 +1,5 @@
 Public Sub install_highlighter_syntax()
+''' Install the gsh syntax highlighting files for nano and vim
 '' Install the highlighter files for nano and vim
  Try shell.mkdir(user.home &/ ".nano/syntax")
  Try shell.mkdir(user.home &/ ".vim/syntax")

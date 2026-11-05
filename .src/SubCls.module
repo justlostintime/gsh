@@ -83,6 +83,7 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
         Dim Subvalue As String = "\nPublic Sub " & cname & "("
         SourceFile = a.Replace(SourceFile, pattern, SubValue, regexp.caseless)
         SourceFile = "Export\n" & SourceFile
+        SourceFile &= "\nPublic system_break As Boolean   ' set by gsh when Ctrl-C is pressed while this sub runs\n"
     Else
         sourcefile = Replace(sourcefile, "\nend class", "\n", gb.IgnoreCase)
         Sourcefile = Replace(sourcefile, "Export\n", "", gb.Ignorecase)
