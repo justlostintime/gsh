@@ -836,6 +836,25 @@ follows
 ```
 This will execute as expected.
 
+The same applies to commands such as true, false, mkdir, kill and date.
+When a line like this fails to compile, gsh prints a hint after the
+error, for example:
+```
+  > false
+  MMain.module:22:7: error: This expression cannot be a statement
+  false is a Gambas keyword or function, so the line was compiled as Gambas code, put a ! in front, !false, to run the command
+```
+
+Commands with the same name as a Gambas class, such as env, file and stat,
+also need a leading !. Put quotes around parameters that contain an = or
+spaces:
+```
+  > !env "FOO=1" printenv FOO      ' prints 1
+  > !env "FOO=a b" printenv FOO    ' prints a b
+  > !file "all.txt"
+  > !stat -c %n "all.txt"
+```
+
 A sub or plugin at the start of a cli style line, one with pipes or
 redirection, is run as a command. Write it with a leading ! and its
 arguments separated by spaces, like any other command, not as a function
@@ -1820,8 +1839,8 @@ An alias replaces a command at run time with the alias and are defined
 much the same as posix shell. The input is scanned and matching entries
 are replaced by the alias. The process is repeated after each
 substitution until all aliases have been checked ensuring that each is
-only applied once to the line. Currently aliases don't support parameter
-substitution(functions).
+only applied once to the line. An alias whose name ends in () takes
+parameters, see Parameterized aliases below.
 
 Alias function are created by creating a sub of the name of the command
 its replacing.
@@ -1876,11 +1895,47 @@ Simply assign with no content.
 
 Example
 
-alias home ' this will remove the home alias
+alias home=
+
+This will remove the home alias.
 
 List all aliases:
 
 Just type the **alias** command by itself.
+
+#### Parameterized aliases
+
+An alias whose name ends in () takes parameters. In the alias text &1 is
+replaced by the first parameter, &2 by the second and so on. The
+parameters are put in as text, they are not evaluated, so they may be
+pieces of code. A parameter written as one quoted string has its quotes
+removed, so "print value" and print value give the same result. :; in
+the alias text splits it into separate lines.
+
+These are defined in the default profile.gsh:
+```
+alias foreach()='do:;for each value as variant in &1:;&2:;next:;done'
+alias ifor()='for i as integer = &1 to &2:;&3:;next'
+```
+Examples:
+```
+   foreach([1,2,3], print value)                     ' prints 1 2 3
+   foreach(Split("a b c", " "), print upper(value))  ' prints A B C
+   foreach("env", "print value")                     ' prints the environment variable names
+   ifor(1, 3, print i)                               ' prints 1 2 3
+   ifor(1, 2, print i * 10) :; print "done"          ' prints 10 20 done
+```
+Defining and removing your own:
+```
+   alias twice()='&1:;&1'
+   twice(print "hi")                                 ' prints hi twice
+   alias twice()=
+```
+The last line removes it. A comment can not follow an alias line, the '
+would be read as the start of the alias text.
+Because a quoted parameter loses its quotes, a string value must be
+written with escaped quotes inside the string, "\"one\"". A parameter
+that is more than one string, such as "one" & "!", is put in as written.
 
 #### compile or program \<Output Script Name\>
 
