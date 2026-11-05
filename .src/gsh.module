@@ -1689,11 +1689,14 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                 If jobctl Then RunningProcessStart = Now
                 CompileResult = ScripterExecute("lambda", program, [], cmdLineParameters)
                 If compileResult <> 0 Then
+                    Dim sKeywordHint As String = ""
                     For Each err As CompileErrorMsg In ScriptCompileErrors
                         Print err.text
+                        If sKeywordHint = "" Then sKeywordHint = KeywordCommandHint(program, err.LineNumber)
                     Next
                     Dim sGroupHint As String = CommandGroupHint(program)
                     If sGroupHint <> "" Then Print sGroupHint
+                    If sKeywordHint <> "" Then Print sKeywordHint
                 Else If jobctl Then
                     Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
                 Endif
@@ -1936,7 +1939,7 @@ Public Sub PreProcBuffer(Proc As String, Optional IsClass As Boolean = False, Do
             Continue
         Endif
 
-        If DoAliasX Then s = CreateCmdProgram.AliasReplace(s)
+        If DoAliasX And If Not GambasAssignOrMember(s) Then s = CreateCmdProgram.AliasReplace(s)   ' ls = x is a variable, not the ls alias
 
         If s <> "" Then
             If NoPreProcess = False Then
@@ -2279,7 +2282,7 @@ Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
 
         If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed
         InBufferRaw = InBuffer
-        If DoAlias Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)
+        If DoAlias And If Not GambasAssignOrMember(InBuffer) Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)   ' ls = x is a variable, not the ls alias
 
         InBufParse = Highlight.Analyze(InBuffer)
         HTypes = Highlight.Types
@@ -3265,6 +3268,16 @@ Catch
 
 End
 
+'' True when the line starts with a name followed by an assignment (w = 5, w += 1, w=5)
+'' or directly by . or [ (ls.Add(x), w[0] = 1). Such a line is Gambas code even when the
+'' name is also a command on the PATH, a command line never starts like this.
+'' ls . and cd .. keep their space so they are still commands.
+Private Sub GambasAssignOrMember(sLine As String) As Boolean
+
+    Return RegExp.Match(sLine, "^\\s*[A-Za-z_][A-Za-z0-9_]*(\\s*(=(?!=)|\\+=|-=|\\*=|/=|\\\\=|&/=|&=|\\^=)|[.\\[])")
+
+End
+
 Private Sub FunctionCommandOrexecVar(symbol As String) As Boolean
 
     If isLocalFunc(symbol, False) Then Return True
@@ -3412,6 +3425,42 @@ Private Sub CommandGroupHint(sProgram As String) As String
         Return "A line starting with ( is Gambas code, put a ! in front, !( ... ), to run it as a group of commands"
     Next
     Return ""
+
+End
+
+'' After a failed compile, if the line in error starts with a Gambas keyword that is
+'' also a command on the PATH (false, true, mkdir, sleep, kill ...) explain that a
+'' leading ! runs the command. The compiler drops the #! line, so its line number
+'' used as a 0 based index points at the line in sProgram.
+Private GambasFirstWords As String[] = ["print", "write", "open", "as"]   ' also commands, but at the start of a line always meant as Gambas
+
+Private Sub KeywordCommandHint(sProgram As String, iErrorLine As Integer) As String
+
+    Dim sLines As String[] = Split(sProgram, "\n")
+
+    If iErrorLine < 0 Or If iErrorLine > sLines.Max Then Return ""
+
+    Dim sLine As String = Trim(sLines[iErrorLine])
+    Dim sWord As String = ""
+    Dim sNext As String = ""
+    For iPos As Integer = 1 To Len(sLine)
+        Dim c As String = Mid(sLine, iPos, 1)
+        If Not (IsLetter(c) Or IsDigit(c) Or c = "_") Then    ' the preprocessor writes false !> as False!
+            sNext = c
+            Break
+        Endif
+        sWord &= c
+    Next
+    If sWord = "" Then Return ""
+    If sNext = "(" Or If sNext = "." Or If sNext = "[" Then Return ""    ' split(...), date.x : Gambas use
+
+    Dim sCommand As String = Lower(sWord)
+    If GambasFirstWords.Exist(sCommand) Then Return ""
+    If Not (isKeyword(sWord) Or isKeyword(sCommand)) Then Return ""
+    If isLocalFunc(sCommand, False) Then Return ""
+    If Not System.Exist(sCommand) Then Return ""
+
+    Return sCommand & " is a Gambas keyword or function, so the line was compiled as Gambas code, put a ! in front, !" & sCommand & ", to run the command"
 
 End
 
@@ -3590,6 +3639,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
 
     Else If types[0] = Highlight.symbol Then                 ' check the type of symbol, look for function local override
         bLookup = System.Exist(syms[0])
+        If bLookup And If GambasAssignOrMember(InVar) Then bLookup = False   ' w = 5, ls.Add(x) : a variable, not the command
 
         If bLookup And Not isLocalFunc(syms[0], True) And Not isKeyword(syms[0]) And Not isLocalClass(syms[0], True, True) And Not isLocalStruct(syms[0], False) Then
             syms.Add("!", 0)

@@ -1319,19 +1319,143 @@ End
 ' Private AliasParms As New ParseParm(False, [","], ["\"", "\"", "[", "]", "'", "'", "(", ")"], [","], False, False)
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'", "(", ")"], ["\n"], True)   ' same as gsh.module, a ' comment is not split
 
-Sub multiSub(akey As String, data As String, MyRegx As Regexp) As String
+'' Replace each use of a parameterized alias, name(p1, p2, ...), with the alias body,
+'' &1 &2 ... in the body becoming the text of the parameters. The parameters are code
+'' such as "print value", so they are put in as text, never evaluated. The closing )
+'' is found by matching brackets and quotes, so name(x, f(1)) :; more works.
+Private Sub ParamAliasReplace(sKey As String, sData As String) As String
 
-    MyRegx.Exec(data)
-    If MyRegx.count <= 0 Then Return data
+    Dim sName As String = Left(sKey, -2)
+    Dim sBody As String = AliasList[sKey].Join(" ")
+    Dim sOut As String = ""
+    Dim iLen As Integer = Len(sData)
+    Dim iPos As Integer = 1
+    Dim bQuote As Boolean = False
+    Dim c, sPrev As String
 
-    If MyRegx.count > 0 Then data = MyRegx[1].text
-    Dim evalset As String = "subst(" & Quote(AliasList[akey].join(" ")) & "," & MyRegx[2].text & ")"
-    If MyRegx.count > 1 Then Data &= Eval(evalset)
-    If MyRegx.count = 3 And If MyRegx[3].text <> "" Then
-        data &= multiSub(akey, MyRegx[3].text, MyRegx)
-    Endif
+    While iPos <= iLen
+        c = Mid(sData, iPos, 1)
+        If c = "\"" Then bQuote = Not bQuote
+        If Not bQuote And If Mid(sData, iPos, Len(sName)) = sName Then
+            sPrev = " "
+            If iPos > 1 Then sPrev = Mid(sData, iPos - 1, 1)     ' If() evaluates both sides, Mid(s, 0) is a Bad argument
+            Dim iParen As Integer = iPos + Len(sName)
+            While Mid(sData, iParen, 1) = " " Or Mid(sData, iParen, 1) = "\t"   ' the :; splitter writes name (...) with a space
+                Inc iParen
+            Wend
+            If Mid(sData, iParen, 1) = "(" And If Not (IsLetter(sPrev) Or IsDigit(sPrev) Or sPrev = "_") Then
+                Dim iEnd As Integer = ParamAliasArgs(sData, iParen + 1)
+                If iEnd > 0 Then
+                    sOut &= ParamAliasBody(sBody, ParamArgs)
+                    iPos = iEnd + 1
+                    Continue
+                Endif
+            Endif
+        Endif
+        sOut &= c
+        Inc iPos
+    Wend
 
-    Return Data
+    Return sOut
+
+End
+
+Private ParamArgs As New String[]      ' the parameters found by ParamAliasArgs
+
+'' Read the parameters starting at iStart, just after the (, into ParamArgs.
+'' Returns the position of the closing ), or 0 when there is none.
+Private Sub ParamAliasArgs(sData As String, iStart As Integer) As Integer
+
+    Dim iDepth As Integer = 0
+    Dim bQuote As Boolean = False
+    Dim sCur As String = ""
+    Dim d As String
+
+    ParamArgs = New String[]
+    For j As Integer = iStart To Len(sData)
+        d = Mid(sData, j, 1)
+        If bQuote Then
+            sCur &= d
+            If d = "\\" Then                             ' keep \" inside a string
+                Inc j
+                sCur &= Mid(sData, j, 1)
+            Else If d = "\"" Then
+                bQuote = False
+            Endif
+        Else If d = "\"" Then
+            bQuote = True
+            sCur &= d
+        Else If d = "(" Or d = "[" Or d = "{" Then
+            Inc iDepth
+            sCur &= d
+        Else If d = ")" And iDepth = 0 Then
+            ParamArgs.Add(ParamAliasValue(sCur))
+            Return j
+        Else If d = ")" Or d = "]" Or d = "}" Then
+            Dec iDepth
+            sCur &= d
+        Else If d = "," And iDepth = 0 Then
+            ParamArgs.Add(ParamAliasValue(sCur))
+            sCur = ""
+        Else
+            sCur &= d
+        Endif
+    Next
+
+    Return 0
+
+End
+
+'' A parameter written as one string, "print value", is put in without its quotes, as
+'' the alias always did, foreach("env", "print value"). Anything else is put in as written.
+Private Sub ParamAliasValue(sParam As String) As String
+
+    Dim s As String = Trim(sParam)
+
+    If Len(s) < 2 Or If Left(s) <> "\"" Or If Right(s) <> "\"" Then Return s
+
+    Dim i As Integer = 2
+    While i <= Len(s)                                    ' the string must end exactly at the last character
+        If Mid(s, i, 1) = "\\" Then
+            i += 2                                       ' \" and \\ are part of the string
+        Else If Mid(s, i, 1) = "\"" Then
+            If i = Len(s) Then Return UnQuote(s)
+            Return s                                     ' "a" & "b" : more than one string, put in as written
+        Else
+            Inc i
+        Endif
+    Wend
+
+    Return s
+
+End
+
+'' Put the parameters into the alias body in one pass, &n is parameter n, a
+'' parameter that itself contains &1 is not replaced again.
+Private Sub ParamAliasBody(sBody As String, sArgs As String[]) As String
+
+    Dim sOut As String = ""
+    Dim iPos As Integer = 1
+    Dim iLen As Integer = Len(sBody)
+    Dim c, sNum As String
+
+    While iPos <= iLen
+        c = Mid(sBody, iPos, 1)
+        If c = "&" And If IsDigit(Mid(sBody, iPos + 1, 1)) Then
+            sNum = ""
+            Inc iPos
+            While IsDigit(Mid(sBody, iPos, 1))           ' Mid past the end is "", which is not a digit
+                sNum &= Mid(sBody, iPos, 1)
+                Inc iPos
+            Wend
+            If CInt(sNum) >= 1 And If CInt(sNum) <= sArgs.Count Then sOut &= sArgs[CInt(sNum) - 1]
+            Continue
+        Endif
+        sOut &= c
+        Inc iPos
+    Wend
+
+    Return sOut
 
 End
 
@@ -1355,9 +1479,7 @@ DoAliasAgain:
                 If InStr(data, Left(aliasList.key, -2)) = 0 Then
                     Continue
                 Endif
-                Dim searchstr As String = "(.*[^\\w]?)" & Left(akey, -2) & "[(](.*)[)](.*$)"
-                MyReg.compile(searchStr, RegExp.MultiLine)                                             ' find the parameters after removing the ()
-                data = multiSub(aliasList.key, data, MyReg)                                                              ' Do the matching on the data for parameters
+                data = ParamAliasReplace(aliasList.key, data)                ' foreach([1,2], print value) : the parameters are code, put in as text
                 used.Add(aliaslist.key)
                 Goto DoAliasAgain
 

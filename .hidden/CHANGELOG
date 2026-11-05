@@ -1,4 +1,18 @@
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix some bugs in alias
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- updated how sinle variable assignemt is not used as an executable
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix typoes in jobs command
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Add hints when user uses gambas command when perhaps meaning to use linux cli command by same name
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
 - correct 2> to somewhere style redirection and update documentation to reflect new redirection
 
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4

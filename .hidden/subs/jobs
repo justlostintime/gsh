@@ -6,8 +6,8 @@ Sub jobs(...) As Variant
 ''
 ''          This lists all the jobs currently running for a user
 ''          The list includes every instance of a task started by gsh for a user
-''          It default is all user tasks or a pid can be provided for specific task
-''          The paramters:
+''          The default is all user tasks or a pid can be provided for specific task
+''          The parameters:
 ''                  -ON for turning on job control
 ''                  -OFF for turning off job control
 ''                  -Keep Keep information after reporting
