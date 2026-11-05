@@ -19,7 +19,7 @@ Public Sub donut()
   Dim Shader As Byte[] = Byte[].FromString(" .,-~:;=!*$#@")
   Dim ShadeMax As Integer = Shader.Max
 
-  Dim screen_width, screen_height, iCols, iRows, stride As Integer   ' not w: a line starting with w would run /usr/bin/w
+  Dim screen_width, screen_height, iCols, iRows, stride As Integer
   Dim K1, halfW, halfH As Float
   Dim bOutput As Byte[]               ' (screen_width + 1) * screen_height, includes a newline per row
   Dim zBuffer As Float[]              ' screen_width * screen_height

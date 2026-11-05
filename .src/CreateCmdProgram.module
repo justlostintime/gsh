@@ -633,7 +633,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                         Select Case CmdTypes[CurrentCmd][i]
                             Case Highlight.function    ' remember we used this to mean local function
                                 gsh.PreProcesses("tostringarray()")
-                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-r\"," & Quote(sym)
+                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-r\"," & Quote(sym) & ",\"--\""   ' -- : the sub's -x arguments are not gsh options
                                 ' in a sh style line a sub is run as a command, !name a b, never as a function call !name(...)
                                 If i < CmdList[CurrentCmd].Max And If CmdList[CurrentCmd][i + 1] Begins "(" Then
                                     Dim sSynopsis As String = SubSynopsis(sym)
@@ -642,7 +642,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
 
                             Case Highlight.label
                                 gsh.PreProcesses("tostringarray()")
-                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-f\"," & Quote(sym)
+                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-f\"," & Quote(sym) & ",\"--\""   ' -- : the -x arguments are not gsh options
 
                             Default
                                 Dim rTemp, rrTemp As String
@@ -1491,18 +1491,18 @@ DoAliasAgain:
                 used.Add(aliaslist.key)
                 Goto DoAliasAgain
 
+                ' the alias text is put in with string operations, as a RegExp.Replace replacement
+                ' a && in it became & (alias x='ls && echo ok' then x -l ran ls & echo ok -l)
             Else If RegExp.Match(data, "^" & akey & "[ <>|!&\n\t]") Then
-                data = RegExp.replace(data, "^" & aKey & "([ <>|!&\n\t])", s.Join(" ") & "&1 ")
+                data = s.Join(" ") & Mid(data, Len(aliaslist.key) + 1, 1) & " " & Mid(data, Len(aliaslist.key) + 2)
                 used.Add(aliaslist.key)
                 Goto DoAliasAgain
 
-            Else If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "[^_[:alnum:]]") Then
-                data = RegExp.replace(data, "(^[`!]?[\\s]*)" & aKey & "(.*)", "&1" & s.Join(" ") & "&2")
-                used.Add(akey)
-                Goto DoAliasAgain
-
-            Else If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "$") Then
-                data = RegExp.replace(data, "(^[`!]?[\\s]*)" & aKey & "(.*)", "&1" & s.Join(" ") & "&2")
+            Else If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "[^_[:alnum:]]") Or If RegExp.Match(data, "^[`!]?[\\s]*" & akey & "$") Then
+                MyReg.Compile("^([`!]?[\\s]*)" & akey)
+                MyReg.Exec(data)
+                Dim sLead As String = MyReg[1].Text                    ' a leading ` or ! and spaces are kept
+                data = sLead & s.Join(" ") & Mid(data, Len(sLead) + Len(aliaslist.key) + 1)
                 used.Add(akey)
                 Goto DoAliasAgain
             Endif
@@ -1638,9 +1638,9 @@ Public Sub setalias(cmdline As String)
             cmd[1] = params[0] & "()"                                   ' set up the alias so we match a bracket
         Endif
 
-        body = Split(cmd[2], " \t", "", True)                          'What the hell is this
+        body = [cmd[2]]                                                ' kept as written, splitting into words lost repeated spaces ("a   b" became "a b")
 
-        If body.count < 1 Then
+        If Trim(cmd[2]) = "" Then
             Error.Raise("alias: no definition provided: " & cmdline)
         Endif
 

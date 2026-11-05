@@ -432,8 +432,8 @@ Public Sub ProcessOptions() As String[]
     CollectMemLen = Args.GetInteger("D", "disctsize", ("Size of in memory Database Dictionary and index(Default 2.5m)"), "<DictLength>", 2512000)
     bCleanup = Args.Has("C", "cleanup", ("Cleanup and delete the old Shm file if it is closed and left around"))
     InLineCommand = Args.Get("c", "command", ("Command to be executed"))
-    VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independant script, returns output"))
-    LocalFunRun = Args.Get("r", "runline", ("Execute the following command line"))
+    VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independant script, returns output, gsh -f name -- args"))
+    LocalFunRun = Args.Get("r", "runline", ("Execute the following command line, gsh -r name -- args, -- ends the gsh options"))
     sCRestOfArgs = Args.End()
 
     If bAboutGsh Then
@@ -3464,7 +3464,23 @@ Private Sub KeywordCommandHint(sProgram As String, iErrorLine As Integer) As Str
 
 End
 
-Private CallParser As New ParseParm(False, ["'", "+", "-", "&", "%", "^", "|", "||", ">", "<", "|>", "|<", ">>", "<<", "<<<", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
+'' A word given to a ... sub run as a command, zqopt -x --color=auto x-y. Values gsh already
+'' understands go in as written: "strings", $vars, (expressions), [arrays], {..}, .x and !x
+'' shared memory, @vars, numbers and plain names (a name that is not a variable becomes a
+'' string when it is evaluated). Any other word is quoted, so -x stays -x and is not read
+'' as Gambas code (- x).
+Private Sub CallWord(sWord As String) As String
+
+    If sWord = "" Then Return sWord
+    If InStr("\"$([{.!@", Left(sWord)) > 0 Then Return sWord
+    If RegExp.Match(sWord, "^-?[0-9]+([.][0-9]+)?$") Then Return sWord
+    If RegExp.Match(sWord, "^[A-Za-z_][A-Za-z0-9_]*$") Then Return sWord
+    Return Quote(sWord)
+
+End
+
+' + - % ^ are not split out: a sub run as a command gets its words as written, -x, --color=auto, x-y
+Private CallParser As New ParseParm(False, ["'", "&", "|", "||", ">", "<", "|>", "|<", ">>", "<<", "<<<", "&&", ":;"], ["\"", "\"", "[", "]", "(", ")"], [" ", ","])
 Private ParmParser As New ParseParm(False, ["'"], ["\"", "\"", "[", "]"], [","])
 
 Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
@@ -3548,7 +3564,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
             Endif
             Inc j
         Else
-            sCodeLine &= CmdLine[i]
+            sCodeLine &= CallWord(CmdLine[i])
         Endif
     Next
 

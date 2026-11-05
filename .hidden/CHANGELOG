@@ -1,4 +1,10 @@
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix parameter passing on the command line
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- fix alias containing && and spaces
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
 
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
 - fix some bugs in alias
