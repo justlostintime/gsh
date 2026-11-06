@@ -1,0 +1,18 @@
+Sub fwrite(sink As Variant, buffer As String) As Boolean
+''' write a string to a stream exactly as it is, no newline is added
+''fwrite(stream, data)  writes data to an open stream or process
+''          used by gsh for < and << input redirection so files are passed unchanged
+''          large data is sent in small chunks so a pipe does not block
+''          returns true
+If buffer.len < 2048 Then
+  Write #sink, buffer, buffer.len
+Else
+  For i As Integer = 0 To buffer.len - 1 Step 256
+    Write #sink, Mid(buffer, i + 1, 256), Min(256, buffer.len - i)
+    Flush #sink
+    Wait
+  Next
+Endif
+Flush #sink
+Return True
+End

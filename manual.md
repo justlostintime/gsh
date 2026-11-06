@@ -489,6 +489,27 @@ or
     print $b
   done
 ```
+Because each line is its own program, a declaration on a line by itself
+is gone before the next line runs. This is the same in a script as when
+typing at the prompt. A top level Dim shows a message, and a top level
+Public or Private variable is not seen by the following lines. Use a
+global $name, put the lines in a Begin or Do block, or write the code
+as a Class with the Public variables inside it:
+```
+  Class counter
+    Public Total As Integer
+    Public Sub Add(n As Integer)
+      Total += n
+    End
+  End Class
+
+  Begin
+    Dim c As New counter
+    c.Add(2)
+    c.Add(3)
+    Print "total="; c.Total      ' prints total=5
+  End
+```
 **Note**:If you make an error entering the code you can edit the whole block by simply entering:
 ```
   edit     ' with no parameters allows to change the last block of code entered
@@ -831,7 +852,7 @@ adding a ! to the beginning of the line.
 
 For example:
 ```
-   chmod "filename" to "rw-rw-rw"
+   chmod env["PWD"] &/ "filename" to "rw-rw-rw-"    ' Gambas Chmod, it needs the full path
    chmod 777 filename
 ```
 Both have the same name but executing the second line will give you an
@@ -955,17 +976,19 @@ Enter at the  >  prompt:
 ```
   $a = "this is a string"    ' This will work well.
   ? $a                       ' This will print $a.
-  $a = 2                     ' This will print an error message about change type.
-  vardel  $a                 ' This will delete the variable.
-  $a = 2                     ' This works.
+  $a = 2                     ' This works, $a is now a number.
   ? $a                       ' Prints 2.
+  vardel a                   ' This deletes the variable, give the name without the $.
   $a = "This string"         ' Defines it as a string.
   ? mytest($a)               ' Prints the string in upper case and 'one more.'
 ```
-And of course we can use env[] to set linux env variables:
+And setenv sets a linux environment variable for the commands run after it:
 ```
-  env["myvalue"] = "this"   ' This stores Linux environment values.
+  setenv myvalue this       ' or setenv("myvalue", "this")
+  printenv myvalue          ' prints this
 ```
+Each line runs as its own program, so `env["myvalue"] = "this"` only lasts
+until the end of that line or block. `? env["myvalue"]` reads a value.
 ### Let's Look at Input and Output Redirection
 
 There are several forms of output redirection.
@@ -1032,8 +1055,8 @@ example.
 ```
 Let's define a null output function.
 ```
-  sub devnull()
-     ' do nothing
+  sub devnull(data as string)
+     ' do nothing with the data
      end
   ls > devnull                   ' This will do nothing and throw away the data
 ```
@@ -1048,13 +1071,14 @@ Let's define a data source function.
   function is sent to a command with `<<<`.
   What if we want to pass data to the source function then you must use the {( )}
   But this is a simple example, you can send any data to a cli you want..
+  A sub can only be defined once, use edit to change it, so this one has a new name.
 ``` 
- sub datasource(...) as string
+ sub moredata(...) as string
     dim ExtraData as string[] = param.all
     return "this is a message\nto\nbe\nprinted\nto\nthe\nterminal\n" & ExtraData.join("\n")
     end
 
-  cat <<< {(datasource("this", "is", "also", "data"))}       ' This will print the data source data to the terminal
+  cat <<< {(moredata("this", "is", "also", "data"))}       ' This will print the data source data to the terminal
 ```
 Let's use our functions to send and receive data thru cat.
 ```
@@ -1641,13 +1665,10 @@ process
 
 #### :\> Store the return code from this process to a variable
 
-Assign the result code from the command or process to a Gsh shell
-variable.
-
-Example:
+`:>` is no longer used, write `!>` instead, see **!\>** above.
 
 ```
-   ls xvxdfdr :> $s
+   ls xvxdfdr !> $s
 ```
 
 ls outputs the message : directory xvxdfdr not found.
@@ -1677,14 +1698,26 @@ replacepattern is the text to use to replace the matching entry.
 
 #### \`Linux cli\` Back Ticks - Execute cli and return exit code
 
-This will execute the linux command line and returns the exit code
-of the last command
+Back ticks run a linux command line from Gambas code and return the exit
+code of the last command, 0 when it worked. This may be used anywhere a
+Gambas function may be called.
 
-example:
+Example:
+```
+  if `ls / > $a` = 0 then print "the command worked\n" ; $a
+  print `ls /nofile 2> /dev/null`     ' prints 2, the exit code of ls
+```
 
-if \`ls / \> \$a\` = 0 then print " the command worked\\n" ; \$a
-
-This may be used Anywhere a gambas function may be called
+This is different from bash. In bash back ticks, and $(...), are command
+substitution: the command is run and its output text replaces the back
+ticks in the command line, so ls -d \`echo /tmp\` runs ls -d /tmp. gsh does
+not do this, back ticks inside the arguments of a command line are passed
+to the command as they are written. To use the output of a command in
+another command line, send it to a variable and use {(...)}:
+```
+  echo /tmp > $d
+  ls -d {(Trim($d))}                  ' runs ls -d /tmp/, echo adds the / to a directory name
+```
 
 #### "\#{expression}"
 
@@ -1712,7 +1745,7 @@ After the evaluation, the line will be executed.
 Example using the default prompt:
 
 ```
-   print "#{quote(Sharedmem['$pwd']&' $'&sharedmem['$blockindent'])}"
+   print "#{quote(Sharedmem['pwd']&' $'&sharedmem['blockindent'])}"    ' the names are without the $
 ```
 
 Remember the evaluation is executed in this context. The line is
@@ -1724,7 +1757,7 @@ Example:
 
 ```
    print "#{quote(application.name)}"    'this will print "gsh"
-   print application.name    'this will print "execgbs"
+   print application.name    'this will print "lambda"
 ```
 
 They happen in different contexts. Global variables span contexts.
@@ -2479,7 +2512,7 @@ Sub Sink()
 '' Just have to read from stdin
   dim buffer as string
   while not eof()
-    line input a        ' do something with data
+    line input buffer   ' do something with data
   wend
   quit 0
 End

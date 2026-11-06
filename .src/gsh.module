@@ -130,6 +130,7 @@ Private windowwidth As Integer = 80
 Private windowheight As Integer = 24
 
 Public DoTrace As Boolean = False
+Private $bTraceOwner As Boolean = False                  ' this gsh set the global dotrace, clear it on exit
 Public TraceLevel As Integer = 1
 Public jobctl As Boolean = False
 Public ActiveProcesses As New Process[]
@@ -145,6 +146,7 @@ Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel) 
 
     DoTrace = setting
     SharedMem["DoTrace"] = setting
+    $bTraceOwner = setting
     TraceLevel = level
     sharedmem["TraceLevel"] = level
 
@@ -467,6 +469,8 @@ Public Sub ProcessOptions() As String[]
 
     If sSharedMemoryName <> "" Then
         DefaultSharedMem = sSharedMemoryName
+        ' another shared memory has its own image, saving it to gsh.image replaced the user's normal image
+        If DefaultSharedMem <> User.Name & "gsh" Then DefaultImageName = sSharedMemoryName & ".image"
     Endif
 
     If sImageToUse <> "" Then
@@ -638,7 +642,11 @@ Private Sub CompileBuffer(sym As String, buffer As String, Optional componly As 
         FinalProgram &= sInsert & "\n"
     Next
 
-    If ScriptSubPrefix <> "" And If Lower(sym) Begins "sub." & ScriptSubPrefix Then AddScriptConsts()   ' script subs see the script's Consts
+    If ScriptSubPrefix <> "" And If Lower(sym) Begins "sub." & ScriptSubPrefix Then
+        AddScriptConsts()                                                                         ' script subs see the script's Consts
+    Else If Lower(sym) Begins "sub.gss_" Then
+        AddSharedScriptConsts(sym)                                                                ' gsh -r (a pipe) running a script's sub
+    Endif
     For Each sinsert In ExternTable
         FinalProgram &= sInsert & "\n"
     Next
@@ -925,6 +933,7 @@ Public Sub Main()
     If TraceLevel > 2 Then
         DoTrace = True
         SharedMem["dotrace"] = DoTrace
+        $bTraceOwner = True
     Endif
 
     'Check if we have request to execute a local function
@@ -1025,6 +1034,7 @@ Public Sub Main()
     If TraceLevel > 0 Then
         DoTrace = True
         SharedMem["DoTrace"] = DoTrace
+        $bTraceOwner = True
     Endif
 
     ' Then assume it is an interactive session
@@ -1220,6 +1230,8 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
 
     Try FreeScriptSubs()                ' delete subs created by a running script
 
+    If $bTraceOwner Then Try SharedMem["DoTrace"] = False   ' -t or settrace only lasts for this gsh, other sessions and subs read it
+
     gshlogging.EndLog
     gshlogging.logrotate()
 
@@ -1287,6 +1299,7 @@ Public Sub FreeScriptSubs()
         If SharedMem.exist("sub." & sUnique) Then Try SharedMem.Free("sub." & sUnique)
     Next
     ScriptSubMap.Clear()
+    If ScriptSubPrefix <> "" And If SharedMem.exist("gssconst." & ScriptSubPrefix) Then Try SharedMem.Free("gssconst." & ScriptSubPrefix)
 
 End
 
@@ -1294,9 +1307,16 @@ End
 Public Sub SweepStaleScriptSubs()
 
     Dim aParts As String[]
+    Dim sym As String
 
-    For Each sym As String In SharedMem.Variables("sub.gss_*")
+    For Each sym In SharedMem.Variables("sub.gss_*")
         aParts = Split(sym, "_")                    ' sub.gss, pid, run, ...
+        If aParts.count < 3 Then Continue
+        If aParts[1] = CStr(Application.Id) Then Continue
+        If Not Exist("/proc" &/ aParts[1]) Then Try SharedMem.Free(sym)
+    Next
+    For Each sym In SharedMem.Variables("gssconst.gss_*")
+        aParts = Split(sym, "_")                    ' gssconst.gss, pid, run, ...
         If aParts.count < 3 Then Continue
         If aParts[1] = CStr(Application.Id) Then Continue
         If Not Exist("/proc" &/ aParts[1]) Then Try SharedMem.Free(sym)
@@ -1344,6 +1364,7 @@ Private Sub RecordScriptConst(sDecl As String)
         If ConstName(sOld) = sName Then Return
     Next
     ScriptConstTable.Add(sDecl)
+    Try SharedMem["gssconst." & ScriptSubPrefix] = ScriptConstTable.Join("\n")   ' a script sub run by gsh -r (a pipe) needs them too
 
 End
 
@@ -1373,6 +1394,31 @@ Private Sub AddScriptConsts()
 
 End
 
+'' A gsh -r process (a sub in a pipe) compiling a sub of a script run by another gsh:
+'' add that script's Const declarations, saved in shared memory by RecordScriptConst.
+Private Sub AddSharedScriptConsts(sym As String)
+
+    Dim sKey As String
+    Dim merged As New String[]
+    Dim sDecl As String
+
+    For Each sKey In SharedMem.Variables("gssconst.gss_*")
+        If Not (Lower(sym) Begins "sub." & Mid(sKey, Len("gssconst.") + 1)) Then Continue
+        For Each sDecl In Split(SharedMem[sKey], "\n", "", True)
+            If Not merged.Exist(sDecl) Then merged.Add(sDecl)
+        Next
+    Next
+    If merged.Count = 0 Then Return
+    For Each sDecl In ExternTable
+        If Not merged.Exist(sDecl) Then merged.Add(sDecl)
+    Next
+    ExternTable = merged
+
+Catch
+    If DoTrace Then Error "(Trace "; Now; ") AddSharedScriptConsts :"; Error.text
+
+End
+
 Public Sub datetostring(mDate As Date) As String
 
     Dim d As String = Format(mdate, "yyyymmddhhnnssuu")
@@ -1388,7 +1434,7 @@ Public Sub SetTitle()
 
 End
 
-Private SubParmItems As New ParseParm(False, [","], ["[", "]", "(", ")", "\"", "\""])
+Private SubParmItems As New ParseParm(False, [], ["[", "]", "(", ")", "\"", "\""], [","])   ' split the call's parameters at commas only, Lower("x") & "!" is one parameter
 Private SubParmParser As New ParseParm(False, [","], ["(", ")", "\"", "\""])
 
 Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Boolean
@@ -1397,7 +1443,9 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
 
     If prog.count <> 1 Then Return False                            ' If it is more than one line then just return
     'Dim lsplit As String[] = Split(prog[0], "(,)", "\"\"", True, True)
-    Dim lsplit As String[] = Parser(prog[0], SubParmParser)
+    Dim lsplit As String[]
+    Try lsplit = Parser(StripLineComment(prog[0]), SubParmParser)   ' a ( ) or " in a ' comment is not code
+    If Error Then Return False                                      ' not a simple sub call, run it the normal way
     If lsplit.count < 1 Then Return False
 
     If LinkTable.count > 1 Then Return False                        ' If this is not a self contained command then we can not run local
@@ -1424,13 +1472,14 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     ' Link Table will always have link to own code
     linktable.Clear()
 
-    newsplit = RegExp.Replace(lsplit[0], "^.*[(]", "")
+    newsplit = RegExp.Replace(lsplit[0], "^[^(]*[(]", "")             ' only the call's own (, ^.*[(] cut toupper(Lower("x") & "!") at the last (
     newsplit = RegExp.Replace(newsplit, "[)]$", "")
     'lsplit = Split(newsplit, "," , "[]()", True, True)
     lsplit = Parser(newsplit, SubParmItems, False, False)
     Dim parms As New Variant[]
 
     For Each s As String In lsplit
+        s = Trim(s)
         If s.len > 1 And If s[0] = "." Or s[0] = "!" Then
             If s.len > 2 And If s[1] = "[" Then
                 s = "sharedmem" & Mid(s, 2)
@@ -2338,7 +2387,7 @@ Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
                 Shell "apropos" & " " & InBufParse[0] To answers
                 answer = "Did you mean:\n" & answers
             Endif
-            Error.Raise("Unkown command or function " & Quote(InBufParse[0]) & answers)
+            Error.Raise("Unknown command or function " & Quote(InBufParse[0]) & answers)
         Endif
 
 StartAgain:
@@ -2419,6 +2468,9 @@ StartAgain:
                                 ExecBuffer = RegExp.Replace(ExecBuffer, "(^|\\s)(SUB|FUNCTION|PROCEDURE)\\s+" & InBufParse[parsepos + 1] & "\\b", "&1&2 " & sUniqueName, RegExp.Caseless)
                                 ScriptSubMap[sOrigName] = sUniqueName
                                 InBufParse[parsepos + 1] = sUniqueName
+                                ' Reading the Sub line linked an installed sub of the same name (injector, filter ...),
+                                ' left in the table it is renamed too and declared twice in the next program
+                                If LinkTable.Exist("sub." & sOrigName) Then LinkTable.Remove("sub." & sOrigName)
                             Endif
 
                             If autocompile Then
@@ -2441,13 +2493,15 @@ StartAgain:
                                 Else
                                     If CommandMode Then
                                         ' Consume the body first, otherwise it leaks into the next program as top level code
+                                        ' DoBlock replaces InBufParse with the last line read (End), keep the name for the message
+                                        Dim sDefined As String = InBufParse[parsepos] & " " & IIf(sOrigName <> "", sOrigName, InBufParse[parsepos + 1])   ' the name as written, not the unique script name
                                         NoPreProcess = True
                                         DoAlias = False
                                         DoBlock(["END"])
                                         DoAlias = True
                                         NoPreProcess = False
                                         ExecBuffer = ""
-                                        Error.Raise("Error :" & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & " Already Defined")
+                                        Error.Raise("Error :" & sDefined & " Already Defined, use another name")
                                     Else
                                         Error.Raise(("Use Edit to change :") & InBufParse[parsepos] & " " & InBufParse[parsepos + 1] & (" ... Already Defined\n") & SharedMem["sub." & Lower(InBufParse[parsepos + 1])])
                                     Endif
@@ -2850,6 +2904,16 @@ Sub lambdaExpression(eblk As String[])
 
     Dim variables As String = GetLastLine(execbuffer)
     Dim lbuff As String = ""
+
+    ' Begin ' a comment : drop the comment, or its words become parameters of the lambda
+    Dim vParse As String[] = Highlight.Analyze(variables)
+
+    If Highlight.Types.Count > 0 Then
+        If Highlight.Types.Last = Highlight.Comment Or If Highlight.Types.Last = Highlight.Help Then
+            vParse.Pop()
+            variables = vParse.Join(" ")
+        Endif
+    Endif
 
     execbuffer = removeLastLine(execbuffer)
     Dim savebuf2 As String = execbuffer
@@ -3469,10 +3533,46 @@ End
 '' shared memory, @vars, numbers and plain names (a name that is not a variable becomes a
 '' string when it is evaluated). Any other word is quoted, so -x stays -x and is not read
 '' as Gambas code (- x).
+'' A word gsh reads as a value: "string", $global, (expr), [array], {expr}, !x, @var or .member
+'' .. ../dir ./file are paths, not a .member, they are quoted like other words
+Private Sub ValueWord(sWord As String) As Boolean
+
+    If sWord = "" Then Return False
+    If InStr("\"$([{!@", Left(sWord)) > 0 Then Return True
+    If RegExp.Match(sWord, "^[.][A-Za-z_]") Then Return True
+    Return False
+
+End
+
+'' Remove a ' comment from the end of a line, a ' inside a "string" is kept
+Private Sub StripLineComment(sLine As String) As String
+
+    Dim i As Integer
+    Dim c As String
+    Dim bQuote As Boolean = False
+
+    For i = 1 To Len(sLine)
+        c = Mid$(sLine, i, 1)
+        If bQuote Then
+            If c = "\\" Then
+                Inc i                                ' skip the escaped character
+            Else If c = "\"" Then
+                bQuote = False
+            Endif
+        Else If c = "\"" Then
+            bQuote = True
+        Else If c = "'" Then
+            Return RTrim(Left$(sLine, i - 1))
+        Endif
+    Next
+    Return sLine
+
+End
+
 Private Sub CallWord(sWord As String) As String
 
     If sWord = "" Then Return sWord
-    If InStr("\"$([{.!@", Left(sWord)) > 0 Then Return sWord
+    If ValueWord(sWord) Then Return sWord
     If RegExp.Match(sWord, "^-?[0-9]+([.][0-9]+)?$") Then Return sWord
     If RegExp.Match(sWord, "^[A-Za-z_][A-Za-z0-9_]*$") Then Return sWord
     Return Quote(sWord)
@@ -3519,6 +3619,7 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
 
     If Not gotmin Then MinCount = interface.count ' added sept 21 2026
 
+    CommandLine = StripLineComment(CommandLine)   ' a ( or $. in the comment broke the parse of the words
     Dim CmdLine As String[] = Parser(CommandLine, CallParser, False, False)
 
     ' Scan it for comments... forgot about this
@@ -3554,7 +3655,8 @@ Private Sub MakeIntoCall(FuncName As String, CommandLine As String) As String
             types = highlight.types
             DataTypePos = types.Find(Highlight.DataType)
             If DataTypePos > 0 Then
-                If syms[DataTypePos] = "STRING" And CmdLine[i][0] <> "\"" Then
+                ' a String parameter quotes a plain word (toupper abc), but $var, (expr), [..], {..}, .x, !x and @var are values
+                If syms[DataTypePos] = "STRING" And Not ValueWord(CmdLine[i]) Then
                     sCodeLine &= Quote(CmdLine[i])
                 Else
                     sCodeLine &= CmdLine[i]

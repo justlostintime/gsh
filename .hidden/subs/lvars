@@ -1,7 +1,7 @@
 'nopreprocess
 Sub lvars(Optional varname As String = "",dumpall as boolean = false) As Boolean 
 ''' List all variables and content
-''lVars  <$GlobalVarName> - list all varables or specific variable with content
+''lVars  <GlobalVarName> - list all varables or specific variable with content, name without the $
 ''          function lvars(<varname>)
 ''          command lvars <varname>
 ''          list all if no parameter, other wise varname passed
@@ -15,7 +15,7 @@ if varname <> "" and if not instr(varname,"*") then
 		return true
 	else
 		.["result"] = "Error : Global variable Not found ["&varname&"]"
-		print #file.err, .["$result"]
+		print #file.err, .["result"]
 		return false
 	endif
 endif

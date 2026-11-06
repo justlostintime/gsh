@@ -1,6 +1,6 @@
 Sub vardel(optional varname As String = "", noerrorreport As Boolean = False) As Boolean 
 ''' Delete in memory vars/subs/classes/structs
-''VarDel $globalvar - Delete a global variable
+''VarDel globalvar - Delete a global variable, give the name without the $
 ''    as function vardel("varname")
 ''    as command vardel "varname"
 ''    global functions have format "sub.sub"
@@ -8,6 +8,7 @@ Sub vardel(optional varname As String = "", noerrorreport As Boolean = False) As
 ''    global struct have format "struct.structname"
 ''    returns true if found, false otherwise
 ''    $result contains the error text or "OK"
+if varname begins "$" then varname = mid(varname, 2)   ' vardel("$a") is the same as vardel a
 with sharedmem
 if varname <> "" and if .exist(varname) Then
 .free(varname)
@@ -16,7 +17,7 @@ return true
 else
 .["result"] = "Error : \""&varname&"\" not found"
 if not noerrorreport then
-print #file.err, .["$result"]
+print #file.err, .["result"]
 endif
 return false
 endif

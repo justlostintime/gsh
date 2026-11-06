@@ -12,7 +12,10 @@ dim errorresult as new string[]
 dim cmd as string[] = ["/usr/bin/gsh","-f"]
 with sharedmem
 if .exist(varname) then
+    dim sMemName as string = mid(.NamedMemName, 2)        ' gsh -s name : the new gsh must use the same shared memory
+    if sMemName <> "" and if sMemName <> user.name & "gsh" then cmd.insert(["-s", sMemName], 1)
     cmd.add(varname)
+    cmd.add("--")                                          ' the parameters are not gsh options
     for each s as variant in param
      cmd.add(s)
     next
@@ -33,7 +36,9 @@ if .exist(varname) then
       print "(RunVar "&now&") Output";;quote(mOutput)
     endif
     dim sOutput as string[] = split(mOutput,"\n","\"\"",true)
-    return iif(sOutput.count = 1,sOutput[0],sOutput)
+    if sOutput.count = 0 then return ""                    ' iif() evaluates sOutput[0] even when it is not used
+    if sOutput.count = 1 then return sOutput[0]
+    return sOutput
 else
     ErrorResult.add("Variable Not found : "&varname)
     return null

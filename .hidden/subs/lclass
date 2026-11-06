@@ -48,8 +48,8 @@ If varname <> "" And If Not InStr(varname, "*") Then
 		Return True
 	Else
 
-		sharedmem["$result"] = "Error : Global Function Not found [" & varname & "]"
-		Error sharedmem["$result"]
+		sharedmem["result"] = "Error : Global Function Not found [" & varname & "]"
+		Error sharedmem["result"]
 		Return False
 	Endif
 Endif
@@ -75,7 +75,11 @@ If Not ShowDetail Then
 
   colwidth += 2
 
-  colcount = CInteger(env["COLUMNS"]) / colwidth
+  Dim iTermWidth As Integer = 0
+  Try iTermWidth = CInteger(env["COLUMNS"])              ' COLUMNS is not set when run from a script
+  If iTermWidth <= 0 Then Try iTermWidth = File.Out.Term.Width
+  If iTermWidth <= 0 Then iTermWidth = 80
+  colcount = Max(1, iTermWidth / colwidth)
   colperiod = allindex.count / colcount
   colperiod += IIf(allindex.count - (colcount * colperiod) > 0, 1, 0)
   For i As Integer = 0 To colperiod - 1
@@ -123,7 +127,7 @@ Else
 
 Endif
 
-.["$result"] = "OK"
+.["result"] = "OK"
 
 End With
 Return True
