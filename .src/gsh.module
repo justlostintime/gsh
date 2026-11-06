@@ -852,9 +852,10 @@ Public Sub Main()
         SharedMem.Begin(BlockSize) ' preset this to be 4.5 meg of memory
         'Debug "Opening in single use/user mode. Image will not be updated"
     Else
-        If Exist("/dev/shm/" &/ DefaultSharedMem) Then bNoLoadImage = True               ' if the shared memory already exists as a file then just use it
         SharedMem.CollectMemLen = CollectMemLen
-        SharedMem.BeginNamed(DefaultSharedMem, BlockSize, bCleanup) ' preset this to be 4.5 meg of memory
+        ' the process that creates the segment loads the image before any other can open it, the others use it as it is.
+        ' Checking /dev/shm before raced with the last session ending: the new one skipped the image and started empty
+        SharedMem.BeginNamed(DefaultSharedMem, BlockSize, bCleanup, IIf(bNoLoadImage, "", DefaultImageName))
     Endif
 
     Dim ImageFile As String = SharedMem.DefaultSaveLocation & DefaultImageName
@@ -864,7 +865,7 @@ Public Sub Main()
     ' this means that the current state of the running or last run interactive
     ' copy of gsh variables will be merged into the image of single use gsh running
 
-    If Not bNoLoadImage And Exist(ImageFile) Then
+    If bSingleUse And If Not bNoLoadImage And If Exist(ImageFile) Then   ' a named segment loaded it in BeginNamed
         SharedMem.Merge(DefaultImageName)
     Endif
 
