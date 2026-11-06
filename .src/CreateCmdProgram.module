@@ -42,6 +42,8 @@ Public AliasList As New Collection(gb.ignorecase)
 Public MyReg As New Regexp
 Public MyParams As New String[20]
 
+Private PipeCount As Integer = 0                         ' numbers the pipes of the generated program
+
 Public Sub MakeAbs(newdir As String) As String
 
     'Dim sPath As String = Trim(newdir)
@@ -403,7 +405,8 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
     NeedsSTDIOWrite = New Boolean[]              ' default to  False
     NoErrRedirect = New Boolean[]                       ' default to True
     NeedsSTDERRWrite = New Boolean[]            ' default to  False
-    BaseName = "r" & Str(Rand(9999))
+    Inc PipeCount
+    BaseName = "r" & CStr(PipeCount) & "_"                 ' unique: Rand(9999) gave two pipes of one script the same mProc names
 
     'Dim NextedFinals As String[]        ' this is where the generated && and || will be statcked until added to final final
 

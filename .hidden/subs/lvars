@@ -20,23 +20,21 @@ if varname <> "" and if not instr(varname,"*") then
 	endif
 endif
 
-dim sortlist as new string[]
-For Each s As SharedMemSymbol In .SymbolTable
-sortlist.add(.SymbolTable.key)
-Next
+dim sortlist as string[] = .Variables("*")       ' names as this session sees them, its own private path as path
 sortlist.sort(gb.ignorecase)
 for each ss as string in sortlist
-    s = .symbolTable[ss]
-    if dumpall or if not (s.symname like "sub.*" or s.symname like "class.*" or s.symname like "struct.*") then
-        if varname <> ""  and if not (s.symname like varname) then continue
-        if s.SymType = gb.string then
-            if .[s.symname].len < 50 then
-                Print left(sharedmem.SymbolTable.key&space(25),25);"="; quote(.[s.symname])
+    if dumpall or if not (ss like "sub.*" or ss like "class.*" or ss like "struct.*") then
+        if varname <> ""  and if not (ss like varname) then continue
+        if not .exist(ss) then continue
+        dim vValue as variant = .[ss]
+        if typeof(vValue) = gb.string then
+            if len(vValue) < 50 then
+                Print left(ss&space(25),25);"="; quote(vValue)
             else
-                Print left(sharedmem.SymbolTable.key&space(25),25);"="; quote(left(.[s.symname],50));"..."
+                Print left(ss&space(25),25);"="; quote(left(vValue,50));"..."
             endif
         else
-            Print left(sharedmem.SymbolTable.key&space(25),25); "=";.[s.symname]
+            Print left(ss&space(25),25); "=";vValue
         endif
     endif
 

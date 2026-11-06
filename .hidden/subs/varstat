@@ -12,9 +12,9 @@ dim varlist as new string[]
 if symbol <> "" then
   varlist.add(symbol)
 else
-  for each x in .SymbolTable
-    if not (x.symname like "sub.*" or x.symname like "class.*" or x.symname like "struct.*") then
-     varlist.add(x.symname)
+  for each sName as string in .Variables("*")         ' names as this session sees them
+    if not (sName like "sub.*" or sName like "class.*" or sName like "struct.*") then
+     varlist.add(sName)
     endif
   next
 endif
@@ -23,7 +23,11 @@ varlist.sort()
 dim sp as integer = longeststring(varlist)
 
 for each symbols as string in varlist
-  x = .SymbolTable[symbols]
+  if .IsEnvBacked(symbols) then                         ' $pwd: the environment variable of this process
+    if display then print left(symbols&space(sp),sp);;"Environment variable of this process";;quote(.[symbols])
+    continue
+  endif
+  x = ._Symbol(symbols)                                 ' mapped, a private name finds this session's copy
   if isnull(x) then
     error "Var Stat Unknown var "&symbol
     return null

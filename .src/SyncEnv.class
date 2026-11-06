@@ -29,7 +29,20 @@ Public Sub _free()
 
 End
 
+'' A synced variable is private to this root gsh and its children (sharedmem private names),
+'' each session keeps its own copy, as each process has its own environment
 Public Sub Add(VarName As String, envEntry As String) As Boolean
+
+    Dim vValue As Variant
+
+    If SharedMem.Exist(VarName) Then                        ' the shared value, or our private copy when it is private already
+        vValue = SharedMem[VarName]
+    Else
+        vValue = Env[envEntry]
+    Endif
+    SharedMem.AddPrivate(VarName)
+    If Not SharedMem.Exist(VarName) Then SharedMem[VarName] = vValue   ' start this tree's own copy
+    If Env[envEntry] <> SharedMem[VarName] Then Env[envEntry] = SharedMem[VarName]
 
     $syncvars.Add(envEntry, VarName)
     Try SharedMem.NotifyChange(Varname, Me, -1, "varchanged")
@@ -45,6 +58,8 @@ Catch
 
 End
 
+'' Stop the sync. The variable stays private to this tree: every gsh calls this when it exits,
+'' a child gsh must not take its root's copy away
 Public Sub Remove(varname As String) As Boolean
 
     If Not $syncvars.Exist(varname) Then Return False

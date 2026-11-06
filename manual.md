@@ -111,6 +111,9 @@ Optionally the Nerd fonts to enable cool shell prompt.
 If you want to improve the speed of your scripts then gcc should also be installed to enable
 the gambas3 jit to be used at runtime with caching of scripts.
 
+The first start of **gsh** after a new SharedMem library is installed takes about a minute,
+the jit compiles the library once. Later starts are fast.
+
 From here:
 ```
 sudo apt install fortune
@@ -584,17 +587,29 @@ other control sequences to fail as well.
 
 ## Current Working Directory
 
-Gsh manages the current working directory for the shell environment. The
-processes current working directory is set after each command execution.
-The env variable PWD and the global variable \$pwd are set after each
-function to the current processes working directory.
+Every process has its own working directory, kept in its environment
+variable PWD. \$pwd is that variable: reading \$pwd gives env["PWD"] of
+the process, setting it changes the directory of that process and sets
+PWD and OLDPWD. Nothing is stored in the shared memory, so each **gsh**
+session has its own directory and a program started by **gsh** begins in
+the directory of the session that started it.
 
-Some cli functions use the env variable PWD others use the process cwd
-current working directory. The shell attempts to keep both in sync.
-
-Linux process table contains an inode reference to the current working
-directory. The shell keeps this in sync with the PWD environment
-variable.
+Use cd to change the directory of the shell. A script line that sets
+\$pwd runs in its own program and changes only that program, as a
+subshell does in bash. Inside a begin..end block, \$pwd = "/usr" changes the
+directory for the rest of the block.
+```
+  cd /tmp
+  ? $pwd                      ' prints /tmp
+  begin
+    $pwd = "/usr"
+    ls -d share               ' runs in /usr
+    $pwd = "lib"              ' relative to the current directory, now /usr/lib
+  end
+  ? $pwd                      ' still /tmp, the block changed only its own directory
+```
+The shell changes to PWD before each command, so cli commands, which use
+the process directory, and Gambas code, which uses env["PWD"], agree.
 
 ## File and Path Name Expansion for Linux Cli Commands
 
@@ -1289,7 +1304,16 @@ used except for iteration evaluation this is not allowed: for \$i = 0 to
 Shell Global variables can be referenced in any process or sub process
 of **gsh**.
 
-They are system wide.
+They are system wide, except:
+
+\* \$pwd is the PWD environment variable of each process, see Current Working Directory.
+
+\* A variable kept in sync with an environment variable, \$path and any variable
+given to setsync, is private to each session: the **gsh** started from a terminal
+and everything it starts, including a **gsh** started from it, share one copy. Another
+session has its own copy. A new session starts from the saved shared value merged
+with its environment. A change made in a session is not saved for later sessions,
+put lasting changes in profile.gsh or gsh.rc.
 
 Remember to vardel ("varname") at the end of a session if you don't
 want it to appear when you next start **gsh**.
@@ -1383,7 +1407,18 @@ This is the collection of lines entered.
 
 #### \$pwd
 
-Current working directory.
+The current working directory of this process, the same as env["PWD"].
+Setting it changes the directory of the process. See Current Working Directory.
+
+#### \$path
+
+The search path for commands, kept in sync with env["PATH"]: setting \$path
+changes PATH for the commands run after it. Private to each session, see Shell
+Global Variables.
+```
+  $path = $path & ":/opt/mytools/bin"   ' this session finds the commands in /opt/mytools/bin
+  ? env["PATH"]                         ' shows the new entry
+```
 
 #### \$env
 
@@ -2235,8 +2270,7 @@ independent task with no wait.
 
 #### cd directorypath - Change the current working directory
 
-Uses the global \$pwd variable.\
-Updates the global \$env variable PWD entry.\
+Changes the directory of the shell, sets env["PWD"] (\$pwd) and env["OLDPWD"].\
 Function cd("directory").\
 Command cd "directory."
 Returns 'true' if found, 'false,' otherwise.\
@@ -2368,6 +2402,7 @@ Returns 'true' if found, false otherwise.\
 
 #### lvars \<\$GlobalVarName\> - Lists all variables or specific variable with content
 
+Shows this session's own \$path and \$pwd, not the copies of other sessions.\
 Function lvars(\<varname\>)\
 Command lvars \<varname\>\
 Lists all if no parameter, other wise varname passed\
@@ -2375,6 +2410,12 @@ Returns 'true' if found, false otherwise\
 \$result contains the error text or "OK"
 
 #### readto(GlobalVar as string) For next command redirects output to variable
+
+#### removesync varname - Stops keeping a variable in sync with its environment variable
+
+Function removesync("varname").\
+Command removesync varname.\
+The variable stays private to this session until the session ends.
 
 #### resetdefaults Resets the system variables to their default value
 
@@ -2395,6 +2436,21 @@ savesubs suba suba .. or just savesubs which will save them all
 
 #### saveclasses Saves all/some of the classes to \~/vars/class or \~/vars/struct directories
 saveclasses class1 struct1 ... or just saveclasses to save them all
+
+#### setsync varname envname - Keeps a variable in sync with an environment variable
+
+Setting the variable sets the environment variable of the session, for the
+commands run after it. The variable becomes private to the session, see Shell
+Global Variables. If the variable does not exist it starts with the value of the
+environment variable, otherwise the environment variable takes the value of the variable.
+```
+  setsync myeditor EDITOR       ' or setsync("myeditor", "EDITOR")
+  $myeditor = "vim"
+  printenv EDITOR               ' prints vim
+```
+When the environment variable does not exist yet, setsync prints "creating new env variable".\
+Function setsync("varname", "envname").\
+Command setsync varname envname.
 
 #### traceoff Turns off shell command tracing.
 

@@ -106,12 +106,7 @@ Public Sub _Call()
         '   If gsh.bLogon Then
         Env["PATH"] = .path
         ' Endif
-        .pwd = Env["PWD"]
-
-        If .pwd = "" Then
-            Env["PWD"] = User.Home
-            .pwd = Env["PWD"]
-        Endif
+        If Env["PWD"] = "" Then Env["PWD"] = User.Home     ' $pwd is Env["PWD"] of this process
 
         .["baseenv"] = ["PWD=" & .["pwd"], "PATH=" & .["path"], "HOME=" & .["home"], "TERM=" & .["term"], "HOSTTYPE=" & .["hosttype"], "HOSTHAME=" & .["hostname"], "LASTPLACEONEARTH=EndOfTheEarth"]
 

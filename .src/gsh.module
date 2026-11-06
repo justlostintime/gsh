@@ -103,6 +103,7 @@ Property TraceState As Integer Use $iTraceSet = 0   ' state of tracing level at 
 Public Source As String = "STDIN"
 Public DefaultSharedMem As String = user.name & "gsh"
 Public DefaultImageName As String = "gsh.image"
+Private bPrivateRoot As Boolean = False                     ' this gsh made the private copies and frees them on exit
 Public $Version As String = ""
 
 Private RunningProcess As Process = Null
@@ -548,8 +549,6 @@ End
 '' Get the env variables into the gsh.image variable
 Public Sub getenv() As String[]
 
-    SharedMem["pwd"] = Env["PWD"]
-
     Dim senv As New String[]
     For Each s As String In Application.env
         senv.add(s & "=" & Application.Env[s])
@@ -871,8 +870,18 @@ Public Sub Main()
 
     If SharedMem.exist("sub.update") Then SharedMem.Free("sub.update")              ' this must always be read from the latest system install
 
-    SharedMem["pwd"] = Env["PWD"]
+    If Not SharedMem.IsEnvBacked("pwd") Then                 ' $pwd is Env["PWD"] of each process, children inherit the mapping
+        If SharedMem.Exist("pwd") Then SharedMem.Free("pwd")  ' the copy older gsh versions stored for all sessions
+        SharedMem.SetEnvBacked("pwd", "PWD")
+    Endif
+    If SharedMem.PrivateTag <> "" And If Not Exist("/proc/" & SharedMem.PrivateTag) Then
+        SharedMem.SetPrivate(Split("", ",", "", True), "")           ' the root gsh that made our private copies is gone, become a root
+    Endif
     SetDefaults()
+    If Not bSingleUse And If SharedMem.PrivateTag = "" Then  ' a root gsh, not started by another gsh
+        SharedMem.SetPrivate(Split("", ",", "", True), CStr(Application.Id))   ' SyncEnv makes the synced variables private to this tree
+        bPrivateRoot = True
+    Endif
 
     Try chdir(Env["PWD"])
 
@@ -924,6 +933,7 @@ Public Sub Main()
     Signal[Signal.SIGQUIT].catch
 
     Try EnvSync = New SyncEnv
+    If bPrivateRoot Then Try SharedMem.FreeStalePrivate()  ' copies left by root gsh sessions that crashed
     If Error Then
         envSync = Null
     Endif
@@ -1254,6 +1264,7 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
     Try gshlogging(User.home &/ "vars/gsh.log", "GSH Exits program PID= " & Application.Id & ",Exit code=" & ExitValue)
 
     Try FreeScriptSubs()                ' delete subs created by a running script
+    If bPrivateRoot Then Try SharedMem.FreePrivate()   ' this tree's own path, the shared one stays
     Try HereDoc.FreeAll()               ' and the text of its here documents
 
     If $bTraceOwner Then Try SharedMem["DoTrace"] = False   ' -t or settrace only lasts for this gsh, other sessions and subs read it
@@ -3974,8 +3985,9 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
                                     Endif
                                 Endif
                                 If SharedMem.exist(varlookup) Then
-                                    If SharedMem.SymbolTable[varlookup].symtype = gb.object Then
-                                        Dim classname As String = SharedMem.SymbolTable[varlookup].ClassName
+                                    Dim oVarSym As Variant = SharedMem._Symbol(varlookup)   ' mapped: this session's private copy, Null for $pwd (env backed)
+                                    If oVarSym <> Null And If oVarSym.symtype = gb.object Then
+                                        Dim classname As String = oVarSym.ClassName
                                         If SharedMem.exist("class." & classname) Then
                                             LinkTable.Add(SharedMem["class." & classname], "class." & classname)
                                         Else If SharedMem.exist("struct." & classname)
