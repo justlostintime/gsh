@@ -1,6 +1,6 @@
 Sub clearvars(Optional varname As String = "") As Boolean 
 ''' Clear all user global variables and content, preserves system variables
-''clearvars  <$GlobalVarName> - delete all varables or specific variable
+''clearvars  <GlobalVarName> - delete all varables or specific variable, name without the $
 ''          function clearvars(<varname>)
 ''          command clearvars <varname>
 ''          delete all user defined variables if no parameter, other wise delete varname passed
@@ -34,7 +34,7 @@ For Each s As string In SymbolList
 	  .free(s)
 Next
 
-.["$result"] = "OK"
+.["result"] = "OK"
 end with
 return true
 

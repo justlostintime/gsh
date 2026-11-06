@@ -157,6 +157,14 @@ Private CompileSource As String = ""                      ' the CLI line being c
 
 '' The CLI line for error messages, as the user typed it (before alias expansion) when it is
 '' the line gsh is processing, otherwise the line handed to Compile.
+'' gsh -s name : a sub run in a pipe is a new gsh, it must use the same shared memory to find the sub
+Private Sub ChildShmOption() As String
+
+    If gsh.DefaultSharedMem = User.Name & "gsh" Then Return ""
+    Return "\"-s\"," & Quote(gsh.DefaultSharedMem) & ","
+
+End
+
 Public Sub UserLine() As String
 
     If gsh.InBufferRaw <> "" And If CompileSource <> "" And If InStr(gsh.InBuffer, Trim(CompileSource)) > 0 Then
@@ -633,7 +641,10 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                         Select Case CmdTypes[CurrentCmd][i]
                             Case Highlight.function    ' remember we used this to mean local function
                                 gsh.PreProcesses("tostringarray()")
-                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-r\"," & Quote(sym) & ",\"--\""   ' -- : the sub's -x arguments are not gsh options
+                                ' a sub defined in the running script is stored under its unique name, the gsh -r process must use that name to find it
+                                Dim sRunName As String = sym
+                                If gsh.ScriptSubMap.Exist(Lower(sym)) Then sRunName = gsh.ScriptSubMap[Lower(sym)]
+                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\"," & ChildShmOption() & "\"-r\"," & Quote(sRunName) & ",\"--\""   ' -- : the sub's -x arguments are not gsh options
                                 ' in a sh style line a sub is run as a command, !name a b, never as a function call !name(...)
                                 If i < CmdList[CurrentCmd].Max And If CmdList[CurrentCmd][i + 1] Begins "(" Then
                                     Dim sSynopsis As String = SubSynopsis(sym)
@@ -642,7 +653,7 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
 
                             Case Highlight.label
                                 gsh.PreProcesses("tostringarray()")
-                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\",\"-f\"," & Quote(sym) & ",\"--\""   ' -- : the -x arguments are not gsh options
+                                CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\"," & ChildShmOption() & "\"-f\"," & Quote(sym) & ",\"--\""   ' -- : the -x arguments are not gsh options
 
                             Default
                                 Dim rTemp, rrTemp As String
@@ -673,7 +684,8 @@ Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boole
                         Else                                                      ' not an option
                             Dim Preprocstuff As String
                             If (sym = "$" And i + 1 <= CmdTypes[CurrentCmd].max) And If CmdTypes[CurrentCmd][i + 1] = Highlight.string Then   ' handle all special shell functions
-                                CmdExec[CurrentCmd] &= "," & gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1])
+                                ' set PreProcStuff, it is added below; it still held the previous word, which was added again: echo x $"T{1..2}" gave x T1 T2 x
+                                PreProcStuff = gsh.PreProcesses("$" & cmdlist[CurrentCmd][i + 1])
                                 Inc i
 
                             Else If (sym = "$" And i + 1 <= CmdTypes[CurrentCmd].max) And If CmdTypes[CurrentCmd][i + 1] = Highlight.Symbol And If Left(CmdList[CurrentCmd][i + 1], 1) = "[" Then
@@ -954,9 +966,9 @@ Fast Unsafe Private Sub GenerateRedirectInput(i As Integer, BaseName As String, 
         If CmdList[CurrentCmd][i] Like "*fileexpand*" Then
             Dim stepone As String = Replace(CmdList[CurrentCmd][i], "fileexpand", "expandfn", gb.ignorecase)
             stepone = Mid(stepone, 2, -1)
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & stepone & "))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fwrite(mProc" & BaseName & Str(CurrentCmd) & " , file.load(" & stepone & "))") & "\n"
         Else
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fwrite(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
         Endif
     Else
         Dim DataSource As String
@@ -969,11 +981,11 @@ Fast Unsafe Private Sub GenerateRedirectInput(i As Integer, BaseName As String, 
             Wend
             Dec i                                   ' i is now the last token used, the caller's Next moves past it
             DataSource = gsh.PreProcesses(RawFunction.join(" "))
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & DataSource & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fwrite(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & DataSource & ")))") & "\n"
         Else If CmdTypes[CurrentCmd][i] = Highlight.Symbol And (CmdList[CurrentCmd][i][0] = "$" Or CmdList[CurrentCmd][i][0] = "(") Then  ' allow variables
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fwrite(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & CmdList[CurrentCmd][i] & ")))") & "\n"
         Else
-            CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & Quote(FileTargetName(CmdList[CurrentCmd][i])) & ")))") & "\n"
+            CmdWrite[CurrentCmd] &= gsh.preprocesses("fwrite(mProc" & BaseName & Str(CurrentCmd) & " , file.load(expandfn(" & Quote(FileTargetName(CmdList[CurrentCmd][i])) & ")))") & "\n"
         Endif
     Endif
     Return i
@@ -1095,7 +1107,7 @@ Fast Unsafe Private Sub GenerateInLineInput(i As Integer, BaseName As String, Cu
         CmdList[CurrentCmd][i] = "(" & CmdList[CurrentCmd][i] & ")"
     Endif
 
-    CmdWrite[CurrentCmd] &= "Dim SndBuff" & Str(BufferCounter) & " as string =\"\"\nDim RdBuff" & Str(BufferCounter + 1) & " as string\n While true\nLine Input RdBuff" & Str(BufferCounter + 1) & "\n"
+    CmdWrite[CurrentCmd] &= "Dim SndBuff" & Str(BufferCounter) & " as string =\"\"\nDim RdBuff" & Str(BufferCounter + 1) & " as string\n While Not Eof()\nLine Input RdBuff" & Str(BufferCounter + 1) & "\n"   ' stop at end of input, do not loop for ever
 
     If CmdTypes[CurrentCmd][i] = Highlight.Function Then
         DataSource = gsh.PreProcesses(CmdList[CurrentCmd][i])
@@ -1108,8 +1120,8 @@ Fast Unsafe Private Sub GenerateInLineInput(i As Integer, BaseName As String, Cu
     Endif
 
     CmdWrite[CurrentCmd] &= "If RdBuff" & Str(BufferCounter + 1) & " == " & DataSource & " Then Break\n"
-    CmdWrite[CurrentCmd] &= "SndBuff" & Str(BufferCounter) & " &= RdBuff" & Str(BufferCounter + 1) & " & " & Quote(" \n") & "\nWend\n"
-    CmdWrite[CurrentCmd] &= gsh.preprocesses("fprint(mProc" & BaseName & Str(CurrentCmd) & " ,  SndBuff" & Str(BufferCounter) & ")") & "\n"
+    CmdWrite[CurrentCmd] &= "SndBuff" & Str(BufferCounter) & " &= RdBuff" & Str(BufferCounter + 1) & " & " & Quote("\n") & "\nWend\n"
+    CmdWrite[CurrentCmd] &= gsh.preprocesses("fwrite(mProc" & BaseName & Str(CurrentCmd) & " ,  SndBuff" & Str(BufferCounter) & ")") & "\n"   ' the lines as typed, fprint would add a newline
     BufferCounter += 2
 
     Return i

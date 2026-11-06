@@ -115,7 +115,7 @@ Sub getenum(enumdef As String) As String[]
       If IsNumber(EnumStart) Then
         dim PatternLength as integer = 0                 ' we must pad with leading zeros when asked'
         dim Pattern as string = ""
-        if EnumStart[0] = "0" or if EnumEnd[0]="0" Then
+        If (EnumStart Begins "0" And EnumStart.len > 1) Or (EnumEnd Begins "0" And EnumEnd.len > 1) Then  ' like bash, 0 alone does not pad'
           PatternLength = max(EnumStart.len,EnumEnd.len)
           Pattern = string(PatternLength,"0")
         endif

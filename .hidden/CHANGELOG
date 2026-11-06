@@ -1,4 +1,16 @@
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- updated dotrace and other small fixes
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Many small fixes
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- More fixes to parsing
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Update how pipline consta and pipes pass data
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
 - fix parameter passing on the command line
 
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4

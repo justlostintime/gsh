@@ -16,7 +16,7 @@ if typeof(filename) = gb.string and param.count > 0 then
 '    if file.dir(filename) = "" then
 '        filename = user.home &/ "vars"&/ filename
 '    endif
-    if file.dir(filename)="" then filename = sharedmem["$pwd"] &/ filename
+    if file.dir(filename)="" then filename = sharedmem["pwd"] &/ filename
     try mFile = open filename for write create
     if error then
         .["result"] = error.text
@@ -151,9 +151,9 @@ Sub sendchunks(sink As Variant, buffer As String)
  endif
 
 ' this is a lot slower but since pipes block, we need to send small chunks at a time
- For i As Integer = 0 To buffer.len Step 256
+ For i As Integer = 0 To buffer.len - 1 Step 256
 
-   Write #sink, Mid(buffer, i + 1, 256), 256
+   Write #sink, Mid(buffer, i + 1, 256), Min(256, buffer.len - i)   ' the last chunk is shorter, do not pad it
    Flush #sink
    Wait
  Next
