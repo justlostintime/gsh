@@ -1097,6 +1097,16 @@ Fast Unsafe Private Sub GenerateInLineInput(i As Integer, BaseName As String, Cu
 
     Dim aFunction As Boolean = False
     Dim DataSource As String
+
+    ' cat << EOF : gsh read the text with the command line into a variable, send it each time it runs
+    Dim sText As String = HereDoc.Source(CmdList[CurrentCmd][i], gsh.CompileOnly)
+    If sText <> "" Then
+        Dim sCall As String = gsh.preprocesses("fwrite(mProc" & BaseName & Str(CurrentCmd) & " ,  zzheredoctext)")
+        If InStr(sCall, "zzheredoctext") = 0 Then Error.Raise("Here document could not be compiled in: " & UserLine())
+        CmdWrite[CurrentCmd] &= Replace(sCall, "zzheredoctext", sText) & "\n"
+        Return i
+    Endif
+
     'Check if we will read from a function or some other evaluated at runtime function
     If CmdList[CurrentCmd][i] = "{" Or If CmdList[CurrentCmd][i] = "(" Then
         aFunction = True

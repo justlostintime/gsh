@@ -1008,9 +1008,8 @@ There are several forms of output redirection.
 There are the standard Linux shell redirection constructors:
 ```
    cat < myfilename                   ' input from a file
-   cat << EOF                         ' Read input from default input until text 
-                                      '   matches the provided text 'eof' in this case. 
-                                      '   The case of the text is ignored.
+   cat << EOF                         ' Input the lines that follow, up to the line EOF.
+                                      '   The case of the text is ignored, see << below.
    cat <<< "This is the text string"  ' Input the text string to command stdin
    echo "this" > myfile               ' Output to a file, Enclose name in quotes of 
                                       '   contains special characters
@@ -1563,6 +1562,41 @@ Reads a file into the command's input.
 ```
    cat < myfilename
 ```
+
+#### \<\< Here document, send the lines that follow as input
+
+The lines after the command, up to a line holding only the end word, are
+sent to the command's input. In a script they are read from the script,
+at the prompt gsh asks for them with `> `. The case of the end word is
+ignored. gsh reads the text once into a variable, so a here document in
+a loop is sent each time round without being read again.
+
+```
+   $name = "World"
+   cat << EOF
+Hello $name, 1 + 2 = {(1+2)}
+EOF
+```
+prints `Hello World, 1 + 2 = 3`. Write the lines without indenting
+them, the end word must be alone on its line.
+
+- `$name`, `{(expression)}` and `{name}`, a Gambas variable such as a loop
+  counter, are filled in each time the command runs. `\$` and `\{` keep
+  the character.
+- `<< "EOF"` or `<< 'EOF'` sends the text exactly as written.
+- `<<- EOF` removes the tabs at the start of each line and of the end
+  word line, so the text can be indented with tabs.
+- `<< $var` takes the end word from a variable when the command runs,
+  the text is then read from the command's input.
+
+```
+   for i as integer = 1 to 2
+     cat << EOF
+pass {i} of 2
+EOF
+   next
+```
+prints `pass 1 of 2` and `pass 2 of 2`.
 
 #### \<\<\< Send a string, variable or function result as input
 

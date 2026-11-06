@@ -110,6 +110,46 @@ End
 
 
 
+'' One line of a here document, as typed: no trim, no history expansion, not added to history
+'' RawEof is set at the end of the input
+Public RawEof As Boolean = False
+
+Public Sub ReadRaw(Optional sPrompt As String = "> ", bDbaseServer As Boolean = False) As String
+
+    Dim pInput As Pointer
+    Dim sInput As String = ""
+    Dim rByte As Byte
+
+    RawEof = False
+    If bDbaseServer Then
+        While True
+            If Eof(File.In) Then
+                RawEof = sInput = ""
+                Break
+            Endif
+            Read #File.In, rByte
+            If rByte = &H0A Then Break
+            sInput &= Chr(rByte)
+        Wend
+    Else If Not $isTerminal Then
+        If Eof(File.In) Then
+            RawEof = True
+        Else
+            Line Input #File.In, sInput
+        Endif
+    Else
+        pInput = readline(sPrompt & "\x00")
+        If IsNull(pInput) Then
+            RawEof = True
+        Else
+            sInput = String(1, String@(pInput))           ' copy it, String@ points into the memory freed next
+            rFree(pInput)
+        Endif
+    Endif
+    Return sInput
+
+End
+
 Public Sub _call(Optional BlockIndent As String = "", bDbaseServer As Boolean = False) As String
 
     Dim pInput As Pointer
