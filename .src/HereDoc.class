@@ -1,4 +1,356 @@
 ' Gambas class file
 
-'' function to read inline data and store into random variable then make that avaiable to read
-'' when the need arrises in the executing script
+Class SharedMem
+
+'' Here documents, cat << EOF ... EOF
+''
+'' gsh reads the lines up to the end word when it reads the command line, from the same
+'' place the command came from (script file, -f variable or the prompt). The text is kept
+'' in a SharedMem variable and the line is rewritten to << heredoc.<pid>.<n>, the program
+'' sends the variable each time the command runs, so a here document inside a loop is read
+'' once and sent every time round.
+''
+''   << EOF      $name, {(expr)} and {name} in the text are filled in when the command runs
+''   << "EOF"    the text is sent exactly as written, also << 'EOF'
+''   <<- EOF     leading tabs are removed from the text lines and the end word line
+''   << $var     the end word is only known when it runs, the program reads stdin as before
+''
+'' A Sub or Class is compiled later and may be saved, its text is written into the line
+'' as <<< {(...)} instead of a variable.
+
+Static Private $aCurrent As New String[]        ' variables read and not compiled yet
+Static Private $aUsed As New String[]           ' variables compiled into the program being built
+Static Private $aForeground As New String[]     ' variables of the last program run, it has ended when the next one starts
+Static Private $aBackground As New String[]     ' variables of programs run with &, freed when gsh exits
+Static Private $iCount As Integer = 0
+Static Private $sLine As String                 ' the line rewritten by TakeHereDoc
+
+'' Find the here documents of a command line, read their text and return the line
+'' with each << word replaced. bInline: write the text into the line (Sub and Class code)
+Static Public Sub Scan(sLine As String, Optional bInline As Boolean = False) As String
+
+    Dim iPos As Integer = 1
+    Dim c As String
+    Dim bQuote As Boolean = False
+
+    If InStr(sLine, "<<") = 0 Then Return sLine
+
+    While iPos <= Len(sLine)
+        c = Mid$(sLine, iPos, 1)
+        If bQuote Then
+            If c = "\\" Then
+                Inc iPos                                    ' skip the escaped character
+            Else If c = "\"" Then
+                bQuote = False
+            Endif
+        Else If c = "\"" Then
+            bQuote = True
+        Else If c = "'" Then
+            If iPos = 1 Then Break
+            If Not IsLetter(Mid$(sLine, iPos - 1, 1)) And If Not IsDigit(Mid$(sLine, iPos - 1, 1)) Then Break   ' a comment, it's is a word
+        Else If Mid$(sLine, iPos, 3) = "<<<" Then
+            iPos += 3                                       ' <<< "string" is not a here document
+            Continue
+        Else If Mid$(sLine, iPos, 2) = "<<" Then
+            iPos = TakeHereDoc(sLine, iPos, bInline)        ' the position after the new text
+            sLine = $sLine
+            Continue
+        Endif
+        Inc iPos
+    Wend
+
+    Return sLine
+
+End
+
+'' sLine has << at iPos: read the text when the end word is a plain or quoted word.
+'' The new line is left in $sLine, returns the position after the replaced text
+Static Private Sub TakeHereDoc(sLine As String, iPos As Integer, bInline As Boolean) As Integer
+
+    Dim iWord As Integer = iPos + 2
+    Dim bStrip As Boolean = False
+    Dim bExpand As Boolean = True
+    Dim sTerm As String = ""
+    Dim iEnd As Integer
+    Dim c As String
+    Dim sNew As String
+    Dim sBody As String
+
+    $sLine = sLine
+    If Mid$(sLine, iWord, 1) = "-" Then
+        bStrip = True
+        Inc iWord
+    Endif
+    While Mid$(sLine, iWord, 1) = " " Or Mid$(sLine, iWord, 1) = "\t"
+        Inc iWord
+    Wend
+
+    c = Mid$(sLine, iWord, 1)
+    If c = "\"" Or c = "'" Then
+        iEnd = InStr(sLine, c, iWord + 1)
+        If iEnd = 0 Then Error.Raise("Missing closing " & c & " after << in: " & sLine)
+        sTerm = Mid$(sLine, iWord + 1, iEnd - iWord - 1)
+        bExpand = False
+        Inc iEnd
+    Else
+        iEnd = iWord
+        While iEnd <= Len(sLine)
+            If InStr(" \t;|&<>(){}\"'", Mid$(sLine, iEnd, 1)) > 0 Then Break
+            Inc iEnd
+        Wend
+        sTerm = Mid$(sLine, iWord, iEnd - iWord)
+    Endif
+
+    ' << $var, << (...), << {...} are only known when the program runs, << heredoc.n.n is done
+    If sTerm = "" Or If sTerm Begins "$" Or If IsKey(sTerm) Then Return iPos + 2
+
+    sBody = Collect(sTerm, bStrip)
+
+    If bInline Then
+        If Right$(sBody, 1) = "\n" Then sBody = Left$(sBody, -1)     ' <<< adds the last newline
+        If bExpand Then
+            sNew = "<<< {(" & Expression(sBody) & ")} "
+        Else
+            sNew = "<<< {(" & Quote(sBody) & ")} "
+        Endif
+    Else
+        sNew = "<< " & Store(sBody, bExpand) & " "
+    Endif
+
+    $sLine = Left$(sLine, iPos - 1) & sNew & Mid$(sLine, iEnd)
+    Return iPos + Len(sNew)
+
+End
+
+'' Read the lines of the here document up to the end word
+Static Private Sub Collect(sTerm As String, bStrip As Boolean) As String
+
+    Dim sBody As String = ""
+    Dim sLine As String
+
+    Do
+        sLine = gsh.ReadRawLine()
+        If gsh.RawEof Then Error.Raise("Missing here document end word " & sTerm & " for << " & sTerm)
+        If Right$(sLine, 1) = "\r" Then sLine = Left$(sLine, -1)
+        If bStrip Then
+            While Left$(sLine, 1) = "\t"
+                sLine = Mid$(sLine, 2)
+            Wend
+        Endif
+        If sLine == sTerm Then Break                         ' the case of the end word is ignored, eof ends EOF
+        sBody &= sLine & "\n"
+    Loop
+
+    If gsh.DoTrace Then Error "(Trace "; Now; ") Here document "; sTerm; " "; Quote(sBody)
+    Return sBody
+
+End
+
+'' heredoc.<pid>.<n> fills in $name and {(expr)}, heredoc.<pid>.<n>q is sent as written
+Static Private Sub Store(sBody As String, bExpand As Boolean) As String
+
+    Inc $iCount
+    Dim sKey As String = "heredoc." & CStr(Application.Id) & "." & CStr($iCount)
+    If Not bExpand Then sKey &= "q"
+    SharedMem[sKey] = sBody
+    $aCurrent.Add(sKey)
+    Return sKey
+
+End
+
+'' A here document variable name written by Scan
+Static Public Sub IsKey(sWord As String) As Boolean
+
+    Return RegExp.Match(sWord, "^heredoc[.][0-9]+[.][0-9]+q?$")
+
+End
+
+'' The command compiler found << sWord: the Gambas expression that gives the text,
+'' "" when sWord is not a here document read by gsh
+Static Public Sub Source(sWord As String, bCompileOnly As Boolean) As String
+
+    Dim sBody As String
+    Dim sText As String
+    Dim sExpr As String
+
+    If Not IsKey(sWord) Then Return ""
+    If Not SharedMem.Exist(sWord) Then Error.Raise("Here document text " & sWord & " is gone")
+
+    sBody = SharedMem[sWord]
+    sText = "SharedMem[" & Quote(sWord) & "]"
+
+    If Right$(sWord, 1) <> "q" Then
+        sExpr = Expression(sBody)
+        If sExpr <> Quote(sBody) Then sText = sExpr          ' $name {(expr)} {name} are filled in each time it runs
+    Endif
+    If bCompileOnly And If sText Begins "SharedMem[" Then sText = Quote(sBody)   ' a compiled script runs after the variable is gone
+
+    If $aCurrent.Exist(sWord) Then
+        $aCurrent.Remove($aCurrent.Find(sWord))
+        $aUsed.Add(sWord)
+    Endif
+    Return sText
+
+End
+
+'' The Gambas expression for the text: a string with $name, {(expr)} and {name} filled in
+'' when the command runs. \$ \{ and \\ keep the character.
+Static Public Sub Expression(sBody As String) As String
+
+    Dim aParts As New String[]
+    Dim sLit As String = ""
+    Dim i As Integer = 1
+    Dim c As String
+    Dim n As Integer
+    Dim sName As String
+    Dim sRef As String
+
+    While i <= Len(sBody)
+        c = Mid$(sBody, i, 1)
+        If c = "\\" And If i < Len(sBody) And If InStr("${\\", Mid$(sBody, i + 1, 1)) > 0 Then
+            sLit &= Mid$(sBody, i + 1, 1)
+            i += 2
+            Continue
+        Else If c = "$" And (IsLetter(Mid$(sBody, i + 1, 1)) Or Mid$(sBody, i + 1, 1) = "_") Then
+            n = i + 1
+            While n <= Len(sBody)
+                If Not IsLetter(Mid$(sBody, n, 1)) And Not IsDigit(Mid$(sBody, n, 1)) And Mid$(sBody, n, 1) <> "_" Then Break
+                Inc n
+            Wend
+            sName = Mid$(sBody, i + 1, n - i - 1)
+            sRef = VarRef(sName)
+            If sRef = "" Then
+                sLit &= "$" & sName                          ' not a gsh or environment variable, keep it
+            Else
+                sLit = AddLit(aParts, sLit)
+                aParts.Add(sRef)
+            Endif
+            i = n
+            Continue
+        Else If c = "{" And If Mid$(sBody, i + 1, 1) = "(" Then
+            n = ExprEnd(sBody, i + 1)
+            If n > 0 Then
+                sLit = AddLit(aParts, sLit)
+                aParts.Add("Str(" & gsh.PreProcesses(Mid$(sBody, i + 1, n - i)) & ")")
+                i = n + 2                                    ' past )}
+                Continue
+            Endif
+        Else If c = "{" Then
+            If RegExp.Match(Mid$(sBody, i), "^\\{[A-Za-z_][A-Za-z0-9_]*\\}") Then
+                n = InStr(sBody, "}", i)
+                sLit = AddLit(aParts, sLit)
+                aParts.Add("Str(" & Mid$(sBody, i + 1, n - i - 1) & ")")   ' a Gambas variable of the running program
+                i = n + 1
+                Continue
+            Endif
+        Endif
+        sLit &= c
+        Inc i
+    Wend
+    sLit = AddLit(aParts, sLit)
+
+    If aParts.Count = 0 Then Return "\"\""
+    Return aParts.Join(" & ")
+
+End
+
+'' Add the text read so far as a string, returns "" for the next part
+Static Private Sub AddLit(aParts As String[], sLit As String) As String
+
+    If sLit <> "" Then aParts.Add(Quote(sLit))
+    Return ""
+
+End
+
+'' {( at iStart - 1, iStart is the (. Return the position of the ) that is followed by }
+Static Private Sub ExprEnd(sBody As String, iStart As Integer) As Integer
+
+    Dim iDepth As Integer = 0
+    Dim bQuote As Boolean = False
+    Dim c As String
+    Dim i As Integer = iStart
+
+    While i <= Len(sBody)
+        c = Mid$(sBody, i, 1)
+        If bQuote Then
+            If c = "\\" Then
+                Inc i
+            Else If c = "\"" Then
+                bQuote = False
+            Endif
+        Else If c = "\"" Then
+            bQuote = True
+        Else If c = "(" Then
+            Inc iDepth
+        Else If c = ")" Then
+            Dec iDepth
+            If iDepth = 0 Then
+                If Mid$(sBody, i + 1, 1) = "}" Then Return i
+                Return 0
+            Endif
+        Else If c = "\n" Then
+            Return 0                                         ' an expression is on one line
+        Endif
+        Inc i
+    Wend
+    Return 0
+
+End
+
+'' $name in the text: a gsh global, else an environment variable, else "" to keep it as text
+Static Private Sub VarRef(sName As String) As String
+
+    If SharedMem.Exist(sName) Then Return "Str(" & gsh.PreProcesses("$" & sName) & ")"
+    If Not IsNull(Env[sName]) Then Return "Env[" & Quote(sName) & "]"
+    Return ""
+
+End
+
+'' A program starts: the variables of the previous one can go, it has ended.
+'' Variables not compiled yet (a later part of a :; line, a begin block) wait for their program.
+Static Public Sub Claim(bNoWait As Boolean)
+
+    FreeList($aForeground)
+    If bNoWait Then
+        $aBackground.Insert($aUsed)
+    Else
+        $aForeground.Insert($aUsed)
+    Endif
+    $aUsed.Clear()
+
+End
+
+'' gsh exits
+Static Public Sub FreeAll()
+
+    FreeList($aCurrent)
+    FreeList($aUsed)
+    FreeList($aForeground)
+    FreeList($aBackground)
+
+End
+
+Static Private Sub FreeList(aKeys As String[])
+
+    For Each sKey As String In aKeys
+        Try SharedMem.Free(sKey)
+    Next
+    aKeys.Clear()
+
+End
+
+'' Variables left by a gsh that was killed
+Static Public Sub SweepStale()
+
+    Dim aParts As String[]
+
+    For Each sym As String In SharedMem.Variables("heredoc.*")
+        aParts = Split(sym, ".")                     ' heredoc, pid, n
+        If aParts.Count < 3 Then Continue
+        If aParts[1] = CStr(Application.Id) Then Continue
+        If Not Exist("/proc" &/ aParts[1]) Then Try SharedMem.Free(sym)
+    Next
+
+Catch
+
+End

@@ -995,6 +995,7 @@ Public Sub Main()
 
     ' Drop script subs left over from gsh processes that were killed or crashed
     SweepStaleScriptSubs()
+    HereDoc.SweepStale()                 ' and here document text they left
 
     ' Check for a list of script files on the command line
     If cmdLineParameters.count > 0 And If cmdLineParameters[0][0] <> "-" Then
@@ -1253,6 +1254,7 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
     Try gshlogging(User.home &/ "vars/gsh.log", "GSH Exits program PID= " & Application.Id & ",Exit code=" & ExitValue)
 
     Try FreeScriptSubs()                ' delete subs created by a running script
+    Try HereDoc.FreeAll()               ' and the text of its here documents
 
     If $bTraceOwner Then Try SharedMem["DoTrace"] = False   ' -t or settrace only lasts for this gsh, other sessions and subs read it
 
@@ -1601,6 +1603,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         NoWait = True
         execbuffer = Replace(execbuffer, "&\n", "\n")
     Endif
+    HereDoc.Claim(NoWait)                   ' here document text of the last program can go, & keeps it to the exit
 
     'If Not nowait Then
     If execlocal(Split(execbuffer, "\n", "\"\"", True, True), nowait) Then
@@ -2045,7 +2048,7 @@ Private saveSource As Boolean = False
 
 Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
 
-    Dim CapturedSource As String[] = Split(data, "\n", "\"\"", True, True)
+    Dim CapturedSource As String[] = Split(data, "\n", "\"\"", False, True)
     Dim ValidLines As Integer = 0
 
     If IsNull(CapturedSource) Or If CapturedSource.count = 0 Then
@@ -2053,15 +2056,14 @@ Public Sub OpenBuffer(data As String, Optional inSaveSource As Boolean = False)
     Endif
 
     For Each s As String In CapturedSource
-        If s <> Space(s.len) Then
-            ReadFromBuffer_buffer.Add(s)
-            Inc ValidLines
-        Endif
+        If s <> Space(s.len) Then Inc ValidLines
     Next
 
     If ValidLines = 0 Then
         Return
     Endif
+
+    ReadFromBuffer_buffer.Insert(CapturedSource)    ' blank lines too, they can be here document text, Reader skips them
 
     savesource = inSaveSource
 
@@ -2169,6 +2171,40 @@ Public Sub readline() As String
 
 Catch
     Error.Propagate()
+
+End
+
+'' One line exactly as written, from where the commands come from, for a here document
+'' RawEof is set at the end of the input
+Public RawEof As Boolean = False
+
+Public Sub ReadRawLine() As String
+
+    Dim sLine As String = ""
+
+    RawEof = False
+    Select Case Source
+        Case "FILE"
+            If Eof(AppSource) Then
+                RawEof = True
+            Else
+                Line Input #AppSource, sLine
+            Endif
+        Case "BUFFER"
+            If ReadFromBuffer_buffer.Count = 0 Then
+                RawEof = True
+            Else
+                sLine = ReadFromBuffer_buffer[0]
+                ReadFromBuffer_buffer.Remove(0)
+                If ReadFromBuffer_buffer.Count = 0 Then Source = savedsourcebuffer
+            Endif
+        Case "STDIN"
+            sLine = getline.ReadRaw("> ", bDbaseServer)
+            RawEof = getline.RawEof
+        Default
+            RawEof = True                       ' history replay has no here document text
+    End Select
+    Return sLine
 
 End
 
@@ -2359,6 +2395,10 @@ Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
         Endif
 
 
+
+        ' cat << EOF : read the lines up to EOF now, from where this line came from. After the line is
+        ' shown and a :; line is split, each part reads its own here documents when it is run
+        InBuffer = HereDoc.Scan(InBuffer, NoPreProcess And Not DoAlias)   ' a Sub or Class keeps the text in its code
 
         If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed
         InBufferRaw = InBuffer
