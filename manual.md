@@ -388,7 +388,19 @@ the data type is fixed until the variable is deleted.
 
 To delete a global variable use:
 
-**vardel \$variablename** , ... , ...
+**vardel variablename** , ... , ...   (the name without the \$)
+
+A script stops at its first gsh error and gsh exits with code 1. The
+subs the script defined are freed and the shell exits normally. A gsh
+error is a line gsh cannot read, a compile error, or a Gambas run time
+error. A command that only returns a non zero exit code does not stop
+the script, its exit code is in \$?. An error in a job run in the
+background with & does not stop it either.
+```
+  ls nnnnvvvv          ' ls fails, the script goes on
+  print 1/0            ' Division by zero, the script stops here, exit code 1
+  print "not printed"
+```
 
 **gsh** compiles and runs code blocks as a Gambas3 scripts unless the
 function or command has been compiled and loaded as a plugin. This

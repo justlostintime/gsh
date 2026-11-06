@@ -1,4 +1,7 @@
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- Fix manual and test functions, make script stop on errors
+
+* Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
 - updated dotrace and other small fixes
 
 * Thu Nov 05 2026 Brian G <justlostintime@gmail.com> 1.7.4
