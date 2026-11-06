@@ -2,7 +2,7 @@ Sub cd(Optional CDToDir As String = "~") As Boolean
 '''  change directory with path expansion
 ''cd   directorypath - change the current working directory
 ''          uses the env["PWD"] variable
-''          updates the global $env,$pwd variables
+''          $pwd is env["PWD"], private to each process
 ''          Function cd("directory")
 ''          Command  cd "directory"
 ''          returns true if found, false otherwise
@@ -75,13 +75,11 @@ if pwds.count > 0 then
       .["result"] = "Not a directory"
       return false
     endif
-    env["PWD"] = finaldestination
+    env["PWD"] = finaldestination                 ' $pwd is env["PWD"] of this process
     env["OLDPWD"] = OldPWD
-    sharedmem["pwd"] = "/"&/ pwds.join("/")
 else
     env["PWD"] = "/"
     env["OLDPWD"] = OldPWD
-    sharedmem["pwd"] = "/"
 endif
     Extern chdir(Dest As String) As Integer In "libc:6"
     try chdir(finaldestination)

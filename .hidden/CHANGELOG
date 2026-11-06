@@ -1,3 +1,15 @@
+* Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.8.1
+- Many fixes to pwd, private variables and such
+
+* Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- updates to how pwd is mapped and handled
+
+* Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- issues with private value
+
+* Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.7.4
+- updated to new sharedmem version
+
 * Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.7.4
 - Add proper support for heredocs
 

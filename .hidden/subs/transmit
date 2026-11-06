@@ -12,7 +12,7 @@ dim buffer as byte[]
 dim len as integer
 dim mfile as file
 dim sym as SharedMemSymbol
-sym = .symboltable[varname]
+sym = ._Symbol(varname)                 ' mapped, a private name finds this session's copy
 len = sym._serialize(true)
 buffer = new byte[len+100]
 mFile = memory buffer.data for write
