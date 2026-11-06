@@ -130,6 +130,7 @@ Private windowwidth As Integer = 80
 Private windowheight As Integer = 24
 
 Public DoTrace As Boolean = False
+Private ScriptErrorFound As Boolean = False             ' a gsh error in a script, stop it and exit 1
 Private $bTraceOwner As Boolean = False                  ' this gsh set the global dotrace, clear it on exit
 Public TraceLevel As Integer = 1
 Public jobctl As Boolean = False
@@ -963,14 +964,17 @@ Public Sub Main()
             If DoTrace Then Print "(Trace "; Now; ") ";; ("***********************************\nVariable program call defined as \n ");; codebuffer;; "\n*********************\n"
 
             OpenBuffer(codebuffer)
+            ScriptErrorFound = False
             While ScriptReadLine()
                 Try ProcessProg()
                 If Error Then
                     Error Error.text
                     ExitProgram(1)
                 Endif
+                If ScriptErrorFound Then ExitProgram(1)          ' stop at the first gsh error, like a script file
                 Wait 0
             Wend
+            If ScriptErrorFound Then ExitProgram(1)
         Else
             Error ("Execute from Global Variable : Variable \""); VarCommandSource; ("\" Not Found")
             ExitProgram(1)
@@ -1016,17 +1020,21 @@ Public Sub Main()
 
         ScriptScopeStart(runcmder)      ' subs defined by this script get unique names, freed in ExitProgram
 
+        ' A script stops at its first gsh error (parse, compile or Gambas run time error),
+        ' a command that only returns a non zero exit code does not stop it
+        ScriptErrorFound = False
         While ScriptReadLine()
             Try ProcessProg()
             If Error Then
                 Error Error.text
-                Break
+                ScriptErrorFound = True
             Endif
+            If ScriptErrorFound Then Break
             Wait 0
         Wend
 
         Close AppSource
-        ExitProgram()
+        ExitProgram(IIf(ScriptErrorFound, 1, 0))     ' still frees the script subs and saves the image
     Endif
 
     getline = New GshReadLine
@@ -1205,6 +1213,22 @@ Private Sub CleanUpError()
 
 End
 
+'' SharedMem key a generated program sets when it ends with a Gambas error
+Private Sub ScriptErrorKey() As String
+
+    Return "gsherr." & Application.Id
+
+End
+
+'' Pick up the error mark left by the program that just ran
+Private Sub CheckScriptError()
+
+    If Not SharedMem.Exist(ScriptErrorKey()) Then Return
+    Try SharedMem.Free(ScriptErrorKey())
+    ScriptErrorFound = True
+
+End
+
 Public Sub ExitNow()
 
     ReadQueue.push("QUIT")
@@ -1338,6 +1362,7 @@ Private Sub ScriptReadLine() As Boolean
     If Error Then
         Error Error.text
         ExecBuffer = ""
+        ScriptErrorFound = True
         Return False
     Endif
     Return bMore
@@ -1717,7 +1742,9 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         ' temp remove quit with value, it really needs it though
         Program &= "end with\nSharedMem.end()\n'error \"end of script\";;process.lastvalue\nsignal[2].reset\n"
             "quit process.lastvalue\nCatch\n"
-            "Error \"Gsh error in script:\" & quote(error.text);;\"Where :\";error.where\nquit 2\nend\n"
+        "Error \"Gsh error in script:\" & quote(error.text);;\"Where :\";error.where\n" &
+            IIf(NoWait, "", "Try SharedMem[\"" & ScriptErrorKey() & "\"] = True\n") &      ' tell this gsh the program failed
+            "quit 2\nend\n"
         'SharedMem["execprog"] = ExecBuffer
         If Not CompileOnly Then
             Dim ScriptName As String = Temp("gsh_") & ".gsh"
@@ -1737,9 +1764,11 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             If gbscomponent And If Not NoWait Then
                 If jobctl Then RunningProcessStart = Now
                 CompileResult = ScripterExecute("lambda", program, [], cmdLineParameters)
+                CheckScriptError()
                 If compileResult <> 0 Then
                     Dim sKeywordHint As String = ""
                     For Each err As CompileErrorMsg In ScriptCompileErrors
+                        ScriptErrorFound = True             ' only a compile error, compileResult is also the exit code of a command
                         Print err.text
                         If sKeywordHint = "" Then sKeywordHint = KeywordCommandHint(program, err.LineNumber)
                     Next
@@ -1795,6 +1824,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                                 Print errtemp[errline + errstart - 1]
                             Endif
                         Endif
+                        ScriptErrorFound = True
                         ExecBuffer = ""
                         ReturnOutputTo = ""
                         LinkTable.clear()
@@ -1836,6 +1866,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                             RunningProcess = MyProcess
                             If jobctl Then RunningProcessStart = Now
                             MyProcess.Wait()
+                            CheckScriptError()
                             If jobctl Then
                                 Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
                             Endif
@@ -3776,6 +3807,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
 
                     If NewLineDef = "" Then
                         Error SharedMem["result"]
+                        ScriptErrorFound = True
                         Return ""
                     Endif
                 Endif
