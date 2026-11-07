@@ -1,4 +1,7 @@
 * Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.8.1
+- fix notifyremove
+
+* Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.8.1
 - updated how change and notify are handled
 
 * Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.8.1
