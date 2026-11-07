@@ -1,6 +1,7 @@
 ' Gambas module file
 
-Fast Unsafe
+' Every method is Fast Unsafe by itself, except DoProcess: compiled it took 24 s of gcc time at every JIT compile
+' of gsh, for no measurable run time gain. A class level Fast can not leave out one method
 Export
 
 Class Sharedmem
@@ -44,7 +45,7 @@ Public MyParams As New String[20]
 
 Private PipeCount As Integer = 0                         ' numbers the pipes of the generated program
 
-Public Sub MakeAbs(newdir As String) As String
+Fast Unsafe Public Sub MakeAbs(newdir As String) As String
 
     'Dim sPath As String = Trim(newdir)
     Dim sPathSplit As String[] = Split(newdir, "/", "", True)
@@ -93,7 +94,7 @@ Public Sub MakeAbs(newdir As String) As String
 
 End
 
-Public Sub getfullpath(filename As String) As String
+Fast Unsafe Public Sub getfullpath(filename As String) As String
 
     Dim expandedList As String[]
     Dim pwds As New String[]
@@ -146,7 +147,7 @@ Public Sub getfullpath(filename As String) As String
 End
 
 '' This function will compile a Standard(SH) shell CLI line into gambas syntax
-Public Sub _call(Source As String, Optional AsFunction As Boolean = False) As String
+Fast Unsafe Public Sub _call(Source As String, Optional AsFunction As Boolean = False) As String
 
     Return compile(source, AsFunction)
 
@@ -160,14 +161,14 @@ Private CompileSource As String = ""                      ' the CLI line being c
 '' The CLI line for error messages, as the user typed it (before alias expansion) when it is
 '' the line gsh is processing, otherwise the line handed to Compile.
 '' gsh -s name : a sub run in a pipe is a new gsh, it must use the same shared memory to find the sub
-Private Sub ChildShmOption() As String
+Fast Unsafe Private Sub ChildShmOption() As String
 
     If gsh.DefaultSharedMem = User.Name & "gsh" Then Return ""
     Return "\"-s\"," & Quote(gsh.DefaultSharedMem) & ","
 
 End
 
-Public Sub UserLine() As String
+Fast Unsafe Public Sub UserLine() As String
 
     If gsh.InBufferRaw <> "" And If CompileSource <> "" And If InStr(gsh.InBuffer, Trim(CompileSource)) > 0 Then
         Return Trim(gsh.InBufferRaw)
@@ -178,7 +179,7 @@ End
 
 '' A ' starts a comment, so a word such as it's would silently lose the rest of the line.
 '' Raise an error instead, the word must be quoted "it's". A ' at the start of a word is a comment.
-Private Sub CheckApostrophe(sLine As String)
+Fast Unsafe Private Sub CheckApostrophe(sLine As String)
 
     Dim i As Integer
     Dim c As String
@@ -288,7 +289,7 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
 
 End
 
-Public Sub IsGlob(Exp As String) As Boolean
+Fast Unsafe Public Sub IsGlob(Exp As String) As Boolean
 
     Select Case exp[0]
         Case "@", "/", "~"
@@ -311,7 +312,7 @@ End
 
 '' A redirect target that is a plain file name, as in "> out.txt" or "< data".
 '' $variables, sub names (sinks/sources), (expressions) and {blocks} are not files.
-Private Sub IsPlainFileTarget(sTarget As String, iType As Integer) As Boolean
+Fast Unsafe Private Sub IsPlainFileTarget(sTarget As String, iType As Integer) As Boolean
 
     If sTarget = "" Then Return False
     If iType = Highlight.Function Or If iType = Highlight.String Then Return False
@@ -327,7 +328,7 @@ End
 
 '' True if sName is a hoisted Public/Private variable of the program being built (ExternTable).
 '' Output sinks run in their own generated sub, so a Dim local can not be a target anyway.
-Private Sub IsDeclaredVariable(sName As String) As Boolean
+Fast Unsafe Private Sub IsDeclaredVariable(sName As String) As Boolean
 
     Dim sPattern As String
     Dim sLine As String
@@ -343,14 +344,14 @@ Private Sub IsDeclaredVariable(sName As String) As Boolean
 End
 
 '' Strip the @ that forces a name to be a file when it clashes with a command or keyword
-Private Sub FileTargetName(sTarget As String) As String
+Fast Unsafe Private Sub FileTargetName(sTarget As String) As String
 
     If sTarget Begins "@" Then Return Mid$(sTarget, 2)
     Return sTarget
 
 End
 
-Fast Unsafe Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
+Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, ReturnSet As Boolean = False) As String ' returns the processed segment of the command line
 
     Dim CurrentCmd As Integer                             ' Index of the command we are processing
     Dim i As Integer                                                    ' Index of current symbol within the command
@@ -886,7 +887,7 @@ End
 '' CmdCount is still the command before the pipe, search back from it for the writer
 '' (the old cmdcount = 1 shortcut marked command 0, losing stderr of the 2nd command).
 '' This was a GoSub, an error raised in DoProcess then crashed the JIT with "Stack mismatch".
-Private Sub SetNeedsSTDERRWrite(CmdCount As Integer, CmdPipeType As String[], NeedsSTDERRWrite As Boolean[])
+Fast Unsafe Private Sub SetNeedsSTDERRWrite(CmdCount As Integer, CmdPipeType As String[], NeedsSTDERRWrite As Boolean[])
 
     For icounter As Integer = CmdCount DownTo 0
         If CmdPipeType[icounter] = "!" Or CmdPipeType[icounter] = "|" Then
@@ -902,7 +903,7 @@ cmdterm As String[] = ["<", "<<", "<<<", ">", ">>", ">>>", "|<", "|>", "&>", "&>
 '' Collapse a {...} or (...) group that starts at token i into the single token "(...)", removing the
 '' other tokens from both CmdList and CmdTypes. Spaces inside strings are kept. Returns i.
 ' The ''' synopsis line of a sub, from its stored source or its file in the subs path, "" if none
-Private Sub SubSynopsis(sName As String) As String
+Fast Unsafe Private Sub SubSynopsis(sName As String) As String
 
     Dim sSource As String = ""
     Dim sKey As String = "sub." & Lower(sName)
@@ -926,7 +927,7 @@ Private Sub SubSynopsis(sName As String) As String
 
 End
 
-Private Sub CollapseBraces(i As Integer, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][]) As Integer
+Fast Unsafe Private Sub CollapseBraces(i As Integer, CurrentCmd As Integer, CmdList As String[][], CmdTypes As Integer[][]) As Integer
 
     Dim execStartAt As Integer = i
     Dim execBraceLevel As Integer = 0
@@ -1215,7 +1216,7 @@ Catch
 
 End
 
-Private Sub BuildClose(procnum As Integer, processnums As Integer[], BaseName As String) As String
+Fast Unsafe Private Sub BuildClose(procnum As Integer, processnums As Integer[], BaseName As String) As String
 
     Dim finalbuf As String = "Public Sub mClose" & BaseName & Str(procnum) & "() as boolean\n dim alivecount as integer=0\nDim LastOne as boolean = false\n"
 
@@ -1228,19 +1229,19 @@ Private Sub BuildClose(procnum As Integer, processnums As Integer[], BaseName As
 
 End
 
-Private Sub SetIoSub(CmdIndex As Integer, basename As String) As String
+Fast Unsafe Private Sub SetIoSub(CmdIndex As Integer, basename As String) As String
 
     Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\n"
 
 End
 
-Private Sub DefaultIoSub(CmdIndex As Integer, basename As String) As String
+Fast Unsafe Private Sub DefaultIoSub(CmdIndex As Integer, basename As String) As String
 
     Return "mRead" & BaseName & Str(cmdIndex) & "_read|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_read()\nwith sharedmem\nDim sInput as string\nsInput = read #last, lof(last)\nwrite #file.out,sInput, sInput.len\n"
 
 End
 
-Private Sub SetKillSub(CmdIndex As Integer, basename As String) As String
+Fast Unsafe Private Sub SetKillSub(CmdIndex As Integer, basename As String) As String
 
     Dim final As String
 
@@ -1253,13 +1254,13 @@ Private Sub SetKillSub(CmdIndex As Integer, basename As String) As String
 
 End
 
-Private Sub SetErrSub(CmdIndex As Integer, basename As String) As String
+Fast Unsafe Private Sub SetErrSub(CmdIndex As Integer, basename As String) As String
 
     Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\n"
 
 End
 
-Private Sub DefaultErrSub(CmdIndex As Integer, basename As String) As String
+Fast Unsafe Private Sub DefaultErrSub(CmdIndex As Integer, basename As String) As String
 
     Return "mRead" & BaseName & Str(cmdIndex) & "_error|" & "Public sub mRead" & BaseName & Str(CmdIndex) & "_error(msg as string)\nwith sharedmem\nwrite #file.err,  msg, msg.len\n"
 
@@ -1275,7 +1276,7 @@ Private types As Integer[]
 Private ShellParse As ParseParm
 Public ShelliParse As ParseParm
 
-Public Sub _init()
+Fast Unsafe Public Sub _init()
 
     ShellParse = New ParseParm(False, ["&", ">", ">>", "<", "<<", "<<<", "&>", "&>>", "|", "!", "{", "}", "|<", "|>", "!>", "&|", "&|<", "&|>", "2>", "2>>", "2>&", "2>&1"], ["\"", "\"", "(", ")", "`", "`"])
     ShellParse.braces = []
@@ -1292,7 +1293,7 @@ Public Sub _init()
 End
 
 '' This function will Parse the LINUX Shell(sh like) command line
-Private Sub parseline(InLine As String)
+Fast Unsafe Private Sub parseline(InLine As String)
 
     syms = Parser(InLine, ShellParse)
     types = ShellParse.types
@@ -1306,7 +1307,7 @@ Catch
 
 End
 
-Public Sub DoGlob(path As String, Optional dironly As Boolean = False) As String[]
+Fast Unsafe Public Sub DoGlob(path As String, Optional dironly As Boolean = False) As String[]
 
     Dim Paths As New String[]
     Dim sret As New Glob_t
@@ -1331,7 +1332,7 @@ Catch
 
 End
 
-Public Sub InitAlias()
+Fast Unsafe Public Sub InitAlias()
 
     Dim stemp As Collection = SharedMem["alias"]
 
@@ -1348,7 +1349,7 @@ Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "
 '' &1 &2 ... in the body becoming the text of the parameters. The parameters are code
 '' such as "print value", so they are put in as text, never evaluated. The closing )
 '' is found by matching brackets and quotes, so name(x, f(1)) :; more works.
-Private Sub ParamAliasReplace(sKey As String, sData As String) As String
+Fast Unsafe Private Sub ParamAliasReplace(sKey As String, sData As String) As String
 
     Dim sName As String = Left(sKey, -2)
     Dim sBody As String = AliasList[sKey].Join(" ")
@@ -1389,7 +1390,7 @@ Private ParamArgs As New String[]      ' the parameters found by ParamAliasArgs
 
 '' Read the parameters starting at iStart, just after the (, into ParamArgs.
 '' Returns the position of the closing ), or 0 when there is none.
-Private Sub ParamAliasArgs(sData As String, iStart As Integer) As Integer
+Fast Unsafe Private Sub ParamAliasArgs(sData As String, iStart As Integer) As Integer
 
     Dim iDepth As Integer = 0
     Dim bQuote As Boolean = False
@@ -1433,7 +1434,7 @@ End
 
 '' A parameter written as one string, "print value", is put in without its quotes, as
 '' the alias always did, foreach("env", "print value"). Anything else is put in as written.
-Private Sub ParamAliasValue(sParam As String) As String
+Fast Unsafe Private Sub ParamAliasValue(sParam As String) As String
 
     Dim s As String = Trim(sParam)
 
@@ -1457,7 +1458,7 @@ End
 
 '' Put the parameters into the alias body in one pass, &n is parameter n, a
 '' parameter that itself contains &1 is not replaced again.
-Private Sub ParamAliasBody(sBody As String, sArgs As String[]) As String
+Fast Unsafe Private Sub ParamAliasBody(sBody As String, sArgs As String[]) As String
 
     Dim sOut As String = ""
     Dim iPos As Integer = 1
@@ -1563,7 +1564,7 @@ Catch
 End
 
 'Public ShelliParse As ParseParms
-Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As Integer)
+Fast Unsafe Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As Integer)
 
     Dim NewLine As String = AliasReplace(CmdList[currentcmd][0])
 
@@ -1577,7 +1578,7 @@ Public Sub DoAlias(CmdList As String[][], CmdTypes As Integer[][], currentcmd As
 
 End
 
-Public Sub alias(cmd As String) As String[]  ' return a list of command line changes
+Fast Unsafe Public Sub alias(cmd As String) As String[]  ' return a list of command line changes
 
     Dim result As String[]
 
@@ -1595,7 +1596,7 @@ End
 '' Split an alias line into ["alias", name] (delete) or ["alias", name, body].
 '' A '...' body ends at a ' followed by the end of the line or a space, so a ' inside a word (it's) is
 '' part of the body. After the body only a ' comment may follow. An unquoted body runs to a ' comment.
-Private Sub SplitAliasDef(cmdline As String) As String[]
+Fast Unsafe Private Sub SplitAliasDef(cmdline As String) As String[]
 
     Dim sRest As String = Trim(cmdline)
     Dim iEq As Integer
@@ -1642,7 +1643,7 @@ Private Sub SplitAliasDef(cmdline As String) As String[]
 
 End
 
-Public Sub setalias(cmdline As String)
+Fast Unsafe Public Sub setalias(cmdline As String)
 
     Dim body As String[]
     Dim cmd As String[]
@@ -1685,7 +1686,7 @@ Catch
 
 End
 
-Public Sub listAlias(Optional sAlias As String = "")
+Fast Unsafe Public Sub listAlias(Optional sAlias As String = "")
 
     If sAlias <> "" Then
         Dim params As String[] = Split(sAlias, "()")
@@ -1718,7 +1719,7 @@ Public Sub listAlias(Optional sAlias As String = "")
 
 End
 
-Public Sub printAlias(name As String, def As String[], Optional MaxNameLen As Integer = 20)
+Fast Unsafe Public Sub printAlias(name As String, def As String[], Optional MaxNameLen As Integer = 20)
 
     Dim bFirst As Boolean = True
 
