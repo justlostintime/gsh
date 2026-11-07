@@ -1,0 +1,452 @@
+#!/usr/bin/env gbs3
+' varwatch: show the variables of a shared memory segment as they are made and freed
+'
+' Usage:  varwatch [segment]        without a name the segment of gsh, User.Name & "gsh", as gsh uses
+'
+' Keys:   q, Esc or Ctrl-C quit   Up/Down PageUp/PageDown Home scroll   c clear the event log
+'
+' It only reads: the segment must exist already, a gsh started after a varwatch that made the segment would
+' join it without loading its image. New variables are green for a few seconds, freed ones red until they go,
+' changed values yellow. Values are read again, 4 times a second for the rows on the screen and every 2 seconds
+' for all: NotifyChange is not used, a process waiting on a variable stops other processes changing its type.
+' Not shown: private copies of other gsh trees (path@pid), gsh's sub., class. and struct. entries, and names
+' starting with #, the library's own variables among them.
+
+Class SharedMem
+Class SharedMemSymbol
+Class SharedMemWaitQueue
+Class Mem
+Use "gb.ncurses", "westwood.sharedmem:3", "gb.signal"
+
+Private Const NewSeconds As Float = 3.0                 ' how long a new variable stays green
+Private Const GoneSeconds As Float = 5.0                ' how long a freed variable stays, red
+Private Const ChangedSeconds As Float = 2.0             ' how long a changed value stays yellow
+Private Const LogLines As Integer = 8                   ' events kept at the bottom
+
+Private $sSegment As String
+Private $cPreview As New Collection(gb.IgnoreCase)       ' name -> the start of its value
+Private $cType As New Collection(gb.IgnoreCase)          ' name -> its type
+Private $cNew As New Collection(gb.IgnoreCase)           ' name -> Timer when it was made
+Private $cGone As New Collection(gb.IgnoreCase)          ' name -> Timer when it was freed
+Private $cChanged As New Collection(gb.IgnoreCase)       ' name -> Timer when its value was seen to change
+Private $aShown As New String[]                          ' the names on the screen, read again 4 times a second
+Private $iChanges As Integer
+Private $aLog As New String[]                            ' the events, newest last
+Private $aLogPair As New Integer[]                       ' their colours
+Private $iMade As Integer
+Private $iFreed As Integer
+Private $iTop As Integer                                 ' the first row shown
+Private $hTimer As Timer
+Private $hWin As Window                                  ' full screen, the way SpaceInvaders does it
+Private $bRunning As Boolean = True
+Private $sMemory As String                               ' free and total memory, as shown
+Private $iTicks As Integer
+Private $iGreen As Integer                               ' colour pairs
+Private $iRed As Integer
+Private $iYellow As Integer
+Private $iHead As Integer
+Private $iDim As Integer
+
+Public Sub Main()
+
+  $sSegment = User.Name & "gsh"
+  If Args.Count > 1 Then $sSegment = Args[1]
+  If $sSegment Begins "/" Then $sSegment = Mid($sSegment, 2)
+
+  If Not Exist("/dev/shm/" & $sSegment) Then Fail("no shared memory segment " & $sSegment & ", start the program that makes it first")
+
+  SharedMem.BeginNamed($sSegment)
+  If SharedMem.CreatedSegment Then                       ' it ended just now: do not keep an empty one alive
+    SharedMem.End()
+    Fail("the segment " & $sSegment & " ended")
+  Endif
+
+  For Each sName As String In SharedMem.Variables("*")  ' what is there now
+    If Not Hidden(sName) Then Remember(sName)
+  Next
+  SharedMem.NotifyNew(Me)                               ' newvar_created(Value, Name)
+  SharedMem.NotifyDeleted(Me)                           ' var_deleted(Name)
+
+  Screen.Echo = False
+  Screen.Cursor = Cursor.Hidden
+  Screen.Input = Input.Raw                              ' Ctrl-C comes as a key, not SIGINT: ncurses took SIGINT and ended without End
+  Object.Attach(Screen, Me, "MyScreen")
+  $hWin = New Window(False, 0, 0, Screen.Width, Screen.Height) As "MyWindow"
+  $hWin.Border = Border.None
+  $hWin.Background = Color.Black
+  $hWin.Pen = Color.White
+  $hWin.Raise()
+  $hWin.SetFocus()
+  $iGreen = Pair[Color.Green, Color.Black]
+  $iRed = Pair[Color.Red, Color.Black]
+  $iYellow = Pair[Color.Yellow, Color.Black]
+  $iHead = Pair[Color.Black, Color.Cyan]
+  $iDim = Pair[Color.Cyan, Color.Black]
+
+  AddLog("watching " & CStr($cPreview.Count) & " variables of " & $sSegment, $iDim)
+  $hTimer = New Timer As "Ticker"
+  $hTimer.Delay = 250
+  $hTimer.Start()
+  Redraw()
+
+  Signal[Signal.SIGINT].Catch                           ' kill and a closed terminal end like q: the terminal is restored
+  Signal[Signal.SIGTERM].Catch
+  Signal[Signal.SIGHUP].Catch
+
+  While $bRunning                                       ' the event loop runs in the Wait: keys, timer, notifications, signals
+    Wait 0.05
+  Wend
+  $hTimer.Stop()
+  SharedMem.NotifyNewCancel(Me)
+  SharedMem.NotifyDelCanceled(Me)
+  SharedMem.End()                                       ' no image is saved
+  RestoreTerminal()
+  Quit 0
+
+Catch
+  Dim sError As String = Error.Text & " " & Error.Where
+  RestoreTerminal()
+  Error "varwatch: "; sError
+  Quit 1
+
+End
+
+'' kill or the terminal closed: stop the loop, Main ends the session and restores the terminal
+Public Sub Application_Signal(iSignal As Integer)
+
+  $bRunning = False
+
+End
+
+'' Echo, line input and the cursor back as they were, and out of the full screen mode
+Private Sub RestoreTerminal()
+
+  Try Screen.Echo = True
+  Try Screen.Input = Input.Cooked
+  Try Screen.Cursor = Cursor.Visible
+  Try Screen.Suspend()
+
+End
+
+'' A variable was made, in any process
+Public Sub newvar_created(Value As Variant, Name As String)
+
+  If Hidden(Name) Then Return
+  Inc $iMade
+  $cGone.Remove(Name)
+  Remember(Name, Value)
+  $cNew[Name] = Timer
+  AddLog("+ " & Name & " (" & $cType[Name] & ") = " & $cPreview[Name], $iGreen)
+  Redraw()
+
+End
+
+'' A variable was freed, in any process
+Public Sub var_deleted(Name As String)
+
+  If Hidden(Name) Then Return
+  Inc $iFreed
+  $cNew.Remove(Name)
+  $cChanged.Remove(Name)
+  If Not $cPreview.Exist(Name) Then Remember(Name, Null, "?")
+  $cGone[Name] = Timer
+  AddLog("- " & Name & "  (was " & $cPreview[Name] & ")", $iRed)
+  Redraw()
+
+End
+
+Public Sub MyWindow_Read()
+
+  Dim iKey As Integer = $hWin.Read()
+
+  $hWin.Drain()
+  Select Case iKey
+    Case Asc("q"), Asc("Q"), Key.Esc, 3, 4              ' 3 Ctrl-C, 4 Ctrl-D
+      $bRunning = False                                 ' Main ends the session
+      Return
+    Case Asc("c")
+      $aLog.Clear()
+      $aLogPair.Clear()
+    Case Key.Up
+      Dec $iTop
+    Case Key.Down
+      Inc $iTop
+    Case Key.PageUp
+      $iTop -= ListHeight()
+    Case Key.PageDown
+      $iTop += ListHeight()
+    Case Key.Home
+      $iTop = 0
+  End Select
+  Redraw()
+
+End
+
+Public Sub MyScreen_Resize()
+
+  $hWin.Resize(Screen.Width, Screen.Height)
+  Redraw()
+
+End
+
+'' Age the colours: new ones turn normal, freed ones go
+Public Sub Ticker_Timer()
+
+  Dim aOld As New String[]
+  Dim bChanged As Boolean
+
+  For Each fWhen As Float In $cGone
+    If Timer - fWhen > GoneSeconds Then aOld.Add($cGone.Key)
+  Next
+  For Each sName As String In aOld
+    $cGone.Remove(sName)
+    $cPreview.Remove(sName)
+    $cType.Remove(sName)
+    bChanged = True
+  Next
+  aOld.Clear()
+  For Each fWhen In $cNew
+    If Timer - fWhen > NewSeconds Then aOld.Add($cNew.Key)
+  Next
+  For Each sName In aOld
+    $cNew.Remove(sName)
+    bChanged = True
+  Next
+  aOld.Clear()
+  For Each fWhen In $cChanged
+    If Timer - fWhen > ChangedSeconds Then aOld.Add($cChanged.Key)
+  Next
+  For Each sName In aOld
+    $cChanged.Remove(sName)
+    bChanged = True
+  Next
+
+  SharedMem.CheckNotify()                               ' events that came in while the loop was busy
+  Dim aRead As String[]
+  If $iTicks Mod 8 = 0 Then                             ' every 2 seconds all of them, else the ones on the screen
+    aRead = New String[]
+    For Each sPreview As String In $cPreview
+      aRead.Add($cPreview.Key)
+    Next
+  Else
+    aRead = $aShown.Copy()
+  Endif
+  For Each sName In aRead
+    If ReadAgain(sName) Then bChanged = True
+  Next
+  Inc $iTicks
+  If $iTicks Mod 4 = 0 And If MemoryText() <> $sMemory Then bChanged = True   ' each second: values grow without events
+  If bChanged And $bRunning Then Redraw()
+
+End
+
+'' Leave the full screen mode gb.ncurses starts in, so the message stays on the terminal, and end
+Private Sub Fail(sMessage As String)
+
+  RestoreTerminal()
+  Error "varwatch: "; sMessage
+  Quit 1
+
+End
+
+'' Read the value of sName again, True when it changed: yellow, and a line in the log
+Private Sub ReadAgain(sName As String) As Boolean
+
+  Dim vValue As Variant
+  Dim sPreview, sType As String
+
+  If $cGone.Exist(sName) Or If Not $cPreview.Exist(sName) Then Return False
+  If Not SharedMem.Exist(sName) Then Return False         ' freed: the delete event comes
+  Try vValue = SharedMem[sName]
+  If Error Then Return False
+  sPreview = Preview(vValue)
+  sType = TypeName(vValue)
+  If sPreview = $cPreview[sName] And If sType = $cType[sName] Then Return False
+  $cPreview[sName] = sPreview
+  $cType[sName] = sType
+  If Not $cNew.Exist(sName) Then $cChanged[sName] = Timer
+  Inc $iChanges
+  AddLog("~ " & sName & " (" & sType & ") = " & sPreview, $iYellow)
+  Return True
+
+End
+
+'' Not shown: gsh's stored subs, classes and structures, and every name starting with #, the library's own
+'' variables among them. Names are not case sensitive
+Private Sub Hidden(sName As String) As Boolean
+
+  Dim sLower As String = LCase(sName)
+
+  Return sLower Begins "#" Or sLower Begins "sub." Or sLower Begins "class." Or sLower Begins "struct." Or sLower = "notifylist"
+
+End
+
+'' Keep the type and the start of the value of sName, read from the shared memory when vValue is not given
+Private Sub Remember(sName As String, Optional vValue As Variant, sType As String = "")
+
+  If IsMissing(vValue) Then Try vValue = SharedMem[sName]
+  If sType = "" Then sType = TypeName(vValue)
+  $cType[sName] = sType
+  $cPreview[sName] = Preview(vValue)
+
+End
+
+Private Sub TypeName(vValue As Variant) As String
+
+  If TypeOf(vValue) = gb.Object Then
+    If vValue = Null Then Return "Null"
+    Return Object.Type(vValue)
+  Endif
+  Return SharedMem.DataTypes[TypeOf(vValue)]
+
+End
+
+'' "free of total used" for the variable memory, from SharedMem.FreeMem, SizeMem and UsedMem
+Private Sub MemoryText() As String
+
+  Return Size(SharedMem.FreeMem) & " of " & Size(SharedMem.SizeMem) & " used " & Size(SharedMem.UsedMem)
+
+End
+
+Private Sub Size(iBytes As Long) As String
+
+  If iBytes < 10240 Then Return CStr(iBytes) & " B"
+  If iBytes < 1048576 Then Return Format(iBytes / 1024, "0.0") & " KB"
+  Return Format(iBytes / 1048576, "0.0") & " MB"
+
+End
+
+'' A short, one line text of a value
+Private Sub Preview(vValue As Variant) As String
+
+  Dim sText As String
+  Dim iShown As Integer
+
+  Select Case TypeOf(vValue)
+    Case gb.Null
+      Return "Null"
+    Case gb.String
+      sText = Replace(Replace(Replace(vValue, "\n", "\\n"), "\t", " "), "\r", "")
+      Return Quote(Left(sText, 200))
+    Case gb.Object
+      If vValue Is Collection Then Return "{" & CStr(vValue.Count) & " keys}"
+      If vValue Is Array Then
+        sText = "[" & CStr(vValue.Count) & "] "
+        For Each vItem As Variant In vValue
+          If iShown > 0 Then sText &= ", "
+          sText &= IIf(TypeOf(vItem) = gb.String, Quote(Left(vItem, 30)), CStr(vItem))
+          Inc iShown
+          If iShown >= 8 Or Len(sText) > 200 Then
+            sText &= ", ..."
+            Break
+          Endif
+        Next
+        Return sText
+      Endif
+      Return "(" & Object.Type(vValue) & ")"
+    Case gb.Date
+      Return Format(vValue, "yyyy-mm-dd hh:nn:ss")
+    Case Else
+      Return CStr(vValue)
+  End Select
+
+End
+
+Private Sub AddLog(sText As String, iPair As Integer)
+
+  $aLog.Add(Format(Now, "hh:nn:ss") & " " & sText)
+  $aLogPair.Add(iPair)
+  While $aLog.Count > LogLines
+    $aLog.Remove(0)
+    $aLogPair.Remove(0)
+  Wend
+
+End
+
+Private Sub ListHeight() As Integer
+
+  Return Max(1, Screen.Height - LogLines - 6)           ' two status lines, rule, titles, rule, bottom rule
+
+End
+
+Private Sub Redraw()
+
+  Dim aNames As New String[]
+  Dim iW As Integer = Screen.Width
+  Dim iName As Integer = Min(40, Max(12, (iW - 10) \ 3))  ' | name | type | value |
+  Dim iType As Integer = 10
+  Dim iValue As Integer = Max(1, iW - iName - iType - 10)
+  Dim sRule As String = "+" & String(iName + 2, "-") & "+" & String(iType + 2, "-") & "+" & String(iValue + 2, "-") & "+"
+  Dim iRow, iY, iPair, iAttr As Integer
+
+  For Each sPreview As String In $cPreview
+    aNames.Add($cPreview.Key)
+  Next
+  aNames.Sort(gb.IgnoreCase)
+  $iTop = Max(0, Min($iTop, aNames.Count - ListHeight()))
+
+  $hWin.Buffered = True                                 ' drawn at once, no flicker
+  $hWin.Cls()
+  $sMemory = MemoryText()
+  $hWin.Print(Fit(" varwatch  " & $sSegment & "   variables " & CStr($cPreview.Count - $cGone.Count) & "   made " & CStr($iMade) & "   freed " & CStr($iFreed) & "   changed " & CStr($iChanges), iW), 0, 0, Attr.Normal, $iHead)
+  $hWin.Print(Fit(" memory free " & $sMemory & "   q quit, arrows scroll, c clear log", iW), 0, 1, Attr.Normal, $iHead)   ' the status takes two lines
+
+  $hWin.Print(sRule, 0, 2, Attr.Normal, $iDim)          ' the grid: titles, then one row per variable
+  GridRow(3, "Name", "Type", "Value", iName, iType, iValue, Attr.Bold, 0)
+  $hWin.Print(sRule, 0, 4, Attr.Normal, $iDim)
+  iY = 5
+  $aShown.Clear()
+  For iRow = $iTop To Min(aNames.Max, $iTop + ListHeight() - 1)
+    Dim sName As String = aNames[iRow]
+    $aShown.Add(sName)
+    iPair = 0
+    iAttr = Attr.Normal
+    If $cGone.Exist(sName) Then
+      iPair = $iRed
+    Else If $cNew.Exist(sName) Then
+      iPair = $iGreen
+      iAttr = Attr.Bold
+    Else If $cChanged.Exist(sName) Then
+      iPair = $iYellow
+      iAttr = Attr.Bold
+    Endif
+    GridRow(iY, sName, $cType[sName], $cPreview[sName], iName, iType, iValue, iAttr, iPair)
+    Inc iY
+  Next
+  $hWin.Print(sRule, 0, iY, Attr.Normal, $iDim)
+  If aNames.Count > ListHeight() Then $hWin.Print(" " & CStr($iTop + 1) & "-" & CStr(Min(aNames.Count, $iTop + ListHeight())) & " of " & CStr(aNames.Count) & " ", Max(0, iW - 22), iY, Attr.Reverse)
+
+  iY = Screen.Height - LogLines
+  For iRow = 0 To $aLog.Max
+    $hWin.Print(Fit($aLog[iRow], iW), 0, iY + iRow, Attr.Normal, $aLogPair[iRow])
+  Next
+  Screen.Refresh()
+  $hWin.Buffered = False
+
+End
+
+'' One row of the grid at line iY: | name | type | value |, the lines dim, the cells in iAttr and iPair
+Private Sub GridRow(iY As Integer, sName As String, sType As String, sValue As String, iName As Integer, iType As Integer, iValue As Integer, iAttr As Integer, iPair As Integer)
+
+  Dim iX As Integer
+
+  $hWin.Print("| ", 0, iY, Attr.Normal, $iDim)
+  $hWin.Print(Fit(sName, iName), 2, iY, iAttr, iPair)
+  iX = iName + 2
+  $hWin.Print(" | ", iX, iY, Attr.Normal, $iDim)
+  $hWin.Print(Fit(sType, iType), iX + 3, iY, iAttr, iPair)
+  iX += iType + 3
+  $hWin.Print(" | ", iX, iY, Attr.Normal, $iDim)
+  $hWin.Print(Fit(sValue, iValue), iX + 3, iY, iAttr, iPair)
+  $hWin.Print(" |", iX + 3 + iValue, iY, Attr.Normal, $iDim)
+
+End
+
+'' sText cut or padded to iWidth characters
+Private Sub Fit(sText As String, iWidth As Integer) As String
+
+  If iWidth <= 0 Then Return ""
+  If String.Len(sText) > iWidth Then Return String.Left(sText, iWidth - 1) & "~"
+  Return sText & Space(iWidth - String.Len(sText))
+
+End
