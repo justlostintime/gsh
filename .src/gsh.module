@@ -22,8 +22,8 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
     "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
-    "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "notifylist", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
-    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdfont", "usehighlight", "scriptpath", "#newvar", "notifylist", "#notifyq"]
+    "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
+    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdfont", "usehighlight", "scriptpath", "#newvar", "#notifyq"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
