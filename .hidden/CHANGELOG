@@ -1,4 +1,7 @@
 * Sat Nov 07 2026 Brian G <justlostintime@gmail.com> 1.8.1
+- Fix endblock detection eg endif or 'end if'
+
+* Sat Nov 07 2026 Brian G <justlostintime@gmail.com> 1.8.1
 - reduce jit compile times
 
 * Fri Nov 06 2026 Brian G <justlostintime@gmail.com> 1.8.1
