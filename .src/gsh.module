@@ -550,6 +550,7 @@ End
 Public Sub getenv() As String[]
 
     Dim senv As New String[]
+
     For Each s As String In Application.env
         senv.add(s & "=" & Application.Env[s])
     Next
@@ -2236,8 +2237,8 @@ Public Sub Reader(EndBlk As String[]) As String
 
                 If DoTrace Then Error "(Trace "; Now; ") ";; "Read Buffer '"; sinbuffer; "'"
 
-                If InBuffer = "QUIT" And sinBuffer <> endblk.Join("") Then
-                    Error.raise("Error reading File UNEXPECTED EOF , Wanted " & endblk.Join(" "))
+                If InBuffer = "QUIT" And Not IsEndLine(sinBuffer, EndBlk) Then
+                    Error.raise("Error reading File UNEXPECTED EOF , Wanted " & EndBlk.Join(" or "))
                 Endif
 
             Case "STDIN"
@@ -2267,8 +2268,8 @@ Public Sub Reader(EndBlk As String[]) As String
                     sinBuffer = Trim(ReadFile())
                 Loop Until sinBuffer <> ""
                 'InBuffer = Trim(InBuffer)
-                If sInBuffer = "QUIT" And If sinBuffer <> endblk.Join("") Then
-                    Error.raise("Error reading File UNEXPECTED EOF , Wanted " & endblk.Join(" "))
+                If sInBuffer = "QUIT" And If Not IsEndLine(sinBuffer, EndBlk) Then
+                    Error.raise("Error reading File UNEXPECTED EOF , Wanted " & EndBlk.Join(" or "))
                 Endif
 
         End Select
@@ -2447,22 +2448,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
         ExecBuffer &= newCmdLine & "\n"
 
-        If InBufParse.max >= EndBlk.max Then
-            Dim Truth As Integer = 0
-            For i = 0 To EndBlk.max
-                ''debug "Compare for endblock "; inbufparse[i]; " to "; Endblk[i]
-                If Upper(InBufParse[i]) <> EndBlk[i] Then
-                    Break
-                Else
-                    Inc Truth
-                Endif
-            Next
-            ''debug "Compare Truth "; truth, endblk.count
-            If truth = EndBlk.count Then
-                ''debug "IfRead found end"
-                Return False
-            Endif
-        Endif
+        If EndsBlock(InBufParse, EndBlk) Then Return False   ' the line is one of the endings of this block
         'Print "type="; TypeToText[Highlight.Types[0]],HTypes[0]
         Dim parsepos As Integer = 0
 
@@ -2623,7 +2609,7 @@ StartAgain:
                             execbuffer = ""
                         Else
                             ' If BlockLevel > 0 Then
-                            '   lambdaSubFuncClass(["END", "CLASS"])
+                            '   lambdaSubFuncClass(["END CLASS"])
                             '   Return True
                             ' Endif
 
@@ -2635,7 +2621,7 @@ StartAgain:
                                 If CommandMode Then
                                     Error.Raise("Error :" & InBufParse[0] & " " & InBufParse[1] & (" Aready Defined"))
                                     NoPreProcess = True
-                                    DoBlock(["END", "CLASS"])
+                                    DoBlock(["END CLASS"])
                                     NoPreProcess = False
 
                                 Else
@@ -2649,7 +2635,7 @@ StartAgain:
                             NoPreProcess = True
                             AutoCompile = False
                             DoAlias = False
-                            DoBlock(["END", "CLASS"])
+                            DoBlock(["END CLASS"])
                             DoAlias = True
                             NoPreProcess = False
                             AutoCompile = True
@@ -2667,20 +2653,20 @@ StartAgain:
                         execbuffer = removeLastLine(execbuffer)
                         Dim OldExec As String = execbuffer
                         execbuffer = data
-                        DoBlock(["END", "STRUCT"])
+                        DoBlock(["END STRUCT"])
                         StructTable.Add("Public " & execbuffer)
                         sharedmem["struct." & Lower(StructName)] = "Public " & execbuffer
                         execbuffer = oldexec
 
                     Case "REPEAT"
-                        DoBlock("UNTIL")
+                        DoBlock(["UNTIL"])
 
                     Case "FOR"
                         DoBlock(["NEXT"])
 
                     Case "IF"
                         If inBufparse[InBufParse.max] == "THEN"
-                            DoBlock(["END", "IF"])
+                            DoBlock(["END IF", "ENDIF"])          ' Gambas takes both
                         Endif ' check if then needs a endif
 
                     Case "DO"
@@ -2690,10 +2676,10 @@ StartAgain:
                         DoBlock(["WEND"])
 
                     Case "WITH"
-                        DoBlock(["END", "WITH"])
+                        DoBlock(["END WITH"])
 
                     Case "SELECT"
-                        DoBlock(["END", "SELECT"])
+                        DoBlock(["END SELECT"])
 
                 End Select
                 ''debug "[ \n"; ExecBuffer; "\n]"
@@ -2732,7 +2718,7 @@ StartAgain:
                         ' tokenized so a path like /tmp/x would read as "/ tmp / x"
                         data = Trim(InBuffer)
                         execbuffer = removeLastLine(execbuffer)
-                        DoBlock(["END", Upper(inBufParse[0])])
+                        DoBlock(["END " & Upper(inBufParse[0])])
 
                         execbuffer = removeLastLine(execbuffer)
 
@@ -3388,7 +3374,10 @@ Catch
 
 End
 
-Fast Unsafe Public Sub DoBlock(EndBlk As String[])
+'' Read and compile the lines of a block until one of its endings. EndBlk lists the endings, each its words in upper
+'' case separated by spaces: ["END IF", "ENDIF"]. An empty ending, [""], never ends the block.
+'' Not Fast: an error raised in IfReader, interpreted, and caught here in compiled code crashed gsh (JIT bug)
+Public Sub DoBlock(EndBlk As String[])
 
     With sharedmem
         Inc blockLevel
@@ -3414,6 +3403,41 @@ Catch
     Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where
     gshlogging(User.home &/ "vars/gsh.log", errormsg)
     Error.Raise(errormsg)
+
+End
+
+'' True when the words of a line, aParse, start with one of the endings in EndBlk (see DoBlock)
+Private Sub EndsBlock(aParse As String[], EndBlk As String[]) As Boolean
+
+    Dim aWords As String[]
+    Dim bMatch As Boolean
+
+    For Each sEnd As String In EndBlk
+        aWords = Split(sEnd, " ", "", True)
+        If aWords.Count = 0 Or If aParse.Count < aWords.Count Then Continue
+        bMatch = True
+        For iWord As Integer = 0 To aWords.Max
+            If Upper(aParse[iWord]) <> aWords[iWord] Then
+                bMatch = False
+                Break
+            Endif
+        Next
+        If bMatch Then Return True
+    Next
+    Return False
+
+End
+
+'' True when the raw line sLine is one of the endings in EndBlk, spaces ignored: "End If" and "ENDIF" both match
+'' "END IF" and "ENDIF"
+Private Sub IsEndLine(sLine As String, EndBlk As String[]) As Boolean
+
+    Dim sLineWords As String = Replace(Upper(Trim(sLine)), " ", "")
+
+    For Each sEnd As String In EndBlk
+        If sEnd <> "" And If Replace(sEnd, " ", "") = sLineWords Then Return True
+    Next
+    Return False
 
 End
 
