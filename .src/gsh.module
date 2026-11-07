@@ -2334,7 +2334,9 @@ End
 Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'", "(", ")"], ["\n"], True)   ' a :; inside ( ) belongs to a !( ... ) command group
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 
-Fast Unsafe Public Sub IfReader(EndBlk As String[]) As Boolean
+'' Not Fast: compiled, this one method took 14 s of gcc time at every JIT compile of gsh, for no measurable
+'' run time gain, and an error raised in it crashed gsh (an unclosed If at the end of a script)
+Public Sub IfReader(EndBlk As String[]) As Boolean
 
     'Debug Line * * * *
     'Print "starting "; CDate(Now); " If Reader "; Quote(EndBlk.join())
