@@ -2,7 +2,7 @@
 Title=Gambas Shell
 Startup=gsh
 Icon=shelllogo.png
-Version=1.8.2
+Version=1.8.3
 Component=gb.args
 Component=gb.compress
 Component=gb.dbus

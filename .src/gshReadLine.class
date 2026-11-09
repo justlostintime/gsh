@@ -107,9 +107,6 @@ Public Sub gsh_add_history(text As String)
 
 End
 
-
-
-
 '' One line of a here document, as typed: no trim, no history expansion, not added to history
 '' RawEof is set at the end of the input
 Public RawEof As Boolean = False
