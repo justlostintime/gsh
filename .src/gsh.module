@@ -311,7 +311,8 @@ ClassesToLoad As String[] = [
     "RunScript",
     "FindScript",
     "VerifyFileType",
-    "texthighlighter"
+    "texthighlighter",
+    "HereDoc"
 ]
 
 ' Public Sub mycreen_resize()
@@ -1049,7 +1050,6 @@ Public Sub Main()
         Close AppSource
         ExitProgram(IIf(ScriptErrorFound, 1, 0))     ' still frees the script subs and saves the image
     Endif
-
     getline = New GshReadLine
 
     If TraceLevel > 0 Then
@@ -1166,7 +1166,9 @@ interactive:
             Endif
         Endif
 
-        If Not bDbaseServer And If getline.isTerminal Then settitle()
+        If Not bDbaseServer And If getline.isTerminal Then
+            settitle()
+        Endif
 
         Try chdir(Env["PWD"])
         If Error Then Error Error.Text
@@ -1175,7 +1177,10 @@ interactive:
 
     Wend
 
-    If Not bDbaseServer And If getline.isTerminal Then execlocal(["onexit()"])
+    If Not bDbaseServer And If getline.isTerminal Then
+        execlocal(["onexit()"])
+    Endif
+
     Wait 0.001
     '  Signal.send(0, Signal.SigKill)
     ExitProgram()
@@ -2228,16 +2233,17 @@ Public Sub Reader(EndBlk As String[]) As String
 
     If DoTrace Then Error "(Trace "; Now; ") ";; "Source input="; source
     If ReadQueue.count = 0 Then
+restart_read:
         Select Case source
 
             Case "BUFFER"
                 Do
                     sinBuffer = Trim(ReadBuffer())
-                Loop Until sinBuffer <> ""
+                Loop Until source <> "BUFFER" Or sinBuffer <> ""
 
                 If DoTrace Then Error "(Trace "; Now; ") ";; "Read Buffer '"; sinbuffer; "'"
 
-                If InBuffer = "QUIT" And Not IsEndLine(sinBuffer, EndBlk) Then
+                If InBuffer = "QUIT" And If Not IsEndLine(sinBuffer, EndBlk) Then
                     Error.raise("Error reading File UNEXPECTED EOF , Wanted " & EndBlk.Join(" or "))
                 Endif
 
@@ -2289,11 +2295,14 @@ Public Sub Reader(EndBlk As String[]) As String
                 Endif
             Endif
 
-            History = SharedMem["history"]
-            History.add(sInBuffer, sharedMem["historycurrent"])
-            Inc SharedMem["historycurrent"]
-            If History.count > SharedMem["maxhistory"] Then History.remove(History.first)
-            SharedMem["history"] = history
+            If sInBuffer <> "" Then
+                History = SharedMem["history"]
+                History.add(sInBuffer, sharedMem["historycurrent"])
+                Inc SharedMem["historycurrent"]
+                If History.count > SharedMem["maxhistory"] Then History.remove(History.first)
+                SharedMem["history"] = history
+            Endif
+
         Endif
 
     Else
@@ -2356,6 +2365,10 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
         ' Moved to function bellow here
 
         InBuffer = Reader(EndBlk)
+
+        If InBuffer = "" Then
+            Return True
+        Endif
 
         multipart = IIf(InStr(InBuffer, ":;") > 0, True, False)
 
@@ -2819,7 +2832,7 @@ StartAgain:
                             OpenBuffer(lastexecutedblock, True)
                             execbuffer = ""
                             Return True
-                        Else If InBufParse.count = 2 And If InBufParse[1] = "execprog" Or InBufParse[1] = "execprog" Then
+                        Else If InBufParse.count = 2 And If InBufParse[1] == "execprog" Then
                             SharedMem["execprog"] = editbuffer(SharedMem["execprog"])
                             execbuffer = ""
                             Return True
