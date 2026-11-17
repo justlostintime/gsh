@@ -101,8 +101,8 @@ Gambas3 version 3.18.0 or greater
 **libreadline7** or greater version depending on your OS GNU readline and history libraries\
 **Libc6** or greater\
 **Libpthread-2.27** or greater\
-**gb.westwood-sharedmem** Component now included as par of GSH its self\
-**gb.scripter** Component now included as part of gsh it's self
+**gb.westwood-sharedmem** library now included as part of GSH install process.\
+**gb.scripter** library now included as part of gsh install process.
 
 Optionally the fortune app can be installed as the onstart() default
 startup will try to run it....
@@ -1769,6 +1769,18 @@ A cd run this way does not change the directory of gsh.
 
 ```
    !cd /nodir || echo "cd failed"      ' prints cd failed
+```
+
+A & at the end of the line runs the whole line in the background as one
+job, the same as in sh, not only its last command. gsh goes on to the next
+line at once, the parts of the line run in order in the job. A cd in the
+line only changes the directory of the job, not the directory of gsh.
+Inside a block a & at the end of a line with && or \|\| is an error.
+
+```
+   /usr/bin/sleep 5 && echo "done" &   ' gsh goes on, done is printed 5 seconds later
+   cd /tmp && pwd &                    ' prints /tmp, gsh stays in its directory
+   !( ls /tmp && echo "listed" ) &     ' a group of commands in the background
 ```
 
 #### \|\< \|\> Pipe fitting output or input from multiple tasks/processes/functions
