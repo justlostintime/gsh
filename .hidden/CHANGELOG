@@ -1,4 +1,10 @@
 * Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
+- more patches
+
+* Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
+- Correctly handle & at the end of a compound line containing &&/||/:;
+
+* Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
 
 * Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
 - fix &&/||/:; inside blocks of code

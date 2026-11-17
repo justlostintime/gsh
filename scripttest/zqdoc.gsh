@@ -10,4 +10,8 @@ End
 For i As Integer = 1 To 4
   IsSmall i && echo {i} is small || echo {i} is big
 Next
-!cd /nodir || echo "cd failed"
+!cd /nodir 2> /dev/null || echo "cd failed"
+print 
+ls -l &
+wait 3
+
