@@ -132,6 +132,8 @@ Private windowheight As Integer = 24
 
 Public DoTrace As Boolean = False
 Private ScriptErrorFound As Boolean = False             ' a gsh error in a script, stop it and exit 1
+Public LastStatus As Integer = 0                          ' exit status of the last command gsh ran, 0 = success; && and || after a sub test it, gsh -r exits with it
+Private Const AndOrMark As String = "\x01"                ' starts a queued "&&cmd" or "||cmd" part of a line that began with a sub
 Private $bTraceOwner As Boolean = False                  ' this gsh set the global dotrace, clear it on exit
 Public TraceLevel As Integer = 1
 Public jobctl As Boolean = False
@@ -993,6 +995,7 @@ Public Sub Main()
             ExitProgram(1)
         Endif
 
+        If LocalFunRun <> "" Then ExitProgram(LastStatus)   ' !sub a b && ... : the sub's status, False is 1
         ExitProgram()
 
     Endif
@@ -1215,6 +1218,7 @@ End
 
 Private Sub CleanUpError()
 
+    LastStatus = 1                         ' the line failed, a queued && part is skipped, a || part runs
     ExecBuffer = ""
     ReturnOutputTo = ""
     BlockIndent = "  "
@@ -1551,6 +1555,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     Dim NewTask As LocalTask
     If nowait = True Then
         NewTask = New Localtask(sObject, Method, Parms)
+        SetLastStatus(0)
         Wait 0
         Return True
     Endif
@@ -1558,11 +1563,21 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     LocalRunning = True
     LocalRunningObject = sObject
     Try Object.SetProperty(SubCls[sObject], "system_break", False)
-    Try Object.Call(SubCls[sObject], method, parms)
+    Dim vSubReturn As Variant = Null
+    Dim sReturnType As String = ""
+    Try sReturnType = Object.Class(SubCls[sObject])[method].Type   ' "" : the sub returns nothing, taking a value would raise "No return value"
+    If sReturnType <> "" Then
+        Try vSubReturn = Object.Call(SubCls[sObject], method, parms)
+    Else
+        Try Object.Call(SubCls[sObject], method, parms)
+    Endif
     Dim bLocalError As Boolean = Error
     LocalRunningObject = ""
 
+    If Not bLocalError Then SetLastStatus(SubStatus(vSubReturn))   ' the error path below sets 1, after it has read Error
+
     If bLocalError Then
+        LastStatus = 1                                            ' plain assignment, a SharedMem write could clear Error
         LocalRunning = False
         If Error.text <> "Terminated" Then
             If DoTrace Then
@@ -1580,6 +1595,29 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
 
 Catch
     Error.Propagate()
+
+End
+
+'' The exit status of a sub run as a command, from its return value:
+'' False is 1, True is 0, a whole number is itself, anything else (or no return value) is 0
+Private Sub SubStatus(vReturn As Variant) As Integer
+
+    Select Case TypeOf(vReturn)
+        Case gb.Boolean
+            Return IIf(vReturn, 0, 1)
+        Case gb.Byte, gb.Short, gb.Integer, gb.Long
+            Return CInt(vReturn)
+    End Select
+    Return 0
+
+End
+
+'' Remember the exit status of the last command, also as $? (global "?") and $laststatus like a CLI command
+Private Sub SetLastStatus(iStatus As Integer)
+
+    LastStatus = iStatus
+    Try SharedMem["laststatus"] = iStatus
+    Try SharedMem["?"] = iStatus
 
 End
 
@@ -1785,6 +1823,8 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             If gbscomponent And If Not NoWait Then
                 If jobctl Then RunningProcessStart = Now
                 CompileResult = ScripterExecute("lambda", program, [], cmdLineParameters)
+                LastStatus = 1
+                Try LastStatus = CInt(CompileResult)          ' the program ends with quit process.lastvalue, a compile error is not 0
                 CheckScriptError()
                 If compileResult <> 0 Then
                     Dim sKeywordHint As String = ""
@@ -1887,6 +1927,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                             RunningProcess = MyProcess
                             If jobctl Then RunningProcessStart = Now
                             MyProcess.Wait()
+                            LastStatus = MyProcess.Value
                             CheckScriptError()
                             If jobctl Then
                                 Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
@@ -1919,6 +1960,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                 RunningProcess = MyProcess
                 If jobctl Then RunningProcessStart = Now
                 MyProcess.Wait()
+                LastStatus = MyProcess.Value
                 RunningProcess = Null
             Endif
         Else
@@ -2309,6 +2351,7 @@ restart_read:
 
         sInBuffer = ReadQueue.pop()
         NotbufferRead = False
+        If sInBuffer Begins AndOrMark Then Return AndOrPart(sInBuffer)   ' part of a line already in the history
         If source = "STDIN" Then ' only record keystroke entries
 
             If sInBuffer Like "*!!*" Then
@@ -2341,7 +2384,141 @@ Catch
 
 End
 
-Private MultyParse As New ParseParm(False, [":;"], ["\"", "\"", "[", "]", "'", "'", "(", ")"], ["\n"], True)   ' a :; inside ( ) belongs to a !( ... ) command group
+'' A line that starts with a sub run as a command, cd d1 && ls, cannot be one program: the sub must run in
+'' gsh itself (cd changes the directory of gsh) and a CLI command runs as a generated program.
+'' Return the first part to run now and queue each "&& cmd" or "|| cmd" part, AndOrPart runs or skips
+'' it by the status of the part before, like sh. Any other line is returned unchanged.
+Private Sub SplitSubAndOr(sLine As String) As String
+
+    Dim aParts As String[]
+    Dim i As Integer
+
+    If BlockLevel > 0 Or If InLambda Then Return sLine           ' in a block PreProcesses makes it code, SubAndOrCode
+    aParts = SubAndOrParts(sLine)
+    If IsNull(aParts) Then Return sLine
+
+    For i = aParts.Max - 1 DownTo 1 Step 2                       ' ReadQueue.Pop takes the last one first
+        ReadQueue.Push(AndOrMark & aParts[i] & aParts[i + 1])
+    Next
+    Return aParts[0]
+
+End
+
+'' True when the line starts with a sub run as a command: cd d1, not cd("d1"), w = 5 or ls (no such sub)
+Private Sub IsSubCommand(sLine As String) As Boolean
+
+    Dim aSyms As String[] = Highlight.Analyze(sLine)
+    Dim aTypes As Integer[] = Highlight.Types
+
+    If aSyms.Count = 0 Or If aTypes[0] <> Highlight.Symbol Then Return False
+    If aSyms.Count > 1 And If aSyms[1] = "(" Then Return False   ' cd("d1") is a Gambas expression
+    If GambasAssignOrMember(sLine) Then Return False
+    Return isLocalFunc(aSyms[0], False)
+
+End
+
+'' The parts of a line that starts with a sub and has && or ||: [command, op, command, op, command ...],
+'' Null for any other line, those are run as before (a CLI line splits && and || itself)
+Private Sub SubAndOrParts(sLine As String) As String[]
+
+    Dim aParts As String[]
+    Dim i As Integer
+
+    If InStr(sLine, "&&") = 0 And If InStr(sLine, "||") = 0 Then Return Null
+    If Not IsSubCommand(sLine) Then Return Null
+
+    aParts = Parser(sLine, Null, True)                            ' as CreateCmdProgram.Compile splits a line
+    If aParts.Count < 3 Then Return Null
+    If aParts.Exist("(") Or If aParts.Exist(")") Or If aParts.Exist(":;") Then Return Null
+
+    For i = 0 To aParts.Max
+        If i Mod 2 = 0 Then
+            If aParts[i] = "&&" Or If aParts[i] = "||" Then Error.Raise(aParts[i] & " must follow a command in: " & sLine)
+        Else If aParts[i] <> "&&" And If aParts[i] <> "||" Then
+            Return Null
+        Endif
+    Next
+    If aParts.Max Mod 2 = 1 Then Error.Raise(aParts.Last & " may not be at end of line: " & sLine)
+    Return aParts
+
+End
+
+'' Code for the parts of SubAndOrParts inside a block, where the line is part of one generated program.
+'' Each part sets $laststatus (a CLI command does it itself, a sub from its return value), and each
+'' && or || part runs only when $laststatus says so. A cd here does not change the directory of gsh.
+Private Sub SubAndOrCode(aParts As String[]) As String
+
+    Dim sCode As String = SubPartCode(aParts[0])
+    Dim i As Integer
+
+    For i = 1 To aParts.Max - 1 Step 2
+        If aParts[i] = "&&" Then
+            sCode &= "If SharedMem[\"laststatus\"] = 0 Then\n"
+        Else
+            sCode &= "If SharedMem[\"laststatus\"] <> 0 Then\n"
+        Endif
+        sCode &= SubPartCode(aParts[i + 1]) & "Endif\n"
+    Next
+    Return sCode
+
+End
+
+'' Code for one part of a && or || line in a block, ending with a newline
+Private Sub SubPartCode(sPart As String) As String
+
+    Dim sName, sCall, sSet As String
+
+    If Not IsSubCommand(sPart) Then Return Trim(PreProcesses(sPart)) & "\n"   ' a CLI command sets $laststatus itself
+
+    sName = Highlight.Analyze(sPart)[0]
+    If ScriptSubMap.Exist(Lower(sName)) Then sName = ScriptSubMap[Lower(sName)]
+    sCall = MakeIntoCall(sName, sPart)
+    If sCall = "" Then Error.Raise(SharedMem["result"])
+    If sCall Ends " &" Then Error.Raise("& can not be used in a line with && or ||: " & sPart)
+    sCall = Trim(PreProcesses(sCall))
+
+    sSet = "SharedMem[\"laststatus\"] = "
+    Select Case SubReturnType(sName)
+        Case "BOOLEAN"
+            sCall = sSet & "IIf(" & sCall & ", 0, 1)\n"
+        Case "BYTE", "SHORT", "INTEGER", "LONG"
+            sCall = sSet & "CInt(" & sCall & ")\n"
+        Default
+            sCall &= "\n" & sSet & "0\n"
+    End Select
+    Return sCall & "SharedMem[\"?\"] = SharedMem[\"laststatus\"]\n"
+
+End
+
+'' The return type of a sub, upper case, from its definition line: Sub cd(...) As Boolean is BOOLEAN, "" for none
+Private Sub SubReturnType(sName As String) As String
+
+    Dim sDef As String = getSubdef(Split(SharedMem["sub." & Lower(sName)], "\n", "\"\"", True))
+    Dim iClose As Integer = RInStr(sDef, ")")
+    Dim iAs As Integer = RInStr(Upper(sDef), " AS ")
+
+    Dim aWords As String[]
+
+    If iClose = 0 Or If iAs < iClose Then Return ""
+    aWords = Split(Trim(Mid$(sDef, iAs + 4)), " '\t", "", True)
+    If aWords.Count = 0 Then Return ""
+    Return Upper(aWords[0])
+
+End
+
+'' A queued "&&cmd" or "||cmd" from SplitSubAndOr: the command, or "" to skip it.
+'' A skipped command leaves LastStatus as it is, so a || after a failed && part still runs.
+Private Sub AndOrPart(sQueued As String) As String
+
+    Dim sOp As String = Mid$(sQueued, 2, 2)
+
+    If sOp = "&&" And If LastStatus <> 0 Then Return ""
+    If sOp = "||" And If LastStatus = 0 Then Return ""
+    Return Trim(Mid$(sQueued, 4))
+
+End
+
+Private MultyParse As New ParseParm(False, [":;"],["\"", "\"", "[", "]", "'", "'", "(", ")"], ["\n"], True)   ' a :; inside ( ) belongs to a !( ... ) command group
 Private ErrorParse As New ParseParm(False, [""], ["\"", "\"", "`", "`"], ["\n", "\t", " "], False)
 
 '' Not Fast: compiled, this one method took 14 s of gcc time at every JIT compile of gsh, for no measurable
@@ -2431,6 +2608,7 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
         If DoTrace Then Error "(Trace "; Now; ") "; Endblk.Join(":"); ": "; InBuffer             ' allow to user to see each line as it is executed
         InBufferRaw = InBuffer
         If DoAlias And If Not GambasAssignOrMember(InBuffer) Then InBuffer = CreateCmdProgram.AliasReplace(InBuffer)   ' ls = x is a variable, not the ls alias
+        If Not NoPreProcess Then InBuffer = SplitSubAndOr(InBuffer)   ' cd d1 && ls : run cd now, queue && ls
 
         InBufParse = Highlight.Analyze(InBuffer)
         HTypes = Highlight.Types
@@ -3892,12 +4070,16 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
                     types.Add(Highlight.Operator)
                     types.Add(Highlight.operator)
                 Else If syms.count = 1 Or If syms[1] <> "(" Then
+                    ' cd d1 && ls in a block (at the top level IfReader has split it already)
+                    Dim aAndOr As String[] = SubAndOrParts(InVar)
+                    If Not IsNull(aAndOr) Then Return SubAndOrCode(aAndOr)
                     Dim NewLineDef As String = MakeIntoCall(syms[0], InVar)
                     Syms = Highlight.Analyze(NewLineDef)
                     types = highlight.types
 
                     If NewLineDef = "" Then
                         Error SharedMem["result"]
+                        LastStatus = 1                     ' a following && part is skipped
                         ScriptErrorFound = True
                         Return ""
                     Endif

@@ -553,7 +553,8 @@ as a Class with the Public variables inside it:
        Mostly gsh will detect if the image is already loaded.
   -r --runline Executes the following command line.
        gsh -r name -- args, the name of the sub is followed by -- and then
-       its arguments. A sub in a pipe is run this way.
+       its arguments. A sub in a pipe is run this way. gsh exits with
+       the exit code of the sub, False is 1, see **&& \|\|**.
   -s --shmname The name of the in memory database to use.
        Defaults to username. Two in-memory files are created, data segment and 
        Index/Collection segment
@@ -1724,6 +1725,52 @@ Example:
    If $r <> 0 Then Print "ls failed with";; $r
 ```
 
+#### && \|\| Run the next command when the last one worked or failed
+
+&& runs the command after it only when the command before it worked,
+exit code 0. \|\| runs the command after it only when the command
+before it failed. A line is read from left to right the same as in sh,
+a command that is skipped leaves the exit code as it was, so a \|\| after
+a failed && part still runs.
+
+A sub run as a command may be used in these lines. Its exit code comes
+from the value it returns: False is 1, True is 0, a whole number
+(Byte, Short, Integer, Long) is the exit code itself, and a sub that
+returns nothing or another type gives 0. A Gambas error in the sub gives 1.
+$? holds this exit code after the sub has run.
+
+```
+   cd /tmp && ls                       ' cd changes the directory of gsh, then ls lists /tmp
+   cd /nodir && ls || echo "no such directory"
+   cd /nodir
+   print $?                            ' prints 1, cd returned False
+   ls /nodir 2> /dev/null && echo found || echo missing     ' prints missing
+```
+
+At the top level of a script or the command line the sub runs in gsh
+itself, so cd changes the directory of gsh for the lines that follow.
+Inside a block (if ... endif, for ... next ...) the line is part of the
+code of the block, the && and \|\| parts still follow the exit code, but
+a cd only changes the directory for the rest of that block, the same as
+a cd on its own in a block.
+
+```
+   Sub IsSmall(n As Integer) As Boolean
+     Return n < 3
+   End
+   For i As Integer = 1 To 4
+     IsSmall i && echo {i} is small || echo {i} is big
+   Next
+```
+
+With a ! in front the sub runs as a separate process, gsh -r, and the
+process exits with the same exit code, so && and \|\| follow it here too.
+A cd run this way does not change the directory of gsh.
+
+```
+   !cd /nodir || echo "cd failed"      ' prints cd failed
+```
+
 #### \|\< \|\> Pipe fitting output or input from multiple tasks/processes/functions
 
 These allow more that one input/output function/task to feed a command
@@ -2179,6 +2226,9 @@ cd /      ' changes the current working directory to
 cd("/")   ' this will cause the function cd to be 
           ' linked to whatever script its called from.
 ```
+A sub used as a command sets $?, its exit code, from the value it
+returns (False is 1, True is 0, a whole number is itself), so it may be
+followed by && or \|\|, see **&& \|\|**.
 When compiled without error the function, class etc will be loaded as a
 memory resident plugin and executed withing context of the shell. It
 will also be linked to any function or class that calls it.

@@ -650,7 +650,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
                                 If gsh.ScriptSubMap.Exist(Lower(sym)) Then sRunName = gsh.ScriptSubMap[Lower(sym)]
                                 CmdExec[CurrentCmd] &= "tostringarray(CmdBuild,\"/usr/bin/gsh\"," & ChildShmOption() & "\"-r\"," & Quote(sRunName) & ",\"--\""   ' -- : the sub's -x arguments are not gsh options
                                 ' in a sh style line a sub is run as a command, !name a b, never as a function call !name(...)
-                                If i < CmdList[CurrentCmd].Max And If CmdList[CurrentCmd][i + 1] Begins "(" Then
+                                ' test the text as written: a path (cd /tmp) or $1 also gives a next word that starts with (
+                                If i < CmdList[CurrentCmd].Max And If RegExp.Match(source, "(^|[\\s|!])" & sym & "\\(", RegExp.Caseless) Then
                                     Dim sSynopsis As String = SubSynopsis(sym)
                                     Error.Raise("A sub in a sh style line is run as a command, write " & sym & " followed by its arguments, not " & sym & CmdList[CurrentCmd][i + 1] & " in: " & UserLine() & If(sSynopsis <> "", "\n  " & sym & " : " & sSynopsis, ""))
                                 Endif
