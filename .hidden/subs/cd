@@ -11,81 +11,81 @@ Sub cd(Optional CDToDir As String = "~") As Boolean
 '' "cd -" Swap to last directory entered   
 '' "cd "  Goto home directory
 
-with sharedmem
-dim a as new glob_t
+With sharedmem
+Dim a As New Glob_t
 Dim sPath As String
 Dim sPathSplit As String[]
-dim pwds as new string[]
-Dim newdir as string
-Dim OldPWD as string = env["PWD"]
+Dim pwds As New String[]
+Dim newdir As String
+Dim OldPWD As String = env["PWD"]
 
-if CDToDir = "-" then
+If CDToDir = "-" Then
     newdir = env["OLDPWD"]  'check if we swap for the old PWD
-    if isnull(newdir) then
-      error "OLDPWD not set"
-      return false
-    endif
-else
+    If IsNull(newdir) Then
+      Error "OLDPWD not set"
+      Return False
+    Endif
+Else
   newdir = CDToDir
-endif
+Endif
 
-if newdir = OldPWD then return true
+If newdir = OldPWD Then Return True
 
-dim aglob as string[] = fileexpand(newdir,true, false, false)
+Dim aglob As String[] = fileexpand(newdir, True, False, False)
 
-if aglob.count > 1 then
-  error "cd: ambiguious directory found";;aglob.count;;"matches\n";aglob.join("\n")
-  return
-else if aglob.count = 1 then
+If aglob.count > 1 Then
+  Error "cd: ambiguious directory found";; aglob.count;; "matches\n"; aglob.join("\n")
+  Return
+Else If aglob.count = 1 Then
  sPath = aglob[0]
-else
- error "cd: Directory not found";;newdir
- return false
-endif
+Else
+ Error "cd: Directory not found";; newdir
+ Return False
+Endif
 
-sPathSplit = split(sPath,"/","",true)
+sPathSplit = Split(sPath, "/", "", True)
 
-if file.isrelative(sPath) then pwds.insert(split(env["PWD"],"/","",true))
-for each Sdir as string in sPathSplit
+If file.isrelative(sPath) Then pwds.insert(Split(env["PWD"], "/", "", True))
+For Each Sdir As String In sPathSplit
 
     Select Case SDir
             Case "."
-                if pwds.count = 0 then  pwds.insert(split(env["PWD"],"/","",true))
+                If pwds.count = 0 Then pwds.insert(Split(env["PWD"], "/", "", True))
             Case ".."
-                if pwds.count > 0 then pwds.remove(pwds.max)
-            default
+                If pwds.count > 0 Then pwds.remove(pwds.max)
+            Default
                 pwds.add(sdir)
     End Select
 
-    dim truth as boolean = exist("/"&pwds.join("/"))
+    Dim truth As Boolean = Exist("/" & pwds.join("/"))
 
-    if not truth then
-        Print #file.err, "Directory Not Found :["; iif(pwds[0][0] <> "~","/",""); pwds.join("/") ;"]"
-        .["result"] = "Error : Directory Not Found :[" & iif(pwds[0][0] <> "~","/","")&pwds.join("/") &"]"
-        return false
-    endif
+    If Not truth Then
+        Print #file.err, "Directory Not Found :["; IIf(pwds[0][0] <> "~", "/", ""); pwds.join("/"); "]"
+        .["result"] = "Error : Directory Not Found :[" & IIf(pwds[0][0] <> "~", "/", "") & pwds.join("/") & "]"
+        Return False
+    Endif
 
-next
+Next
 
-dim finaldestination as string = "/" &/ pwds.join("/")
+Dim finaldestination As String = "/" &/ pwds.join("/")
 
-if pwds.count > 0 then
-    if not isdir(finaldestination) then
-      error "CD :";;finaldestination;;"is not a directory"
+If pwds.count > 0 Then
+    If Not IsDir(finaldestination) Then
+      Error "CD :";; finaldestination;; "is not a directory"
       .["result"] = "Not a directory"
-      return false
-    endif
+      Return False
+    Endif
     env["PWD"] = finaldestination                 ' $pwd is env["PWD"] of this process
     env["OLDPWD"] = OldPWD
-else
+Else
     env["PWD"] = "/"
     env["OLDPWD"] = OldPWD
-endif
+Endif
     Extern chdir(Dest As String) As Integer In "libc:6"
-    try chdir(finaldestination)
-end with
-return true
-catch
-  error "cd error:";;error.text
-  return false
-end
+    Try chdir(finaldestination)
+End With
+Return True
+Catch
+  Error "cd error:";; error.text
+  Return False
+End

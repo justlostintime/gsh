@@ -1,3 +1,14 @@
+* Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
+
+* Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
+- fix &&/||/:; inside blocks of code
+
+* Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
+- Updated to fix issues with &&/||/:; after using a local sub as a cli function
+
+* Sun Nov 15 2026 Brian G <justlostintime@gmail.com> 1.8.3
+- Final for updates this release
+
 * Sat Nov 14 2026 Brian G <justlostintime@gmail.com> 1.8.3
 
 * Wed Nov 11 2026 Brian G <justlostintime@gmail.com> 1.8.3
