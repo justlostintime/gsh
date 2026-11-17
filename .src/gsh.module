@@ -133,6 +133,7 @@ Private windowheight As Integer = 24
 Public DoTrace As Boolean = False
 Private ScriptErrorFound As Boolean = False             ' a gsh error in a script, stop it and exit 1
 Public LastStatus As Integer = 0                          ' exit status of the last command gsh ran, 0 = success; && and || after a sub test it, gsh -r exits with it
+Private BgScriptCount As Integer = 0                      ' each background program gets its own script file
 Private Const AndOrMark As String = "\x01"                ' starts a queued "&&cmd" or "||cmd" part of a line that began with a sub
 Private $bTraceOwner As Boolean = False                  ' this gsh set the global dotrace, clear it on exit
 Public TraceLevel As Integer = 1
@@ -1788,14 +1789,25 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         CompilerDirectiveTable.Clear()
 
         Program = ProgPart1 & Program
+        ' a background program has its own file: the next line wrote the shared one before gbs3 had read it,
+        ' and the job ran that line instead. The job deletes its file once it runs, gbs3 has read it by then.
+        Dim sScriptFile As String
+        Dim sKillScript As String = ""
+        If NoWait Then
+            Inc BgScriptCount
+            sScriptFile = Temp("gsh_bg" & BgScriptCount) & ".gsh"
+            sKillScript = "Try Kill " & Quote(sScriptFile) & "\n"
+        Else
+            sScriptFile = Temp("gsh_") & ".gsh"
+        Endif
         Program &= "Public sub application_signal(sigtype as integer)\nif sigtype = 2 then\n'print \"Task Exit forced\"\n"
             "quit 0\nelse\n'Error \"Some other signal hit :\";sigtype\nendif \nend\n"
         ' signal 13 (SIGPIPE) is ignored: writing into a pipe command that has already exited
         ' (echo x | true) then gives an error the generated Try catches, instead of killing the program
         If bSingleUse Then
-            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\n signal[2].catch\nsignal[13].ignore\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
+            Program &= "Public Sub Main()\n" & sKillScript & "try chdir(env[\"PWD\"])\n signal[2].catch\nsignal[13].ignore\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
         Else
-            Program &= "Public Sub Main()\ntry chdir(env[\"PWD\"])\nsignal[2].catch\nsignal[13].ignore\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+            Program &= "Public Sub Main()\n" & sKillScript & "try chdir(env[\"PWD\"])\nsignal[2].catch\nsignal[13].ignore\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
         Endif
         Program &= ExecBuffer
         ' temp remove quit with value, it really needs it though
@@ -1806,7 +1818,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             "quit 2\nend\n"
         'SharedMem["execprog"] = ExecBuffer
         If Not CompileOnly Then
-            Dim ScriptName As String = Temp("gsh_") & ".gsh"
+            Dim ScriptName As String = sScriptFile
             If DoTrace Then
                 Error "(Trace "; Now; ") "; ("Execute External "); ": "; ScriptName
             Endif
@@ -2396,6 +2408,7 @@ Private Sub SplitSubAndOr(sLine As String) As String
     If BlockLevel > 0 Or If InLambda Then Return sLine           ' in a block PreProcesses makes it code, SubAndOrCode
     aParts = SubAndOrParts(sLine)
     If IsNull(aParts) Then Return sLine
+    If EndsInBackground(aParts.Last) Then Return sLine             ' cd d1 && ls & : PreProcesses makes it one background program
 
     For i = aParts.Max - 1 DownTo 1 Step 2                       ' ReadQueue.Pop takes the last one first
         ReadQueue.Push(AndOrMark & aParts[i] & aParts[i + 1])
@@ -2448,9 +2461,16 @@ End
 '' && or || part runs only when $laststatus says so. A cd here does not change the directory of gsh.
 Private Sub SubAndOrCode(aParts As String[]) As String
 
-    Dim sCode As String = SubPartCode(aParts[0])
+    Dim sCode As String
     Dim i As Integer
+    Dim bBackground As Boolean = EndsInBackground(aParts.Last)
 
+    If bBackground Then                                          ' cd d1 && ls & : the whole list is one job, gsh keeps its directory
+        If BlockLevel > 0 Or If InLambda Then Error.Raise("& at the end of a line with && or || can not be used inside a block in: " & aParts.Join(" "))
+        aParts[aParts.Max] = RTrim(Left(RTrim(aParts.Last), -1))
+    Endif
+
+    sCode = SubPartCode(aParts[0])
     For i = 1 To aParts.Max - 1 Step 2
         If aParts[i] = "&&" Then
             sCode &= "If SharedMem[\"laststatus\"] = 0 Then\n"
@@ -2459,6 +2479,7 @@ Private Sub SubAndOrCode(aParts As String[]) As String
         Endif
         sCode &= SubPartCode(aParts[i + 1]) & "Endif\n"
     Next
+    If bBackground Then sCode &= "&"                             ' ProcessProg runs the program without waiting
     Return sCode
 
 End
@@ -2491,6 +2512,16 @@ Private Sub SubPartCode(sPart As String) As String
 End
 
 '' The return type of a sub, upper case, from its definition line: Sub cd(...) As Boolean is BOOLEAN, "" for none
+'' True when a command line ends in a bare & (a background request), not in && || or 2>&
+Public Sub EndsInBackground(sLine As String) As Boolean
+
+    sLine = RTrim(sLine)
+    If Right(sLine, 1) <> "&" Then Return False
+    If Len(sLine) > 1 And If InStr("&|>", Mid$(sLine, Len(sLine) - 1, 1)) Then Return False
+    Return True
+
+End
+
 Private Sub SubReturnType(sName As String) As String
 
     Dim sDef As String = getSubdef(Split(SharedMem["sub." & Lower(sName)], "\n", "\"\"", True))

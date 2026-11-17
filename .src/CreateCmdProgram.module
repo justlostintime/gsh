@@ -219,6 +219,8 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
     If CompileDepth = 0 Then CheckApostrophe(Source)       ' only the line itself, not `...` inside its arguments
     Inc CompileDepth
     lines = Parser(Source, Null, True)
+    Dim Background As Boolean = False
+    If CompileDepth = 1 And If Not AsFunction Then Background = ListBackground(lines)
 
     For i = 0 To lines.max
         If Lines[i] = "" Then Continue
@@ -268,6 +270,7 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
         Finalprogram &= "Endif\n"
         Dec AndOrLevel
     Wend
+    If Background Then FinalProgram &= "&"     ' ProcessProg runs the whole program as one job, as bash runs ls && pwd &
     '   FinalProgram &= "Catch\nError \"gsh error:\" & error.text \n"
 
     If AsFunction Then
@@ -286,6 +289,36 @@ Fast Unsafe Public Sub Compile(Source As String, Optional AsFunction As Boolean 
 
     Dec CompileDepth
     Return FinalProgram
+
+End
+
+'' True when a list with && || or ( ) ends in a bare &, as ls && pwd &. The & is removed from lines,
+'' Compile puts it at the end of the program so the whole list runs in the background, not only its last command.
+'' A line in a block is one part of a program, it can not go to the background on its own, that is an error.
+Fast Unsafe Private Sub ListBackground(lines As String[]) As Boolean
+
+    Dim sLast As String
+    Dim i As Integer
+
+    If lines.Count < 2 Then Return False
+    For i = lines.Max DownTo 0                       ' an empty part at the end, as for ( ls ) &
+        If Trim(lines[i]) <> "" Then Break
+    Next
+    If i < 1 Then Return False
+    sLast = RTrim(lines[i])
+    If Not gsh.EndsInBackground(sLast) Then Return False
+    If Not (lines.Exist("&&") Or lines.Exist("||") Or lines.Exist("(")) Then Return False
+
+    If gsh.BlockLevel > 0 Or If gsh.InLambda Then
+        Error.Raise("& at the end of a line with && or || can not be used inside a block in: " & UserLine())
+    Endif
+    sLast = RTrim(Left(sLast, -1))
+    If sLast = "" Then
+        lines.Remove(i)
+    Else
+        lines[i] = sLast
+    Endif
+    Return True
 
 End
 
