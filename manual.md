@@ -1778,7 +1778,7 @@ line only changes the directory of the job, not the directory of gsh.
 Inside a block a & at the end of a line with && or \|\| is an error.
 
 ```
-   /usr/bin/sleep 5 && echo "done" &   ' gsh goes on, done is printed 5 seconds later
+   !sleep 5 && echo "done" &           ' gsh goes on, done is printed 5 seconds later
    cd /tmp && pwd &                    ' prints /tmp, gsh stays in its directory
    !( ls /tmp && echo "listed" ) &     ' a group of commands in the background
 ```
