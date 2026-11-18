@@ -565,7 +565,8 @@ as a Class with the Public variables inside it:
        Index/Collection segment
   -S --single Do Not Use Shared Memory, Only Shared with tasks/threads.
   -t --trace <level> Turns on tracing at this level: 0 = off, 1 = user,
-       3 = -r and -f, 4 = all.
+       3 = -r and -f, 4 = all, 20 = also saves each program run to
+       ~/vars/ExecProg.gbs.
   -V --version Displays the gsh version number.
   -v --versions Displays the versions of gsh, SharedMem, the scripter and
        every component used.
@@ -1497,7 +1498,8 @@ Defaults to "~/vars/class;/usr/share/gsh/class"
 #### \$TraceLevel
 
 This is the level of script tracing performed, 0 = off, 1 = user,
-3 = -r and -f, 4 = all. Defaults to 1, set by the traceon command or the
+3 = -r and -f, 4 = all, 20 = also saves each program run to
+\~/vars/ExecProg.gbs. Defaults to 1, set by the traceon command or the
 -t option.
 
 #### \$execprog
@@ -1510,9 +1512,10 @@ Contains the font to be set when the gsh app is running in a terminal.
 This must be set by you to match the terminal font type.
 Defaults to mono, Must be set to nerd if they are installed.
 
-#### \$nerdfont true or false
+#### \$nerdmode true or false
 
-The nerdfonts have been installed, checked and set by default onstart
+True when \$TextFont names a nerd font. It is checked and set by onstart,
+which then uses the nerd font prompt.
 
 
 ### Shell Operators
@@ -2437,8 +2440,8 @@ Returns 'true' if found, false otherwise.\
 
 Images may be saved to a file and loaded as needed.
 Images may contain any application environment.\
-Function load(\<"filename"\>).\
-Command load \<"filename"\>.\
+Function dbload(\<"filename"\>).\
+Command dbload \<"filename"\>.\
 The default path is \~/vars/filename.\
 The default filename is gsh.image.\
 Returns 'true' if found, 'false' otherwise.\
@@ -2448,9 +2451,11 @@ Returns 'true' if found, 'false' otherwise.\
 
 Images may be saved to a file and loaded as needed.\
 Images may contain any application environment.\
-Function save(\<"filename"\>).\
-Command save \<"filename"\>.\
-returns 'true' if found, false otherwise.\
+Function dbsave(\<"filename"\>).\
+Command dbsave \<"filename"\>.\
+The default path is \~/vars/filename.\
+The default filename is gsh.image.\
+Returns 'true' if found, false otherwise.\
 \$result contains the error text or "OK."
 
 #### lprint Prints the content of arrays, collections, Object or Classes

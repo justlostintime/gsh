@@ -9,6 +9,24 @@ Sub dbload(Optional FileName As String = ".") As Boolean
 ''          The default filename is gsh.image
 ''          returns true if found, false otherwise
 ''          $result contains the error text or "OK"
+If FileName = "." Then                                  ' the image gsh loads at startup, ~/vars/gsh.image
+  Try FileName = Object.GetProperty(Classes["gsh"], "DefaultImageName")    ' run as a command inside gsh
+  If Error Then                                          ' called from a block, the image is named after the segment
+    Dim sSegment As String = SharedMem.NamedMemName
+    If sSegment Begins "/" Then sSegment = Mid(sSegment, 2)
+    If sSegment = "" Or If sSegment = User.Name & "gsh" Then
+      FileName = "gsh.image"
+    Else
+      FileName = sSegment & ".image"
+    Endif
+  Endif
+Endif
+Dim sImagePath As String = IIf(File.Dir(FileName) = "", SharedMem.DefaultSaveLocation & FileName, FileName)
+If Not Exist(sImagePath) Then                           ' do not clear the memory when there is nothing to load
+  SharedMem["result"] = "Error : image " & sImagePath & " not found"
+  Print #File.Err, SharedMem["result"]
+  Return False
+Endif
 With sharedmem
 .Free("result")
 .clearmem()

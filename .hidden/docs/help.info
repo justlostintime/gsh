@@ -105,7 +105,8 @@
             -S --single      Use a private in memory database and share
                              only with tasks
             -t --trace <level>  Turn on tracing at this level, 0 = off, 1 = user,
-                             3 = -r and -f, 4 = all
+                             3 = -r and -f, 4 = all, 20 = also save each
+                             program run to ~/vars/ExecProg.gbs
             -V --version     Display the gsh version number
             -v --versions    Display the versions of gsh, SharedMem, the scripter
                              and every component used

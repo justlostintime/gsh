@@ -8,7 +8,7 @@ Sub traceon(Optional level As Integer = -1) As Boolean
 ''    returns true if found, false otherwise
 ''    $result contains the error text or "OK"
 ''    level 2 turns on interactive trace level 3 turns on detailed trace
-''    level 20 turn on cleation of ~/vars/execprog file for review execution
+''    level 20 also saves each program run to ~/vars/ExecProg.gbs for review
 ''
 dim traceif as object = classes["gsh"]
 

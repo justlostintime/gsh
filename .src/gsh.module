@@ -23,7 +23,7 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
     "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
     "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
-    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdfont", "usehighlight", "scriptpath", "#newvar", "#notifyq", "#delnotifyq"]
+    "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdmode", "usehighlight", "scriptpath", "#newvar", "#notifyq", "#delnotifyq"]
 
 ''Why are repeat and do in this list..?
 Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", "begin", "run", "alias", "repeat", "do", "fast", "unsafe", "compile", "program", "get", "abort"] ' "list" removed
@@ -428,7 +428,7 @@ Public Sub ProcessOptions() As String[]
     sPortNumber = Args.Get("p", "port", ("I/O Port number/name to use else  Defaults to stdin/stdout/stderr"))
     bAboutGsh = Args.Has("a", "about", ("Display About ") & Application.Name)
     bReadVersions = Args.Has("v", "versions", ("Display version number"))
-    $iTraceset = Args.GetInteger("t", "trace", ("Turn on tracing Parms 0 = off, 1 = user, 3 = -r and -f , 4 = all, 20 = create execprog.gsh in vars"), -1)
+    $iTraceset = Args.GetInteger("t", "trace", ("Turn on tracing Parms 0 = off, 1 = user, 3 = -r and -f , 4 = all, 20 = also save each program to ~/vars/ExecProg.gbs"), -1)
     sSharedMemoryName = Args.Get("s", "shmname", ("Shared Memory Name for application"))
     bSingleUse = Args.Has("S", "single", ("Do not use shared memory"))
     bNoLoadImage = Args.Has("n", "noload", ("Do Not Load gsh Image - already loaded by another process"))
@@ -1827,10 +1827,10 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
             SharedMem.prevexecprog = SharedMem.execprog
             SharedMem.execprog = "Executed on :" & Str(Now) & "\n" & ExecProg
 
-            'If TraceLevel >= 20 Then
-            File.Save(user.home & "/vars/ExecProg.gbs", program)
-            Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
-            'Endif
+            If TraceLevel >= 20 Then                          ' trace level 20 keeps a copy of each program to review
+                File.Save(user.home & "/vars/ExecProg.gbs", program)
+                Chmod user.home & "/vars/ExecProg.gbs" To "rwxr-xr-x"
+            Endif
 
             If gbscomponent And If Not NoWait Then
                 If jobctl Then RunningProcessStart = Now
