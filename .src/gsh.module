@@ -430,17 +430,17 @@ Public Sub ProcessOptions() As String[]
     bReadVersions = Args.Has("v", "versions", ("Display version number"))
     $iTraceset = Args.GetInteger("t", "trace", ("Turn on tracing Parms 0 = off, 1 = user, 3 = -r and -f , 4 = all, 20 = create execprog.gsh in vars"), -1)
     sSharedMemoryName = Args.Get("s", "shmname", ("Shared Memory Name for application"))
-    bSingleUse = Args.has("S", "Single", ("Do not use shared memory"))
+    bSingleUse = Args.Has("S", "single", ("Do not use shared memory"))
     bNoLoadImage = Args.Has("n", "noload", ("Do Not Load gsh Image - already loaded by another process"))
     sImageToUse = Args.Get("I", "image", ("Use this specific image when starting"))
     bInteractive = Args.Has("i", "interactive", ("Force Shell to be interactive"))
     bLogon = Args.Has("l", "logon", ("Start as a logon shell"))
-    bHelpListing = Args.Has("m", "manual", ("Print the extended help infomation"))
-    BlockSize = Args.GetInteger("M", "memsize", ("Defines the ammount of storage needed for the In Memory Database(default 20.5m)"), "<MemLength>", 20512000)
-    CollectMemLen = Args.GetInteger("D", "disctsize", ("Size of in memory Database Dictionary and index(Default 2.5m)"), "<DictLength>", 2512000)
+    bHelpListing = Args.Has("m", "manual", ("Print the extended help information"))
+    BlockSize = Args.GetInteger("M", "memsize", ("Defines the amount of storage needed for the In Memory Database(default 20.5m)"), "MemLength", 20512000)
+    CollectMemLen = Args.GetInteger("D", "dictsize", ("Size of in memory Database Dictionary and index(Default 2.5m)"), "DictLength", 2512000)
     bCleanup = Args.Has("C", "cleanup", ("Cleanup and delete the old Shm file if it is closed and left around"))
     InLineCommand = Args.Get("c", "command", ("Command to be executed"))
-    VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independant script, returns output, gsh -f name -- args"))
+    VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independent script, returns output, gsh -f name -- args"))
     LocalFunRun = Args.Get("r", "runline", ("Execute the following command line, gsh -r name -- args, -- ends the gsh options"))
     sCRestOfArgs = Args.End()
 
@@ -1083,8 +1083,8 @@ Public Sub Main()
 
         onexitrcdate = Stat(User.home &/ "vars/subs/onexit").lastmodified
         If Not SharedMem.exist("onexitrcdate") Then SharedMem["onexitrcdate"] = ""
-        If SharedMem["onexitrcdate"] < datetostring(onstartrcdate) Or If Not SharedMem.exist("sub.onexit") Then
-            SharedMem["onexitrcdate"] = datetostring(onstartrcdate)
+        If SharedMem["onexitrcdate"] < datetostring(onexitrcdate) Or If Not SharedMem.exist("sub.onexit") Then
+            SharedMem["onexitrcdate"] = datetostring(onexitrcdate)
             Try SharedMem["sub.onexit"] = File.load(User.home &/ "vars/subs/onexit")
             If Error Then
                 Error ("Unable to load onexit :");; Error.text
@@ -4202,7 +4202,7 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
                     Else If Syms[tCount] = "$GID" Then
                         syms[tCount] = "User.group"
                     Else If Syms[tCount] = "$UID" Then
-                        syms[tCount] = "User.Group"
+                        syms[tCount] = "User.Id"
                     Else If Syms[tCount][0] = "$" Then
                         Dim convit As Integer
                         Try convit = CInteger(Right(Syms[tCount], -1))

@@ -28,11 +28,11 @@ Command to be executed
 \fB\-C --cleanup\fR
 Cleanup and delete the old Shared Memory Database file if it is closed and left around
 .TP
-\fB\-D -D --disctsize <<DictLength>>\fR
+\fB\-D --dictsize <DictLength>\fR
 Size of in memory Database Dictionary and index(Default 2.5m)
 .TP
 \fB\ -f --from\fR
- Execute the content of a global variable as independant script, returns output
+ Execute the content of a global variable as independent script, returns output
 .br
  gsh -f name -- args, the arguments after -- are passed to the script
 .TP
@@ -49,10 +49,10 @@ Force Shell to be interactive
  Start as a logon shell
 .TP
 \fB\-m --manual\fR
-Print the extended help infomation
+Print the extended help information
 .TP
-\fB\-M --memsize <<MemLength>>\fR
-Defines the ammount of storage needed for the In Memory Database(default 20.5m)
+\fB\-M --memsize <MemLength>\fR
+Defines the amount of storage needed for the In Memory Database(default 20.5m)
 .TP
 \fB\-n --noload\fR
  Do Not Load gsh Image - Use Default image already loaded by another process
@@ -68,7 +68,7 @@ Ends the gsh options. Everything after it is passed to the -r sub or the -f scri
 \fB\ -s --shmname <Database name>\fR
 Shared Memory Name for application
 .TP
-\fB\-S --Single\fR
+\fB\-S --single\fR
 Do not use shared memory, use onetime private memory for this shell
 .TP
 \fB\-v --versions\fR
