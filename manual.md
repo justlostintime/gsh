@@ -1,8 +1,8 @@
 # Gambas Shell gsh
 
-Version 1.6.3.8
+Version 1.8
 
-**June 4, 2025**
+**November 18, 2026**
 
 ## Introduction
 
@@ -531,37 +531,44 @@ as a Class with the Public variables inside it:
 ```
 ### gsh Command Line Parameters
 ```
-  -h --help Display the help pages 
-  -a --about Displays information about gsh
-  -C --cleanup Forces the close of the in-memory database then reopen.
+  -h --help Displays the list of options.
+  -a --about Displays information about gsh.
+  -C --cleanup Closes and deletes an old in-memory database that was left
+       on the system, for example after a crash.
   -c --command Used by the remote ssh or other access for Posix compliance, not used in other cases.
-  -d --service Runs Shell as a service point
-  -D --dictsize Defines the size of the space reserved for the in memory database dictionary.
-      The default size is 2.5m.
-  -f --from Executes the content of a global variable. 
+  -d --service Runs the shell as a service point, requests to read and store
+       database elements arrive through stdin or ssh.
+  -D --dictsize <DictLength> Defines the size of the space reserved for the
+       in memory database dictionary and index. The default size is 2.5m.
+  -f --from Executes the content of a global variable.
        The global variable may contain any gsh script
        gsh -f name -- args, the arguments after -- are passed to the script.
-  -h --help Gets this information.
-  -i --image Loads a specific image from an image file upon start. 
-       The Image can be viewed as the total environment. 
+  -I --image Loads a specific image from an image file upon start.
+       The Image can be viewed as the total environment.
        It is possible to have many project environments saved.
-  -M --memsize Defines the starting allocated variable memory size for in
-       memory database. Defaults to 20.5m.
+  -i --interactive Forces the shell to be interactive.
+  -l --logon Starts gsh as a login shell.
+  -M --memsize <MemLength> Defines the starting allocated variable memory size
+       for the in memory database. Defaults to 20.5m.
   -m --manual Prints the detailed extended help information.
-  -n --noload Does Not load the image, Its already loaded. 
+  -n --noload Does Not load the image, it is already loaded.
        This is used mainly if you are not using the default image.
        Mostly gsh will detect if the image is already loaded.
+  -p --port The I/O port to use in service mode: a port number, a device name
+       such as USBtty or a Unix named pipe path. Defaults to stdin/stdout/stderr.
   -r --runline Executes the following command line.
        gsh -r name -- args, the name of the sub is followed by -- and then
        its arguments. A sub in a pipe is run this way. gsh exits with
        the exit code of the sub, False is 1, see **&& \|\|**.
   -s --shmname The name of the in memory database to use.
-       Defaults to username. Two in-memory files are created, data segment and 
+       Defaults to username. Two in-memory files are created, data segment and
        Index/Collection segment
   -S --single Do Not Use Shared Memory, Only Shared with tasks/threads.
-  -t --trace Turns on tracing in scripts.
-  -V --version Displays the version number.
-  -v --version Displays the version information as gsh starts.
+  -t --trace <level> Turns on tracing at this level: 0 = off, 1 = user,
+       3 = -r and -f, 4 = all.
+  -V --version Displays the gsh version number.
+  -v --versions Displays the versions of gsh, SharedMem, the scripter and
+       every component used.
   -- Ends the gsh options. Everything after it is passed to the -r sub or
        the -f script, so arguments such as -x are not read as gsh options:
        gsh -r mysub -- -x --color=auto
@@ -1254,37 +1261,45 @@ compiled into the shell name space.*
 At startup **gsh** loads the environment from the default image
 \~/vars/gsh.image if it is exists.
 
-This any image may be loaded explicitly with the \--image startup
+Any other image may be loaded explicitly with the -I \--image startup
 parameter.
 
-The gsh.image file is created when ever the gsh shell exits or save is
-called with no parameters.
+The gsh.image file is created or updated whenever the gsh shell exits.
 
 The gsh.image and \~/vars directory will be created if they do not exist
 upon first startup of **gsh**.
 
 ### profile.gsh contains system wide definitions
 
-This script is checked at each startup and if it has changed then it is
-executed upon startup and may be edited. This file is the system wide
-default profile. A copy is made in \~/vars and you may change it at your
-own risk.
+This file is the system wide default profile. It defines the default
+aliases and extra commands. A copy is made in \~/vars/profile.gsh the first
+time gsh starts, and it is run when the image is first created, or after
+\$profile is set to false. Do not put your own definitions in it, use .gshrc.
 
-### gsh.rc contains all user specific definitions
+When a new release of gsh installs a newer profile.gsh, the new version is
+copied to \~/vars/profile.gsh.new and gsh tells you about it at startup. Run
+the update command to start using it.
 
-This is run at every startup and is the place to put anything needed by
-your private image during run time. It will be loaded into the image
-when ever it changes. This file is found in the \~/vars directory.
+### .gshrc contains all user specific definitions
 
-### onstartup() executed at start of interactive session
+This is the place to put anything your own image needs, aliases, subs and
+variables. The file is \~/.gshrc in your home directory, an empty one is
+created on first startup. It is run at startup whenever it has changed
+since it was last loaded, otherwise the image already holds its content.
+
+### onstart() executed at start of interactive session
 
 This function is executed at the beginning of every interactive session.
-It is defined in the onstartup file found in the \~/vars/subs directory.
+It is defined in the onstart file found in the \~/vars/subs directory and is
+reloaded when that file changes. Change it with edit onstart, then
+savesubs "onstart" writes it back to the file.
 
 ### onexit() executed at end of interactive session
 
 This function is executed at the end of every interactive session. It is
-defined in the onexit file found in the \~/vars/subs directory.
+defined in the onexit file found in the \~/vars/subs directory and is
+reloaded when that file changes. Change it with edit onexit, then
+savesubs "onexit" writes it back to the file.
 
 ### Shell Global Variables
 
@@ -1314,7 +1329,7 @@ given to setsync, is private to each session: the **gsh** started from a termina
 and everything it starts, including a **gsh** started from it, share one copy. Another
 session has its own copy. A new session starts from the saved shared value merged
 with its environment. A change made in a session is not saved for later sessions,
-put lasting changes in profile.gsh or gsh.rc.
+put lasting changes in .gshrc.
 
 Remember to vardel ("varname") at the end of a session if you don't
 want it to appear when you next start **gsh**.
@@ -1343,16 +1358,16 @@ This may be used by your functions to return values.
 Note, you must VarDel "\$result" if you change the type away from
 string type.
 
-#### \$trace Use the traceon or traceoff command to set this
+#### \$DoTrace Use the traceon or traceoff command to set this
 
-Turn on or off shell script tracing. Writes line to stderr as they are
-executed.
+Turns shell script tracing on or off. Each line is written to stderr as
+it is executed.
 
 This is global and will affect system wide scripts, on the fly.
 
-\$trace = true ' turns on tracing.
+traceon ' turns on tracing, traceon 3 sets the trace level as well.
 
-\$trace = false ' turn off tracing. This is the default.
+traceoff ' turns off tracing. This is the default.
 
 #### \$prompt
 
@@ -1365,7 +1380,9 @@ default.
 
 The default prompt is -
 
-"\\x1b\[31m"&user.name&"@"&system.host&":\\x1b\[32m\]"&env\["PWD"\]&"\$\\x1b\[0m\]"&gsh.blockindent
+```
+"\x01\x1b[31m\x02" & application.id & "." & user.name & "@" & system.host & ":\x01\x1b[32m\x02" & env["PWD"] & "\x01\x1b[0m\x1b[0K\x02 > "
+```
 
 #### \$editor
 
@@ -1399,7 +1416,7 @@ Maximum line entries to be kept as history
 
 #### \$historycurrent
 
-The current history entry, never roles over. Use clearhist to reset
+The current history entry, never rolls over. Use clearhist to reset
 history
 
 #### \$history
@@ -1431,15 +1448,31 @@ This is the command used to display the help text information(less -c)
 
 #### \$\$
 
-This will substitute the current pid onto a command line
+This will substitute the process id of the running gsh or script, the same
+as application.id
+
+#### \$?
+
+The exit code of the last command line, 0 when it worked, see **!\>**
+and **&& \|\|**
+
+#### \$\*
+
+All the parameters passed to the script, including the script name, as one
+string
+
+#### \$\@
+
+All the parameters passed to the script, including the script name, as a
+list
 
 #### \$UID
 
-This will substitute the user id onto the command line
+This will substitute the user id, the same as user.id
 
 #### \$GID
 
-This will substitute the Group id onto the command line
+This will substitute the group id, the same as user.group
 
 #### \$scriptpath
 
@@ -1463,8 +1496,9 @@ Defaults to "~/vars/class;/usr/share/gsh/class"
 
 #### \$TraceLevel
 
-This is the depth of script trace performed 0-400
-Defaults to 400, controlled by traceon command.
+This is the level of script tracing performed, 0 = off, 1 = user,
+3 = -r and -f, 4 = all. Defaults to 1, set by the traceon command or the
+-t option.
 
 #### \$execprog
 
@@ -1878,7 +1912,7 @@ This translates to and executes this line
 
 Inside expressions use single quote ' instead of double quote ".
 
-This example will be evaluated to 'print application.name; "stuff".'
+This example will be evaluated to 'print application.name; User.name'.
 
 After the evaluation, the line will be executed.
 
@@ -1956,7 +1990,7 @@ environment. Starts the editor defined in the \$editor global variable
 classes and functions become part of the image and are linked to
 commands as needed.
 
-\$editor - holds the name of the text editor to be used for texted based
+\$editor - holds the name of the text editor to be used for text based
 editing.
 
 \$hexeditor - holds the name of the editor to be used for binary type
@@ -1984,7 +2018,7 @@ Edit the system prompt edit \$prompt.
 
 You can create a new variable, class, or function
 
-Enter edit newname&&
+Enter edit newname
 
 You will be prompted to create a variable,class or function.
 
@@ -2024,42 +2058,32 @@ parameters, see Parameterized aliases below.
 Alias function are created by creating a sub of the name of the command
 its replacing.
 
-Examples of aliases from the profile.gsh . Defaults are directly
-imported from .profile.
-
-alias fgrep='fgrep \--color=auto'
-
-alias grep='grep \--color=auto'
-
+The default aliases defined in profile.gsh:
+```
+alias fgrep='fgrep --color=auto'
+alias grep='grep --color=auto'
 alias l='ls -CF'
-
 alias la='ls -A'
-
 alias ll='ls -alF'
-
-alias ls='ls \--color=auto'
-
-alias cls='clear'
-
-alias home='cd \~'
-
-alias pkill='!kill' ← need to use this as KILL is a Gambas language
-keyword
-
-alias ps='ps -al'
-
-alias update='run "profile.gsh"'
-
-alias hh='hist -10'
-
-alias path='? env\["PATH"\]'
-
-alias exit='quit'
+alias ls='ls --color=auto'
+alias home='cd ~'
+alias ??='lprint'
+alias ps='ps -l'
+alias hh='hist(-10)'
+alias path='? env["PATH"]'
+alias exit='Quit 0'
+alias tcb='toclipboard'
+alias fcb='fromclipboard'
+alias done='loop until true'
+alias clearsub='clearsubs'
+alias clearvar='clearvars'
+alias pwd='/bin/pwd'
+alias foreach()='do:;for each value as variant in &1:;&2:;next:;done'
+alias ifor()='for i as integer = &1 to &2:;&3:;next'
+```
 
 Aliases must be enclosed in ' single quotes and are applied only to
-command lines not
-
-program code.
+command lines not program code.
 
 Adding an alias:
 
@@ -2547,7 +2571,7 @@ Structures have format "struct.structname."\
 Returns 'true' if found, 'false' otherwise.\
 \$result contains the error text or "OK."
 
-#### varread \$GlobalVarName \<"filename"\> - Reads a global variable value from a file\> .&&
+#### varread \$GlobalVarName \<"filename"\> - Reads a global variable value from a file.
 
 Default File name = \~/var/varname\
 As function - varread("varname \<, "filename"\>).\
