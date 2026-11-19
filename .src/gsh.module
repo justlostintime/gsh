@@ -1759,7 +1759,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     '                 If jobctl Then RunningProcessStart = Now
     '                 MyProcess.Wait()
     '                 If jobctl Then
-    '                   Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
+    '                   Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; Format((Now - RunningProcessStart) * 86400, "0.000"); "s"
     '                 Endif
     '                 RunningProcess = Null
     '               Endif
@@ -1889,7 +1889,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                 If compileResult <> 0 Then
                     ReportCompileErrors(program)
                 Else If jobctl Then
-                    Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
+                    Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; Format((Now - RunningProcessStart) * 86400, "0.000"); "s"
                 Endif
                 ExecBuffer = ""
                 ReturnOutputTo = ""
@@ -1976,7 +1976,7 @@ Public Sub SysProc_kill()
                 ActiveProcesses.remove(i)
 
             Case Process.stopped
-                sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Stopped]\n")
+                sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Complete]\n")      ' Process.Stopped : it ended
                 Error ("Job pid="); ActiveProcesses[i].id;; ("Complete")
                 ActiveProcesses.remove(i)
 

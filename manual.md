@@ -2446,8 +2446,8 @@ Returns 'true' if read, 'false' otherwise.\
 #### jobs \< pid \| ON \|OFF \> Prints a list of current background jobs
 
 Turns Job Control ON or OFF Default is OFF.\
-This lists all the jobs currently running for a user or requested PID.\
-That is every instance of a task started by all gsh sessions for a user.
+Lists the background jobs of this gsh, and of gsh sessions that have ended, or the requested PID.\
+Jobs that are no longer running are removed after they are listed.
 
 #### lclass \<GlobalClassname\> - Prints a list of global classes.
 
@@ -2644,40 +2644,36 @@ background and collect statistics about the jobs execution time.
 - `jobs on` Turns on the job control and recording
 - `jobs off` Turns off the job control and recording
 - `jobs pid` Lists the current state of the job with pid(process id)
-- `jobs` By its self lists all terminated, running, suspended background jobs.
+- `jobs` By its self lists the jobs of this gsh, and of gsh sessions that have ended: running, complete or exited,
+  with the start and end time, the result and the duration in seconds.
+  Jobs that are no longer running are removed after they are listed.
+- `jobs -keep` Lists them without removing any
+- `jobs -any` Also lists the jobs of the other gsh sessions that are running
+- `jobs -table` Returns the list as a collection instead of printing it
+
+Entries are only recorded while job control is on, jobs lists and removes them whether it is on or off.
 
 Output looks like this after a job completes in foreground
 ```
   Complete pid=10382 State=0 Value=0
 
   Start=06/18/2020 22:08:52.509 End=06/18/2020 22:08:52.545
-  Duration=0.041630119085312
+  Duration=0.036s
 ```
 
 When background jobs complete an entry is made into list by entering the
 jobs command it returns a list of and status of all jobs. For example:
 ```
 >> jobs
-18591 06/18/2020 19:20:03.468 06/18/2020 19:20:03.476 [Complete]
-result=0 Duration=0.009266659617424 "time" , "-v" , "ls"
-
-18829 06/18/2020 19:22:03.923 06/18/2020 19:22:03.926 [Complete]
-result=0 Duration=0.003492459654808 "time" , "--help"
-
-18915 06/18/2020 19:22:45.385 06/18/2020 19:22:45.388 [Complete]
-result=0 Duration=0.003445893526077 "ls" , "--color=auto"
-
-10388 06/18/2020 22:08:52.535 06/18/2020 22:08:52.542 [Complete]
-result=0 Duration=0.008102506399155 "ls" , "--color=auto" , "-l"
-
-10661 06/18/2020 22:11:11.243 06/18/2020 22:11:11.248 [Complete]
-result=0 Duration=0.005774199962616 "ls" , "--color=auto" , "-l"
-
-10672 06/18/2020 22:11:12.697 06/18/2020 22:11:12.703 [Complete]
-result=0 Duration=0.006938353180885 "ls" , "--color=auto" , "-l"
+18591 06/18/2020 19:20:03.468 06/18/2020 19:20:03.476 [Complete] result=0 Duration=0.008s time -v ls
+18829 06/18/2020 19:22:03.923 06/18/2020 19:22:03.926 [Complete] result=0 Duration=0.003s time --help
+18915 06/18/2020 19:22:45.385 06/18/2020 19:22:45.388 [Complete] result=0 Duration=0.003s ls --color=auto
+10388 06/18/2020 22:08:52.535                         [Running] !sleep 30 &
+10392 06/18/2020 22:08:52.540                         [Exited] sleep 30 &
 ```
 
-After the jobs are listed any completed ones are removed from the list
+After the jobs are listed every one that is no longer running is removed from the list.
+[Exited] is a job that ended without its end being recorded, for example a command killed with its program.
 
 ### Sample Functions for Pipe Fitting
 

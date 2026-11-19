@@ -4,24 +4,20 @@ Sub jobs(...) As Variant
 ''jobs <pid|on|off> prints a list of current background jobs
 ''          Or turns job control ON or OFF
 ''
-''          This lists all the jobs currently running for a user
-''          The list includes every instance of a task started by gsh for a user
-''          The default is all user tasks or a pid can be provided for specific task
+''          With no pid it lists the jobs of this gsh, and of gsh sessions that have ended:
+''          running, complete or exited, with start and end time, result and duration in seconds.
+''          Jobs that are no longer running are removed after they are listed.
+''          Entries are only recorded while job control is on.
 ''          The parameters:
 ''                  -ON for turning on job control
 ''                  -OFF for turning off job control
 ''                  -Keep Keep information after reporting
-''                  -Table return a table of all known tasks
-''                  -Any list processes from all terminals/shells
+''                  -Table return a table of the jobs, [state, [pid, start, command, end, value, state]]
+''                  -Any also list the jobs of the other gsh sessions that are running
 ''                  Default setting is job control off
 ''          job info can be accessed by Process
-''		    using sharedmem["pid.p[processid]"] example sharedmem["pid.p098765"]
-Extern waitpid(pid As Integer, status As Pointer, options As Integer) As Integer In "libc:6"
-Extern strerror(errno As Integer) As String In "libc:6"
+''		    using sharedmem["pid.p[processid]a[gsh pid]"] example sharedmem["pid.p98765a98700"]
 Dim Parms As New Parseparms(param.all, ["on": True, "off": True, "any": True, "all": True, "table": True, "keep": True], "Jobs")
-Dim pidstatus As Integer = 0
-Dim pidresult As Integer = 0
-Dim pStatus As Pointer = VarPtr(pidstatus)
 Dim Jobctl As Object
 Dim cTable As New Collection
 Dim Keep As Boolean = False
@@ -72,54 +68,40 @@ With sharedmem
       Return True
     Endif
 
-    ' we get here if there are no specific pids that were requested, scan through the variable names looking for pid info
+    ' no pids given: list this gsh's jobs and those of gsh sessions that have ended, -any lists every gsh's.
+    ' Jobs that are no longer running are deleted after they are listed, unless -keep is given
+    Dim aListed As New String[]                                 ' freed after the loop, not while walking the table
     For Each s As SharedMemSymbol In SharedMem.SymbolTable
       If Left(s.symname, 5) <> "pid.p" Then Continue
-      If any = True Or If s.symname Like "pid.p*" & "a" & application.id Then
-        Dim procsyms As String[]
-        Dim cmd As String
-        ' gsh writes a job as pid|start|command line\n then |end|value... : the command line may contain |
-        ' itself, so only the first two | of the first line separate fields. The commands a program starts
-        ' are written pid|start|command|end|value, with no newline and no | in the command.
-        Dim sEntry As String = .[s.symname]
-        Dim iLineEnd As Integer = InStr(sEntry, "\n")
-        Dim sHead As String = IIf(iLineEnd > 0, Left(sEntry, iLineEnd - 1), sEntry)
-        Dim iBar1 As Integer = InStr(sHead, "|")
-        Dim iBar2 As Integer = IIf(iBar1 > 0, InStr(sHead, "|", iBar1 + 1), 0)
-        If iLineEnd > 0 And If iBar2 > 0 Then
-          procsyms = [Left(sHead, iBar1 - 1), Mid(sHead, iBar1 + 1, iBar2 - iBar1 - 1), Mid(sHead, iBar2 + 1)]
-          If iLineEnd > 0 Then procsyms.Insert(Split(Mid(sEntry, iLineEnd + 1), "|\n", "", True))
-        Else
-          procsyms = Split(sEntry, "|\n", "", True)
-        Endif
-        If procsyms.count >= 3 Then
-          cmd = procsyms[2]
-          If DoPrint Then
-            Print procsyms[0];; procsyms[1];;
-            Print "\x1b[33m";
-          Endif
-          If procsyms.count > 3 Then
-            If DoPrint Then Print procsyms[3];; "\x1b[32m[Complete]\x1b[33m result="; procsyms[4];; "Duration="; (CDate(procsyms[3]) - CDate(procsyms[1])) * 100000;;
-            If table Then cTable.add(["Complete", procsyms], procsyms[3])
-            If Not keep Then .Free(s.symname)
-          Else
-            pidresult = waitpid(CInt(procsyms[0]), pStatus, 1)
-            If pidresult >= 0 Then
-              If DoPrint Then Print "\x1b[31m[Running]\x1b[33m";; pidstatus;; pidresult;;
-              If Table Then cTable.add(["Runing", procsyms], procsyms[3])
-            Else
-              If DoPrint Then Print "\x1b[31m[Exited]\x1b[33m Status="; pidstatus;; pidresult;; system.error;; strerror(system.error);;
-              If table Then cTable.add(["Exited", procsyms], procsyms[3])
-              If Not keep Then .Free(s.symname)
-            Endif
-          Endif
-        Else
-          If DoPrint Then Print s.Symname;; "[Unknown]";; Process.LastValue;; procsyms.join("|");;
-          If table Then cTable.add(["Unknown", procsyms], "Unknown" & procsyms[0])
-          If Not keep Then .Free(s.symname)
-        Endif
-        If DoPrint Then Print "\x1b[0m"; cmd
+      Dim sOwner As String = Mid(s.symname, RInStr(s.symname, "a") + 1)       ' pid.p<job pid>a<gsh pid>
+      If Not Any And If sOwner <> CStr(application.id) And If IsRunning(sOwner) Then Continue
+
+      Dim aJob As String[] = ParseEntry(.[s.symname])           ' pid, start, command, end, value, state
+      Dim sState As String
+      Dim bRunning As Boolean = False
+      If aJob[3] <> "" Then
+        sState = IIf(aJob[5] <> "" And aJob[5] <> "[Stopped]", aJob[5], "[Complete]")   ' an older gsh wrote [Stopped] for a job that ended
+      Else If IsRunning(aJob[0]) Then
+        sState = "[Running]"
+        bRunning = True
+      Else
+        sState = "[Exited]"                                     ' it ended without its end being recorded
       Endif
+
+      If DoPrint Then
+        Print aJob[0];; aJob[1];; "\x1b[33m";
+        If aJob[3] <> "" Then
+          Print aJob[3];; "\x1b[32m"; sState; "\x1b[33m result="; aJob[4];; "Duration="; Duration(aJob[1], aJob[3]);;
+        Else
+          Print Space(23);; "\x1b[31m"; sState; "\x1b[33m";;
+        Endif
+        Print "\x1b[0m"; aJob[2]
+      Endif
+      If Table Then cTable.Add([Mid(sState, 2, -1), aJob], s.symname)
+      If Not Keep And If Not bRunning Then aListed.Add(s.symname)
+    Next
+    For Each sListed As String In aListed
+      Try .Free(sListed)
     Next
 
     .["result"] = "OK"
@@ -134,5 +116,70 @@ Endif
 
 Catch
    error.raise("Jobs Error: " & error.text & error.where)
+
+End
+
+' a job entry as [pid, start, command, end, value, state], the missing ones are ""
+' gsh writes a job as pid|start|command line\n then |end|value|[state]\n : the command line may contain |
+' itself, so only the first two | of the first line separate fields. The commands a program starts
+' are written pid|start|command, then |end|value, with no newline
+Private Sub ParseEntry(sEntry As String) As String[]
+
+  Dim aJob As String[] = ["", "", "", "", "", ""]
+  Dim aRest As New String[]
+  Dim sHead As String = sEntry
+  Dim iLineEnd As Integer = InStr(sEntry, "\n")
+  Dim sPart As String
+
+  If iLineEnd > 0 Then
+    sHead = Left(sEntry, iLineEnd - 1)
+    For Each sPart In Split(Mid(sEntry, iLineEnd + 1), "|\n")
+      If Trim(sPart) <> "" Then aRest.Add(Trim(sPart))        ' an old gsh wrote " |" : a field of spaces
+    Next
+  Endif
+
+  Dim aHead As String[] = Split(sHead, "|")
+  If aHead.Count < 3 Then
+    aJob[2] = sEntry
+    Return aJob
+  Endif
+  aJob[0] = Trim(aHead[0])
+  aJob[1] = Trim(aHead[1])
+  If iLineEnd = 0 And If aHead.Count >= 5 Then                ' pid|start|command|end|value
+    aRest = [aHead[aHead.Max - 1], aHead[aHead.Max]]
+    aHead.Remove(aHead.Max - 1, 2)
+  Endif
+  aJob[2] = aHead.Copy(2, aHead.Count - 2).Join("|")
+  If aRest.Count > 0 Then aJob[3] = aRest[0]
+  If aRest.Count > 1 Then aJob[4] = aRest[1]
+  If aRest.Count > 2 Then aJob[5] = aRest[2]
+  Return aJob
+
+End
+
+' a process is running when /proc has it and it is not a zombie : waitpid only knows the children of
+' this gsh, the commands a program starts are its children
+Private Sub IsRunning(sPid As String) As Boolean
+
+  Dim hStat As File
+  Dim sStat As String
+
+  If Not IsInteger(sPid) Then Return False
+  Try hStat = Open "/proc" &/ sPid &/ "stat" For Input
+  If Error Then Return False
+  Try Line Input #hStat, sStat
+  Try Close #hStat
+  sStat = Trim(Mid(sStat, RInStr(sStat, ")") + 1))             ' pid (name) state ...
+  Return Not (sStat Begins "Z" Or sStat Begins "X")
+
+End
+
+' seconds from start to end, both written as mm/dd/yyyy hh:nn:ss.uu
+Private Sub Duration(sStart As String, sEnd As String) As String
+
+  Dim fSeconds As Float
+  Try fSeconds = (CDate(sEnd) - CDate(sStart)) * 86400
+  If Error Then Return "?"
+  Return Format(fSeconds, "0.000") & "s"
 
 End
