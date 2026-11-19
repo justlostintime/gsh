@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Installed as /usr/share/mime/packages/gsh.xml, the package manager then runs update-mime-database -->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+        <mime-type type="application/x-gambasshell">
+                <comment>Gambas Shell script</comment>
+                <comment xml:lang="fr">Script Shell Gambas</comment>
+                <comment xml:lang="nl">Gambas shell script</comment>
+                <sub-class-of type="application/x-shellscript"/>
+                <generic-icon name="text-x-script"/>
+                <icon name="gsh"/>
+                <magic priority="60">
+                        <match value="#!/usr/bin/env gsh" type="string" offset="0"/>
+                        <match value="#!/usr/bin/env -S gsh" type="string" offset="0"/>
+                        <match value="#!/usr/bin/gsh" type="string" offset="0"/>
+                </magic>
+                <!-- weight 60: text/x-groovy also claims *.gsh at the default weight of 50 -->
+                <glob pattern="*.gsh" weight="60"/>
+        </mime-type>
+</mime-info>
