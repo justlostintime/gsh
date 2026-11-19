@@ -440,9 +440,13 @@ Private Sub RunCompiledScript()
         Quit 2
     Endif
 
+    ' the full path of the script : a relative path given to a Gambas function is a file inside gsh itself
     Dim sScript As String = cmdLineParameters[0]
-    ' a relative path is from the current directory : Gambas would look for it inside gsh itself
-    If Not (sScript Begins "/") Then sScript = Application.Dir &/ IIf(sScript Begins "./", Mid(sScript, 3), sScript)
+    If sScript = "~" Or If sScript Begins "~/" Then
+        sScript = User.Home &/ Mid(sScript, 2)
+    Else If Not (sScript Begins "/") Then
+        sScript = Application.Dir &/ IIf(sScript Begins "./", Mid(sScript, 3), sScript)   ' the directory gsh -u started in
+    Endif
     Dim aScriptArgs As String[] = cmdLineParameters.Copy(1, cmdLineParameters.Count - 1)
     Dim vResult As Variant = ScripterRun(sScript, [], aScriptArgs)
 
