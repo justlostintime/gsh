@@ -29,6 +29,8 @@ If param.count <> 0 Then
           ignoreerrors = True
         Case "autosave"
           autosave = True
+        Case "nosave"
+          NoSave = True
         Default
           Print #file.err, "clearsubs Unknown option";; subname
           Print #file.err, "Use : --IgnoreErrors - ignore and error"
