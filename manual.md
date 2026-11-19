@@ -98,7 +98,7 @@ Gambas3 version 3.18.0 or greater
 
 ### C and Gambas3 Libs used
 
-**libreadline7** or greater version depending on your OS GNU readline and history libraries\
+**libreadline8** GNU readline and history libraries (included in the AppImage)\
 **Libc6** or greater\
 **Libpthread-2.27** or greater\
 **gb.westwood-sharedmem** library now included as part of GSH install process.\
@@ -154,12 +154,47 @@ But of course you can always download and build your own packages.
 
 ### Installing a release package from GitHub
 
-Each release of gsh, with its .deb package, is on the
+Each release of gsh, with its .deb package and AppImage, is on the
 [gsh releases page](https://github.com/justlostintime/gsh/releases). Download the .deb and install it:
 ```
-sudo apt install ./gsh_1.8.5-0ubuntu1_all.deb
+curl -LO https://github.com/justlostintime/gsh/releases/download/v1.8.5/gsh_1.8.5-0ubuntu2_all.deb
+sudo apt install ./gsh_1.8.5-0ubuntu2_all.deb
 ```
 The package includes the SharedMem and Scripter libraries, it needs Gambas 3.21 or later.
+
+### Running gsh as an AppImage
+
+The AppImage contains everything gsh needs: the Gambas runtime, the SharedMem and Scripter
+libraries, readline, less and html2text for help, and a shell for the commands gsh runs.
+Gambas does not have to be installed.
+It runs on Ubuntu 22.04, 24.04 and 26.04, Debian 13 and Fedora 44, and other x86_64 Linux systems.
+```
+curl -LO https://github.com/justlostintime/gsh/releases/download/v1.8.5/gsh-1.8.5-x86_64.AppImage
+chmod +x gsh-1.8.5-x86_64.AppImage
+./gsh-1.8.5-x86_64.AppImage
+```
+If FUSE is not installed, run it with `APPIMAGE_EXTRACT_AND_RUN=1 ./gsh-1.8.5-x86_64.AppImage`.
+
+Install the .deb package to make gsh your default shell; the AppImage is not added to /etc/shells.
+
+#### Building the AppImage
+
+The AppImage is made with the Gambas IDE packager and appimage-builder:
+
+- Use the continuous build of appimage-builder from
+  [its releases page](https://github.com/AppImageCrafters/appimage-builder/releases/tag/continuous),
+  saved on the PATH as `appimage-builder-x86_64.AppImage` (the IDE looks for that name first).
+  Version 1.1.0 does not handle the linker layout of newer Ubuntu releases.
+- In the packager's AppImage step, the Ubuntu version is `noble (24.04)` and the Gambas repository is
+  `http://download.opensuse.org/repositories/home:/gambas:/master/xUbuntu_${VERSION}/ /`.
+  The runtime in the AppImage must be at least as new as the Gambas that compiled gsh, or it stops
+  with "Bytecode too recent".
+- `dash`, `less` and `html2text` are extra dependencies of the AppImage. Inside the AppImage, programs that are not part of it,
+  like the system /bin/sh, get the system environment back and can not run the bundled programs
+  (gbc3 and others). gsh therefore uses the bundled dash for Shell when `$APPDIR` is set.
+- System paths in gsh and gb.scripter start with `Env["APPDIR"]`, which is empty outside an AppImage.
+  A child gsh is started as `$APPDIR/usr/bin/gbr3 $APPDIR/usr/bin/gsh`, its `#! /usr/bin/env gbr3` line
+  would get the system environment back.
 
 After upgrading, gsh tells you at startup that the cached subs and classes are from an earlier
 version. Run update, gsh then restarts itself in the same terminal with the new ones.
@@ -606,17 +641,14 @@ see:
 
 <http://man7.org/linux/man-pages/man3/readline.3.html>
 
-The readline7 or greater package must be installed for gsh to work
-correctly.
+gsh loads readline 8 (libreadline.so.8), the libreadline8 package must be installed
+for gsh to work. The AppImage includes it.
 To copy and paste examples from this document add the following lines to your .inputrc . then restart gsh
 ```
 set horizontal-scroll-mode on
 set enable-bracketed-paste off
 ```
 
-The shell will run with readline 5 or 6 library but it does not pass the
-signals to the shell program. This causes the about ctrl-c to fail and
-other control sequences to fail as well.
 
 ## Current Working Directory
 

@@ -4781,7 +4781,7 @@ helpRetry:
     If helpRetryCount = 2 Then Error.Raise(("Help Display failed!"))
     'Try mproc = Exec ["/usr/bin/less", "-R", "/tmp/jummp"] Wait
     'Try Exec ["clear"] Wait
-    Try mproc = Exec ["/usr/bin/less", "-R", "-C", "-"] For Write
+    Try mproc = Exec [Env["APPDIR"] &/ "/usr/bin/less", "-R", "-C", "-"] For Write
     If Error Then
         SharedMem["helpdisplay"] = DefaultHelp
         Inc helpRetryCount

@@ -9,11 +9,11 @@ public sub runvar(varname as string,...) as variant
 dim mOutput as string
 dim errorresult as new string[]
 
-dim cmd as string[] = ["/usr/bin/gsh","-f"]
+dim cmd as string[] = IIf(Env["APPDIR"], [Env["APPDIR"] &/ "/usr/bin/gbr3", Env["APPDIR"] &/ "/usr/bin/gsh", "-f"], ["/usr/bin/gsh", "-f"])   ' inside an AppImage the bundled gbr3 runs gsh
 with sharedmem
 if .exist(varname) then
     dim sMemName as string = mid(.NamedMemName, 2)        ' gsh -s name : the new gsh must use the same shared memory
-    if sMemName <> "" and if sMemName <> user.name & "gsh" then cmd.insert(["-s", sMemName], 1)
+    if sMemName <> "" and if sMemName <> user.name & "gsh" then cmd.insert(["-s", sMemName], cmd.Max)   ' before -f
     cmd.add(varname)
     cmd.add("--")                                          ' the parameters are not gsh options
     for each s as variant in param

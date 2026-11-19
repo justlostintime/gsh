@@ -352,17 +352,19 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
         Print " source = " & CmdName
     Endif
     SharedMem["lasthtmlhelp"] = sSource
-    mproc = Exec ["html2text", "-ascii", "-width", "80", "-nobs", "-style", "compact"] For Read Write As "mrProcget"
-
-    Write #mproc, sSource
-    ' Flush #mproc
-    mproc.closeinput
-    mproc.wait
-    ' While mproc.state = Process.Running
-    '   Wait 0
-    ' Wend
+    Dim aConvert As String[] = ["html2text", "-ascii", "-width", "80", "-nobs", "-style", "compact"]
+    Do
+        helpfromhtml = ""
+        $sConvertError = ""
+        mproc = Exec aConvert For Read Write As "mrProcget"
+        Write #mproc, sSource
+        mproc.closeinput
+        mproc.wait
+        If process.LastValue = 0 Or If Not aConvert.Exist("-style") Then Break
+        aConvert.Remove(aConvert.Find("-style"), 2)       ' html2text 2.x has no -style option
+    Loop
     If process.LastValue <> 0 Then
-        Print "Help Html conversion Failed "
+        Print "Help Html conversion Failed "; $sConvertError
         Return ""
     Endif
 
@@ -441,6 +443,14 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
     Endif
 
     Return helpfromhtml
+
+End
+
+Private $sConvertError As String
+
+Public Sub mrProcget_Error(sError As String)
+
+    $sConvertError &= sError        ' shown only if the conversion fails
 
 End
 

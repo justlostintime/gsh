@@ -1,4 +1,12 @@
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- Patches for regression errors on clean installs
+
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- inside the AppImage a sub run as a command (!sub | cat), runvar and @var(...) start the bundled gsh through the bundled gbr3, /usr/bin/gsh is not there on a system with only the AppImage
+- help pages through $APPDIR/usr/bin/less, the AppImage includes less and html2text, help and Gambas help work without them on the system
+- runvar puts -s name after the gsh path
+- the .deb packages depend on less and libreadline-dev
+- Gambas help works with html2text 2.x (Debian 13), it has no -style option, gsh tries again without it
 - the AppImage runs on systems without Gambas: readline is loaded as libreadline:8 (libreadline.so only comes with the -dev package), the subs, class and struct paths and gsh.GshRootPath use $APPDIR, Shell uses the bundled dash so gbc3 is found
 - the AppImage is built for Ubuntu 24.04 with the Gambas master repository, dash is an AppImage dependency
 - removed two Debug lines that printed when gsh was compiled with debug information
