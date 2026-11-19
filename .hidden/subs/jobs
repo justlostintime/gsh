@@ -78,7 +78,20 @@ With sharedmem
       If any = True Or If s.symname Like "pid.p*" & "a" & application.id Then
         Dim procsyms As String[]
         Dim cmd As String
-        procsyms = Split(.[s.symname], "|\n", "", True)
+        ' gsh writes a job as pid|start|command line\n then |end|value... : the command line may contain |
+        ' itself, so only the first two | of the first line separate fields. The commands a program starts
+        ' are written pid|start|command|end|value, with no newline and no | in the command.
+        Dim sEntry As String = .[s.symname]
+        Dim iLineEnd As Integer = InStr(sEntry, "\n")
+        Dim sHead As String = IIf(iLineEnd > 0, Left(sEntry, iLineEnd - 1), sEntry)
+        Dim iBar1 As Integer = InStr(sHead, "|")
+        Dim iBar2 As Integer = IIf(iBar1 > 0, InStr(sHead, "|", iBar1 + 1), 0)
+        If iLineEnd > 0 And If iBar2 > 0 Then
+          procsyms = [Left(sHead, iBar1 - 1), Mid(sHead, iBar1 + 1, iBar2 - iBar1 - 1), Mid(sHead, iBar2 + 1)]
+          If iLineEnd > 0 Then procsyms.Insert(Split(Mid(sEntry, iLineEnd + 1), "|\n", "", True))
+        Else
+          procsyms = Split(sEntry, "|\n", "", True)
+        Endif
         If procsyms.count >= 3 Then
           cmd = procsyms[2]
           If DoPrint Then

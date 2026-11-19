@@ -1915,7 +1915,8 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                 LastBgPid = MyProcess.Id                                    ' $!
                 If jobctl Then
                     ActiveProcesses.Add(MyProcess)
-                    cmdjobsinfo = sharedmem!history[sharedmem!historycurrent - 1]
+                    cmdjobsinfo = Trim(InBufferRaw)                         ' the line being run, the history only has typed lines
+                    If cmdjobsinfo = "" Then cmdjobsinfo = sharedmem!history[sharedmem!historycurrent - 1]
                     sharedmem["pid.p" & MyProcess.id & "a" & Application.id] = Str(MyProcess.id) & "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & cmdjobsinfo & "\n"
                 Endif
             Endif
@@ -3565,8 +3566,8 @@ Public Sub DoBlock(EndBlk As String[])
     End With
 
 Catch
-    Dim errormsg As String = "DoBlock Error : " & Error.text & " : " & Error.where
-    gshlogging(User.home &/ "vars/gsh.log", errormsg)
+    Dim errormsg As String = "DoBlock Error : " & Error.text
+    gshlogging(User.home &/ "vars/gsh.log", errormsg & " : " & Error.where)   ' the log keeps where it happened
     Error.Raise(errormsg)
 
 End
