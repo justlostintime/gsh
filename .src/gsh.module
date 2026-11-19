@@ -61,6 +61,7 @@ Public InLineCommand As String = ""
 Public VarCommandSource As String = ""
 Public LocalFunRun As String = ""
 Public cmdLineParameters As String[]                                       ' the arguments only, $1 ... $n
+Public LastBgPid As Integer = 0                                          ' $! : the process id of the last background job, 0 none yet
 Public ArgZero As String = "gsh"                                           ' $0 : the script file, the variable run by -f, or gsh
 Public NoWriteOnExit As Boolean = False
 Public bHelpListing As Boolean = False                                       ' display the manual
@@ -1562,6 +1563,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
         NewTask = New Localtask(sObject, Method, Parms)
         SetLastStatus(0)
         Wait 0
+        LastBgPid = NewTask.Handle                          ' $!, the task has its process once the event loop ran
         Return True
     Endif
 
@@ -1635,14 +1637,12 @@ Public Sub _unknown(...)
 End
 
 Private CompileResult As String = ""
-Private CompilerOutput As String = ""
 Private Const chdirextern As String = "Extern chdir(Dest As String) As Integer In \"libc:6\""
 Private execprog As String = ""          ' the last executed gbs script
 
 Public Sub ProcessProg(Optional NoWait As Boolean = False)
     'Dim ProgramCommand, Result As String
 
-    Dim MyProg As File
     Dim MyProcess As Process
     Dim Program As String = ""
     Dim ProgPart1 As String = ""
@@ -1650,10 +1650,6 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     Dim sinsert As String
     'Dim prop As String
     ' Dim ProjectDirectory As String
-    Dim eCmd As String[]
-    Dim execline As String
-    Dim StartCopy As Integer
-    Dim EndCopy As Integer
     Dim cmdjobsinfo As String
     '  Dim Result As String
 
@@ -1799,7 +1795,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         Dim sKillScript As String = ""
         If NoWait Then
             Inc BgScriptCount
-            sScriptFile = Temp("gsh_bg" & BgScriptCount) & ".gsh"
+            sScriptFile = Temp("gsh_bg" & BgScriptCount)          ' the work file ScripterExecute writes for this name
             sKillScript = "Try Kill " & Quote(sScriptFile) & "\n"
         Else
             sScriptFile = Temp("gsh_") & ".gsh"
@@ -1843,15 +1839,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
                 Try LastStatus = CInt(CompileResult)          ' the program ends with quit process.lastvalue, a compile error is not 0
                 CheckScriptError()
                 If compileResult <> 0 Then
-                    Dim sKeywordHint As String = ""
-                    For Each err As CompileErrorMsg In ScriptCompileErrors
-                        ScriptErrorFound = True             ' only a compile error, compileResult is also the exit code of a command
-                        Print err.text
-                        If sKeywordHint = "" Then sKeywordHint = KeywordCommandHint(program, err.LineNumber)
-                    Next
-                    Dim sGroupHint As String = CommandGroupHint(program)
-                    If sGroupHint <> "" Then Print sGroupHint
-                    If sKeywordHint <> "" Then Print sKeywordHint
+                    ReportCompileErrors(program)
                 Else If jobctl Then
                     Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
                 Endif
@@ -1864,123 +1852,27 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
 
             Endif
 
-            Try MyProg = Open ScriptName For Write Create
-            If Not Error Then
-                'Try rWrite(MyProg.handle, CPointer(program), Len(program))
-                Try Write #MyProg, program, program.len
-                If Not Error Then
-                    Close MyProg
-                    If DoTrace Then
-                        For Each sdf As String In Split(program, "\n", "\"\"")
-                            Error "(Trace "; Now; ") "; ("Execute External "); ": "; sdf
-                        Next
-                    Endif
-
-                    CompileResult = ""
-                    CompilerOutput = ""
-                    eCmd = ["/usr/bin/gbs3", "-b", "-T", ScriptName]
-
-                    Try Exec ecmd Wait For Read As "compileread"
-
-                    If CompileResult <> "" And Left(Compileresult, 5) <> "Class" And If Error Or CompileResult <> "" Then
-                        If Error Then
-                            Error "Generated Script ="; ScriptName;; ":";; Error.text
-                        Else
-                            Dim errtemp As String[] = Split(CompileResult, ":\n", "\"\"", True, True)
-                            Dim errline As Variant = errtemp[1]
-                            If Not IsNumber(errline) Then
-                                Error CompileResult
-                            Else
-                                Error "Gsh Error in "; ScriptName;; ":";;
-                                For ii As Integer = 4 To errtemp.max
-                                    Print errtemp[ii];;
-                                Next
-                                errtemp = Split(CompilerOutput, "\n", "\"\"", False, True)
-                                Dim errstart As Integer = errtemp.Find("' Gambas Module File", gb.IgnoreCase)
-                                Print ":In:";;
-                                Print errtemp[errline + errstart - 1]
-                            Endif
-                        Endif
-                        ScriptErrorFound = True
-                        ExecBuffer = ""
-                        ReturnOutputTo = ""
-                        LinkTable.clear()
-                        ContainsGlobal = False
-                        Return
-                    Endif
-                    'If DoTrace Then ecmd.Add("-t", TraceLevel)
-                    eCmd = ["/usr/bin/gbs3", "-T", ScriptName]
-                    eCmd.Insert(cmdLineParameters)
-                    If nowait Then
-                        Try MyProcess = Exec ecmd As "SysProc"
-                        If Error Then
-                            Error "Generated Script ="; ScriptName;; ":";; Error.text
-                            ExecBuffer = ""
-                            ReturnOutputTo = ""
-                            LinkTable.clear()
-                            ContainsGlobal = False
-                            Return
-                        Endif
-
-                        If MyProcess <> Null And If jobctl Then
-                            ActiveProcesses.Add(MyProcess)
-                            execline = Split(execbuffer, "\n", "", True)[0]
-                            StartCopy = InStr(execline, "EXEC [", 0, gb.IgnoreCase)
-                            If StartCopy > 0 Then Startcopy += 6 ' len of search string
-                            EndCopy = InStr(execline, "] with", 0, gb.ignorecase)
-                            If Endcopy > 0 Then
-                                cmdjobsinfo = sharedmem!history[sharedmem!historycurrent - 1] 'Mid(execline, StartCopy, endcopy - startcopy)
-                            Else
-                                cmdjobsinfo = sharedmem!history[sharedmem!historycurrent - 1] 'execline
-                            Endif
-                            sharedmem["pid.p" & MyProcess.id & "a" & Application.id] = Str(MyProcess.id) & "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & cmdjobsinfo & "\n"
-
-                            '"sharedmem[\"pid.p\" & mProc" & BaseName & Str(i) & ".id]= str(mProc" & BaseName & Str(i) & ".id)&\"|\"& format(now,\"mm/dd/yyyy hh:nn:ss.uu\")& \"|\" & " & cmdjobsinfo & "\n"
-                        Endif
-                    Else
-                        Try MyProcess = Exec ecmd With getenv() As "SysProc"
-                        If Not Error Then
-                            RunningProcess = MyProcess
-                            If jobctl Then RunningProcessStart = Now
-                            MyProcess.Wait()
-                            LastStatus = MyProcess.Value
-                            CheckScriptError()
-                            If jobctl Then
-                                Error "Start="; Format(RunningProcessStart, "mm/dd/yyyy hh:nn:ss.uu"), "End="; Format(Now, "mm/dd/yyyy hh:nn:ss.uu"), "Duration="; (Now - RunningProcessStart) * 100000
-                            Endif
-                            RunningProcess = Null
-                        Endif
-                    Endif
-                Else
-                    Close myprog
+            ' a background program : the library compiles it here and starts gbr3 without waiting,
+            ' gsh -> gbr3 -> command, no gbs3. Its own name keeps its archive apart from the next line's.
+            Dim vJob As Variant = ScripterExecute(File.Name(ScriptName), program, [], cmdLineParameters, True)
+            If TypeOf(vJob) <> gb.Object Or If Not (vJob Is Process) Then
+                ReportCompileErrors(program)                       ' a compile error, reported like a foreground line
+                If Not ScriptErrorFound Then
+                    ScriptErrorFound = True
+                    Error "Gsh Error : background program did not start, code "; vJob
+                Endif
+            Else
+                MyProcess = vJob
+                Object.Attach(MyProcess, Classes["gsh"], "SysProc")       ' SysProc_Kill reports the end of the job
+                LastBgPid = MyProcess.Id                                    ' $!
+                If jobctl Then
+                    ActiveProcesses.Add(MyProcess)
+                    cmdjobsinfo = sharedmem!history[sharedmem!historycurrent - 1]
+                    sharedmem["pid.p" & MyProcess.id & "a" & Application.id] = Str(MyProcess.id) & "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & cmdjobsinfo & "\n"
                 Endif
             Endif
         Else
             compileScript = program
-        Endif
-    Else
-        'ProgramCommand = "gbs3 -e " & "'" & ExecBuffer & "'"
-        Dim cmd As String[] = ["/usr/bin/gbs3", "-e", ExecBuffer]
-        cmd.Insert(cmdLineParameters)
-        'Shell ProgramCommand Wait
-        If Not CompileOnly Then
-            If ReturnOutputTo <> "" Then
-                'MyProcess = Exec cmd With SharedMem["env"] For Read As "SystemRead"
-                MyProcess = Exec cmd With getenv() For Read As "SystemRead"
-            Else
-                MyProcess = Exec cmd With getenv()
-                'MyProcess = Exec cmd With SharedMem["env"]
-            Endif
-
-            If Not nowait Then
-                RunningProcess = MyProcess
-                If jobctl Then RunningProcessStart = Now
-                MyProcess.Wait()
-                LastStatus = MyProcess.Value
-                RunningProcess = Null
-            Endif
-        Else
-            compilescript = execbuffer
         Endif
     Endif
 
@@ -1998,18 +1890,17 @@ Catch
 
 End
 
-Public Sub compileread_read()
+Private Sub ReportCompileErrors(program As String)      ' the compile errors of the last ScripterExecute, with hints
 
-    Dim sLine As String
-
-    Read #Last, sLine, -256
-    CompilerOutput &= sLine
-
-End
-
-Public Sub compileread_error(Err As String)
-
-    CompileResult &= err
+    Dim sKeywordHint As String = ""
+    For Each err As CompileErrorMsg In ScriptCompileErrors
+        ScriptErrorFound = True             ' only a compile error, compileResult is also the exit code of a command
+        Print err.text
+        If sKeywordHint = "" Then sKeywordHint = KeywordCommandHint(program, err.LineNumber)
+    Next
+    Dim sGroupHint As String = CommandGroupHint(program)
+    If sGroupHint <> "" Then Print sGroupHint
+    If sKeywordHint <> "" Then Print sKeywordHint
 
 End
 
@@ -2020,7 +1911,7 @@ Public Sub SysProc_kill()
         Return
     Endif
 
-    For i As Integer = ActiveProcesses.Max To 0
+    For i As Integer = ActiveProcesses.Max To 0 Step -1
         Select Case ActiveProcesses[i].state
             Case Process.Crashed
                 sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Crashed]\n")
@@ -2036,7 +1927,7 @@ Public Sub SysProc_kill()
                 ActiveProcesses.remove(i)
 
             Case Process.stopped
-                sharedmem["pid.p" & ActiveProcesses[i].id & "a" & "Application.id&"] &= " |" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Stopped]\n")
+                sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Stopped]\n")
                 Error ("Job pid="); ActiveProcesses[i].id;; ("Complete")
                 ActiveProcesses.remove(i)
 
@@ -4201,8 +4092,8 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
                         syms[tCount] = "Args.All.Copy(1, Args.Count - 1).Join(\" \")"
                     Else If Syms[tCount] = "$@"                           ' $1 ... $n as a list
                         syms[tCount] = "Args.All.Copy(1, Args.Count - 1)"
-                    Else If Syms[tCount] = "$!"                          ' return the current pid of background task
-                        syms[tCount] = "application.id"
+                    Else If Syms[tCount] = "$!"                          ' the last background job, empty when none or in a compiled program
+                        syms[tCount] = IIf(CompileOnly Or LastBgPid = 0, "\"\"", Str(LastBgPid))
                     Else If Syms[tCount] = "$GID" Then
                         syms[tCount] = "User.group"
                     Else If Syms[tCount] = "$UID" Then

@@ -479,8 +479,8 @@ Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' repla
                     newsyms.Add("(IIf(SharedMem.Exist(\"laststatus\"), SharedMem[\"laststatus\"], 0))")
                 Case "$$"  ' insert the curent pid
                     newsyms.Add(Application.id)
-                Case "$!"
-                    newsyms.Add("(Application.id)")
+                Case "$!"                                          ' the last background job, empty when none or in a compiled program
+                    newsyms.Add(IIf(gsh.CompileOnly Or gsh.LastBgPid = 0, "\"\"", CStr(gsh.LastBgPid)))
                 Case "$UID"
                     newsyms.Add("(User.id)")
                 Case "$GID"

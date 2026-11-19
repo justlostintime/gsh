@@ -1456,6 +1456,13 @@ This is the command used to display the help text information(less -c)
 This will substitute the process id of the running gsh or script, the same
 as application.id
 
+#### \$!
+
+The process id of the last background job started with **&**, empty
+when no job has been started yet. It is the id **jobs** lists for that
+job: the program running the command line, or the task running a local
+sub. In a program made with **compile** it is always empty.
+
 #### \$?
 
 The exit code of the last command line, 0 when it worked, see **!\>**

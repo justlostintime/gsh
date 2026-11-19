@@ -169,6 +169,7 @@
  $@         The parameters $1 to $n as a list, separate arguments on a cli line
  $?         The exit code of the last command line, 0 when it worked
  $$         The process id of the running gsh or script, the same as application.id
+ $!         The process id of the last background job started with &, empty if none
  $UID       The user id, the same as user.id
  $GID       The group id, the same as user.group
  $result    This reserved variable will have the returned value after each
