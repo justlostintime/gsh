@@ -529,6 +529,13 @@ as a Class with the Public variables inside it:
 ```
   edit     ' with no parameters allows to change the last block of code entered
 ```
+edit can also be typed before the block is finished. The editor gets every
+line typed so far. When it closes, the edited lines are shown with the prompt
+and indent as they are read, as if typed. If the block is complete it runs, if
+not, the prompt waits at the indent of the open block for the rest of it.
+
+Ctrl-C while typing a line drops that line. Inside a block it leaves the whole
+block.
 ### gsh Command Line Parameters
 ```
   -h --help Displays the list of options.
