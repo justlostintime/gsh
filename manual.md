@@ -2097,8 +2097,10 @@ careful not to run 'run this way, as an infinite loop will result...
 
 #### Quit
 
-End of execution or close gsh session. Gsh shells/scripts return values
-in global variables.
+End of execution or close gsh session. quit nn, like Quit nn in Gambas, ends
+the script or the session with the exit code nn, so a script can tell the
+program that ran it that it failed. quit alone, and exit, give 0. Gsh
+shells/scripts can also return values in global variables.
 
 
 #### alias text substitution of values before evaluation
@@ -2195,7 +2197,7 @@ Because a quoted parameter loses its quotes, a string value must be
 written with escaped quotes inside the string, "\"one\"". A parameter
 that is more than one string, such as "one" & "!", is put in as written.
 
-#### compile or program \<Output Script Name\>
+#### compile or program \<Output Script Name\> \[Output Directory\]
 
 This will not execute the script entered but will produce an executable
 Gambas script.
@@ -2205,7 +2207,11 @@ The script is standalone and may be executed directly. Its first line is
 it with gb.scripter, gbs3 is not needed. Scripts compiled by older
 versions start with #!/usr/bin/env gbs3 and still need gbs3.
 
-The default program name if not specified is \~/bin/script.out
+The name is the name of the executable only, not a path. It is written to
+the directory given as the second parameter, \~/bin when there is none, so
+compile nntest writes \~/bin/nntest and compile nntest ./tools writes
+./tools/nntest. The directory must exist. The default program name if not
+specified is \~/bin/script.out
 
 The mode is changed to executable as well.
 
