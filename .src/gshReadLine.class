@@ -35,6 +35,7 @@ Extern rl_free_line_state() In "libreadline"
 Extern rl_cleanup_after_signal() In "libreadline"
 Extern rl_reset_after_signal() In "libreadline"
 Extern rl_on_new_line() As Integer In "libreadline"
+Extern rl_clear_visible_line() As Integer In "libreadline"
 
 Public DoTrace As Boolean
 Public DefaultPrompt As String
@@ -287,6 +288,33 @@ Public Sub LineHandler(pLine As Pointer)
     $pLine = pLine
     $bLineDone = True
     rl_callback_handler_remove()
+
+End
+
+'' Print a message, a job that ended, without mixing it into the line being typed : while the prompt waits
+'' the prompt and the typed text are wiped, the message printed and they are drawn again below it,
+'' with the cursor where it was. Otherwise it is printed as usual.
+Public Sub Notify(sMsg As String, Optional bStdErr As Boolean = True)
+
+    If Not $AtPrompt Then
+        If bStdErr Then
+            Error sMsg
+        Else
+            Print sMsg
+        Endif
+        Return
+    Endif
+
+    rl_clear_visible_line()                    ' the prompt and the typed text, also when wrapped
+    Flush
+    If bStdErr Then
+        Error sMsg
+    Else
+        Print sMsg
+        Flush
+    Endif
+    rl_on_new_line()
+    rl_forced_update_display()
 
 End
 

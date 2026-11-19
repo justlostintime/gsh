@@ -2035,10 +2035,21 @@ Private Sub ReportCompileErrors(program As String)      ' the compile errors of 
 
 End
 
+'' A message about a background job, it can come while the prompt waits for a line (see gshReadLine.Notify)
+Private Sub JobMessage(sMsg As String)
+
+    If getline <> Null Then
+        getline.Notify(sMsg)
+    Else
+        Error sMsg
+    Endif
+
+End
+
 Public Sub SysProc_kill()
 
     If ActiveProcesses.count = 0 Then
-        If jobctl Then Error "Complete pid="; RunningProcess.id; " State="; Process.LastState;; "Value="; Process.LastValue
+        If jobctl Then JobMessage("Complete pid=" & RunningProcess.id & " State=" & Process.LastState & " Value=" & Process.LastValue)
         Return
     Endif
 
@@ -2046,7 +2057,7 @@ Public Sub SysProc_kill()
         Select Case ActiveProcesses[i].state
             Case Process.Crashed
                 sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Crashed]\n")
-                Error ("Job pid="); ActiveProcesses[i].id;; ("Crashed")
+                JobMessage(("Job pid=") & ActiveProcesses[i].id & " " & ("Crashed"))
                 ActiveProcesses.remove(i)
 
             Case Process.Running
@@ -2054,16 +2065,16 @@ Public Sub SysProc_kill()
 
             Case Process.Signaled
                 sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Signaled]\n")
-                Error ("Job pid="); ActiveProcesses[i].id;; ("Signaled")
+                JobMessage(("Job pid=") & ActiveProcesses[i].id & " " & ("Signaled"))
                 ActiveProcesses.remove(i)
 
             Case Process.stopped
                 sharedmem["pid.p" & ActiveProcesses[i].id & "a" & Application.id] &= "|" & Format(Now, "mm/dd/yyyy hh:nn:ss.uu") & "|" & ActiveProcesses[i].value & ("|[Complete]\n")      ' Process.Stopped : it ended
-                Error ("Job pid="); ActiveProcesses[i].id;; ("Complete")
+                JobMessage(("Job pid=") & ActiveProcesses[i].id & " " & ("Complete"))
                 ActiveProcesses.remove(i)
 
             Default
-                Error "Job pid="; ActiveProcesses[i].id;; ("New State");; ActiveProcesses[i].state
+                JobMessage("Job pid=" & ActiveProcesses[i].id & " " & ("New State") & " " & ActiveProcesses[i].state)
         End Select
     Next
 
