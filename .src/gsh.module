@@ -1932,12 +1932,16 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
         Program &= "Public sub application_signal(sigtype as integer)\nif sigtype = 2 then\n'print \"Task Exit forced\"\n"
             "quit 0\nelse if sigtype = 15 then\ntry exec [\"pkill\", \"-TERM\", \"-P\", cstr(application.id)] wait\nquit 143\n"
             "endif \nend\n"
+        ' a background program ignores SIGINT, and so do the commands it starts : Ctrl-C in the terminal goes to every
+        ' process of gsh's process group, the background jobs too. Like bash without job control, only the
+        ' foreground is stopped. kill $! sends SIGTERM and still ends a job
+        Dim sIntSignal As String = IIf(NoWait, "signal[2].ignore", "signal[2].catch")
         ' signal 13 (SIGPIPE) is ignored: writing into a pipe command that has already exited
         ' (echo x | true) then gives an error the generated Try catches, instead of killing the program
         If bSingleUse Then
-            Program &= "Public Sub Main()\n" & sKillScript & "try chdir(env[\"PWD\"])\n signal[2].catch\nsignal[15].catch\nsignal[13].ignore\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
+            Program &= "Public Sub Main()\n" & sKillScript & "try chdir(env[\"PWD\"])\n" & sIntSignal & "\nsignal[15].catch\nsignal[13].ignore\nSharedMem.Begin(" & BlockSize & ")\nwith Sharedmem\n"
         Else
-            Program &= "Public Sub Main()\n" & sKillScript & "try chdir(env[\"PWD\"])\nsignal[2].catch\nsignal[15].catch\nsignal[13].ignore\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
+            Program &= "Public Sub Main()\n" & sKillScript & "try chdir(env[\"PWD\"])\n" & sIntSignal & "\nsignal[15].catch\nsignal[13].ignore\nSharedMem.BeginNamed(\"" & DefaultSharedMem & "\"," & BlockSize & ")\nwith Sharedmem\n"
         Endif
         Program &= ExecBuffer
         ' temp remove quit with value, it really needs it though

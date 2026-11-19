@@ -2459,7 +2459,8 @@ Returns 'true' if read, 'false' otherwise.\
 
 Turns Job Control ON or OFF Default is OFF.\
 Lists the background jobs of this gsh, and of gsh sessions that have ended, or the requested PID.\
-Jobs that are no longer running are removed after they are listed.
+Jobs that are no longer running are removed after they are listed.\
+-list numbers the running jobs, -wait waits for them, see Job control.
 
 #### lclass \<GlobalClassname\> - Prints a list of global classes.
 
@@ -2662,8 +2663,22 @@ background and collect statistics about the jobs execution time.
 - `jobs -keep` Lists them without removing any
 - `jobs -any` Also lists the jobs of the other gsh sessions that are running
 - `jobs -table` Returns the list as a collection instead of printing it
+- `jobs -list` Lists the running jobs of this gsh, numbered, with the pid and the command line cut to 20 characters
+- `jobs -wait index|pid ...` Waits until the jobs end, then shows them. An index is a number `jobs -list` shows,
+  a pid can be any process. With none it shows the list and asks which one, Enter waits for all of them.
+  Ctrl-C stops waiting, the jobs keep running. `wait` itself is a Gambas keyword, so it is an option of jobs.
 
 Entries are only recorded while job control is on, jobs lists and removes them whether it is on or off.
+
+Ctrl-C stops the command running in the foreground only. Background jobs ignore it, as do the commands
+they start, and keep running. To stop one use `!kill pid` or `!kill $!`.
+```
+>> jobs -list
+  1   666772 !sleep 20 &
+  2   666785 !sleep 40 && echo a ~
+>> jobs -wait 1
+666772 11/19/2026 10:21:18.450 11/19/2026 10:21:38.484 [Complete] result=0 Duration=20.034s !sleep 20 &
+```
 
 Output looks like this after a job completes in foreground
 ```

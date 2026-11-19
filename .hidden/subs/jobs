@@ -14,16 +14,22 @@ Sub jobs(...) As Variant
 ''                  -Keep Keep information after reporting
 ''                  -Table return a table of the jobs, [state, [pid, start, command, end, value, state]]
 ''                  -Any also list the jobs of the other gsh sessions that are running
+''                  -List list the running jobs of this gsh, numbered, with pid and command line
+''                  -Wait [index|pid] ... wait until the jobs end, then show them. An index is the number
+''                        -List shows, a pid can be any process. With none -Wait shows the list and asks
+''                        which one, Enter waits for all of them. Ctrl-C stops waiting, the jobs keep running
 ''                  Default setting is job control off
 ''          job info can be accessed by Process
 ''		    using sharedmem["pid.p[processid]a[gsh pid]"] example sharedmem["pid.p98765a98700"]
-Dim Parms As New Parseparms(param.all, ["on": True, "off": True, "any": True, "all": True, "table": True, "keep": True], "Jobs")
+Dim Parms As New Parseparms(param.all, ["on": True, "off": True, "any": True, "all": True, "table": True, "keep": True, "list": True, "wait": True], "Jobs")
 Dim Jobctl As Object
 Dim cTable As New Collection
 Dim Keep As Boolean = False
 Dim Table As Boolean = False
 Dim Any As Boolean = False
 Dim DoPrint As Boolean = True
+Dim DoList As Boolean = False
+Dim DoWait As Boolean = False
 
 With sharedmem
     For Each Entry As Variant In Parms.Parms
@@ -49,10 +55,21 @@ With sharedmem
           Keep = True
         Case "ANY", "ALL"
           Any = True
+        Case "LIST"
+          DoList = True
+        Case "WAIT"
+          DoWait = True
         Default
           error.raise("Invalid jobs parameter " & Upper(Parms.Parms.key))
       End Select
     Next
+
+    If DoWait Then Return WaitJobs(Parms.Values, Any)
+    If DoList Then
+      If RunningJobs(Any).Count = 0 Then Print "No running jobs"
+      ListRunning(Any)
+      Return True
+    Endif
 
     If Parms.Values.count > 0 Then                  ' asked about a specific pids, just process them
        For Each varname As String In parms.values
@@ -88,15 +105,7 @@ With sharedmem
         sState = "[Exited]"                                     ' it ended without its end being recorded
       Endif
 
-      If DoPrint Then
-        Print aJob[0];; aJob[1];; "\x1b[33m";
-        If aJob[3] <> "" Then
-          Print aJob[3];; "\x1b[32m"; sState; "\x1b[33m result="; aJob[4];; "Duration="; Duration(aJob[1], aJob[3]);;
-        Else
-          Print Space(23);; "\x1b[31m"; sState; "\x1b[33m";;
-        Endif
-        Print "\x1b[0m"; aJob[2]
-      Endif
+      If DoPrint Then PrintJob(aJob, sState)
       If Table Then cTable.Add([Mid(sState, 2, -1), aJob], s.symname)
       If Not Keep And If Not bRunning Then aListed.Add(s.symname)
     Next
@@ -116,6 +125,137 @@ Endif
 
 Catch
    error.raise("Jobs Error: " & error.text & error.where)
+
+End
+
+' one line of the listing
+Private Sub PrintJob(aJob As String[], sState As String)
+
+  Print aJob[0];; aJob[1];; "\x1b[33m";
+  If aJob[3] <> "" Then
+    Print aJob[3];; "\x1b[32m"; sState; "\x1b[33m result="; aJob[4];; "Duration="; Duration(aJob[1], aJob[3]);;
+  Else
+    Print Space(23);; "\x1b[31m"; sState; "\x1b[33m";;
+  Endif
+  Print "\x1b[0m"; aJob[2]
+
+End
+
+' the state of a job entry, as the listing shows it
+Private Sub JobState(aJob As String[]) As String
+
+  If aJob[3] <> "" Then Return IIf(aJob[5] <> "" And aJob[5] <> "[Stopped]", aJob[5], "[Complete]")
+  If IsRunning(aJob[0]) Then Return "[Running]"
+  Return "[Exited]"
+
+End
+
+' the running jobs started from a gsh command line, oldest first, each [pid, start, command, entry name].
+' The entries of the commands a job starts are left out, their entry has no newline (see ParseEntry)
+Private Sub RunningJobs(bAny As Boolean) As Variant[]
+
+  Dim aKeys As New String[]
+  Dim cJobs As New Collection
+  Dim aList As New Variant[]
+
+  For Each s As SharedMemSymbol In SharedMem.SymbolTable
+    If Left(s.symname, 5) <> "pid.p" Then Continue
+    Dim sOwner As String = Mid(s.symname, RInStr(s.symname, "a") + 1)
+    If Not bAny And If sOwner <> CStr(application.id) Then Continue
+    Dim sEntry As String = SharedMem[s.symname]
+    If InStr(sEntry, "\n") = 0 Then Continue
+    Dim aJob As String[] = ParseEntry(sEntry)
+    If aJob[3] <> "" Or If Not IsRunning(aJob[0]) Then Continue
+    Dim sKey As String = aJob[0]
+    Try sKey = Format(CDate(aJob[1]), "yyyymmddhhnnss.uuu") & "|" & aJob[0]
+    aKeys.Add(sKey)
+    cJobs[sKey] = [aJob[0], aJob[1], aJob[2], s.symname]
+  Next
+  aKeys.Sort()
+  For Each sKey In aKeys
+    aList.Add(cJobs[sKey])
+  Next
+  Return aList
+
+End
+
+' print the running jobs numbered : index, pid, command line cut to 20 characters
+Private Sub ListRunning(bAny As Boolean)
+
+  Dim aList As Variant[] = RunningJobs(bAny)
+
+  For i As Integer = 0 To aList.Max
+    Dim sCmd As String = aList[i][2]
+    If Len(sCmd) > 20 Then sCmd = Left(sCmd, 19) & "~"
+    Print Format(i + 1, "##0");; Format(aList[i][0], "#######0");; sCmd
+  Next
+
+End
+
+' wait for the jobs given as an index of the running list or a pid, then show them. With none show the list
+' and ask, Enter waits for all. Ctrl-C (system_break) stops waiting
+Private Sub WaitJobs(aWhich As String[], bAny As Boolean) As Boolean
+
+  Dim aList As Variant[] = RunningJobs(bAny)
+  Dim aPids As New String[]
+  Dim sAnswer As String
+
+  If aWhich.Count = 0 Then
+    If aList.Count = 0 Then
+      Print "No running jobs"
+      Return True
+    Endif
+    ListRunning(bAny)
+    Print "Wait for (index or pid, Enter for all) : ";
+    Flush
+    Line Input sAnswer
+    aWhich = Split(Trim(sAnswer), " ,", "", True)
+    If aWhich.Count = 0 Then
+      For Each vJob As Variant In aList
+        aPids.Add(vJob[0])
+      Next
+    Endif
+  Endif
+
+  For Each sOne As String In aWhich
+    If Not IsInteger(sOne) Then Error.Raise("Not an index or pid : " & sOne)
+    Dim iOne As Integer = CInt(sOne)
+    If iOne >= 1 And If iOne <= aList.Count Then
+      aPids.Add(aList[iOne - 1][0])                         ' an index of the running list
+    Else If IsRunning(sOne) Then
+      aPids.Add(sOne)
+    Else If Not SharedMem.Exist("pid.p" & sOne & "a" & application.id) Then
+      Error.Raise("No running job " & sOne)
+    Else
+      aPids.Add(sOne)                                         ' it ended already, show it
+    Endif
+  Next
+
+  Dim bWaiting As Boolean = True
+  While bWaiting And Not system_break
+    bWaiting = False
+    For Each sPid As String In aPids
+      If IsRunning(sPid) Then bWaiting = True
+    Next
+    If bWaiting Then Wait 0.1                                ' events run : Ctrl-C and the end of the jobs are seen
+  Wend
+  If system_break Then
+    Print "Stopped waiting, the jobs are still running"
+    Return False
+  Endif
+  Wait 0.1                                                    ' gsh records the end of a job in its Kill event
+
+  For Each sPid In aPids
+    Dim sName As String = "pid.p" & sPid & "a" & application.id
+    If SharedMem.Exist(sName) Then
+      Dim aJob As String[] = ParseEntry(SharedMem[sName])
+      PrintJob(aJob, JobState(aJob))
+    Else
+      Print sPid;; "ended"
+    Endif
+  Next
+  SharedMem["result"] = "OK"
+  Return True
 
 End
 
