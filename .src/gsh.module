@@ -2217,7 +2217,6 @@ Private Sub ShowEditedLine(sLine As String)
     Endif
 
     If Not getline.isTerminal Then Return
-    Print
     getline.WritePrompt(SetBlockIndent())
     If SharedMem["usehighlight"] Then
         Print ConsoleHighlight.ToANSI(sLine)
