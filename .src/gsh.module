@@ -1179,7 +1179,16 @@ Public Sub Main()
 
         If SharedMem["subsversion"] <> $version Then         ' the cached subs and classes were compiled by another gsh version
             Try SharedMem.Free("sub.update")                    ' update itself must be the installed one
-            Error Subst(("gsh &1 is installed, the cached subs and classes are from &2\nRun update to load the new ones\n\n"), $version, IIf(SharedMem["subsversion"] = "", ("an earlier version"), SharedMem["subsversion"]))
+            Dim sNew As String = $version
+            Dim sOld As String = SharedMem["subsversion"]
+            If sOld = "" Then
+                sNew = ShortVersion(sNew)
+                sOld = ("an earlier version")
+            Else If ShortVersion(sNew) <> ShortVersion(sOld) Then
+                sNew = ShortVersion(sNew)                    ' 1.8.5 as gsh -V shows it, the build number only when it is the difference
+                sOld = ShortVersion(sOld)
+            Endif
+            Error Subst(("gsh &1 is installed, the cached subs and classes are from &2\nRun update to load the new ones\n\n"), sNew, sOld)
         Endif
 
         If Exist(User.home &/ "vars/profile.gsh.new") And If SharedMem["newprofile"] = False Then
@@ -1361,6 +1370,15 @@ Private Sub JobRunning(sPid As String) As Boolean
     If Error Then Return False
     sStat = Trim(Mid(sStat, RInStr(sStat, ")") + 1))   ' pid (name) state ...
     Return Not (sStat Begins "Z" Or sStat Begins "X")
+
+End
+
+'' The first three numbers of a version, 1.8.5 for 1.8.5.1
+Private Sub ShortVersion(sVersion As String) As String
+
+    Dim aParts As String[] = Split(sVersion, ".")
+    If aParts.Count <= 3 Then Return sVersion
+    Return aParts.Copy(0, 3).Join(".")
 
 End
 
