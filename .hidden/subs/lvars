@@ -23,7 +23,7 @@ endif
 dim sortlist as string[] = .Variables("*")       ' names as this session sees them, its own private path as path
 sortlist.sort(gb.ignorecase)
 for each ss as string in sortlist
-    if dumpall or if not (ss like "sub.*" or ss like "class.*" or ss like "struct.*") then
+    if dumpall or if not (ss like "sub.*" or ss like "class.*" or ss like "struct.*" or ss like "pid.p*") then   ' pid.p<job>a<gsh> are job entries, jobs lists them
         if varname <> ""  and if not (ss like varname) then continue
         if not .exist(ss) then continue
         dim vValue as variant = .[ss]
