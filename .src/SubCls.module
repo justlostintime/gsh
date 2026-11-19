@@ -189,7 +189,9 @@ Public Function CompileIt(sname As String, SourceFile As String, Optional Compil
         If Not CompileOnly Then
             Component.Load(sArchive)
             cobject.iClass = Class.Load(sname)
-            cobject.iObject = cobject.iClass.New()
+            ' a sub is run through an instance of its class. A class is only loaded, the code that uses it
+            ' makes its objects with New and the arguments its _new wants : New() here failed for those
+            If Not IsClass Then cobject.iObject = cobject.iClass.New()
             'cObject.iChanged = False
             cObject.iIsSub = IsClass
 

@@ -120,7 +120,8 @@ Private onstartrcdate As Date = Now
 Private onexitrcdate As Date = Now
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
-Private PendingEdit As String = ""         ' edit typed inside a block : the edited text, read again once the block is dropped
+Private PendingEdit As String = ""
+Private QuitValue As Integer = 0           ' quit nn at the top level of a script or the prompt : gsh exits with nn         ' edit typed inside a block : the edited text, read again once the block is dropped
 Private EchoBuffer As Boolean = False      ' the buffer being read is edited text : show each line as if typed
 Private DoAlias As Boolean = True
 
@@ -440,6 +441,8 @@ Private Sub RunCompiledScript()
     Endif
 
     Dim sScript As String = cmdLineParameters[0]
+    ' a relative path is from the current directory : Gambas would look for it inside gsh itself
+    If Not (sScript Begins "/") Then sScript = Application.Dir &/ IIf(sScript Begins "./", Mid(sScript, 3), sScript)
     Dim aScriptArgs As String[] = cmdLineParameters.Copy(1, cmdLineParameters.Count - 1)
     Dim vResult As Variant = ScripterRun(sScript, [], aScriptArgs)
 
@@ -1115,7 +1118,7 @@ Public Sub Main()
         Wend
 
         Close AppSource
-        ExitProgram(IIf(ScriptErrorFound, 1, 0))     ' still frees the script subs and saves the image
+        ExitProgram(IIf(ScriptErrorFound, 1, QuitValue))     ' still frees the script subs and saves the image
     Endif
     getline = New GshReadLine
 
@@ -1268,7 +1271,7 @@ interactive:
 
     Wait 0.001
     '  Signal.send(0, Signal.SigKill)
-    ExitProgram()
+    ExitProgram(QuitValue)
     Quit 7
 
 Catch
@@ -1769,6 +1772,7 @@ Public Sub ExecLocal(prog As String[], Optional nowait As Boolean = False) As Bo
     Endif
     Dim bLocalError As Boolean = Error
     LocalRunningObject = ""
+    Flush                                 ' the sub's Print, before the output of the next program or command
 
     If Not bLocalError Then SetLastStatus(SubStatus(vSubReturn))   ' the error path below sets 1, after it has read Error
 
@@ -2029,6 +2033,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
 
             If gbscomponent And If Not NoWait Then
                 If jobctl Then RunningProcessStart = Now
+                Flush                                             ' gsh's own output first, the program writes directly
                 CompileResult = ScripterExecute("lambda", program, [], cmdLineParameters)
                 LastStatus = 1
                 Try LastStatus = CInt(CompileResult)          ' the program ends with quit process.lastvalue, a compile error is not 0
@@ -2049,6 +2054,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
 
             ' a background program : the library compiles it here and starts gbr3 without waiting,
             ' gsh -> gbr3 -> command, no gbs3. Its own name keeps its archive apart from the next line's.
+            Flush
             Dim vJob As Variant = ScripterExecute(File.Name(ScriptName), program, [], cmdLineParameters, True)
             If TypeOf(vJob) <> gb.Object Or If Not (vJob Is Process) Then
                 ReportCompileErrors(program)                       ' a compile error, reported like a foreground line
@@ -2806,7 +2812,10 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
 
         ExecBuffer &= newCmdLine & "\n"
 
-        If EndsBlock(InBufParse, EndBlk) Then Return False   ' the line is one of the endings of this block
+        If EndsBlock(InBufParse, EndBlk) Then                ' the line is one of the endings of this block
+            If EndBlk.Count = 1 And If EndBlk[0] = "QUIT" Then QuitValue = QuitCode(InBufParse)
+            Return False
+        Endif
         'Print "type="; TypeToText[Highlight.Types[0]],HTypes[0]
         Dim parsepos As Integer = 0
 
@@ -3083,17 +3092,31 @@ StartAgain:
                         ProcessProg()
                         execbuffer = ""
                         CompileOnly = False
-                        Try filename = Split(data, " ,\t", "\"", True)[1]
-                        If Error Then
-                            filename = User.home &/ "bin" &/ "script.out"
-                        Else
-                            filename = UnQuote(filename)
-                            ' compile takes the name of the executable only, it is always written to ~/bin
-                            If InStr(filename, "/") > 0 Or If filename Begins "~" Then
-                                Error ("compile takes an executable name only, not a path : ") & filename & (" , it is written to ") & User.home &/ "bin"
+                        ' compile <name> [directory] : the executable is written to the directory, ~/bin when none is given
+                        Dim aCompileArgs As String[] = Split(data, " ,\t", "\"", True)
+                        Dim sOutDir As String = User.home &/ "bin"
+                        If aCompileArgs.Count > 2 Then
+                            sOutDir = UnQuote(aCompileArgs[2])
+                            If sOutDir = "~" Or If sOutDir Begins "~/" Then
+                                sOutDir = User.Home &/ Mid(sOutDir, 2)
+                            Else If Not (sOutDir Begins "/") Then
+                                sOutDir = Env["PWD"] &/ sOutDir
+                            Endif
+                            If Not IsDir(sOutDir) Then
+                                Error ("compile : the directory does not exist : ") & sOutDir
                                 Return True
                             Endif
-                            filename = User.home &/ "bin" &/ filename
+                        Endif
+                        If aCompileArgs.Count < 2 Then
+                            filename = sOutDir &/ "script.out"
+                        Else
+                            filename = UnQuote(aCompileArgs[1])
+                            ' the name of the executable only, the directory is the second parameter
+                            If InStr(filename, "/") > 0 Or If filename Begins "~" Then
+                                Error ("compile takes an executable name, not a path : ") & filename & (" , give the directory as the second parameter : compile name directory")
+                                Return True
+                            Endif
+                            filename = sOutDir &/ filename
                         Endif
 
                         ' Report and carry on, raising here escapes the script reader loop and
@@ -3793,6 +3816,16 @@ End
 
 '' True when the raw line sLine is one of the endings in EndBlk, spaces ignored: "End If" and "ENDIF" both match
 '' "END IF" and "ENDIF"
+'' The exit code of a quit line : quit 3 gives 3, like Quit 3 in a Gambas program. quit alone, or with
+'' something that is not a whole number, gives 0
+Private Sub QuitCode(aParse As String[]) As Integer
+
+    If aParse.Count < 2 Then Return 0
+    If Not IsInteger(aParse[1]) Then Return 0
+    Return CInt(aParse[1])
+
+End
+
 Private Sub IsEndLine(sLine As String, EndBlk As String[]) As Boolean
 
     Dim sLineWords As String = Replace(Upper(Trim(sLine)), " ", "")

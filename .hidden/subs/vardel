@@ -1,25 +1,45 @@
-Sub vardel(optional varname As String = "", noerrorreport As Boolean = False) As Boolean 
+Sub vardel(...) As Boolean
 ''' Delete in memory vars/subs/classes/structs
-''VarDel globalvar - Delete a global variable, give the name without the $
-''    as function vardel("varname")
-''    as command vardel "varname"
+''VarDel globalvar, ... - Delete global variables, give the names without the $
+''    as function vardel("varname", "other", ...)
+''    as command vardel varname, other, ...  or  vardel varname other ...
+''    a last parameter True, vardel("varname", True), reports no error for a name not found
 ''    global functions have format "sub.sub"
 ''    global classes have format "class.classname"
 ''    global struct have format "struct.structname"
-''    returns true if found, false otherwise
+''    returns true if every name was found, false otherwise
 ''    $result contains the error text or "OK"
-if varname begins "$" then varname = mid(varname, 2)   ' vardel("$a") is the same as vardel a
-with sharedmem
-if varname <> "" and if .exist(varname) Then
-.free(varname)
-.["result"] = "OK"
-return true
-else
-.["result"] = "Error : \""&varname&"\" not found"
-if not noerrorreport then
-print #file.err, .["result"]
-endif
-return false
-endif
-end with
+Dim aNames As New String[]
+Dim NoErrorReport As Boolean = False
+Dim bAll As Boolean = True
+
+For Each vParm As Variant In Param.All
+  If TypeOf(vParm) = gb.Boolean Then
+    NoErrorReport = vParm
+    Continue
+  Endif
+  For Each sName As String In Split(CStr(vParm), ", ", "", True)   ' vardel a, b gives "a," and "b"
+    If sName Begins "$" Then sName = Mid(sName, 2)                  ' vardel("$a") is the same as vardel a
+    aNames.Add(sName)
+  Next
+Next
+
+With SharedMem
+  .["result"] = "OK"
+  If aNames.Count = 0 Then
+    .["result"] = "Error : no variable name given"
+    If Not NoErrorReport Then Print #File.Err, .["result"]
+    Return False
+  Endif
+  For Each sName In aNames
+    If .exist(sName) Then
+      .free(sName)
+    Else
+      bAll = False
+      .["result"] = "Error : \"" & sName & "\" not found"
+      If Not NoErrorReport Then Print #File.Err, .["result"]
+    Endif
+  Next
+End With
+Return bAll
 end

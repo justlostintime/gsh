@@ -1,0 +1,9 @@
+runtime error exit=1
+failed command exit=0
+before
+quit 3 exit=3
+quit exit=0
+exit exit=0
+quit 5 from stdin exit=5
+ok
+ok exit=0

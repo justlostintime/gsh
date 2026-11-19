@@ -1,0 +1,12 @@
+0=p.gsh
+1=a 2=b 3=c d
+#=3
+*=a b c d
+@ a
+@ b
+@ c d
+--- no args
+0=p.gsh
+1= 2= 3=
+#=0
+*=

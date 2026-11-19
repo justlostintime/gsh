@@ -1,0 +1,7 @@
+a.txt b.txt
+c.log
+a.txt
+b.txt
+d/x.txt
+nomatch*.zz
+*.txt

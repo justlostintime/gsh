@@ -1,0 +1,3 @@
+gsh: top level 'Dim x' ignored, put it in a do..done/begin..end block or use $x
+top level dim message above
+| may not follow |, a command is missing in: echo a | | cat

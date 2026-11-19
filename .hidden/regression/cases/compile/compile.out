@@ -1,0 +1,8 @@
+compile : the directory does not exist : /nonexistent/dir
+#!/usr/bin/env -S gsh -u --
+-rwxr-x--x
+COMPILED!
+line 1
+line 2
+zqprog2
+in out arg1

@@ -1,0 +1,7 @@
+from -c
+a
+B
+-c exit=4
+from stdin
+N
+from -f argone

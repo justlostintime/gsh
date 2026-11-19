@@ -768,6 +768,9 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
         CmdExec[CurrentCmd] &= ")\n"
         CmdExec[CurrentCmd] &= "\n''#" & CmdList[currentcmd].Join(" ") & "#''\n"
         Dim ExportedEnv As String = "with [\"PWD=\"&env[\"PWD\"]] "
+        ' what the program printed so far goes out before the command writes : on a pipe or a file Print is
+        ' buffered and came after the output of the commands that followed it
+        CmdExec[CurrentCmd] &= "Flush\n"
 
         If AsFunction And ReturnSet Then
             CmdExec[CurrentCmd] &= "Exec cmdBuild " & ExportedEnv
