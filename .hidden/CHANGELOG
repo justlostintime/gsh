@@ -1,3 +1,19 @@
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.3
+- Version 1.8 manual: help.info, manual.md and the wiki made consistent with gsh, new GambasShell-gsh-1.8 docx and pdf
+- $0 $1..$n $# $* $@ work as in bash, the script name is only $0, $* is joined with spaces, $@ works on cli lines
+- cli lines no longer see the parameters shifted by one ($0 was lambda.tmp)
+- $! is the process id of the last background job, it was the id of gsh
+- background programs are compiled by gb.scripter and run directly, gbs3 is no longer used
+- kill $! also stops the command the background program started
+- gsh -u runs a compiled script, compiled scripts start with #!/usr/bin/env -S gsh -u -- instead of gbs3
+- &| &|> &|< pipe stdout and stderr together
+- a misplaced pipe, && or || gives a clear error instead of Out of bounds or Unknown operator
+- jobs records the end of every background job, with several running only one was recorded
+- --single and --dictsize option names, $UID, onexit reload date check and --help spelling fixed
+- ExecProg.gbs is saved only at trace level 20
+- dbsave and dbload default to the gsh image, dbload no longer clears memory when the image file is missing
+- nerdmode has a default, the unused nerdfont variable is removed
+
 * Tue Nov 17 2026 Brian G <justlostintime@gmail.com> 1.8.3
 - more patches
 
