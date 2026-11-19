@@ -1,0 +1,22 @@
+NAME
+	VARDEL
+
+SYNOPSIS
+	Sub vardel(...) As Boolean
+	 Delete in memory vars/subs/classes/structs
+
+
+DESCRIPTION
+	VarDel globalvar, ... - Delete global variables, give the names without the $
+	    as function vardel("varname", "other", ...)
+	    as command vardel varname, other, ...  or  vardel varname other ...
+	    a last parameter True, vardel("varname", True), reports no error for a name not found
+	    global functions have format "sub.sub"
+	    global classes have format "class.classname"
+	    global struct have format "struct.structname"
+	    returns true if every name was found, false otherwise
+	    $result contains the error text or "OK"
+
+
+SEE
+	<SUBS>/vardel

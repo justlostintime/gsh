@@ -1,0 +1,17 @@
+c.txt
+b.txt
+a.txt
+b=a.txt,b.txt,c.txt,
+a=c.txt,b.txt,a.txt, b=a.txt,b.txt,c.txt,
+one
+two
+bark..a.txt
+bark..b.txt
+bark..c.txt
+Ruff!
+from source
+sink got: to sink
+/usr/bin/ls: cannot access 'nnnnvvvv': No such file or directory
+/usr/bin/ls: cannot access 'nnnnvvvv': No such file or directory
+a.txt
+/usr/bin/ls: cannot access 'nnnnvvvv': No such file or directory

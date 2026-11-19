@@ -1,0 +1,6 @@
+mgmt ran
+True
+False
+zqlv=lvars value
+zqlv                     ="lvars value"
+Error : Global variable Not found [zqlv]

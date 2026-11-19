@@ -1,0 +1,5 @@
+Update gsh <VERSION>
+Clearing all in memory subs/classes/structs, prompting to save user subs
+gsh then restarts itself for the changes to take effect
+same pid after the restart
+V=T
