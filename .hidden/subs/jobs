@@ -7,7 +7,8 @@ Sub jobs(...) As Variant
 ''          With no pid it lists the jobs of this gsh, and of gsh sessions that have ended:
 ''          running, complete or exited, with start and end time, result and duration in seconds.
 ''          Jobs that are no longer running are removed after they are listed.
-''          Entries are only recorded while job control is on.
+''          Entries are only recorded while job control is on. At its exit gsh removes its entries of
+''          jobs that have ended, a new gsh started from a terminal those of gsh sessions that crashed.
 ''          The parameters:
 ''                  -ON for turning on job control
 ''                  -OFF for turning off job control

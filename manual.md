@@ -2669,6 +2669,9 @@ background and collect statistics about the jobs execution time.
   Ctrl-C stops waiting, the jobs keep running. `wait` itself is a Gambas keyword, so it is an option of jobs.
 
 Entries are only recorded while job control is on, jobs lists and removes them whether it is on or off.
+When gsh exits it removes its entries of jobs that have ended, without listing them, the ones still running
+stay for jobs to report. A gsh that crashed or was killed leaves its entries, the next gsh started from a
+terminal (not from another gsh) removes those whose job has ended.
 
 Ctrl-C stops the command running in the foreground only. Background jobs ignore it, as do the commands
 they start, and keep running. To stop one use `!kill pid` or `!kill $!`.

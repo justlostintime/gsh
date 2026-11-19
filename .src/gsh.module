@@ -153,6 +153,7 @@ Public getline As GshReadLine
 Public EnvSync As SyncEnv
 
 Class Sharedmem
+Class SharedMemSymbol
 
 '' Set the trace level while running the script
 Public Sub settrace(setting As Boolean, Optional level As Integer = TraceLevel)    ' this function turns on the compile tracing
@@ -998,6 +999,7 @@ Public Sub Main()
 
     Try EnvSync = New SyncEnv
     If bPrivateRoot Then Try SharedMem.FreeStalePrivate()  ' copies left by root gsh sessions that crashed
+    If bPrivateRoot Then Try FreeEndedJobs(True)            ' job entries of gsh sessions that crashed or were killed
     If Error Then
         envSync = Null
     Endif
@@ -1322,6 +1324,46 @@ Private Sub CheckScriptError()
 
 End
 
+'' Free the job entries pid.p<job pid>a<gsh pid> whose job has ended : with DeadSessions False those of this gsh,
+'' at its exit, with True those of gsh sessions that are gone, left by a crash or kill -9. An entry whose job
+'' still runs stays, jobs reports it.
+Private Sub FreeEndedJobs(DeadSessions As Boolean)
+
+    Dim aFree As New String[]
+    Dim sSelf As String = CStr(Application.Id)
+
+    For Each sym As SharedMemSymbol In SharedMem.SymbolTable
+        If Left(sym.symname, 5) <> "pid.p" Then Continue
+        Dim iOwner As Integer = RInStr(sym.symname, "a")
+        If iOwner < 7 Then Continue
+        Dim sOwner As String = Mid(sym.symname, iOwner + 1)
+        If DeadSessions Then
+            If sOwner = sSelf Or If Exist("/proc/" & sOwner) Then Continue
+        Else
+            If sOwner <> sSelf Then Continue
+        Endif
+        If JobRunning(Mid(sym.symname, 6, iOwner - 6)) Then Continue
+        aFree.Add(sym.symname)
+    Next
+    For Each sName As String In aFree                  ' not while walking the table
+        Try SharedMem.Free(sName)
+    Next
+
+End
+
+'' True when the process runs : /proc has it and it is not a zombie
+Private Sub JobRunning(sPid As String) As Boolean
+
+    Dim sStat As String
+
+    If Not IsInteger(sPid) Then Return False
+    Try sStat = File.Load("/proc" &/ sPid &/ "stat")
+    If Error Then Return False
+    sStat = Trim(Mid(sStat, RInStr(sStat, ")") + 1))   ' pid (name) state ...
+    Return Not (sStat Begins "Z" Or sStat Begins "X")
+
+End
+
 Public Sub ExitNow()
 
     ReadQueue.push("QUIT")
@@ -1406,6 +1448,7 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
     Try FreeScriptSubs()                ' delete subs created by a running script
     If bPrivateRoot Then Try SharedMem.FreePrivate()   ' this tree's own path, the shared one stays
     Try HereDoc.FreeAll()               ' and the text of its here documents
+    Try FreeEndedJobs(False)            ' the job entries of this gsh whose job has ended, the running ones stay for jobs
 
     If $bTraceOwner Then Try SharedMem["DoTrace"] = False   ' -t or settrace only lasts for this gsh, other sessions and subs read it
 
