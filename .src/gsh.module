@@ -3997,6 +3997,16 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
         Return InVar
     Endif
 
+    ' a pipe or && || joins two commands, at the start of a line it was compiled as Gambas code
+    ' and gave "Unknown operator"
+    ' (no Gambas line starts with | or &&, strings and comments were handled above)
+    Dim sLead As String = Trim(InVar)
+    If sLead Begins "|" Or If sLead Begins "&&" Or If sLead Begins "&|" Then
+        For Each sLeadOp As String In ["&|<", "&|>", "&|", "|<", "|>", "||", "|", "&&"]
+            If sLead Begins sLeadOp Then Error.Raise(sLeadOp & " may not be at start of line: " & sLead)
+        Next
+    Endif
+
     If syms[0] = "EXTERN" Then
         If Not ExternTable.Exist(Trim(InVar)) Then
             ExternTable.Add(Trim(invar))

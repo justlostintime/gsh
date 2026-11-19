@@ -231,10 +231,12 @@
                       separate process rather than as an internal plugin and
                       place the output into $b global variable.
 
- |                  : | may only be used between commands not at the beginning
+ | &|               : | may only be used between commands not at the beginning
                       of a line. It denotes a pipe between tasks.
                       That is it will send the output of the task on the left
                       to the task on the right.
+                      &| pipes both stderr and stdout to the next process,
+                      the same as 2>&1 |
                       !ls > $a or just ls -1 > $a  will store the returned
                       value into the global value $a.
                       If a local variable is used it needs to be dim'd first and
@@ -341,6 +343,7 @@
                      In this example network traffic is received by NetMonitor
                      from NetConnect 1 and 2, NetMonitor's output goes to
                      netforward and cat and finally into $logger
+ &|> &|<             Same as |> |< only stderr is piped together with stdout
 
  !>                  Store the exit code of the command it follows in a
                      global variable, 0 for success. Example :

@@ -445,6 +445,8 @@ Private Sub DoProcess(source As String, Optional AsFunction As Boolean = False, 
     'Dim NextedFinals As String[]        ' this is where the generated && and || will be statcked until added to final final
 
     parseline(Source)                   ' Parse the line and set the syms and types
+    CheckPipePlacement()                ' a pipe needs a command on each side
+    StdErrPipes()                       ' &| &|> &|< become 2>&1 with | |> |<
 
     CurrentRead = 0      ' The proc to read from
     'Dim CurrentWrite As Integer = -2   ' On the first pass we dont know where to write to
@@ -921,6 +923,48 @@ End
 '' CmdCount is still the command before the pipe, search back from it for the writer
 '' (the old cmdcount = 1 shortcut marked command 0, losing stderr of the 2nd command).
 '' This was a GoSub, an error raised in DoProcess then crashed the JIT with "Stack mismatch".
+'' A pipe with no command after it made an empty command, which failed later with "Out of bounds"
+Private Sub CheckPipePlacement()
+
+    Dim aPipes As String[] = ["|", "&|", "|>", "&|>", "|<", "&|<"]
+    For iPos As Integer = 0 To syms.Max
+        If Not aPipes.Exist(syms[iPos]) Then Continue
+        If iPos = 0 Then Error.Raise(syms[iPos] & " may not be at start of line: " & UserLine())
+        If iPos = syms.Max Then Error.Raise(syms[iPos] & " may not be at end of line: " & UserLine())
+        If aPipes.Exist(syms[iPos + 1]) Then Error.Raise(syms[iPos + 1] & " may not follow " & syms[iPos] & ", a command is missing in: " & UserLine())
+    Next
+
+End
+
+'' &| &|> &|< pipe stdout and stderr together : a &| b is a 2>&1 | b, a &|> b is a 2>&1 |> b,
+'' a &|< b is a |< b 2>&1 as b is the command feeding a. The 2>&1 code then sends stderr where stdout goes.
+Private Sub StdErrPipes()
+
+    Dim iPos As Integer = 0
+    While iPos <= syms.Max
+        Select Case syms[iPos]
+            Case "&|", "&|>"
+                syms[iPos] = Mid$(syms[iPos], 2)
+                syms.Add("2>&1", iPos)
+                types.Add(types[iPos], iPos)
+                iPos += 2
+            Case "&|<"
+                syms[iPos] = "|<"
+                Dim iEnd As Integer = iPos + 1               ' 2>&1 goes at the end of the feeding command
+                While iEnd <= syms.Max
+                    If ["|", "&|", "|>", "&|>", "|<", "&|<"].Exist(syms[iEnd]) Then Break
+                    Inc iEnd
+                Wend
+                syms.Add("2>&1", iEnd)
+                types.Add(types[iPos], iEnd)
+                Inc iPos
+            Default
+                Inc iPos
+        End Select
+    Wend
+
+End
+
 Fast Unsafe Private Sub SetNeedsSTDERRWrite(CmdCount As Integer, CmdPipeType As String[], NeedsSTDERRWrite As Boolean[])
 
     For icounter As Integer = CmdCount DownTo 0

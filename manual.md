@@ -1247,6 +1247,16 @@ Linux commands.
 The \|\> and \|\< are unique to gsh and replace the tee used in other
 shells.
 
+Put an & in front of any of them, \&\| \&\|\> \&\|\<, to pipe stderr
+together with stdout, the same as adding 2\>\&1 to the command that
+writes into the pipe.
+
+```
+   ls errors.txt nnnnvvvv &| sort        ' the listing and the error go to sort
+   ls nnnnvvvv &|> toupper() | less      ' both streams go to toupper() and less
+   sort &|< ls errors.txt nnnnvvvv       ' ls's listing and error feed sort
+```
+
 ## Gambas Shell Reference
 
 ### How Command Classes and Structures are Handled
@@ -1754,6 +1764,7 @@ Example:
    ls mmmmvvvv 2>> $b                 ' $b now holds both messages
    ls errors.txt nnnnvvvv > all.txt 2>&1    ' the listing and the error both go to all.txt
    ls errors.txt nnnnvvvv 2>&1 | sort       ' both streams go into the pipe
+   ls errors.txt nnnnvvvv &| sort           ' the same, &| pipes stdout and stderr
    ls errors.txt nnnnvvvv > $a 2> $b        ' the listing goes to $a, the error to $b
 ```
 
@@ -1854,6 +1865,8 @@ finally appended into \$logger database entry.
 process
 
 **\|\>** send data from a process to a sink function or another process.
+
+**\&\|\> \&\|\<** the same, only stderr is piped together with stdout.
 
 #### :\> Store the return code from this process to a variable
 
