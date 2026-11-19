@@ -27,13 +27,16 @@ Public Sub main()
     gsh.LocalRunning = True
     Try Object.Call(SubCls[sObject], method, parms)
     If Error Then
+        Dim sErrText As String = Error.Text                 ' FlushOutput resets Error
+        Dim sErrWhere As String = Error.Where
         gsh.LocalRunning = False
-        If Error.text <> "Terminated" Then
+        FlushOutput()
+        If sErrText <> "Terminated" Then
             If gsh.DoTrace Then
-                Error (("Local Execute error in :") & Method & Error.where & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
-                SubCls.doListing(SharedMem["sub." & method], Split(Error.where, ".")[2])
+                Error (("Local Execute error in :") & Method & sErrWhere & " @line(" & Split(sErrWhere, ".")[2] & ") [" & sErrText & "]")
+                SubCls.doListing(SharedMem["sub." & method], Split(sErrWhere, ".")[2])
             Endif
-            Error.Raise(("gsh local execute error :") & Method & " @line(" & Split(Error.where, ".")[2] & ") [" & Error.text & "]")
+            Error.Raise(("gsh local execute error :") & Method & " @line(" & Split(sErrWhere, ".")[2] & ") [" & sErrText & "]")
         Else
             Error ("[Terminated]")
         Endif
@@ -46,8 +49,19 @@ Public Sub main()
     Endif
 
     gsh.LocalRunning = False
+    FlushOutput()
 
 Catch
     Print "Local Task Error :";; Error.text;; Error.where
+    FlushOutput()
+
+End
+
+' A task ends with _exit() and nothing flushes its output: when gsh writes to a pipe or a file
+' (not a terminal) what the sub printed was lost
+Private Sub FlushOutput()
+
+    Try Flush
+    Try Flush #File.Err
 
 End
