@@ -180,6 +180,7 @@ Public Sub application_signal(sig As Integer)
     Select Case sig
 
         Case Signal.SIGWINCH
+            If getline <> Null And If getline.AtPrompt Then getline.Resize()
             windowwidth = File.Out.Term.width
             Env["COLUMNS"] = windowwidth
             windowheight = File.Out.Term.height
@@ -225,6 +226,11 @@ Public Sub application_signal(sig As Integer)
             ExitProgram()
 
         Case Signal.SIGINT
+            If getline <> Null And If getline.AtPrompt Then     ' Ctrl-C while typing a line : drop it
+                getline.CancelLine(BlockLevel = 0)
+                If BlockLevel > 0 Then Error.Raise("Break!")     ' and leave the block being typed
+                Return
+            Endif
             If RunningProcess <> Null Then
                 Try gshlogging(User.home &/ "vars/gsh.log", "Process SigInt" & RunningProcess.handle)
                 Signal.send(RunningProcess.Handle, Signal.SigInt)

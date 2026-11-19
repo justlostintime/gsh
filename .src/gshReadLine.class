@@ -26,6 +26,15 @@ Extern rl_redisplay() In "libreadline"
 Extern rl_insert_text(text As String) As Integer In "libreadline"
 Extern rl_forced_update_display() As Integer In "libreadline"
 Extern rl_function_dumper(readable As Integer) In "libreadline"
+' callback mode : the event loop runs while the prompt waits for a key
+Extern rl_callback_handler_install(prompt As String, lhandler As Pointer) In "libreadline"
+Extern rl_callback_read_char() In "libreadline"
+Extern rl_callback_handler_remove() In "libreadline"
+Extern rl_callback_sigcleanup() In "libreadline"
+Extern rl_free_line_state() In "libreadline"
+Extern rl_cleanup_after_signal() In "libreadline"
+Extern rl_reset_after_signal() In "libreadline"
+Extern rl_on_new_line() As Integer In "libreadline"
 
 Public DoTrace As Boolean
 Public DefaultPrompt As String
@@ -33,6 +42,10 @@ Public UserPrompt As String
 Public Queue As New String[]
 
 Property Read isTerminal As Boolean Use $isTerminal
+Property Read AtPrompt As Boolean Use $AtPrompt     '' True while ReadTerminal waits for the line
+
+Private $pLine As Pointer                  ' the line given to LineHandler, freed by the caller
+Private $bLineDone As Boolean
 Property rl_var As Rlvars Use $rl_var
 
 Public Sub _new(Optional sUserPrompt As String = Quote("$"), sDefaultPrompt As String = Quote("$"))
@@ -135,7 +148,7 @@ Public Sub ReadRaw(Optional sPrompt As String = "> ", bDbaseServer As Boolean = 
             Line Input #File.In, sInput
         Endif
     Else
-        pInput = readline(sPrompt & "\x00")
+        pInput = ReadTerminal(sPrompt)
         If IsNull(pInput) Then
             RawEof = True
         Else
@@ -204,7 +217,7 @@ retryprompt:
                 Print "\n";                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
                 Flush                       ' Make sure it is printed
             Endif
-            pinput = readline(Prompt & BlockIndent & "\x00")
+            pinput = ReadTerminal(Prompt & BlockIndent)
 
             If Queue.count = 0 Then ' we did not used the edit function
                 If IsNull(pinput) Then Return "QUIT"
@@ -233,6 +246,72 @@ retryprompt:
 
 Catch
     Error.Propagate()
+
+End
+
+'' Read a line like readline() : the returned pointer is freed by the caller, Null at end of input.
+'' Uses the readline callback interface, so the Gambas event loop runs while the prompt waits :
+'' process Kill events, timers and signals are handled at once, not after the next line.
+Private Sub ReadTerminal(sPrompt As String) As Pointer
+
+    $pLine = Null
+    $bLineDone = False
+    rl_callback_handler_install(sPrompt & "\x00", LineHandler)
+    Object.Attach(File.In, Me, "StdIn")
+    File.In.Watch(gb.Read, True)
+    $AtPrompt = True
+    While Not $bLineDone
+        Wait Next
+    Wend
+    $AtPrompt = False
+    File.In.Watch(gb.Read, False)
+    Return $pLine
+
+Catch                                       ' Break! from Ctrl-C in a block, passed on to DoBlock
+    $AtPrompt = False
+    File.In.Watch(gb.Read, False)
+    rl_callback_handler_remove()
+    Error.Propagate()
+
+End
+
+Public Sub StdIn_Read()
+
+    rl_callback_read_char()
+
+End
+
+'' Called by readline with the finished line, Null at end of input (Ctrl-D)
+Public Sub LineHandler(pLine As Pointer)
+
+    $pLine = pLine
+    $bLineDone = True
+    rl_callback_handler_remove()
+
+End
+
+'' Ctrl-C at the prompt : drop the line being typed and show a new prompt
+Public Sub CancelLine(Optional bNewPrompt As Boolean = True)
+
+    rl_free_line_state()
+    rl_callback_sigcleanup()
+    rl_cleanup_after_signal()
+    rl_reset_after_signal()
+    $rl_var!rl_line_buffer = ""                ' writes the terminating 0 at the start of the buffer
+    $rl_var!rl_point = 0
+    $rl_var!rl_end = 0
+    $rl_var!rl_mark = 0
+    Print "^C"
+    If Not bNewPrompt Then Return              ' the caller prints a message and reads the next line itself
+    rl_on_new_line()
+    rl_forced_update_display()
+
+End
+
+'' The window was resized while the prompt waits, readline only sees SIGWINCH between keys
+Public Sub Resize()
+
+    rl_resize_terminal()
 
 End
 
