@@ -1,3 +1,11 @@
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.4
+- jobs records background jobs only while job control is on
+- jobs lists every job with start time, end time, state, result and duration in seconds, then removes every job no longer running, also those of gsh sessions that ended
+- jobs removes an entry only after it has been listed, jobs -keep lists without removing
+- a job that ended is shown as [Complete], a job that ended without its end recorded as [Exited], a running job as [Running]
+- running is checked in /proc, not waitpid
+- old entries with trailing spaces no longer crash jobs
+
 * Wed Nov 18 2026 Brian G <justlostintime@gmail.com> 1.8.4
 - MIME type application/x-gambasshell is registered: the definition is installed in /usr/share/mime/packages/gsh.xml, it was in /usr/share/mime/application where it is never read
 - *.gsh files are application/x-gambasshell, not text/x-groovy (glob weight 60)
