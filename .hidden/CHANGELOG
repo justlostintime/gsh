@@ -1,4 +1,7 @@
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- the update notice shows the version as gsh -V does, 1.8.5, the build number only when only it differs
+
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - 1.8.5
 
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
