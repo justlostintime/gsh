@@ -559,7 +559,12 @@ as a Class with the Public variables inside it:
   -r --runline Executes the following command line.
        gsh -r name -- args, the name of the sub is followed by -- and then
        its arguments. A sub in a pipe is run this way. gsh exits with
-       the exit code of the sub, False is 1, see **&& \|\|**.
+       the exit code of the sub, False is 1, see && ||.
+  -u --run Runs a script made by compile, gsh -u -- script args.
+       This is the #! line written into compiled scripts,
+       #!/usr/bin/env -S gsh -u --, it must be the first option.
+       Only gb.scripter is loaded, the script is compiled once (cached)
+       and run, gsh exits with the exit code of the script.
   -s --shmname The name of the in memory database to use.
        Defaults to username. Two in-memory files are created, data segment and
        Index/Collection segment
@@ -2158,7 +2163,10 @@ that is more than one string, such as "one" & "!", is put in as written.
 This will not execute the script entered but will produce an executable
 Gambas script.
 
-The script is standalone and may be executed directly.
+The script is standalone and may be executed directly. Its first line is
+#!/usr/bin/env -S gsh -u \-- so it is run by **gsh -u**, which compiles
+it with gb.scripter, gbs3 is not needed. Scripts compiled by older
+versions start with #!/usr/bin/env gbs3 and still need gbs3.
 
 The default program name if not specified is \~/bin/script.out
 

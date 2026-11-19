@@ -62,6 +62,9 @@ Execute the following command line
 .br
 gsh -r name -- args, the sub name is followed by -- and then its arguments. A sub in a pipe is run this way
 .TP
+\fB\-u --run <script> <args>\fR
+Run a script made by compile, gsh -u -- script args. This is the #! line of compiled scripts, #!/usr/bin/env -S gsh -u --, and must be the first option. The script is compiled by gb.scripter and run, gsh exits with its exit code
+.TP
 \fB\ --\fR
 Ends the gsh options. Everything after it is passed to the -r sub or the -f script, so arguments such as -x are not read as gsh options, gsh -r mysub -- -x --color=auto
 .TP

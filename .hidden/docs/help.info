@@ -98,6 +98,9 @@
             -r --runline     Execute the following command line
                              gsh -r name -- args, -- ends the gsh options
                              so -x style args go to the sub
+            -u --run         Run a script made by compile, gsh -u -- script args
+                             It is the #! line of compiled scripts and
+                             must be the first option
             -s --shmname     The name of the in memory database to use,
                              defaults to username.
                              Two in memory files are created, data segment
@@ -613,7 +616,8 @@
                     an executable Gambas script.
   .....             The script is standalone and may be executed directly
                     from the command line. The Output is placed into
-                    the ~/bin folder and marked as executable.
+                    the ~/bin folder and marked as executable. It starts
+                    with #!/usr/bin/env -S gsh -u -- so gsh runs it.
 
  end [compile | program]
                     The default program name if not specified is script.out

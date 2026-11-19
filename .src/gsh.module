@@ -4,6 +4,7 @@ Export
 'Fast Unsafe
 
 Class ScripterExecute
+Class ScripterRun
 Class Script
 Class ScriptCompileErrors
 Class CompileErrorMsg
@@ -60,6 +61,7 @@ Public CommandMode As Boolean = False
 Public InLineCommand As String = ""
 Public VarCommandSource As String = ""
 Public LocalFunRun As String = ""
+Private bRunCompiled As Boolean = False                                     ' gsh -u : run a compiled script and quit
 Public cmdLineParameters As String[]                                       ' the arguments only, $1 ... $n
 Public LastBgPid As Integer = 0                                          ' $! : the process id of the last background job, 0 none yet
 Public ArgZero As String = "gsh"                                           ' $0 : the script file, the variable run by -f, or gsh
@@ -417,6 +419,32 @@ Catch
 
 End
 
+' gsh -u -- script args : the #! line of a script made by compile. gb.scripter compiles it (cached)
+' and runs it with gbr3, the script's exit code is returned.
+Private Sub RunCompiledScript()
+
+    If cmdLineParameters.Count = 0 Then
+        Error "gsh -u : no script file given"
+        Quit 2
+    Endif
+
+    Dim sScript As String = cmdLineParameters[0]
+    Dim aScriptArgs As String[] = cmdLineParameters.Copy(1, cmdLineParameters.Count - 1)
+    Dim vResult As Variant = ScripterRun(sScript, [], aScriptArgs)
+
+    Dim bCompileError As Boolean = False
+    For Each err As CompileErrorMsg In ScriptCompileErrors
+        bCompileError = True
+        Error err.text
+    Next
+    If bCompileError Then Quit 1
+
+    Dim iExit As Integer = 1
+    Try iExit = CInt(vResult)
+    Quit iExit
+
+End
+
 Public Sub ProcessOptions() As String[]
 
     Dim bAboutGsh As Boolean
@@ -443,6 +471,7 @@ Public Sub ProcessOptions() As String[]
     bCleanup = Args.Has("C", "cleanup", ("Cleanup and delete the old Shm file if it is closed and left around"))
     InLineCommand = Args.Get("c", "command", ("Command to be executed"))
     VarCommandSource = Args.Get("f", "from", ("Execute the content of a global variable as independent script, returns output, gsh -f name -- args"))
+    bRunCompiled = Args.Has("u", "run", ("Run a script made by compile, gsh -u -- script args, used by its #! line, must be the first option"))
     LocalFunRun = Args.Get("r", "runline", ("Execute the following command line, gsh -r name -- args, -- ends the gsh options"))
     sCRestOfArgs = Args.End()
 
@@ -832,6 +861,22 @@ End
 
 Public Sub Main()
 
+    ' gsh -u [--] script args : the #! line of a compiled script. Only gb.scripter is needed, the
+    ' rest of the start up (components, shared memory, image, profile) is skipped to start as fast as gbs3
+    Dim iRunArg As Integer = Application.Args.All.Find("-u")
+    If iRunArg < 0 Then iRunArg = Application.Args.All.Find("--run")
+    If iRunArg = 1 Then
+        Dim aRunArgs As String[] = Application.Args.All.Copy(iRunArg + 1, Application.Args.Count - iRunArg - 1)
+        If aRunArgs.Count > 0 And If aRunArgs[0] = "--" Then aRunArgs.Remove(0)
+        Try Component.Load(File.Load("gb.scripter"))
+        If Error Then
+            Error "Error Scripter library not found, ";; Error.text
+            Quit 9
+        Endif
+        cmdLineParameters = aRunArgs
+        RunCompiledScript()
+    Endif
+
     Myinit()
     $gshref = Me
     Try $version = File.Load("VERSION")
@@ -849,6 +894,7 @@ Public Sub Main()
     'System.Language = "fr_FR"
     'System.Language = "en_US"
     cmdLineParameters = ProcessOptions()
+    If bRunCompiled Then RunCompiledScript()             ' gsh -u quits here, no shared memory, image or profile
 
     VerifyAppDepend()
 
@@ -1735,7 +1781,7 @@ Public Sub ProcessProg(Optional NoWait As Boolean = False)
     If containsGlobal Or linktable.count > 0 Then
 
         AlreadyLinked = New String[]
-        ProgPart1 = "#!/usr/bin/env  /usr/bin/gbs3\n"
+        ProgPart1 = "#!/usr/bin/env -S gsh -u --\n"             ' a compiled script runs through gsh and gb.scripter
 
         While LinkTable.COUNT
             'Print "Inserting "; linktable[linktable.first]
