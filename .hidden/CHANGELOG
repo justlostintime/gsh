@@ -4,7 +4,7 @@
 - a class whose _new takes parameters can be defined, gsh made an object of it with no parameters when it was compiled
 - vardel deletes several variables, vardel a, b or vardel a b, it took only one
 - compile name directory writes the executable to the directory, compile name still writes it to ~/bin
-- gsh -u runs a compiled script given by a relative path, out/script, it looked for it inside gsh
+- gsh -u runs a compiled script given by a relative path, out/script, ../script or ~/script, it looked for it inside gsh
 - regression tests in .hidden/regression, run.sh runs them with ~/vars backed up and put back
 
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
