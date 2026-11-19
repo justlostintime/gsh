@@ -1,4 +1,15 @@
 * Wed Nov 18 2026 Brian G <justlostintime@gmail.com> 1.8.4
+- MIME type application/x-gambasshell is registered: the definition is installed in /usr/share/mime/packages/gsh.xml, it was in /usr/share/mime/application where it is never read
+- *.gsh files are application/x-gambasshell, not text/x-groovy (glob weight 60)
+- scripts starting with #!/usr/bin/env gsh, #!/usr/bin/gsh or #!/usr/bin/env -S gsh (compiled scripts) are recognised
+- the MIME type is a sub-class of application/x-shellscript, not application/x-executable, with the gsh icon
+- the desktop file runs gsh %f, opening a .gsh file from a file manager runs it in a terminal
+- the MIME definition is no longer also installed in /usr/share/gsh/mime
+
+* Wed Nov 18 2026 Brian G <justlostintime@gmail.com> 1.8.4
+- Finish mime
+
+* Wed Nov 18 2026 Brian G <justlostintime@gmail.com> 1.8.4
 - more mime
 
 * Wed Nov 18 2026 Brian G <justlostintime@gmail.com> 1.8.4

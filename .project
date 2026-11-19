@@ -35,6 +35,7 @@ Address=justlostintime@gmail.com
 Url=https://github.com/justlostintime/GambasShell/wiki
 License=General Public License
 PackageName=gsh-1.8.4
+PackageVersion=2
 PackageLastVersion="1.8.4"
 CreateEachDirectory=1
 MimeTypes="application/x-gambasshell"
