@@ -2546,8 +2546,8 @@ This is the Gambas classes collection for the current application
 #### lsubs \<GlobalSubName\> - Prints a list of global functions, subs, procs
 
 Prints the content of function if name is provided.\
-Function lsub(\<subname\>)\
-Command lsub \<subname\>\
+Function lsubs(\<subname\>)\
+Command lsubs \<subname\>\
 Returns 'true' if found, false otherwise.\
 \$result contains the error text or "OK"
 
