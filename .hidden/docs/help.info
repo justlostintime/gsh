@@ -162,10 +162,11 @@
             don't want it to appear when you next start gsh.
             'clearvars' deletes all user created variables.
 
- $0 to $n   The parameters passed to a gsh script, $0 is the script name
- $#         The number of parameters passed to a script, including the script name
- $*         All parameters passed to the script, including the script name, as one string
- $@         All parameters passed to the script, including the script name, as a Gambas list
+ $0         The script as it was called, the variable name for @name(...), or gsh
+ $1 to $n   The parameters passed to a gsh script, the same as bash
+ $#         The number of parameters passed to a script, not counting $0
+ $*         The parameters $1 to $n as one string separated by spaces
+ $@         The parameters $1 to $n as a list, separate arguments on a cli line
  $?         The exit code of the last command line, 0 when it worked
  $$         The process id of the running gsh or script, the same as application.id
  $UID       The user id, the same as user.id
@@ -388,10 +389,10 @@
   $j = "Print quote(\"hello\")"  ' Put a small program in a global variable
   ? @j                           ' prints "hello"
                      Parameters may be passed to the program using the notation
-                     $0-$n and $#
+                     $1-$n and $#, $0 is the variable name
                      These will contain all the parameters passed to the
                      @variable call. For Example :
-  $j = "Print quote($0)"
+  $j = "Print quote($1)"
   ? @j("hello")                  ' prints "hello"
                      In a cli line write !@name to run the variable as a
                      command, eg '!@c | tr a-z A-Z'

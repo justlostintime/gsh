@@ -1342,12 +1342,16 @@ dynamically upon assignment.
 
 #### \$0 to \$n gsh command line parameter
 
-Parameters passed on the command line of a **gsh** script.
+\$0 is the script as it was called, the variable name when run as
+\@variable(...), or gsh in an interactive shell. \$1 to \$n are the
+parameters passed on the command line of a **gsh** script, an unset one
+is empty. They work the same in Gambas code and on CLI command lines, as
+in bash.
 
 #### \$\# gsh command line parameter count
 
-This is the number of parameters passed to a script, including the
-script name.
+This is the number of parameters passed to a script, not counting
+\$0.
 
 #### \$result
 
@@ -1459,13 +1463,12 @@ and **&& \|\|**
 
 #### \$\*
 
-All the parameters passed to the script, including the script name, as one
-string
+All the parameters \$1 to \$n as one string separated by spaces
 
 #### \$\@
 
-All the parameters passed to the script, including the script name, as a
-list
+All the parameters \$1 to \$n as a list, on a CLI command line each one
+is passed as a separate argument
 
 #### \$UID
 
@@ -2234,15 +2237,13 @@ statement, or put a ! in front to run the variable as a command:
 ```
 #### Parameters \$0-\$n and \$\#
 
-This will contain all the parameters passed to the \@variable(parm0...)
-call
+\$1 to \$n contain the parameters passed to the \@variable(parm1...)
+call, \$0 is the variable name and \$\# the number of parameters
 ```
 example:
-  $j = "Print quote($0)"  ' this sets the code
+  $j = "Print quote($1)"  ' this sets the code
   ? @j("hello")           ' prints hello that was passed as a parameter
 ```
-***Except when used on a CLI command line it's content will be used as
-a file name for redirection.***
 
 #### Sub/Function/Procedure and Class/Structures
 

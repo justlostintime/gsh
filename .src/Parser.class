@@ -457,15 +457,24 @@ Static Public Sub SpecialVariables(syms As String[], types As Integer[]) ' repla
     For i As Integer = 0 To syms.Max
 
         If syms[i] = "$" Or If syms[i][0] = "$" Then
-            If i + 1 <= syms.max And If syms[i] = "$" And syms[i + 1] = "!" Then
-                syms[i] = "$!"
+            If i + 1 <= syms.max And If syms[i] = "$" And (syms[i + 1] = "!" Or syms[i + 1] = "@") Then
+                syms[i] &= syms[i + 1]
                 syms[i + 1] = ""
             Endif
             Select Case syms[i]
+                ' Args[0] is the program that runs the line (lambda.tmp, or a compiled program), Args[1] ... are $1 ... $n
                 Case "$*"
-                    newsyms.Add("(iif(args.count > 1,args.all.extract(1,args.max).join(\" \"),\"\"))") 'gsh.cmdLineParameters.count
+                    newsyms.Add("(Args.All.Copy(1, Args.Count - 1).Join(\" \"))")
+                Case "$@"                                          ' each argument as its own word
+                    newsyms.Add("{")
+                    newTypes.Add(types[i])
+                    newsyms.Add("(Args.All.Copy(1, Args.Count - 1))")
+                    newTypes.Add(types[i])
+                    newsyms.Add("}")
                 Case "$#"
-                    newsyms.Add("(args.count)") 'gsh.cmdLineParameters.count
+                    newsyms.Add("(args.count - 1)")
+                Case "$0"                                          ' the script, the variable run as @name(...), or gsh
+                    newsyms.Add(IIf(gsh.CompileOnly, "(Args[0])", Quote(gsh.ArgZero)))
                 Case "$?"  ' exit status of the last CLI command, set after each command line completes
                     newsyms.Add("(IIf(SharedMem.Exist(\"laststatus\"), SharedMem[\"laststatus\"], 0))")
                 Case "$$"  ' insert the curent pid

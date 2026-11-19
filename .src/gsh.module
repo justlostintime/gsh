@@ -60,7 +60,8 @@ Public CommandMode As Boolean = False
 Public InLineCommand As String = ""
 Public VarCommandSource As String = ""
 Public LocalFunRun As String = ""
-Public cmdLineParameters As String[]
+Public cmdLineParameters As String[]                                       ' the arguments only, $1 ... $n
+Public ArgZero As String = "gsh"                                           ' $0 : the script file, the variable run by -f, or gsh
 Public NoWriteOnExit As Boolean = False
 Public bHelpListing As Boolean = False                                       ' display the manual
 '\\033[2K - Clear Line"
@@ -970,6 +971,7 @@ Public Sub Main()
         If DoTrace Then Error "(Trace "; Now; ") ";; ("Execute The Content of a variable from shared memory ");; VarCommandSource
 
         If VarCommandSource = "~$$" Or If SharedMem.exist(VarCommandSource) Then
+            If VarCommandSource <> "~$$" Then ArgZero = VarCommandSource      ' @name(...) : $0 is the variable, $1 ... the parameters
             Dim codebuffer As String
             If VarCommandSource = "~$$" Then
                 codebuffer = LocalFunRun
@@ -1020,6 +1022,8 @@ Public Sub Main()
         CommandMode = True
         Source = "FILE"
         Dim runcmder As String = cmdLineParameters[0]
+        ArgZero = runcmder                                    ' $0 is the script as it was called, like bash
+        cmdLineParameters.Remove(0)                           ' the rest are $1 ... $n, also passed on as Args[1] ...
         If File.Dir(runcmder) = "" Or If runcmder[0] <> "/" Then
             If runcmder[0] = "~" Then
                 runcmder = User.Home &/ Right(runcmder, -1)
@@ -4193,10 +4197,10 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
                         types.Add(Highlight.Operator, tcount + 1)
                     Else If Syms[tCount] = "$$"                          ' return the current pid
                         syms[tCount] = application.id
-                    Else If Syms[tCount] = "$*"                          ' return all of the command line parameters as a string
-                        syms[tCount] = "iif(args.count > 1 , args.all.extract(1,args.max).join(\",\"),\"\")"
-                    Else If Syms[tCount] = "$@"                           ' return all parameters as a list
-                        syms[tCount] = "iif(args.count > 1 , args.all.extract(1,args.max),[])"
+                    Else If Syms[tCount] = "$*"                          ' $1 ... $n joined with spaces, like bash; Args[0] is the program
+                        syms[tCount] = "Args.All.Copy(1, Args.Count - 1).Join(\" \")"
+                    Else If Syms[tCount] = "$@"                           ' $1 ... $n as a list
+                        syms[tCount] = "Args.All.Copy(1, Args.Count - 1)"
                     Else If Syms[tCount] = "$!"                          ' return the current pid of background task
                         syms[tCount] = "application.id"
                     Else If Syms[tCount] = "$GID" Then
@@ -4207,19 +4211,20 @@ Public Sub PreProcesses(InVar As String, Optional IsClass As Boolean = False, wr
                         Dim convit As Integer
                         Try convit = CInteger(Right(Syms[tCount], -1))
                         If Not Error Then
-                            If Compileonly Then
+                            If Compileonly Then                         ' a compiled program : Args[0] is its own name, like bash
                                 Syms[tCount] = "iif(" & Str(convit) & "< args.count , Args[" & Str(convit) & "],\"\")"
+                            Else If convit = 0 Then                     ' the script, the variable run as @name(...), or gsh
+                                Syms[tCount] = Quote(ArgZero)
+                            Else If convit >= 1 And If convit <= cmdLineParameters.count Then
+                                Dim sParm As String = cmdLineParameters[convit - 1]
+                                Syms[tCount] = If(IsNull(Val(sParm)) = True, Quote(sParm), Val(sParm))
                             Else
-                                If convit >= 0 And If convit <= cmdLineParameters.max Then
-                                    Syms[tCount] = If(IsNull(Val(cmdLineParameters[convit])) = True, Quote(cmdLineParameters[convit]), Val(cmdLineParameters[convit]))
-                                Else
-                                    Syms[tcount] = ""
-                                Endif
+                                Syms[tcount] = "\"\""                     ' not passed, empty like bash
                             Endif
                         Else
                             If Syms[tCount].len = 1 And If Syms[tCount + 1] = "#" Then
                                 If CompileOnly Then
-                                    Syms[tCount] = "Args.count"
+                                    Syms[tCount] = "(Args.count - 1)"          ' the arguments only, not the program name
                                 Else
                                     Syms[tCount] = cmdLineParameters.count
                                 Endif
