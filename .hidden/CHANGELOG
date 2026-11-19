@@ -1,4 +1,11 @@
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.4
+- edit inside a block drops the block being typed and reads the edited text again from the start, an incomplete block continues at its own level and indent, it was nested inside the open block
+- the lines of the edited text are shown with the prompt and indent as they are read
+
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.4
+- Updated to run update correctly and restart auto instead of exiting
+
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.4
 - the prompt uses the readline callback interface, the end of a background job is reported while the prompt waits, not after the next command
 - Ctrl-C at the prompt drops the line being typed, in a block it breaks out of the block at once
 - gsh tells at startup when a new version is installed and the cached subs and classes are from an earlier one
