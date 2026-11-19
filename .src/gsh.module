@@ -23,7 +23,7 @@ Public DataTypes As String[] = ["Binary", "Boolean", "Byte", "Short", "Integer",
 
 Private SysVars As String[] = ["profile", "globstar", "alias", "blockindent", "execprog", "lastexecutedblock", "prompt", "result", "maxhistory", "historycurrent",
     "history", "editor", "hexeditor", "helpdisplay", "home", "hosttype", "hostname", "term", "newprofile", "path", "env", "pwd",
-    "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted",
+    "lambda", "helpuseshtml", "history_expand", "gshversion", "onstartrcdate", "onexitrcdate", "history_expandory ", "baseenv", "gshrcdate", "gshvarconverted", "subsversion",
     "tracelevel", "dotrace", "noalias", "nopreprocess", "subspath", "classpath", "structpath", "suggestcommand", "textfont", "nerdmode", "usehighlight", "scriptpath", "#newvar", "#notifyq", "#delnotifyq"]
 
 ''Why are repeat and do in this list..?
@@ -128,6 +128,8 @@ Private DoAlias As Boolean = True
 ' Extern putenv(name As String) As Integer In "libc:6"
 ' Extern getenv(name As String) As Pointer In "libc:6"
 
+Extern execv(path As String, argv As Pointer) As Integer In "libc:6"             ' Restart
+Extern close_range(iFirst As Integer, iLast As Integer, iFlags As Integer) As Integer In "libc:6"
 Extern rFree(Mem As Pointer) In "libc:6" Exec "free"
 Extern chdir(Dest As String) As Integer In "libc:6"
 'Extern SignalSend(sigpid As Integer, Sig As Integer) As Integer In "libc:6" Exec "kill"
@@ -1171,6 +1173,11 @@ Public Sub Main()
 
         execlocal(["onstart()"])                            ' only if we are not a service
 
+        If SharedMem["subsversion"] <> $version Then         ' the cached subs and classes were compiled by another gsh version
+            Try SharedMem.Free("sub.update")                    ' update itself must be the installed one
+            Error Subst(("gsh &1 is installed, the cached subs and classes are from &2\nRun update to load the new ones\n\n"), $version, IIf(SharedMem["subsversion"] = "", ("an earlier version"), SharedMem["subsversion"]))
+        Endif
+
         If Exist(User.home &/ "vars/profile.gsh.new") And If SharedMem["newprofile"] = False Then
             Error ("New base Profile revision profile.gsh\nRun update to use new base profile\n\n")
             SharedMem["newprofile"] = True
@@ -1315,6 +1322,64 @@ Public Sub ExitNow()
 
 End
 
+Private $bRestart As Boolean                    ' ExitProgram starts gsh again instead of quitting
+
+'' Exit, then start gsh again in this process : same pid, terminal and command line.
+'' Used by update, so the classes and subs already loaded are compiled again.
+Public Sub RestartNow()
+
+    $bRestart = True
+    ReadQueue.push("QUIT")
+
+End
+
+'' Run gsh again in this process with the command line it was started with, gbr3 /usr/bin/gsh ...
+'' Returns only if exec failed.
+Private Sub Restart()
+
+    Dim aArgs As String[] = Split(File.Load("/proc/self/cmdline"), "\x00")
+    If aArgs[aArgs.Max] = "" Then aArgs.Remove(aArgs.Max)
+
+    Dim pArgv As Pointer = Alloc(SizeOf(gb.Pointer), aArgs.Count + 1)     ' never freed, exec replaces the process
+    For i As Integer = 0 To aArgs.Max
+        Pointer@(pArgv + i * SizeOf(gb.Pointer)) = Alloc(aArgs[i])
+    Next
+    Pointer@(pArgv + aArgs.Count * SizeOf(gb.Pointer)) = Null
+
+    ' ExitProgram ignores these, an ignored signal stays ignored after exec
+    For Each iSig As Integer In [Signal.SIGINT, Signal.SIGTERM, Signal.SIGHUP, Signal.SIGWINCH, Signal.SIGABRT, Signal.SIGQUIT, Signal.SIGCHLD, Signal.SIGTSTP]
+        Try Signal[iSig].Reset
+    Next
+
+    ' Quit removes the Gambas temporary directories of this pid, exec does not and the pid stays the same :
+    ' the new gsh would find the old files, gb.jit fails with File already exists
+    Dim aTempDirs As String[] = [Application.TempDir]
+    If Env["XDG_RUNTIME_DIR"] <> "" Then aTempDirs.Add(Env["XDG_RUNTIME_DIR"] &/ "gambas" &/ CStr(Application.Id))     ' gb.jit
+    For Each sDir As String In aTempDirs
+        If sDir Ends "/" & CStr(Application.Id) Then Try Exec ["rm", "-rf", sDir] Wait
+    Next
+
+    ' SetPrivate put our pid in the environment for the programs we start, the new gsh must not take it
+    ' as the tag of a parent gsh : give it back the values this gsh was started with
+    Dim sStartEnv As String = "\x00" & File.Load("/proc/self/environ")
+    For Each sName As String In ["SHAREDMEM_PRIVATE", "SHAREDMEM_PRIVATE_TAG"]
+        Dim iPos As Integer = InStr(sStartEnv, "\x00" & sName & "=")
+        If iPos = 0 Then
+            Env[sName] = ""
+        Else
+            iPos += Len(sName) + 2
+            Env[sName] = Mid(sStartEnv, iPos, InStr(sStartEnv & "\x00", "\x00", iPos) - iPos)
+        Endif
+    Next
+
+    Flush
+    Flush #File.Err
+    Try close_range(3, -1, 0)                  ' shared memory, log and pipe handles do not carry over
+    execv("/proc/self/exe", pArgv)
+    Error "gsh: restart failed, "; System.Error; ", start gsh again"
+
+End
+
 '' Called when the program is about to exit
 '' this is called for any reason
 Private Sub ExitProgram(Optional ExitValue As Integer = 0)
@@ -1356,11 +1421,16 @@ Private Sub ExitProgram(Optional ExitValue As Integer = 0)
 
     If Not hasExit Then
         HasExit = True
+        If $bRestart Then Restart()             ' does not return unless exec failed
         Quit ExitValue
     Endif
 
 Catch
     Error "GSH : Error on exit [ "; Error.text;; Error.where; "]"
+    If $bRestart And If Not HasExit Then
+        HasExit = True
+        Restart()
+    Endif
     Quit ExitValue
 
 End

@@ -1,4 +1,11 @@
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.4
+- the prompt uses the readline callback interface, the end of a background job is reported while the prompt waits, not after the next command
+- Ctrl-C at the prompt drops the line being typed, in a block it breaks out of the block at once
+- gsh tells at startup when a new version is installed and the cached subs and classes are from an earlier one
+- update also runs after a new gsh version, not only for a new profile.gsh, the installed update is always used
+- update restarts gsh in the same terminal with the same pid, it no longer exits
+
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.4
 - jobs records background jobs only while job control is on
 - jobs lists every job with start time, end time, state, result and duration in seconds, then removes every job no longer running, also those of gsh sessions that ended
 - jobs removes an entry only after it has been listed, jobs -keep lists without removing

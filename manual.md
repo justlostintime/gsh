@@ -1293,8 +1293,13 @@ time gsh starts, and it is run when the image is first created, or after
 \$profile is set to false. Do not put your own definitions in it, use .gshrc.
 
 When a new release of gsh installs a newer profile.gsh, the new version is
-copied to \~/vars/profile.gsh.new and gsh tells you about it at startup. Run
-the update command to start using it.
+copied to \~/vars/profile.gsh.new and gsh tells you about it at startup. When
+a new version of gsh is installed, gsh also tells you at startup, because the
+subs and classes cached in the image were compiled from the old version. Run
+the update command in either case. It clears the cached subs, classes and
+structs, asking whether to save each sub you changed, loads the new
+profile.gsh if there is one, and then gsh restarts itself in the same
+terminal. Exit any other gsh sessions first.
 
 ### .gshrc contains all user specific definitions
 

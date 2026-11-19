@@ -1,6 +1,7 @@
 ' Gambas module file
 
 Class SharedMem
+Class SharedMemSymbol
 
 ''  Sets the defaults for all of the system variables
 ''  Uses values found in the system image if present
@@ -13,6 +14,16 @@ Public Sub _Call()
     With sharedmem
 
         .["gshversion"] = gsh.$version                 ' ;Application.Version                                         ' Use this later on to do version update stuff and verify all running versions are compatable
+
+        If Not .exist("subsversion") Then                  ' the gsh version the cached subs and classes were compiled by, set by update
+            .["subsversion"] = gsh.$version
+            For Each sym As SharedMemSymbol In SharedMem.SymbolTable
+                If sym.symname Begins "sub." Or If sym.symname Begins "class." Or If sym.symname Begins "struct." Then
+                    .["subsversion"] = ""              ' cached before the version was kept, update reloads them
+                    Break
+                Endif
+            Next
+        Endif
 
         If Not .exist("profile") Then .["profile"] = False
         If Not .exist("globstar") Then .["globstar"] = False                  ' set to cause fileexpansion to see ** as meaning recurse, it is dangerous
