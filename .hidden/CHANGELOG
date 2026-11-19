@@ -1,4 +1,7 @@
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- 1.8.5
+
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - jobs -list numbers the running jobs with pid and command line, jobs -wait waits for jobs by index or pid, or asks which
 - at its exit gsh removes its job entries of jobs that have ended, a gsh started from a terminal removes those of gsh sessions that crashed or were killed, they collected until jobs was run
 - lvars does not list the job entries pid.p..., like sub. class. and struct. names
