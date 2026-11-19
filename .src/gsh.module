@@ -120,6 +120,8 @@ Private onstartrcdate As Date = Now
 Private onexitrcdate As Date = Now
 Private executedblock As String = ""
 Private lastexecutedblock As String = ""
+Private PendingEdit As String = ""         ' edit typed inside a block : the edited text, read again once the block is dropped
+Private EchoBuffer As Boolean = False      ' the buffer being read is edited text : show each line as if typed
 Private DoAlias As Boolean = True
 
 ' Extern rWrite(handle As Integer, data As Pointer, len As Integer) As Integer In "libc:6" Exec "write"
@@ -1219,7 +1221,11 @@ interactive:
 
     While True
         Try DontExit = IfReader(["QUIT"])
-        If Error Then
+        If Error And If PendingEdit <> "" Then         ' edit typed inside a block, its blocks are dropped
+            CleanUpError()
+            ReadEdited(PendingEdit)
+            PendingEdit = ""
+        Else If Error Then
             Error Error.text  ' ;; "(" & Error.where & ")"
             CleanUpError()
         Else
@@ -2178,6 +2184,7 @@ Public Sub ReadBuffer() As String
     NotBufferRead = False
     If ReadFromBuffer_Buffer.count = 0 Then
         Source = savedsourcebuffer
+        EchoBuffer = False
         Return "QUIT"
     Endif
 
@@ -2188,10 +2195,44 @@ Public Sub ReadBuffer() As String
         Source = savedsourcebuffer
     Endif
 
+    If EchoBuffer And If Trim(nextline) <> "" Then ShowEditedLine(Trim(nextline))
+    If ReadFromBuffer_buffer.count = 0 Then EchoBuffer = False
+
     Return nextline
 
 Catch
     Error.Propagate()
+
+End
+
+'' A line of edited text read again : show it with the prompt and the indent of its block, as if typed,
+'' and keep it for the next edit like a typed line
+Private Sub ShowEditedLine(sLine As String)
+
+    If BlockLevel = 0 Then
+        executedblock = lastexecutedblock
+        lastexecutedblock = sLine & "\n"
+    Else
+        lastexecutedblock &= sLine & "\n"
+    Endif
+
+    If Not getline.isTerminal Then Return
+    Print
+    getline.WritePrompt(SetBlockIndent())
+    If SharedMem["usehighlight"] Then
+        Print ConsoleHighlight.ToANSI(sLine)
+    Else
+        Print sLine
+    Endif
+
+End
+
+'' Read the edited text Text as typed input, each line shown as it is read
+Private Sub ReadEdited(Text As String)
+
+    lastexecutedblock = ""
+    OpenBuffer(Text, True)
+    EchoBuffer = Source = "BUFFER"             ' OpenBuffer ignores text with no lines
 
 End
 
@@ -3057,9 +3098,13 @@ StartAgain:
                         LinkTable.Clear()
                         Dim funclass As String
                         If InBufParse.count = 1 Then
-                            lastexecutedblock = editbuffer(lastexecutedblock)
-                            OpenBuffer(lastexecutedblock, True)
+                            Dim sEdited As String = editbuffer(lastexecutedblock)
                             execbuffer = ""
+                            If BlockLevel > 0 Then             ' inside a block : drop the block being typed, the
+                                PendingEdit = sEdited          ' interactive loop reads the edited text from the start
+                                Error.Raise("edit")
+                            Endif
+                            ReadEdited(sEdited)
                             Return True
                         Else If InBufParse.count = 2 And If InBufParse[1] == "execprog" Then
                             SharedMem["execprog"] = editbuffer(SharedMem["execprog"])
@@ -3208,7 +3253,7 @@ Catch
     'Dim errormsg As String = "ifreader Error : " & Error.text & ": " & Error.where
     Dim errormsg As String = Error.text
     ' Error.Propagate()
-    gshlogging(User.home &/ "vars/gsh.log", errormsg)
+    If PendingEdit = "" Then gshlogging(User.home &/ "vars/gsh.log", errormsg)   ' not for edit inside a block
     Error.Raise(ErrorMsg)
 
 End
@@ -3642,6 +3687,7 @@ Public Sub DoBlock(EndBlk As String[])
     End With
 
 Catch
+    If PendingEdit <> "" Then Error.Propagate()   ' edit inside the block, not an error
     Dim errormsg As String = "DoBlock Error : " & Error.text
     gshlogging(User.home &/ "vars/gsh.log", errormsg & " : " & Error.where)   ' the log keeps where it happened
     Error.Raise(errormsg)
