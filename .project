@@ -2,7 +2,7 @@
 Title=Gambas Shell
 Startup=gsh
 Icon=shelllogo.png
-Version=1.8.4
+Version=1.8.5
 Component=gb.args
 Component=gb.compress
 Component=gb.dbus
@@ -35,7 +35,7 @@ Address=justlostintime@gmail.com
 Url=https://github.com/justlostintime/GambasShell/wiki
 License=General Public License
 PackageName=gsh-1.8.4
-PackageVersion=3
+PackageVersion=1
 PackageLastVersion="1.8.4"
 CreateEachDirectory=1
 MimeTypes="application/x-gambasshell"
