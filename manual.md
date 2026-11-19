@@ -160,6 +160,11 @@ Each release of gsh, with its .deb package and AppImage, is on the
 curl -LO https://github.com/justlostintime/gsh/releases/download/v1.8.5/gsh_1.8.5-0ubuntu2_all.deb
 sudo apt install ./gsh_1.8.5-0ubuntu2_all.deb
 ```
+On Debian, use the Debian package instead:
+```
+curl -LO https://github.com/justlostintime/gsh/releases/download/v1.8.5/gsh_1.8.5-2_all.deb
+sudo apt install ./gsh_1.8.5-2_all.deb
+```
 The package includes the SharedMem and Scripter libraries, it needs Gambas 3.21 or later.
 
 ### Running gsh as an AppImage
