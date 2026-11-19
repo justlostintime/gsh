@@ -372,10 +372,14 @@ Public Sub Myinit()
 
     init_screen()
 
+    ' Inside an AppImage the host /bin/sh gets the host environment back and cannot
+    ' run the bundled binaries (gbc3 etc.), so Shell must use the bundled shell
+    If Env["APPDIR"] And If Exist(Env["APPDIR"] &/ "/usr/bin/dash") Then System.Shell = Env["APPDIR"] &/ "/usr/bin/dash"
+
     $sharedmemlib = File.Load("sharedmem")
     $ScripterLib = File.Load("gb.scripter")
     $ScriptHighlighter = File.Load("gb.highlight")
-    $GshRootPath = IIf(Not Exist("/usr/share/gsh/subs"), Application.path, Env["APPDIR"])
+    $GshRootPath = IIf(Env["APPDIR"] Or Exist("/usr/share/gsh/subs"), Env["APPDIR"], Application.path)  ' APPDIR is only set inside an AppImage
 
     Try Component.Load("gb.signal")
     If Error Then
@@ -3018,7 +3022,6 @@ StartAgain:
                             ExecBuffer = ""
 
                             If Not bSingleUse Then SharedMem.Sync(".", DefaultImageName)
-                            Debug "class compile "; lastelement
                             compile(lastelement)
                         Endif
 

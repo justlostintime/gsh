@@ -166,7 +166,7 @@ Public Sub _new()
 
     For Each p As Variant[] In variables
 
-        p[1] = System.GetExternSymbol("libreadline", variables.key)
+        p[1] = System.GetExternSymbol("libreadline:8", variables.key)
         variables[variables.key] = p
 
     Next

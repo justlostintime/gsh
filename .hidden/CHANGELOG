@@ -1,4 +1,7 @@
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- the AppImage runs on systems without Gambas: readline is loaded as libreadline:8 (libreadline.so only comes with the -dev package), the subs, class and struct paths and gsh.GshRootPath use $APPDIR, Shell uses the bundled dash so gbc3 is found
+- the AppImage is built for Ubuntu 24.04 with the Gambas master repository, dash is an AppImage dependency
+- removed two Debug lines that printed when gsh was compiled with debug information
 - clearsubs name works for a loaded sub, a word that names a sub is given to a sub run as a command as text, not as the Function
 - the '' and ''' help lines of a sub or class typed at the prompt or defined in a script are kept, help showed no description and saving the sub lost them
 - lclass help and the manual no longer call it lsub

@@ -993,6 +993,7 @@ Fast Unsafe Private Sub SubSynopsis(sName As String) As String
         sSource = SharedMem[sKey]
     Else
         For Each sDir As String In Split(SharedMem["subspath"], ";", "", True)
+            If sDir Like "/usr/share/gsh*" Then sDir = gsh.GshRootPath &/ sDir
             If Exist(sDir &/ sName) Then
                 Try sSource = File.Load(sDir &/ sName)
                 Break
