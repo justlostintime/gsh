@@ -152,6 +152,18 @@ sudo apt install gsh
 ```
 But of course you can always download and build your own packages.
 
+### Installing a release package from GitHub
+
+Each release of gsh, with its .deb package, is on the
+[gsh releases page](https://github.com/justlostintime/gsh/releases). Download the .deb and install it:
+```
+sudo apt install ./gsh_1.8.5-0ubuntu1_all.deb
+```
+The package includes the SharedMem and Scripter libraries, it needs Gambas 3.21 or later.
+
+After upgrading, gsh tells you at startup that the cached subs and classes are from an earlier
+version. Run update, gsh then restarts itself in the same terminal with the new ones.
+
 ### Making gsh your default shell
 
 To make gsh shell available as a login shell.
