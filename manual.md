@@ -2483,8 +2483,8 @@ Jobs that are no longer running are removed after they are listed.\
 #### lclass \<GlobalClassname\> - Prints a list of global classes.
 
 Prints the content of specific class if name is provided.\
-Function lsub(\<subname\>).\
-Command lsub \<subname\>\
+Function lclass(\<classname\>).\
+Command lclass \<classname\>\
 Returns 'true' if found, 'false' otherwise.\
 \$result contains the error text or "OK."
 

@@ -7,6 +7,7 @@
 #   name.gsh   a script, run as: gsh -s zqreg name.gsh  (stdin from name.in if it exists)
 #   name.sh    a bash script for what a .gsh can not do (gsh -c, -r, a pty ...), $GSH runs gsh
 #   name.out   the expected output (stdout and stderr), ANSI colours removed
+#   name.skip  the test is not run, the file says why (a feature not finished)
 # --record     writes name.out for the tests that have none, check it before committing it
 # --dev        runs the project build (gbx3 <project> --) instead of /usr/bin/gsh, and the project's subs
 #              that differ from the installed ones (put in ~/vars/subs for the run, unless a personal one exists)
@@ -72,7 +73,7 @@ clean() {      # remove colours and terminal titles, the work directory becomes 
     sed -e 's/\x1b\][^\x07]*\x07//g' -e 's/\x1b\[[0-9;?]*[A-Za-z]//g' -e 's/\r$//' -e "s#$WORK#<WORK>#g"
 }
 
-PASS=0; FAIL=0; NEW=0; FAILED=()
+PASS=0; FAIL=0; NEW=0; SKIP=0; FAILED=()
 while IFS= read -r test; do
     rel=${test#cases/}
     if [ ${#PATTERNS[@]} -gt 0 ]; then
@@ -81,6 +82,10 @@ while IFS= read -r test; do
         [ $keep = 1 ] || continue
     fi
     base=${test%.*}
+    if [ -e "$base.skip" ]; then
+        echo "SKIP  $rel : $(head -1 "$base.skip")"; SKIP=$((SKIP+1))
+        continue
+    fi
     rm -rf "$WORK"/* "$WORK"/.[!.]* 2>/dev/null
     if [[ "$test" == *.gsh ]]; then
         input=/dev/null; [ -e "$base.in" ] && input="$base.in"
@@ -106,5 +111,5 @@ while IFS= read -r test; do
 done < <(find cases -type f \( -name '*.gsh' -o -name '*.sh' \) | sort)
 
 echo
-echo "passed $PASS, failed $FAIL, new $NEW"
+echo "passed $PASS, failed $FAIL, new $NEW, skipped $SKIP"
 [ $FAIL = 0 ]

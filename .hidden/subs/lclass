@@ -1,6 +1,6 @@
 Sub lclass(Optional varname As String = "") As Boolean 
 ''' List all classes/structures
-''lSubs <GlobalSubName> - prints a list of global Functions, Subs or Procs
+''lclass <GlobalClassName> - prints a list of global Classes and Structures
 ''          prints the content of Class/Struct if name is provided same as list command
 ''          May be used as command or subroutine in scripts
 ''          returns true if found, false otherwise

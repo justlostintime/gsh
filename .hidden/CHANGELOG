@@ -1,4 +1,10 @@
 * Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- clearsubs name works for a loaded sub, a word that names a sub is given to a sub run as a command as text, not as the Function
+- the '' and ''' help lines of a sub or class typed at the prompt or defined in a script are kept, help showed no description and saving the sub lost them
+- lclass help and the manual no longer call it lsub
+- regression tests can be skipped with a name.skip file, the service mode test is skipped until it is finished
+
+* Thu Nov 19 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - quit nn at the top of a script or at the prompt ends gsh with the exit code nn, it was always 0
 - output of Print and of subs run in gsh comes before the output of the commands that follow it when gsh writes to a pipe or a file, it came after them
 - a class whose _new takes parameters can be defined, gsh made an object of it with no parameters when it was compiled

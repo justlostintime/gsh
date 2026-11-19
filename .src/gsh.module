@@ -2790,6 +2790,10 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
         InBufParse = Highlight.Analyze(InBuffer)
         HTypes = Highlight.Types
 
+        If HTypes[0] = Highlight.Help And If NoPreProcess Then    ' a '' or ''' line in a sub or class being defined :
+            ExecBuffer &= Trim(InBufferRaw) & "\n"                 ' keep it in the source, help reads it from there
+            Return True
+        Endif
         If HTypes[0] = Highlight.Comment Or If HTypes[0] = Highlight.Help Then Return True
 
         If HTypes.last = Highlight.comment Or If HTypes.last = Highlight.help Then
@@ -4083,7 +4087,10 @@ Private Sub CallWord(sWord As String) As String
     If sWord = "" Then Return sWord
     If ValueWord(sWord) Then Return sWord
     If RegExp.Match(sWord, "^-?[0-9]+([.][0-9]+)?$") Then Return sWord
-    If RegExp.Match(sWord, "^[A-Za-z_][A-Za-z0-9_]*$") Then Return sWord
+    If RegExp.Match(sWord, "^[A-Za-z_][A-Za-z0-9_]*$") Then
+        If isLocalFunc(sWord, False) Then Return Quote(sWord)   ' the name of a sub is text, clearsubs name : not the Function
+        Return sWord
+    Endif
     Return Quote(sWord)
 
 End
