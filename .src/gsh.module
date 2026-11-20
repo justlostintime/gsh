@@ -3432,6 +3432,14 @@ Sub lambdaSubFuncClass(eblk As String[])
 
     slambdabuffer = sName & "\n" & execbuffer & "\nend\n"
 
+    ' Link the enclosed sub into the program, LambdaBuffer only feeds edit lambda
+    Dim aDef As String[] = Split(Trim(sName), " \t(", "", True)
+    If aDef.count > 1 Then
+        Dim sKey As String = "sub." & Lower(aDef[1])
+        If LinkTable.Exist(sKey) Then LinkTable.Remove(sKey)
+        LinkTable.Add(slambdabuffer, sKey)
+    Endif
+
     LambdaBuffer = sLambdaBuffer & "\n" & lambdabuffer
     execbuffer = savebuf2
 
