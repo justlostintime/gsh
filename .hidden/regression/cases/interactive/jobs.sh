@@ -9,4 +9,4 @@ key "jobs -wait 2"; pause 3.5
 key "jobs"; pause 1
 key "jobs"; pause 1
 key "jobs off"; pause 0.4
-' | grep -E "^ +[0-9] |Job pid|\[Complete\]|\[Running\]|No running" | mask | sort
+' | grep -E "^ +[0-9] |Job pid|\[Complete\]|\[Running\]|No running" | mask | sed -E "s/ +<PID>/ <PID>/g" | sort    # job numbers right align the pid, its width varies
