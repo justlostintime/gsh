@@ -2451,6 +2451,19 @@ which is called many times with changing values.
 Adding the & to the last statement will cause the block to execute as an
 independent task with no wait.
 
+A sub may be defined inside the block. It is part of the program built
+for the block only, it is not added to the shell and does not replace an
+installed sub with the same name. The sub line must be a complete
+definition, `sub mm()` or `sub mm(i As Integer, ...)`.
+```
+{
+  sub mm(sMsg As String)
+    print "hello " & sMsg
+  end
+  mm("world")
+}
+```
+
 ### Commands -- Plugins from subs/class/struct Directories
 
 #### cd directorypath - Change the current working directory
