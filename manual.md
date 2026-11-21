@@ -172,6 +172,12 @@ sudo apt install ./gsh_1.8.5-2_all.deb
 ```
 The package includes the SharedMem and Scripter libraries, it needs Gambas 3.22 or later.
 
+Packages for Fedora, openSUSE, Mageia, Arch Linux and Slackware are in the
+[PPA repository](https://github.com/justlostintime/ppa), one folder for each distribution.
+The native packages were tested on Ubuntu 24.04, Fedora 44, openSUSE Tumbleweed and openSUSE Leap 15.6.
+Leap 15.6 has readline 7, gsh works with it: it loads readline through libreadline.so, so any readline version works.
+Mageia 9 only has Gambas 3.18, use the AppImage there.
+
 ### Running gsh as an AppImage
 
 The AppImage contains everything gsh needs: the Gambas runtime, the SharedMem and Scripter
