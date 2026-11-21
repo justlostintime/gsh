@@ -1,0 +1,3 @@
+local isequal
+False
+True
