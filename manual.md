@@ -21,10 +21,10 @@ by the Gambas3 language.
 Posix compliant scripts through the command line. But natively gsh uses
 Gambas3 syntax and constructs.
 
-For Gambas users - **gsh** required Gambas 3.18.0 or greater be
+For Gambas users - **gsh** requires Gambas 3.22 or greater be
 installed as its base Gambas3 . **gsh** requires a few Gambas3 modules
 **gambas3-runtime**, **gambas3-eval-highlight.**,
-**gambas3-dev-tools**,**gambas3-westwood-sharedmem**,**gambas3-westwood-gb-scripter**
+**gambas3-dev-tools**,**westwood-sharedmem**,**westwood-gb-scripter**
 
 Some of the notable extensions to Gambas3 syntax is the linux cli app
 interface which, on top of the expected forms of redirection, allows
@@ -73,36 +73,40 @@ with good old Basic syntax then the usage should not be too difficult.
 
 Gsh has a few important requirements.
 
-Gambas3 version 3.18.0 or greater
+Gambas3 version 3.22 or greater
 
 ### Gambas3 Modules used
-\- gambas3-runtime \>= 3.18\
-\- gambas3-dev \>= 3.18
-\- gambas3-gb-signal \>= 3.18\
-\- gambas3-gb-pcre \>= 3.18\
-\- gambas3-gb-highlight \>= 3.19\
-\- gambas3-gb-eval \>= 3.19\
-\- gambas3-gb-args \>= 3.18\
-\- gambas3-westwood-sharedmem \>= 3.19 included in project\
-\- gambas3-westwood-gb-scripter \>= 3.18 included in project\
-\- gambas3-gb.compress \>= 3.18\
-\- gambas3-gb.debug \>= 3.18\
-\- gambas3-gb-image \>= 3.18\
-\- gambas3-gb.net \>=3.18\
-\- gambas3-gb.net.curl \>=3.18\
-\- gambas3-gb.net.smtp \>=3.18\
-\- gambas3-gb.term \>=3.18\
-\- gambas3-gb.util \>=3.18\
-\- gambas3-gb.util.web \>=3.18\
-\- gambas3-gb.xml \>=3.18\
+\- gambas3-runtime \>= 3.22\
+\- gambas3-dev \>= 3.22
+\- gambas3-gb-signal \>= 3.22\
+\- gambas3-gb-pcre \>= 3.22\
+\- gambas3-gb-highlight \>= 3.22\
+\- gambas3-gb-eval \>= 3.22\
+\- gambas3-gb-args \>= 3.22\
+\- westwood-sharedmem \>= 3.24 included in gsh\
+\- westwood-gb-scripter \>= 3.22 included in gsh\
+\- gambas3-gb.compress \>= 3.22\
+\- gambas3-gb.debug \>= 3.22\
+\- gambas3-gb-image \>= 3.22\
+\- gambas3-gb.net \>=3.22\
+\- gambas3-gb.net.curl \>=3.22\
+\- gambas3-gb.net.smtp \>=3.22\
+\- gambas3-gb.term \>=3.22\
+\- gambas3-gb.util \>=3.22\
+\- gambas3-gb.util.web \>=3.22\
+\- gambas3-gb.xml \>=3.22\
 
 ### C and Gambas3 Libs used
 
 **libreadline8** GNU readline and history libraries (included in the AppImage)\
 **Libc6** or greater\
 **Libpthread-2.27** or greater\
-**gb.westwood-sharedmem** library now included as part of GSH install process.\
-**gb.scripter** library now included as part of gsh install process.
+**westwood-sharedmem** 3.24 library included in the gsh packages and the AppImage.\
+**westwood-gb-scripter** 3.22 library included in the gsh packages and the AppImage.
+
+The libraries are also packaged on their own in the [PPA](https://github.com/justlostintime/ppa) for every distribution:
+westwood-sharedmem 3.24.26, westwood-gb-scripter 3.22.3 and westwood-shmmem 2.4.1.
+gsh does not need them installed separately.
 
 Optionally the fortune app can be installed as the onstart() default
 startup will try to run it....
@@ -165,7 +169,7 @@ On Debian, use the Debian package instead:
 curl -LO https://github.com/justlostintime/gsh/releases/download/v1.8.5/gsh_1.8.5-2_all.deb
 sudo apt install ./gsh_1.8.5-2_all.deb
 ```
-The package includes the SharedMem and Scripter libraries, it needs Gambas 3.21 or later.
+The package includes the SharedMem and Scripter libraries, it needs Gambas 3.22 or later.
 
 ### Running gsh as an AppImage
 
