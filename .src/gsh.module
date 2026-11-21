@@ -31,6 +31,7 @@ Public LocalKeyWords As String[] = ["include", "use", "help", "edit", "lambda", 
 
 Public ConsoleHighlight As Texthighlighter
 Public BashHighlight As Texthighlighter
+Private $sNormalAnsi As String = "\e[38;2;0;0;0m"     ' the Normal style of the default theme, see HighlightInput
 
 Public ReadQueue As New String[]     ' Used to push items to be read first
 
@@ -957,6 +958,7 @@ Public Sub Main()
     If Not bSingleUse And If SharedMem.PrivateTag = "" Then  ' a root gsh, not started by another gsh
         SharedMem.SetPrivate(Split("", ",", "", True), CStr(Application.Id))   ' SyncEnv makes the synced variables private to this tree
         bPrivateRoot = True
+        MakePrivate("usehighlight")                    ' each session turns highlighting on or off for itself
     Endif
 
     Try chdir(Env["PWD"])
@@ -2316,6 +2318,124 @@ Private Sub ShowEditedLine(sLine As String)
 
 End
 
+'' True when the last line read was highlighted on screen as it was typed, no line rewrite is needed
+Private Sub LineShownLive() As Boolean
+
+    If Not getline Then Return False
+    Return getline.LineWasLive
+
+End
+
+'' Give this gsh tree its own copy of a variable, starting from the shared value. The shared value stays the
+'' default of new sessions, the copy is freed when the root gsh ends
+Private Sub MakePrivate(sName As String)
+
+    Dim vValue As Variant
+
+    If SharedMem.Exist(sName) Then vValue = SharedMem[sName]
+    SharedMem.AddPrivate(sName)
+    If Not SharedMem.Exist(sName) Then SharedMem[sName] = vValue
+
+End
+
+'' The typed line coloured for the live display : each :; part with the sh or the gambas highlighter.
+'' Only colours are added, the characters stay as typed. Empty when there is nothing to colour
+Public Sub HighlightInput(sLine As String) As String
+
+    Dim aParts As String[] = SplitInputParts(sLine)
+    Dim sResult As String
+    Dim sPart, sLead, sAnsi As String
+    Dim hLight As TextHighlighter
+    Dim bRewrite As Boolean
+
+    For Each sPart In aParts
+        If sPart = ":;" Then
+            sResult &= "\e[0m" & sPart
+            Continue
+        Endif
+        sLead = Left(sPart, Len(sPart) - Len(LTrim(sPart)))
+        sResult &= "\e[0m" & sLead
+        sPart = Mid(sPart, Len(sLead) + 1)
+        If Not sPart Then Continue
+        hLight = IIf(IsShellPart(sPart), BashHighlight, ConsoleHighlight)
+        bRewrite = hLight.CanRewrite
+        hLight.CanRewrite = False                      ' the case of keywords must not change
+        sAnsi = hLight.ToANSI(sPart)
+        hLight.CanRewrite = bRewrite
+        If sAnsi Ends "\r\n\e[0m" Then sAnsi = Left(sAnsi, -6)
+        sResult &= Replace(sAnsi, $sNormalAnsi, "\e[39m")    ' normal text in the terminal's own colour, black is lost on a dark background
+    Next
+
+    Return sResult
+
+End
+
+'' The typed line cut at each :; outside quotes, the :; kept as its own part, spaces kept
+Private Sub SplitInputParts(sLine As String) As String[]
+
+    Dim aParts As New String[]
+    Dim iStart As Integer = 1
+    Dim sQuote As String
+    Dim i As Integer = 1
+    Dim c As String
+
+    While i <= Len(sLine)
+        c = Mid(sLine, i, 1)
+        If sQuote Then
+            If c = "\\" And If sQuote = "\"" Then
+                Inc i
+            Else If c = sQuote Then
+                sQuote = ""
+            Endif
+        Else If c = "\"" Or If c = "'" Then
+            sQuote = c
+        Else If c = ":" And If Mid(sLine, i + 1, 1) = ";" Then
+            aParts.Add(Mid(sLine, iStart, i - iStart))
+            aParts.Add(":;")
+            Inc i
+            iStart = i + 1
+        Endif
+        Inc i
+    Wend
+    aParts.Add(Mid(sLine, iStart))
+
+    Return aParts
+
+End
+
+'' True when the part would run as a shell command : the same test as PreProcesses, without loading or
+'' compiling anything as it runs at each key
+Private Sub IsShellPart(sPart As String, Optional iDepth As Integer) As Boolean
+
+    Dim sWord, sPath As String
+    Dim aWord As String[]
+
+    If NoPreProcess Then Return False                  ' the body of a sub or class is Gambas code
+    If sPart Begins "!" Then Return True
+    If sPart Begins "./" Or If sPart Begins "../" Or If sPart Begins "~/" Or If sPart Begins "/" Or If sPart Begins "*" Then Return True
+
+    aWord = RegExp.FindAll(sPart, "^[^\\s(=.\\[|&;<>\"']+")
+    If aWord.Count = 0 Then Return False
+    sWord = aWord[0]
+
+    If iDepth < 4 And If CreateCmdProgram.AliasList.Exist(sWord) Then
+        Return IsShellPart(CreateCmdProgram.AliasList[sWord].Join(" "), iDepth + 1)
+    Endif
+
+    If Not System.Exist(sWord) Then Return False
+    If GambasAssignOrMember(sPart) Then Return False
+    If LocalKeyWords.Exist(Lower(sWord)) Or If System.Keywords.Exist(sWord, gb.IgnoreCase) Or If System.Subroutines.Exist(sWord, gb.IgnoreCase) Then Return False   ' print is also /usr/bin/print
+    If ScriptSubMap.Exist(Lower(sWord)) Then Return False
+    For Each sKind As String In ["sub", "class", "struct"]
+        If SharedMem.Exist(sKind & "." & Lower(sWord)) Then Return False
+        sPath = FindScript(Lower(sWord), IIf(sKind = "sub", "subs", sKind))
+        If sPath And If Exist(sPath) Then Return False
+    Next
+
+    Return True
+
+End
+
 '' Read the edited text Text as typed input, each line shown as it is read
 Private Sub ReadEdited(Text As String)
 
@@ -2764,13 +2884,13 @@ Public Sub IfReader(EndBlk As String[]) As Boolean
                 original &= "\r\n"
             Endif
 
-            If source = "STDIN" And If NotbufferRead Then
+            If source = "STDIN" And If NotbufferRead And If Not LineShownLive() Then    ' a live line is on screen as typed
                 If .usehighlight And If getline.isTerminal Then getline.RewriteLineHighlighted(original, True)
                 If Not .usehighlight And If getline.isTerminal Then Print
             Endif
 
         Else
-            If source = "STDIN" And If NotbufferRead Then
+            If source = "STDIN" And If NotbufferRead And If Not LineShownLive() Then
                 If .usehighlight And If getline.isTerminal Then
                     getline.RewriteLineHighlighted(original)
                 Else If getline.isTerminal Then
@@ -3792,7 +3912,9 @@ Public Sub DoBlock(EndBlk As String[])
         Dec BlockLevel
         'should Not Do this If reading From buffer
 
-        If .usehighlight And If VarCommandSource = "" And If NotBufferRead And If getline.isTerminal Then
+        If LineShownLive() And If VarCommandSource = "" And If NotBufferRead Then
+            ' the ending was highlighted as it was typed
+        Else If .usehighlight And If VarCommandSource = "" And If NotBufferRead And If getline.isTerminal Then
             getline.RewriteLineHighlighted(Lower(inBuffer))
             Print
             'debug "Exit DOBLK"

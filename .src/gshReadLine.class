@@ -36,6 +36,8 @@ Extern rl_cleanup_after_signal() In "libreadline"
 Extern rl_reset_after_signal() In "libreadline"
 Extern rl_on_new_line() As Integer In "libreadline"
 Extern rl_clear_visible_line() As Integer In "libreadline"
+Extern rl_get_screen_size(pRows As Pointer, pCols As Pointer) In "libreadline"
+Extern rl_variable_value(sName As String) As Pointer In "libreadline"
 
 Public DoTrace As Boolean
 Public DefaultPrompt As String
@@ -44,6 +46,18 @@ Public Queue As New String[]
 
 Property Read isTerminal As Boolean Use $isTerminal
 Property Read AtPrompt As Boolean Use $AtPrompt     '' True while ReadTerminal waits for the line
+Property Read LiveHighlight As Boolean Use $bLive    '' True when the line being read is highlighted as it is typed
+Property Read LineWasLive As Boolean Use $bLineLive  '' True when the last line read was shown highlighted as it was typed
+
+' Live highlighting : readline's rl_redisplay_function is replaced by HighlightRedisplay
+Private $pRedisplayVar As Pointer           ' address of rl_redisplay_function
+Private $pRedisplayDefault As Pointer       ' rl_redisplay, readline's own function
+Private $pRedisplayHook As Pointer          ' HighlightRedisplay as a C callback
+Private $pLastCPos As Pointer               ' _rl_last_c_pos, the screen column of the cursor
+Private $pLastVPos As Pointer               ' _rl_last_v_pos, the row of the cursor below the prompt row
+Private $iPromptWidth As Integer            ' columns of the last line of the prompt
+Private $iPromptBytes As Integer            ' bytes of the last line of the prompt, without the escape sequences
+Private $bHScroll As Boolean                ' horizontal-scroll-mode : the line is scrolled sideways, not wrapped
 
 Private $pLine As Pointer                  ' the line given to LineHandler, freed by the caller
 Private $bLineDone As Boolean
@@ -218,7 +232,8 @@ retryprompt:
                 Print "\n";                 ' If it is evel 0 then print cr as to have beginning of line for the prompt
                 Flush                       ' Make sure it is printed
             Endif
-            pinput = ReadTerminal(Prompt & BlockIndent)
+            pinput = ReadTerminal(Prompt & BlockIndent, True)
+            $bLineLive = $bLive
 
             If Queue.count = 0 Then ' we did not used the edit function
                 If IsNull(pinput) Then Return "QUIT"
@@ -230,6 +245,7 @@ retryprompt:
                 rFree(pInput)
             Endif
         Else
+            $bLineLive = False
             sInput = Trim(gsh_history_expand(Queue.Pop()))
             Print sInput
         Endif
@@ -253,10 +269,19 @@ End
 '' Read a line like readline() : the returned pointer is freed by the caller, Null at end of input.
 '' Uses the readline callback interface, so the Gambas event loop runs while the prompt waits :
 '' process Kill events, timers and signals are handled at once, not after the next line.
-Private Sub ReadTerminal(sPrompt As String) As Pointer
+Private Sub ReadTerminal(sPrompt As String, Optional bHighlight As Boolean) As Pointer
 
     $pLine = Null
     $bLineDone = False
+    sPrompt = MarkInvisible(sPrompt)
+    SetLiveHighlight(bHighlight And SharedMem["usehighlight"])
+    If $bLive Then
+        Dim sShown As String = RegExp.Replace(sPrompt, "\\x01[^\\x02]*\\x02", "")
+        sShown = Mid(sShown, RInStr(sShown, "\n") + 1)
+        $iPromptWidth = String.Len(sShown)
+        $iPromptBytes = Len(sShown)
+        Try $bHScroll = LCase(String@(rl_variable_value("horizontal-scroll-mode"))) = "on"
+    Endif
     rl_callback_handler_install(sPrompt & "\x00", LineHandler)
     Object.Attach(File.In, Me, "StdIn")
     File.In.Watch(gb.Read, True)
@@ -273,6 +298,146 @@ Catch                                       ' Break! from Ctrl-C in a block, pas
     File.In.Watch(gb.Read, False)
     rl_callback_handler_remove()
     Error.Propagate()
+
+End
+
+'' The prompt with each escape sequence between \001 and \002 : readline does not count them as columns.
+'' Unmarked, readline counts the colour codes of the prompt as text, gets the wrapping of a long line
+'' wrong and scrolls the line sideways when the codes are wider than the screen
+Private Sub MarkInvisible(sPrompt As String) As String
+
+    If InStr(sPrompt, "\x01") Then Return sPrompt       ' already marked
+    If Not InStr(sPrompt, "\e") Then Return sPrompt
+    Return RegExp.Replace(sPrompt, "(\\x1b(\\[[0-9;?]*[ -/]*[@-~]|\\][^\\x07\\x1b]*(\\x07|\\x1b\\\\)|[()][0-9A-Za-z]|[78=>]))", "\x01&1\x02")
+
+End
+
+'' Turn the live highlighting of the typed line on or off, readline draws the line itself when off
+Private Sub SetLiveHighlight(bOn As Boolean)
+
+    If bOn = $bLive Then Return
+    If bOn Then
+        If Not $pRedisplayVar Then
+            $pRedisplayVar = System.GetExternSymbol("libreadline", "rl_redisplay_function")
+            $pRedisplayDefault = System.GetExternSymbol("libreadline", "rl_redisplay")
+            $pLastCPos = System.GetExternSymbol("libreadline", "_rl_last_c_pos")
+            $pLastVPos = System.GetExternSymbol("libreadline", "_rl_last_v_pos")
+            $pRedisplayHook = CPointer(HighlightRedisplay)
+        Endif
+        If Not ($pRedisplayVar And $pRedisplayDefault And $pLastCPos And $pLastVPos And $pRedisplayHook) Then Return
+        Pointer@($pRedisplayVar) = $pRedisplayHook
+    Else
+        Pointer@($pRedisplayVar) = $pRedisplayDefault
+    Endif
+    $bLive = bOn
+
+End
+
+'' Readline's display function while live highlighting is on. Readline draws the line as usual, then the
+'' part of the text on screen is printed again in colour over the same columns, between ESC 7 and ESC 8 :
+'' the cursor and what readline knows of the screen do not change
+Public Sub HighlightRedisplay()
+
+    Dim sLine, sColour, sOut As String
+    Dim iPoint, iCol, iRow, iRows, iWidth, iLen, iMargin, iFirst, iLast, iStart, iEdge, iTextBytes As Integer
+
+    rl_redisplay()
+
+    sLine = $rl_var!rl_line_buffer
+    If Not sLine Then Return
+    If RegExp.Match(sLine, "[\\x00-\\x1f\\x7f]") Then Return      ' readline shows control characters as ^X
+    If RegExp.Match(sLine, "[\\x{1100}-\\x{10FFFF}]", RegExp.UTF8) Then Return   ' may be two columns wide, the columns are not known
+    sColour = gsh.HighlightInput(sLine)
+    If Not sColour Then Return
+
+    iPoint = String.Len(Left(sLine, $rl_var!rl_point))
+    iLen = String.Len(sLine)
+    iCol = Integer@($pLastCPos)
+    iRow = Integer@($pLastVPos)
+    rl_get_screen_size(VarPtr(iRows), VarPtr(iWidth))
+    If iWidth < 2 Then Return
+
+    If $bHScroll Then
+        ' readline shows a window of the prompt and text, a < in its first column when scrolled and a > in the
+        ' last column used when more text follows. It places the > by bytes, not characters
+        iTextBytes = Len(sLine)
+        If iCol = $iPromptWidth + iPoint Then           ' not scrolled, the prompt is on screen
+            iFirst = 0
+            iStart = $iPromptWidth
+            iEdge = iWidth - 1 - $iPromptBytes          ' text bytes before the >
+        Else
+            iMargin = iPoint - iCol                     ' the character under the <
+            If iMargin < 0 Then Return
+            iFirst = iMargin + 1
+            iStart = 1
+            iEdge = Len(String.Left(sLine, iMargin)) + iWidth - 1
+        Endif
+        iLast = IIf(iEdge < iTextBytes, CharsIn(Left(sLine, iEdge)), iLen)
+        If iLast <= iFirst Then Return
+        sOut = "\e7\r"
+    Else
+        ' the text starts after the prompt and wraps at the screen width
+        iFirst = 0
+        iLast = iLen
+        iStart = $iPromptWidth Mod iWidth
+        iRow -= $iPromptWidth \ iWidth
+        sOut = "\e7" & IIf(iRow > 0, "\e[" & CStr(iRow) & "A", IIf(iRow < 0, "\e[" & CStr(-iRow) & "B", "")) & "\r"
+    Endif
+    If iStart > 0 Then sOut &= "\e[" & CStr(iStart) & "C"
+
+    Print sOut; AnsiSlice(sColour, iFirst, iLast); "\e[0m\e8";
+    Flush
+
+Catch                                           ' never raise into readline, draw plain from now on
+    Pointer@($pRedisplayVar) = $pRedisplayDefault
+    $bLive = False
+
+End
+
+'' The number of characters in a text cut at any byte : the bytes that are not UTF-8 continuation bytes
+Private Sub CharsIn(sText As String) As Integer
+
+    Dim iCount As Integer
+
+    For i As Integer = 1 To Len(sText)
+        If (Asc(sText, i) And &HC0) <> &H80 Then Inc iCount
+    Next
+    Return iCount
+
+End
+
+'' The characters iFirst to iLast - 1 of a coloured text, with every escape sequence before iLast so the
+'' colours are right
+Private Sub AnsiSlice(sAnsi As String, iFirst As Integer, iLast As Integer) As String
+
+    Dim sOut As String
+    Dim i As Integer = 1
+    Dim iChar As Integer = -1                  ' the character the current byte belongs to
+    Dim iEnd, b As Integer
+
+    While i <= Len(sAnsi)
+        b = Asc(sAnsi, i)
+        If b = 27 Then                          ' ESC [ digits ; ? and a final byte, or ESC and one byte
+            iEnd = i + 1
+            If Mid(sAnsi, iEnd, 1) = "[" Then
+                Inc iEnd
+                While iEnd <= Len(sAnsi) And InStr("0123456789;?", Mid(sAnsi, iEnd, 1))
+                    Inc iEnd
+                Wend
+            Endif
+            sOut &= Mid(sAnsi, i, iEnd - i + 1)
+            i = iEnd + 1
+            Continue
+        Endif
+        If (b And &HC0) <> &H80 Then            ' not a UTF-8 continuation byte : a new character
+            Inc iChar
+            If iChar >= iLast Then Break
+        Endif
+        If iChar >= iFirst Then sOut &= Chr(b)
+        Inc i
+    Wend
+
+    Return sOut
 
 End
 
