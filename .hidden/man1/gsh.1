@@ -83,6 +83,15 @@ Lists the version of each component and library being used by gsh
 \fB\-V, --version\fR
 display gsh version number
 
+.SH "INTERACTIVE INPUT"
+Lines are read with GNU readline and its history, configured in ~/.inputrc.
+.PP
+The line being typed is coloured as it is typed: Gambas code with the Gambas highlighter, a command line with the shell highlighter. A command line starts with \fB!\fR, with a path, or with a program found in $path that is not a Gambas keyword, sub, class, structure or variable. On a line holding several commands separated by \fB:;\fR each part has its own colours. Only colours are added, the characters stay as typed. The terminal must support 24 bit colour.
+.PP
+Highlighting is on by default. \fB$usehighlight\fR is private to each session: \fB$usehighlight = false\fR turns it off for that session only. Set it in onstart to change it for every session.
+.PP
+gsh marks the escape sequences of \fB$prompt\fR for readline, so a long line is edited correctly with a coloured prompt.
+
 .SH "EXAMPLE"
 #!/usr/bin/env gsh
 .br
@@ -111,7 +120,7 @@ documentation about the language is at
 Report bugs to \fBhttps://github.com/justlostintime/GambasShell/issues\fR
 
 .SH "COPYRIGHT"
-Copyright\(JustLostInTime@gmail.com\);
+Copyright \(co JustLostInTime@gmail.com
 .PP
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

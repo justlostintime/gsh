@@ -195,6 +195,14 @@
                 "\x01\x1b[31m\x02" & application.id & "." & user.name & "@" &
                  system.host & ":\x01\x1b[32m\x02" & env["PWD"] &
                 "\x01\x1b[0m\x1b[0K\x02 > "
+            gsh marks the escape sequences of the prompt for readline itself,
+            so a long line is edited correctly with a coloured prompt.
+
+ $usehighlight True colours the line as it is typed, Gambas code with the
+            Gambas highlighter and command lines with the shell highlighter,
+            each :; part on its own. Only colours are added. On by default.
+            Private to each session: '$usehighlight = false' turns it off for
+            this session only, set it in onstart for every session.
 
  At Startup gsh loads the environment from the default
              image ~/vars/gsh.image

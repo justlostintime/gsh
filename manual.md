@@ -678,6 +678,35 @@ A long line wraps onto the next screen line. With `set horizontal-scroll-mode on
 readline keeps it on one line and scrolls it sideways instead; readline then shows
 less of the line after a prompt that has nerd font symbols.
 
+### Highlighting as you type
+
+The line being typed at the prompt is coloured while it is typed, and keeps its
+colours after Enter:
+
+\- Gambas code is coloured with the Gambas highlighter: keywords, strings, numbers,
+operators and comments.\
+\- A command line is coloured with the shell highlighter. A line is a command line
+when it starts with **!**, with a path such as ./ ../ \~/ or /, or with the name of
+a program found in \$path that is not a Gambas keyword, a sub, a class, a
+structure, a Gambas variable being set (ls = 5) or an object member (ls.Add(x)).
+This is the same test gsh uses to run the line.\
+\- On a line holding several commands separated by **:;** each part is coloured
+on its own, so Gambas code and a command line can be mixed on one line.\
+\- In a sub, class or structure being defined every line is Gambas code.
+
+Only colours are added: the line keeps the characters as they were typed, the
+case of keywords does not change. The cursor, editing keys, vi and emacs modes,
+completion lists, history and Ctrl-C work as without colours. A line holding a
+control character, or a character that may be two columns wide such as an emoji,
+is shown without colours. Normal text uses the terminal's own colour, so the
+colours suit a dark or a light terminal. The terminal must support 24 bit colour.
+
+Highlighting is on by default. \$usehighlight turns it off or on for one
+session, set it in onstart to change it for every session:
+```
+  $usehighlight = false    ' the lines of this session are shown as typed, without colours
+```
+
 
 ## Current Working Directory
 
@@ -1644,6 +1673,7 @@ are added, the line keeps the characters as typed. A line holding a control
 character, or a character that may be two columns wide, is shown without colours.
 True by default.
 
+See Highlighting as you type in Keyboard Input and Configuration.
 The variable is private to each session, see Shell Global Variables: setting it
 changes only the session where it is set. To change it for every session set it in
 onstart.
