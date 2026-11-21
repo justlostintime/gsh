@@ -2,13 +2,19 @@
 
 '#!/usr/bin/gbs3
 Extern chdir(Dest As String) As Integer In "libc:6"
-Use "/usr/lib/gambas3/westwood/sharedmem:3.22-3.99.gambas"
 Class Sharedmem
 
 Private cmdBuild As New String[]
 Public mProcr89340 As Process
 'Private cmdBuild As String[]
 'Public mProcr89340 As Process
+
+' Loads the same sharedmem library as gsh, named in the project file sharedmem
+Public Sub _init()
+
+    Try Component.Load(Trim(File.Load("sharedmem")))
+
+End
 
 Sub ToStringArray(sResult As String[], ...)  'Change anything to string[]
     ''ToStringArray    Creat a string array the content of arrays or collections

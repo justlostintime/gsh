@@ -3,8 +3,14 @@
 ' test commit too
 ' Gambas module
 ' change
-Use ":westwood/sharedmem:3.22-3.99"
 Class Sharedmem
+
+' Loads the same sharedmem library as gsh, named in the project file sharedmem
+Public Sub _init()
+
+    Try Component.Load(Trim(File.Load("sharedmem")))
+
+End
 
 Public Sub rr_Read()
 
