@@ -99,7 +99,7 @@ Gambas3 version 3.22 or greater
 
 ### C and Gambas3 Libs used
 
-**libreadline8** GNU readline and history libraries (included in the AppImage)\
+**libreadline** GNU readline and history libraries, any version, through libreadline.so from the readline development package (included in the AppImage)\
 **Libc6** or greater\
 **Libpthread-2.27** or greater\
 **westwood-sharedmem** 3.24 library included in the gsh packages and the AppImage.\
@@ -107,7 +107,7 @@ Gambas3 version 3.22 or greater
 
 The libraries are also packaged on their own in the [PPA](https://github.com/justlostintime/ppa) for every distribution:
 westwood-sharedmem 3.24.26, westwood-gb-scripter 3.22.3 and westwood-shmmem 2.4.1.
-gsh does not need them installed separately.
+gsh does not need them installed separately, and they can not be installed next to the gsh package: both contain the same files in /usr/lib/gambas3/westwood.
 
 Optionally the fortune app can be installed as the onstart() default
 startup will try to run it....
@@ -202,12 +202,15 @@ The AppImage is made with the Gambas IDE packager and appimage-builder:
   `http://download.opensuse.org/repositories/home:/gambas:/master/xUbuntu_${VERSION}/ /`.
   The runtime in the AppImage must be at least as new as the Gambas that compiled gsh, or it stops
   with "Bytecode too recent".
-- `dash` and `less` are extra dependencies of the AppImage. Inside the AppImage, programs that are not part of it,
+- `dash`, `less` and `libreadline-dev` (for libreadline.so) are extra dependencies of the AppImage. Inside the AppImage, programs that are not part of it,
   like the system /bin/sh, get the system environment back and can not run the bundled programs
   (gbc3 and others). gsh therefore uses the bundled dash for Shell when `$APPDIR` is set.
 - System paths in gsh and gb.scripter start with `Env["APPDIR"]`, which is empty outside an AppImage.
   A child gsh is started as `$APPDIR/usr/bin/gbr3 $APPDIR/usr/bin/gsh`, its `#! /usr/bin/env gbr3` line
   would get the system environment back.
+- The SharedMem, Scripter and ShmMem libraries are extra files of the gsh packages (`.hidden/westwood` to
+  `/usr/lib/gambas3`), not entries of the IDE library list: the packager does not copy listed libraries into an
+  AppImage. gsh loads them by the full paths in the `sharedmem` and `gb.scripter` files of the project.
 
 After upgrading, gsh tells you at startup that the cached subs and classes are from an earlier
 version. Run update, gsh then restarts itself in the same terminal with the new ones.
@@ -654,8 +657,9 @@ see:
 
 <http://man7.org/linux/man-pages/man3/readline.3.html>
 
-gsh loads readline 8 (libreadline.so.8), the libreadline8 package must be installed
-for gsh to work. The AppImage includes it.
+gsh loads readline through libreadline.so, which comes with the readline development package
+(libreadline-dev, readline-devel or lib64readline-devel), so any installed readline version works.
+The packages depend on it and the AppImage includes it.
 To copy and paste examples from this document add the following lines to your .inputrc . then restart gsh
 ```
 set horizontal-scroll-mode on
