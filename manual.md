@@ -2527,6 +2527,12 @@ Defaults to \~/vars/filename.\
 Loaded file may be dumped using fprint.\
 Used a byte\[\] as the medium edit will hex edit this type.
 
+#### gethtmlastext "url" Reads a web page and returns it as text lines
+
+Function gethtmlastext("url") returns a String\[\], one entry per line, the page is converted by htmltotext
+at 200 columns.\
+Returns an empty list if the page can not be read or does not exist.
+
 #### hist \<start at\>\<number of entries\> Prints a list input lines to the stdout
 
 As function hist(optional StartAt, NumberOfEntriesToDisplay).\
@@ -2538,6 +2544,14 @@ Returns 'true' if read, 'false' otherwise.\
 \$result contains the error text or "OK."
 
 #### hh Lists the last 10 history entries only
+
+#### htmltotext(sHtml, Width) Converts an html page to plain text
+
+Used by the help system for the Gambas keyword pages, it needs the gb.xml.html component.\
+Function htmltotext(sHtml, Width) returns the text, Width is the line length, 80 if left out.\
+Headings become "\*\*\*\* Title \*\*\*\*" lines, list items are indented with "\*", code blocks keep
+their lines and other text is wrapped at Width. The html must be a whole page (\<html\>\<body\>...), of a
+fragment only the first element is converted.
 
 #### jobs \< pid \| ON \|OFF \> Prints a list of current background jobs
 
