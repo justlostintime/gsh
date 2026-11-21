@@ -670,11 +670,13 @@ see:
 gsh loads readline through libreadline.so, which comes with the readline development package
 (libreadline-dev, readline-devel or lib64readline-devel), so any installed readline version works.
 The packages depend on it and the AppImage includes it.
-To copy and paste examples from this document add the following lines to your .inputrc . then restart gsh
+To copy and paste examples from this document add the following line to your .inputrc . then restart gsh
 ```
-set horizontal-scroll-mode on
 set enable-bracketed-paste off
 ```
+A long line wraps onto the next screen line. With `set horizontal-scroll-mode on`
+readline keeps it on one line and scrolls it sideways instead; readline then shows
+less of the line after a prompt that has nerd font symbols.
 
 
 ## Current Working Directory
@@ -1430,6 +1432,9 @@ session has its own copy. A new session starts from the saved shared value merge
 with its environment. A change made in a session is not saved for later sessions,
 put lasting changes in .gshrc.
 
+\* \$usehighlight is private to each session in the same way. A new session starts
+from the saved shared value; to turn highlighting on in every session set it in onstart.
+
 Remember to vardel ("varname") at the end of a session if you don't
 want it to appear when you next start **gsh**.
 
@@ -1480,6 +1485,11 @@ edited with any valid eval statement to change the prompt just 'edit
 
 Be warned if the expression fails the prompt will be reset to the
 default.
+
+Readline must know which characters of the prompt take no space on the screen, or
+editing a long line puts the cursor in the wrong place. **gsh** puts each escape
+sequence of the prompt, such as a colour, between \\x01 and \\x02 for readline. A
+prompt that already holds \\x01 is used as it is.
 
 The default prompt is -
 
@@ -1624,6 +1634,22 @@ Defaults to mono, Must be set to nerd if they are installed.
 
 True when \$TextFont names a nerd font. It is checked and set by onstart,
 which then uses the nerd font prompt.
+
+#### \$usehighlight true or false
+
+When true the line being typed is coloured as it is typed: Gambas code with the
+Gambas highlighter, a command line with the shell highlighter. On a line holding
+several commands separated by **:;** each part has its own colours. Only colours
+are added, the line keeps the characters as typed. A line holding a control
+character, or a character that may be two columns wide, is shown without colours.
+False by default.
+
+The variable is private to each session, see Shell Global Variables: setting it
+changes only the session where it is set. To have it in every session set it in
+onstart.
+```
+  $usehighlight = true     ' colour the lines of this session as they are typed
+```
 
 
 ### Shell Operators
