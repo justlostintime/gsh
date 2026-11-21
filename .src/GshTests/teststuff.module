@@ -7,7 +7,7 @@ Class Sharedclass
 ' Loads the same sharedmem library as gsh, named in the project file sharedmem
 Public Sub _init()
 
-    Try Component.Load(Trim(File.Load("sharedmem")))
+    Try Component.Load(Env["APPDIR"] & Trim(File.Load("sharedmem")))
 
 End
 

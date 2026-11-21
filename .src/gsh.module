@@ -377,8 +377,8 @@ Public Sub Myinit()
     ' run the bundled binaries (gbc3 etc.), so Shell must use the bundled shell
     If Env["APPDIR"] And If Exist(Env["APPDIR"] &/ "/usr/bin/dash") Then System.Shell = Env["APPDIR"] &/ "/usr/bin/dash"
 
-    $sharedmemlib = File.Load("sharedmem")
-    $ScripterLib = File.Load("gb.scripter")
+    $sharedmemlib = Env["APPDIR"] & Trim(File.Load("sharedmem"))      ' full library paths, APPDIR is only set inside an AppImage
+    $ScripterLib = Env["APPDIR"] & Trim(File.Load("gb.scripter"))
     $ScriptHighlighter = File.Load("gb.highlight")
     $GshRootPath = IIf(Env["APPDIR"] Or Exist("/usr/share/gsh/subs"), Env["APPDIR"], Application.path)  ' APPDIR is only set inside an AppImage
 
@@ -891,7 +891,7 @@ Public Sub Main()
     If iRunArg = 1 Then
         Dim aRunArgs As String[] = Application.Args.All.Copy(iRunArg + 1, Application.Args.Count - iRunArg - 1)
         If aRunArgs.Count > 0 And If aRunArgs[0] = "--" Then aRunArgs.Remove(0)
-        Try Component.Load(File.Load("gb.scripter"))
+        Try Component.Load(Env["APPDIR"] & Trim(File.Load("gb.scripter")))
         If Error Then
             Error "Error Scripter library not found, ";; Error.text
             Quit 9

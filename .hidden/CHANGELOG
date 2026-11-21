@@ -1,4 +1,17 @@
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- More Updates to support fedora install
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- put back the libs internally
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- use external libs now
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - Update test modules to load library name from project file
 
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
