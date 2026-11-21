@@ -2,7 +2,7 @@
 
 Version 1.8
 
-**November 18, 2026**
+**November 21, 2026**
 
 ## Introduction
 
@@ -95,7 +95,7 @@ Gambas3 version 3.22 or greater
 \- gambas3-gb.util \>=3.22\
 \- gambas3-gb.util.web \>=3.22\
 \- gambas3-gb.xml \>=3.22\
-\- gambas3-gb.xml.html \>=3.22\
+\- gambas3-gb.xml.html \>=3.22
 
 ### C and Gambas3 Libs used
 
@@ -988,7 +988,7 @@ This will produce the usual directory listing.
 
 Gambas keywords Execute the line as gambas code.
 
-Check statements in the following order:\
+Check statements in the following order:
 ```
   Defined user functions 
   Gambas functions 
