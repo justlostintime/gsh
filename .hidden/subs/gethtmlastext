@@ -1,18 +1,20 @@
-Public Sub GetHtmlAsText(TheUrl as string) as string[] 
-''' Fetch an html web  page and return it as a formatted text string 
+
+Class Htmltotext
+
+Public Sub GetHtmlAsText(TheUrl As String) As String[]
+''' Fetch an html web  page and return it as a formatted text string
 '' Read a web page and return the page converted to text
-'' uses html2text linux app to do the conversion
-  use "gb.net.curl"
-  Dim mproc As Process
-  Dim sSource As New HttpClient As "hclient"
+'' the page is converted with the gb.xml.html component, html2text is not needed
+  Use "gb.net.curl"
+  Dim sSource As New HttpClient
   Dim buffer As String
-  dim aTmps as new string[]
+  Dim aTmps As New String[]
 
   sSource.url = TheUrl
   sSource.async = False
   sSource.timeout = 5
-  sSource.Get
-  If sSource.status < 0 Then Return ""
+  Try sSource.Get
+  If Error Or If sSource.status < 0 Then Return aTmps
   If Lof(sSource) Then
      buffer = Read #sSource, Lof(sSource)
   Else
@@ -20,20 +22,9 @@ Public Sub GetHtmlAsText(TheUrl as string) as string[]
   Endif
 
   If buffer <> "" And If Not (buffer Like "*This page does not exist*") Then
-      ReadBuffer = ""
-      mproc = Exec ["html2text", "-ascii", "-width", "200"] For Read Write As "mProcget"
-      Write #mproc, buffer
-      mproc.closeinput
-      mproc.wait
-      atmps = Split(Replace(ReadBuffer, "\xc2\xa0", " "), "\n\r", "\"\"", True, True)
+      atmps = Split(HtmlToText(buffer, 200), "\n", "", True)   ' the htmltotext sub converts the page
   Endif
 
   Return atmps
-end
-
-Public ReadBuffer as string = ""
-Public Sub mProcget_read()
-Dim buffer As String
-  buffer = Read #Last, -256
-  ReadBuffer &= buffer
 End
+

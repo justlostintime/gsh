@@ -1,4 +1,9 @@
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- Gambas help converts pages with the external htmltotext sub, the internal module is removed
+- gethtmlastext uses the htmltotext sub, html2text is no longer needed
+- htmltotext decodes an entity that follows a lone &
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - readline loaded as libreadline again, packages depend on the readline dev package, any readline version works
 - libraries installed by gsh in /usr/lib/gambas3/westwood on every system and loaded by full path, fixes fedora, mageia and suse
 - rpm packages no longer claim /usr/lib, fedora refused the install

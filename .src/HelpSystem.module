@@ -346,7 +346,9 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
     Dim s As String
 
     SharedMem["lasthtmlhelp"] = sSource
-    Try helpfromhtml = HtmlToText(sSource)          ' gsh converts the page itself, no html2text program needed
+    Dim hConv As Object
+    Try hConv = gsh.UseScript("htmltotext")         ' the htmltotext sub converts the page, no html2text program needed
+    If Not Error Then Try helpfromhtml = hConv.HtmlToText(sSource)
     If Error Then
         Print "Help Html conversion Failed "; Error.Text
         Return ""
