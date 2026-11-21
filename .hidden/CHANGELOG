@@ -1,4 +1,10 @@
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- readline loaded as libreadline again, packages depend on the readline dev package, any readline version works
+- libraries installed by gsh in /usr/lib/gambas3/westwood on every system and loaded by full path, fixes fedora, mageia and suse
+- rpm packages no longer claim /usr/lib, fedora refused the install
+- packages depend on gambas3-dev-tools (gambas3-devel on mageia) for gbc3
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - More Updates to support fedora install
 
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
