@@ -324,6 +324,10 @@ description of any gambas3 keyword or of any gsh/gambas/linux cli function/varia
 
 Information is displayed like a Linux man page.
 
+Gambas keyword pages are read from the Gambas wiki and converted to text by the `htmltotext` sub,
+which uses the gb.xml.html component. Any sub can call it: `HtmlToText(sHtml, Width)` returns the page as text,
+wrapped at Width columns (80 if left out).
+
 If more than one match is found the user is prompted to enter the number
 next to the correct selection.
 
