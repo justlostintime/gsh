@@ -1,6 +1,6 @@
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - $usehighlight colours the line as it is typed, each :; part with the gambas or sh highlighter
-- $usehighlight is private to each session, set it in onstart for every session
+- $usehighlight is true by default and private to each session, set it in onstart for every session
 - escape sequences of the prompt are marked for readline, long lines are edited correctly with a coloured prompt
 
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5

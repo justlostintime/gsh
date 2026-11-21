@@ -74,7 +74,7 @@ Public Sub _Call()
         If Not .Exist("structPath") Then .structpath = user.home &/ "vars/struct;/usr/share/gsh/struct"
         If Not .Exist("scriptpath") Then .scriptpath = user.home &/ "vars/scripts;/usr/share/gsh/scripts"
         If Not .exist("suggestcommand") Then .suggestcommand = False
-        If Not .exist("usehighlight") Then .usehighlight = False            ' By default for now highlight is off
+        If Not .exist("usehighlight") Then .usehighlight = True             ' the typed line is coloured as it is typed
         If Not .exist("dotrace") Then .dotrace = False                      ' internal tracing function
 
         ' when EnvResync is set this will cause the internal variables to be read back from the environment after each time

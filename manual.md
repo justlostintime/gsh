@@ -1433,7 +1433,7 @@ with its environment. A change made in a session is not saved for later sessions
 put lasting changes in .gshrc.
 
 \* \$usehighlight is private to each session in the same way. A new session starts
-from the saved shared value; to turn highlighting on in every session set it in onstart.
+from the saved shared value; to change it for every session set it in onstart.
 
 Remember to vardel ("varname") at the end of a session if you don't
 want it to appear when you next start **gsh**.
@@ -1642,13 +1642,13 @@ Gambas highlighter, a command line with the shell highlighter. On a line holding
 several commands separated by **:;** each part has its own colours. Only colours
 are added, the line keeps the characters as typed. A line holding a control
 character, or a character that may be two columns wide, is shown without colours.
-False by default.
+True by default.
 
 The variable is private to each session, see Shell Global Variables: setting it
-changes only the session where it is set. To have it in every session set it in
+changes only the session where it is set. To change it for every session set it in
 onstart.
 ```
-  $usehighlight = true     ' colour the lines of this session as they are typed
+  $usehighlight = false    ' this session shows the lines as typed, without colours
 ```
 
 
