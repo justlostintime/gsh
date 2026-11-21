@@ -1,4 +1,7 @@
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- Help system fixes
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - Gambas help converts pages with the external htmltotext sub, the internal module is removed
 - gethtmlastext uses the htmltotext sub, html2text is no longer needed
 - htmltotext decodes an entity that follows a lone &
