@@ -95,6 +95,7 @@ Gambas3 version 3.22 or greater
 \- gambas3-gb.util \>=3.22\
 \- gambas3-gb.util.web \>=3.22\
 \- gambas3-gb.xml \>=3.22\
+\- gambas3-gb.xml.html \>=3.22\
 
 ### C and Gambas3 Libs used
 
@@ -174,7 +175,7 @@ The package includes the SharedMem and Scripter libraries, it needs Gambas 3.22 
 ### Running gsh as an AppImage
 
 The AppImage contains everything gsh needs: the Gambas runtime, the SharedMem and Scripter
-libraries, readline, less and html2text for help, and a shell for the commands gsh runs.
+libraries, readline, less for the help pages, and a shell for the commands gsh runs.
 Gambas does not have to be installed.
 It runs on Ubuntu 22.04, 24.04 and 26.04, Debian 13, Fedora 44, Mageia 9, Arch Linux, openSUSE Leap 15.6 and Tumbleweed, Slackware 15.0 and other x86_64 Linux systems.
 ```
@@ -201,7 +202,7 @@ The AppImage is made with the Gambas IDE packager and appimage-builder:
   `http://download.opensuse.org/repositories/home:/gambas:/master/xUbuntu_${VERSION}/ /`.
   The runtime in the AppImage must be at least as new as the Gambas that compiled gsh, or it stops
   with "Bytecode too recent".
-- `dash`, `less` and `html2text` are extra dependencies of the AppImage. Inside the AppImage, programs that are not part of it,
+- `dash` and `less` are extra dependencies of the AppImage. Inside the AppImage, programs that are not part of it,
   like the system /bin/sh, get the system environment back and can not run the bundled programs
   (gbc3 and others). gsh therefore uses the bundled dash for Shell when `$APPDIR` is set.
 - System paths in gsh and gb.scripter start with `Env["APPDIR"]`, which is empty outside an AppImage.

@@ -1,4 +1,7 @@
 * Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- Add internal version of html2text
+
+* Sat Nov 21 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - Updates with latest libraries in the package build
 
 * Fri Nov 20 2026 Brian G <justlostintime@gmail.com> 1.8.5

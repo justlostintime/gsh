@@ -324,6 +324,7 @@ ClassesToLoad As String[] = [
     "Parser",
     "ServiceMode",
     "HelpSystem",
+    "HtmlToText",
     "gshReadLine",
     "LocalTask",
     "gshlogging",

@@ -341,30 +341,14 @@ Public HelpFromHtml As String
 
 Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint As Boolean = True) As String
 
-    Dim mproc As Process
     'Dim ch As New ConsoleHighlight
     Dim ch As Texthighlighter = texthighlighter["gambas"]
     Dim s As String
 
-    helpfromhtml = ""
-    If Not System.Exist("html2text") Then
-        Print "Please install the application 'html2text'  in order to display full gambas help information"
-        Print " source = " & CmdName
-    Endif
     SharedMem["lasthtmlhelp"] = sSource
-    Dim aConvert As String[] = ["html2text", "-ascii", "-width", "80", "-nobs", "-style", "compact"]
-    Do
-        helpfromhtml = ""
-        $sConvertError = ""
-        mproc = Exec aConvert For Read Write As "mrProcget"
-        Write #mproc, sSource
-        mproc.closeinput
-        mproc.wait
-        If process.LastValue = 0 Or If Not aConvert.Exist("-style") Then Break
-        aConvert.Remove(aConvert.Find("-style"), 2)       ' html2text 2.x has no -style option
-    Loop
-    If process.LastValue <> 0 Then
-        Print "Help Html conversion Failed "; $sConvertError
+    Try helpfromhtml = HtmlToText(sSource)          ' gsh converts the page itself, no html2text program needed
+    If Error Then
+        Print "Help Html conversion Failed "; Error.Text
         Return ""
     Endif
 
@@ -446,19 +430,3 @@ Private Sub GetHtmlPage(sSource As String, CmdName As String, Optional DoPrint A
 
 End
 
-Private $sConvertError As String
-
-Public Sub mrProcget_Error(sError As String)
-
-    $sConvertError &= sError        ' shown only if the conversion fails
-
-End
-
-Public Sub mrProcget_read()
-
-    Dim buffer As String
-
-    buffer = Read #Last, -256
-    helpfromhtml &= buffer
-
-End
