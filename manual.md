@@ -176,13 +176,16 @@ The package includes the SharedMem and Scripter libraries, it needs Gambas 3.22 
 The AppImage contains everything gsh needs: the Gambas runtime, the SharedMem and Scripter
 libraries, readline, less and html2text for help, and a shell for the commands gsh runs.
 Gambas does not have to be installed.
-It runs on Ubuntu 22.04, 24.04 and 26.04, Debian 13 and Fedora 44, and other x86_64 Linux systems.
+It runs on Ubuntu 22.04, 24.04 and 26.04, Debian 13, Fedora 44, Mageia 9, Arch Linux, openSUSE Leap 15.6 and Tumbleweed, Slackware 15.0 and other x86_64 Linux systems.
 ```
 curl -LO https://github.com/justlostintime/gsh/releases/download/v1.8.5/gsh-1.8.5-x86_64.AppImage
 chmod +x gsh-1.8.5-x86_64.AppImage
 ./gsh-1.8.5-x86_64.AppImage
 ```
 If FUSE is not installed, run it with `APPIMAGE_EXTRACT_AND_RUN=1 ./gsh-1.8.5-x86_64.AppImage`.
+
+Gambas help (`help` with a Gambas keyword) reads the Gambas wiki over https and needs the system CA certificates.
+Desktop installs have them. Minimal Ubuntu, Debian and Slackware installs, such as containers, may not: install `ca-certificates`.
 
 Install the .deb package to make gsh your default shell; the AppImage is not added to /etc/shells.
 
