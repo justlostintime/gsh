@@ -5,40 +5,72 @@
 Fast Unsafe
 
 Public Sub donut()
-''' Display a spinning ascii donut in the terminal
+''' Display a spinning, colour shifting ascii donut in the terminal
 '' Press Ctrl-C to stop. The donut follows the terminal size when it is resized.
 '' gsh sets system_break when Ctrl-C is pressed, the loop checks it after each frame.
 '' No Catch or Finally here, they are not safe in Fast Unsafe (JIT) code.
+'' Needs a terminal with 24 bit colour.
 
-  Dim theta_spacing As Float = 0.01
-  Dim phi_spacing As Float = 0.01
-  Dim TwoPi As Float = 6.28
+  ' ---- Settings ----
+  ' Sample spacing is worked out from the screen size so neighbouring samples
+  ' land at most CellStep character cells apart: no more points than the screen
+  ' can show, and no gaps on big terminals. Raise it for speed, lower for density.
+  Dim CellStep As Float = 0.7
+  ' Rotation speeds in radians per second, independent of frame rate
+  Dim SpinA As Float = 2.1
+  Dim SpinB As Float = 0.9
+  ' Colour: hue drifts round the wheel at HueSpeed degrees per second,
+  ' and spans HueSpread degrees from the darkest to the brightest shade
+  Dim HueSpeed As Float = 20.0
+  Dim HueSpread As Float = 50.0
+
   Dim R1 As Float = 1.00
   Dim R2 As Float = 2.00
   Dim K2 As Float = 5.0
   Dim Shader As Byte[] = Byte[].FromString(" .,-~:;=!*$#@")
-  Dim ShadeMax As Integer = Shader.Max
+  Dim nShades As Integer = Shader.Count - 1
 
-  Dim screen_width, screen_height, iCols, iRows, stride As Integer
+  ' colourOf[character byte] -> shade slot in colourEsc (-1 = not a shade char)
+  Dim colourOf As New Integer[256]
+  Dim colourEsc As New String[nShades]
+  Dim parts As New String[]
+
+  ' Screen and buffers
+  Dim screen_width, screen_height, iCols, iRows, stride, maxX, maxY As Integer
   Dim K1, halfW, halfH As Float
-  Dim bOutput As Byte[]               ' (screen_width + 1) * screen_height, includes a newline per row
-  Dim zBuffer As Float[]              ' screen_width * screen_height
+  Dim bOutput As Byte[]               ' stride * screen_height, includes a newline per row
+  Dim zBuffer As Float[]              ' same layout as bOutput
 
-  Dim a, b As Float
-  Dim fFrameStart, fFrameTime, fRateStart, fElapsed, fFrameRate As Float
+  ' Sin/Cos tables, rebuilt only when the terminal size changes
+  Dim nTheta, nPhi As Integer
+  Dim cosT, sinT, cosP, sinP As Float[]
+  Dim rotX, rotY, rotZ As Float[]     ' per frame, per phi rotation terms
+
+  ' Timing
+  Dim fStart, fNow, fFrameStart, fFrameTime, fRateStart, fElapsed, fFrameRate As Float
   Dim iFrames As Integer
 
-  Dim cosA, sinA, cosB, sinB As Float
-  Dim theta, phi As Float
-  Dim costheta, sintheta, theta1, theta2, theta3, theta4, theta5, circlex, circley As Float
-  Dim cosphi, sinphi, L, x, y, z, ooz As Float
-  Dim xp, yp, iShade, j As Integer
+  ' Per frame / per point working values
+  Dim a, b, cosA, sinA, cosB, sinB, sAsB, sAcB, cAsB, cAcB As Float
+  Dim costheta, sintheta, circlex, circley, Lc, Lcos, Lsin, cyx, cyy, cyz As Float
+  Dim L, x, y, ooz, k1ooz, cellsPerUnit, fStep As Float
+  Dim t, p, i, j, xp, yp, idx, lastIdx, runStart, cur, c, col As Integer
 
-  Print "\e[2J";
-  fRateStart = Timer
+  ' Colour working values
+  Dim f, hh, ss, vv, cc, xx, mm, rr, gg, bb As Float
+
+  colourOf.Fill(-1)
+  For i = 1 To nShades
+    colourOf[Shader[i]] = i - 1
+  Next
+
+  Print "\e[2J\e[?25l";
+  fStart = Timer
+  fRateStart = fStart
 
   While Not system_break
-    ' Read the terminal size and rebuild the buffers when it changes, the last row is the status line
+    ' ---- Terminal size: rescale and rebuild buffers and tables when it changes ----
+    ' the last row is the status line
     iCols = File.Out.Term.Width
     iRows = File.Out.Term.Height - 1
     If iCols < 2 Then iCols = 2
@@ -47,22 +79,97 @@ Public Sub donut()
       screen_width = iCols
       screen_height = iRows
       stride = screen_width + 1
+      maxX = screen_width - 1
+      maxY = screen_height - 1
       halfW = screen_width / 2.00
       halfH = screen_height / 2.00
       ' K1 scales the projection to the screen width. Increase the divisor to
       ' make the donut smaller, decrease it to make it bigger.
       K1 = screen_width * K2 / (9.00 * (R1 + R2))
       bOutput = New Byte[stride * screen_height]
-      zBuffer = New Float[screen_width * screen_height]
+      zBuffer = New Float[stride * screen_height]
+
+      ' Worst case magnification is at the nearest point, z = K2 - R1 - R2,
+      ' which is also where the phi circle is largest (radius R1 + R2)
+      cellsPerUnit = K1 / (K2 - R1 - R2)
+      nTheta = Max(12, CInt(Ceil(2 * Pi * R1 * cellsPerUnit / CellStep)))
+      nPhi = Max(24, CInt(Ceil(2 * Pi * (R1 + R2) * cellsPerUnit / CellStep)))
+
+      cosT = New Float[nTheta]
+      sinT = New Float[nTheta]
+      fStep = 2 * Pi / nTheta
+      For i = 0 To nTheta - 1
+        cosT[i] = Cos(i * fStep)
+        sinT[i] = Sin(i * fStep)
+      Next
+      cosP = New Float[nPhi]
+      sinP = New Float[nPhi]
+      fStep = 2 * Pi / nPhi
+      For i = 0 To nPhi - 1
+        cosP[i] = Cos(i * fStep)
+        sinP[i] = Sin(i * fStep)
+      Next
+      rotX = New Float[nPhi]
+      rotY = New Float[nPhi]
+      rotZ = New Float[nPhi]
+
       Print "\e[2J";
     Endif
 
     fFrameStart = Timer
+    fNow = fFrameStart - fStart
+
+    ' ---- Angles and colours come from elapsed time, not frame count ----
+    a = SpinA * fNow
+    b = SpinB * fNow
+
+    ' One 24 bit colour per shade: dim shades dark and saturated, bright
+    ' shades light and pale, hue rotating over time (HSV -> RGB)
+    For i = 0 To nShades - 1
+      f = i / (nShades - 1)
+      hh = HueSpeed * fNow + f * HueSpread
+      hh = hh - Int(hh / 360.0) * 360.0
+      ss = 1.0 - 0.6 * f * f
+      vv = 0.35 + 0.65 * f
+      cc = vv * ss
+      xx = cc * (1 - Abs((hh / 60.0) - Int(hh / 120.0) * 2 - 1))
+      mm = vv - cc
+      If hh < 60 Then
+        rr = cc
+        gg = xx
+        bb = 0
+      Else If hh < 120 Then
+        rr = xx
+        gg = cc
+        bb = 0
+      Else If hh < 180 Then
+        rr = 0
+        gg = cc
+        bb = xx
+      Else If hh < 240 Then
+        rr = 0
+        gg = xx
+        bb = cc
+      Else If hh < 300 Then
+        rr = xx
+        gg = 0
+        bb = cc
+      Else
+        rr = cc
+        gg = 0
+        bb = xx
+      Endif
+      colourEsc[i] = "\e[38;2;" & CInt((rr + mm) * 255) & ";" & CInt((gg + mm) * 255) & ";" & CInt((bb + mm) * 255) & "m"
+    Next
 
     cosA = Cos(a)
     sinA = Sin(a)
     cosB = Cos(b)
     sinB = Sin(b)
+    sAsB = sinA * sinB
+    sAcB = sinA * cosB
+    cAsB = cosA * sinB
+    cAcB = cosA * cosB
 
     ' Clear the buffers and put a newline at the end of every row
     bOutput.Fill(32)
@@ -71,56 +178,83 @@ Public Sub donut()
       bOutput[j * stride - 1] = 10
     Next
 
-    For theta = 0.00 To TwoPi Step theta_spacing
-      costheta = Cos(theta)
-      sintheta = Sin(theta)
-      theta1 = sinA * sintheta
-      theta2 = costheta * sinB
-      theta3 = cosA * costheta
-      theta4 = cosA * sintheta
-      theta5 = costheta * sinA
-      circlex = R2 + (R1 * costheta)
+    ' Rotation terms that depend only on phi (and this frame's A, B)
+    For p = 0 To nPhi - 1
+      rotX[p] = cosB * cosP[p] + sAsB * sinP[p]
+      rotY[p] = sinB * cosP[p] - sAcB * sinP[p]
+      rotZ[p] = cosA * sinP[p]
+    Next
+
+    For t = 0 To nTheta - 1
+      costheta = cosT[t]
+      sintheta = sinT[t]
+      circlex = R2 + R1 * costheta
       circley = R1 * sintheta
 
-      For phi = 0.00 To TwoPi Step phi_spacing
-        cosphi = Cos(phi)
-        sinphi = Sin(phi)
+      ' Luminance, factored so only two multiplies remain per phi:
+      ' L = cosphi*costheta*sinB - sinphi*costheta*(cosA + sinA*cosB)
+      '     + sintheta*(cosA*cosB - sinA)
+      Lcos = costheta * sinB
+      Lsin = costheta * (cosA + sAcB)
+      Lc = sintheta * (cAcB - sinA)
 
-        ' Luminance, ranges from -sqrt(2) to +sqrt(2). If it's <= 0 the surface
+      ' circley terms of x, y and z are constant for this theta
+      cyx = circley * cAsB
+      cyy = circley * cAcB
+      cyz = K2 + circley * sinA
+
+      For p = 0 To nPhi - 1
+        ' L ranges from -sqrt(2) to +sqrt(2). If it's <= 0 the surface
         ' is pointing away from us, so we won't bother trying to plot it.
-        L = (cosphi * theta2) - (theta3 * sinphi) - theta1 + (cosB * (theta4 - (theta5 * sinphi)))
+        L = cosP[p] * Lcos - sinP[p] * Lsin + Lc
         If L <= 0 Then Continue
 
-        x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - (circley * cosA * sinB)
-        y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + (circley * cosA * cosB)
-        z = K2 + cosA * circlex * sinphi + circley * sinA
-        ooz = 1.00 / z
+        x = circlex * rotX[p] - cyx
+        y = circlex * rotY[p] + cyy
+        ooz = 1.00 / (cyz + circlex * rotZ[p])
+        k1ooz = K1 * ooz
 
         ' x and y projection. y is negated because y goes up in 3D space
         ' but down on 2D displays.
-        xp = CInt(halfW + K1 * ooz * x)
-        yp = CInt(halfH - K1 * ooz * y)
+        xp = CInt(halfW + k1ooz * x)
+        yp = CInt(halfH - k1ooz * y)
 
         ' Skip points that fall off screen (Unsafe: no array bounds checking here)
-        If xp < 0 Or If xp >= screen_width Then Continue
-        If yp < 0 Or If yp >= screen_height Then Continue
+        If xp < 0 Or If xp > maxX Or If yp < 0 Or If yp > maxY Then Continue
 
-        If ooz > zBuffer[yp * screen_width + xp] Then
-          zBuffer[yp * screen_width + xp] = ooz
-          iShade = 1 + CInt(L * 8)
-          If iShade > ShadeMax Then iShade = ShadeMax
-          bOutput[yp * stride + xp] = Shader[iShade]
+        idx = yp * stride + xp
+        If ooz > zBuffer[idx] Then
+          zBuffer[idx] = ooz
+          bOutput[idx] = Shader[1 + CInt(L * 8)]
         Endif
       Next
     Next
 
-    ' Home the cursor and print the whole frame at once. The last byte of the
-    ' buffer is a newline, which moves us to the status line.
-    Print "\e[H"; bOutput.ToString();
+    ' ---- Output: colour codes only where the colour changes. Blanks and
+    ' newlines don't care what colour is active, so they never break a run.
+    ' The last byte of the buffer is a newline, which moves us to the status line.
+    lastIdx = bOutput.Count
+    runStart = 0
+    cur = -1
+    parts.Clear
+    parts.Add("\e[H")
+    For idx = 0 To lastIdx - 1
+      c = bOutput[idx]
+      If c > 32 Then
+        col = colourOf[c]
+        If col <> cur Then
+          If idx > runStart Then parts.Add(bOutput.ToString(runStart, idx - runStart))
+          parts.Add(colourEsc[col])
+          runStart = idx
+          cur = col
+        Endif
+      Endif
+    Next
+    If lastIdx > runStart Then parts.Add(bOutput.ToString(runStart, lastIdx - runStart))
+    parts.Add("\e[0m")   ' status line in the normal colour
+    Print parts.Join("");
 
     fFrameTime = Timer - fFrameStart
-    a += 0.07
-    b += 0.03
 
     Inc iFrames
     fElapsed = Timer - fRateStart
@@ -136,7 +270,8 @@ Public Sub donut()
     Wait 0                                ' lets the Ctrl-C signal in, it sets system_break
   Wend
 
-  Print "\e[2J\e[H";
+  ' Restore the terminal: reset colours, clear, show the cursor
+  Print "\e[0m\e[2J\e[H\e[?25h";
   Flush
 
 End
