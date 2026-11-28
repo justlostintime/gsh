@@ -1,3 +1,6 @@
+* Sat Nov 28 2026 Brian G <justlostintime@gmail.com> 1.8.5
+- package revision 3 (1.8.5-3, 1.8.5-0ubuntu3): the faster donut sub, rebuilt manual pdf, help.info and man page
+
 * Mon Nov 23 2026 Brian G <justlostintime@gmail.com> 1.8.5
 - donut sub is faster, sin/cos lookup tables and factored maths in the inner loop
 - donut works out how many points to draw from the terminal size, small terminals do less work, big ones have no gaps
